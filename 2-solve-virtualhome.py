@@ -12,7 +12,8 @@ import jacinle
 import concepts.dm.crow as crow
 
 parser = jacinle.JacArgumentParser()
-parser.add_argument('--domain', default='virtualhome.cdl')
+# parser.add_argument('--domain', default='virtualhome.cdl')
+parser.add_argument('--domain', default='virtualhome_debug.cdl')
 parser.add_argument('--verbose', action='store_true')
 args = parser.parse_args()
 
@@ -26,7 +27,7 @@ def main():
     print('Initial state:')
     print(state)
 
-    plan(domain, problem, 'is_off(light)')
+    plan(domain, problem, 'close(char,light)')
 
     # plan(domain, problem, 'on(apple,light)')
 
