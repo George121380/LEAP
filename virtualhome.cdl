@@ -1,0 +1,213 @@
+domain "virtualhome"
+
+typedef item: object
+typedef character: object
+
+# Features without return type annotations are assumed to be returning boolean values.
+
+#state
+feature is_on(x: item)
+feature is_off(x: item)
+feature plugged(x: item)
+feature unplugged(x: item)
+feature open(x: item)
+feature closed(x: item)
+feature dirty(x: item)
+feature clean(x: item)
+feature sitting(x: character)
+feature lying(x: character)
+
+#add state
+feature is_door(x: item)
+feature is_explored(x: item)
+feature is_room(x: item)
+
+#relationship
+feature on(x: item, y: item)
+feature on_char(x: character, y: item)
+feature inside(x: item, y: item)
+feature inside_char(x: character, y: item)
+
+feature between(x: item, y: item, z: item)
+feature close_item(x: item, y: item)
+feature close(x: character, y: item)
+feature facing_item(x: item, y: item)
+feature facing(x: character, y: item)
+feature holds_rh(x: character, y: item)
+feature holds_lh(x: character, y: item)
+
+#Properties 
+feature surfaces(x: item)
+feature grabbable(x: item)
+feature sittable(x: item)
+feature lieable(x: item)
+feature hangable(x: item)
+feature drinkable(x: item)
+feature eatable(x: item)
+feature recipient(x: item)
+feature cuttable(x: item)
+feature pourable(x: item)
+feature can_open(x: item)
+feature has_switch(x: item)
+feature readable(x: item)
+feature lookable(x: item)
+feature containers(x: item)
+feature clothes(x: item)
+feature person(x: item)
+feature body_part(x: item)
+feature cover_object(x: item)
+feature has_plug(x: item)
+feature has_paper(x: item)
+feature movable(x: item)
+feature cream(x: item)
+
+
+object_constant char:character
+
+#controllers
+controller walk_executor(x: item)
+controller switchoff_executor(x: item)
+controller switchon_executor(x: item)
+controller put_executor(x: item, y: item)
+controller grab_executor(x: item)
+controller standup_executor(x: character)
+controller wash_executor(x: item)
+controller sit_executor(x: character)
+
+
+
+def standing(char: character):
+  return not sitting(char) and not lying(char)
+
+behavior stand():
+  goal: standing(char)
+  body:
+    assert sitting(char) or lying(char)
+    standup_executor(char)
+  eff:
+    sitting[char] = False
+    lying[char] = False
+
+behavior sit(obj: item):
+  goal: sitting(char)
+  body:
+    assert sittable(obj)
+    assert not sitting(char)
+    achieve close(char, obj)
+    sit_executor(char)
+  eff:
+    sitting[char] = True
+    on_char[char, obj] = True
+
+behavior walk(obj: item):
+  goal: close(char, obj)
+  body:
+    achieve standing(char)
+    walk_executor(obj)
+  eff:
+    close[char,obj] = True
+    foreach icf:item:
+      close[char, icf]= False
+      facing[char,icf]= False
+      inside_char[char,icf]= False
+      if inside(obj, icf) or on(icf,obj):
+        close[char, icf] = True
+
+behavior switch_off(obj: item):
+  goal: is_off(obj)
+  body:
+    assert has_switch(obj)
+    assert is_on(obj)
+    achieve close(char, obj)
+    switchoff_executor(obj)
+  eff:
+    is_off[obj] = True
+    is_on[obj] = False
+
+behavior switch_on(obj: item):
+  goal: is_on(obj)
+  body:
+    assert has_switch(obj)
+    assert is_off(obj)
+    achieve close(char, obj)
+    switchon_executor(obj)
+  eff:
+    is_off[obj] = False
+    is_on[obj] = True
+
+behavior put_close(inhand_obj: item, obj: item):
+  goal: close_item(inhand_obj, obj)
+  body:
+    assert surfaces(obj)
+    achieve holds_rh(char, inhand_obj)
+    achieve close(char, obj)
+    put_executor(inhand_obj, obj)
+  eff:
+    holds_rh[char, inhand_obj] = False
+    on[inhand_obj, obj] = True
+    close_item[inhand_obj, obj] = True
+    close_item[obj, inhand_obj] = True
+    foreach inter:item:
+      if close_item(inter, obj):
+        close_item[inter, inhand_obj] = True
+        close_item[inhand_obj, inter] = True
+
+behavior put_on(inhand_obj: item, obj: item):
+  goal: on(inhand_obj, obj)
+  body:
+    assert surfaces(obj)
+    achieve holds_rh(char, inhand_obj)
+    achieve close(char, obj)
+    put_executor(inhand_obj, obj)
+  eff:
+    holds_rh[char, inhand_obj] = False
+    on[inhand_obj, obj] = True
+    close_item[inhand_obj, obj] = True
+    close_item[obj, inhand_obj] = True
+    foreach inter:item:
+      if close_item(inter, obj):
+        close_item[inter, inhand_obj] = True
+        close_item[inhand_obj, inter] = True
+
+behavior grab(obj: item):
+  goal: holds_rh(char,obj)
+  body:
+    assert grabbable(obj)
+    foreach obj2:item:
+      if inside(obj,obj2):
+        if not is_room(obj2):
+          assert can_open(obj2)
+          achieve open(obj2)
+    achieve close(char, obj)
+    grab_executor(obj)
+  eff:
+    holds_rh[char,obj]=True
+
+behavior wash(obj: item):
+  goal: clean(obj)
+  body:
+    achieve close(char, obj)
+    wash_executor(obj)
+  eff:
+    dirty[obj] = False
+    clean[obj] = True
+
+behavior open(obj: item):
+  goal: open(obj)
+  body:
+    assert can_open(obj)
+    achieve close(char, obj)
+    open_executor(obj)
+  eff:
+    open[obj] = True
+    closed[obj] = False
+
+
+
+
+
+
+
+    #log:
+    #1.path problem is not considered
+    #2.
