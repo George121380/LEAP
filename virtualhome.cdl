@@ -73,11 +73,50 @@ controller grab_executor(x: item)
 controller standup_executor(x: character)
 controller wash_executor(x: item)
 controller sit_executor(x: character)
+controller open_executor(x: item)
+controller close_executor(x: item)
+controller pour_executor(x: item, y: item)
+controller plugin_executor(x: item)
+controller plugout_executor(x: item)
 
 
 
 def standing(char: character):
   return not sitting(char) and not lying(char)
+
+def has_a_free_hand():
+  symbol l=exists item1: item : holds_lh(char, item1)
+  symbol r=exists item2: item : holds_rh(char, item2)
+  return not l or not r
+
+
+
+behavior put(inhand_obj: item, obj: item):
+  body:
+    assert surfaces(obj)
+    achieve holds_rh(char, inhand_obj) or holds_lh(char, inhand_obj)
+    achieve close(char, obj)
+    put_executor(inhand_obj, obj)
+  eff:
+    holds_rh[char, inhand_obj] = False
+    holds_lh[char, inhand_obj] = False
+    on[inhand_obj, obj] = True
+    close_item[inhand_obj, obj] = True
+    close_item[obj, inhand_obj] = True
+    foreach inter:item:
+      if close_item(inter, obj):
+        close_item[inter, inhand_obj] = True
+        close_item[inhand_obj, inter] = True
+
+behavior empty_a_hand():
+  goal: has_a_free_hand()
+  body:
+    assert not has_a_free_hand()
+    bind surf:item where:
+      surfaces(surf)
+    bind give_up_obj:item where:
+      holds_lh[char, give_up_obj] or holds_rh[char, give_up_obj]
+    put(give_up_obj, surf)
 
 behavior stand():
   goal: standing(char)
@@ -118,6 +157,7 @@ behavior switch_off(obj: item):
   body:
     assert has_switch(obj)
     assert is_on(obj)
+    achieve has_a_free_hand()
     achieve close(char, obj)
     switchoff_executor(obj)
   eff:
@@ -129,6 +169,7 @@ behavior switch_on(obj: item):
   body:
     assert has_switch(obj)
     assert is_off(obj)
+    achieve has_a_free_hand()
     achieve close(char, obj)
     switchon_executor(obj)
   eff:
@@ -138,41 +179,18 @@ behavior switch_on(obj: item):
 behavior put_close(inhand_obj: item, obj: item):
   goal: close_item(inhand_obj, obj)
   body:
-    assert surfaces(obj)
-    achieve holds_rh(char, inhand_obj)
-    achieve close(char, obj)
-    put_executor(inhand_obj, obj)
-  eff:
-    holds_rh[char, inhand_obj] = False
-    on[inhand_obj, obj] = True
-    close_item[inhand_obj, obj] = True
-    close_item[obj, inhand_obj] = True
-    foreach inter:item:
-      if close_item(inter, obj):
-        close_item[inter, inhand_obj] = True
-        close_item[inhand_obj, inter] = True
+    put(inhand_obj, obj)
 
 behavior put_on(inhand_obj: item, obj: item):
   goal: on(inhand_obj, obj)
   body:
-    assert surfaces(obj)
-    achieve holds_rh(char, inhand_obj)
-    achieve close(char, obj)
-    put_executor(inhand_obj, obj)
-  eff:
-    holds_rh[char, inhand_obj] = False
-    on[inhand_obj, obj] = True
-    close_item[inhand_obj, obj] = True
-    close_item[obj, inhand_obj] = True
-    foreach inter:item:
-      if close_item(inter, obj):
-        close_item[inter, inhand_obj] = True
-        close_item[inhand_obj, inter] = True
+    put(inhand_obj, obj)
 
 behavior grab(obj: item):
-  goal: holds_rh(char,obj)
+  goal: holds_rh(char,obj) or holds_lh(char,obj)
   body:
     assert grabbable(obj)
+    achieve has_a_free_hand()
     foreach obj2:item:
       if inside(obj,obj2):
         if not is_room(obj2):
@@ -186,6 +204,7 @@ behavior grab(obj: item):
 behavior wash(obj: item):
   goal: clean(obj)
   body:
+    achieve has_a_free_hand()
     achieve close(char, obj)
     wash_executor(obj)
   eff:
@@ -196,18 +215,57 @@ behavior open(obj: item):
   goal: open(obj)
   body:
     assert can_open(obj)
+    assert closed(obj)
+    achieve has_a_free_hand()
     achieve close(char, obj)
     open_executor(obj)
   eff:
     open[obj] = True
     closed[obj] = False
 
+behavior close(obj: item):
+  goal: closed(obj)
+  body:
+    assert can_open(obj)
+    assert open(obj)
+    achieve has_a_free_hand()
+    achieve close(char, obj)
+    close_executor(obj)
+  eff:
+    open[obj] = False
+    closed[obj] = True
 
+behavior pour(obj: item, target: item):
+  goal: inside(obj, target)
+  body:
+    assert pourable(obj) or drinkable(obj)
+    assert recipient(target)
+    achieve holds_lh(char, obj) or holds_rh(char, obj)
+    achieve close(char, target)
+    pour_executor(obj, target)
+  eff:
+    inside[obj, target] = True
 
-
-
-
-
-    #log:
-    #1.path problem is not considered
-    #2.
+behavior plugin(object:item):
+  goal: plugged(object)
+  body:
+    assert has_plug(object)
+    assert unplugged(object)
+    achieve has_a_free_hand()
+    achieve close(char, object)
+    plugin_executor(object)
+  eff:
+    plugged[object] = True
+    unplugged[object] = False
+  
+behavior plugout(object:item):
+  goal: unplugged(object)
+  body:
+    assert has_plug(object)
+    assert plugged(object)
+    achieve has_a_free_hand()
+    achieve close(char, object)
+    plugout_executor(object)
+  eff:
+    plugged[object] = False
+    unplugged[object] = True
