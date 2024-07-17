@@ -28,9 +28,9 @@ def main():
 
     plan(domain, problem, 'is_off(light)')
 
-    plan(domain, problem, 'on(apple,light)')
+    # plan(domain, problem, 'on(apple,light)')
 
-    plan(domain, problem, 'close_item(apple,light)')
+    # plan(domain, problem, 'close_item(apple,light)')
 
 
 def plan(domain, problem, goal):

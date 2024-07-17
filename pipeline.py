@@ -35,9 +35,21 @@ def relationships_discription(relationships,graph):
     for relationship in relationships:
         print(relationship['relation_type'],graph.get_node_map()[relationship['to_id']])
 
+def get_nodes_information(graph):
+    nodes=graph.get_nodes()
+    objects=[]
+    category=[]
+    for node in nodes:
+        if node.category !='Characters':
+            category.append(node.category)
+            objects.append(node.class_name+'.'+str(node.id):)
+            print(node.class_name,node.states)
+    return obj_name
+
 
 def run():
     graph = utils.load_graph('test_graph.json')
+    get_nodes_information(graph)
     # print("plate states are:", ini_plate.states)
     name_equivalence = utils.load_name_equivalence()
     plate = get_node_by_name('cup',graph)
