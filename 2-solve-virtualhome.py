@@ -13,7 +13,7 @@ import concepts.dm.crow as crow
 
 parser = jacinle.JacArgumentParser()
 # parser.add_argument('--domain', default='virtualhome.cdl')
-parser.add_argument('--domain', default='virtualhome_debug.cdl')
+parser.add_argument('--domain', default='virtualhome.cdl')
 parser.add_argument('--verbose', action='store_true')
 args = parser.parse_args()
 
@@ -21,13 +21,16 @@ args = parser.parse_args()
 def main():
     domain = crow.load_domain_file(args.domain)
     problem = crow.load_problem_file('virtualhome-problem.cdl', domain=domain)
+    problem = crow.load_problem_file('generated.cdl', domain=domain)
 
     state = problem.state
     print('=' * 80)
     print('Initial state:')
     print(state)
 
-    plan(domain, problem, 'close(char,light)')
+    # plan(domain, problem, 'is_off(light)')
+
+    plan(domain, problem, 'clean(pillow_287)')
 
     # plan(domain, problem, 'on(apple,light)')
 

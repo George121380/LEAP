@@ -18,8 +18,6 @@ feature sitting(x: character)
 feature lying(x: character)
 
 #add state
-feature is_door(x: item)
-feature is_explored(x: item)
 feature is_room(x: item)
 
 #relationship
@@ -28,7 +26,7 @@ feature on_char(x: character, y: item)
 feature inside(x: item, y: item)
 feature inside_char(x: character, y: item)
 
-feature between(x: item, y: item, z: item)
+feature between(door: item, room: item)
 feature close_item(x: item, y: item)
 feature close(x: character, y: item)
 feature facing_item(x: item, y: item)
@@ -80,6 +78,8 @@ controller plugin_executor(x: item)
 controller plugout_executor(x: item)
 
 
+def inhand(inhand_obj:item):
+  return holds_rh(char, inhand_obj) or holds_lh(char, inhand_obj)
 
 def standing(char: character):
   return not sitting(char) and not lying(char)
@@ -94,7 +94,7 @@ def has_a_free_hand():
 behavior put(inhand_obj: item, obj: item):
   body:
     assert surfaces(obj)
-    achieve holds_rh(char, inhand_obj) or holds_lh(char, inhand_obj)
+    achieve inhand(inhand_obj)
     achieve close(char, obj)
     put_executor(inhand_obj, obj)
   eff:
@@ -115,7 +115,7 @@ behavior empty_a_hand():
     bind surf:item where:
       surfaces(surf)
     bind give_up_obj:item where:
-      holds_lh[char, give_up_obj] or holds_rh[char, give_up_obj]
+      inhand(give_up_obj)
     put(give_up_obj, surf)
 
 behavior stand():
@@ -147,13 +147,13 @@ behavior walk(obj: item):
     achieve standing(char)
     walk_executor(obj)
   eff:
-    close[char,obj] = True
     foreach icf:item:
       close[char, icf]= False
       facing[char, icf]= False
       inside_char[char,icf]= False
       if obj_inside_or_on(obj, icf):
         close[char, icf] = True
+    close[char,obj] = True
 
 behavior switch_off(obj: item):
   goal: is_off(obj)
@@ -190,7 +190,7 @@ behavior put_on(inhand_obj: item, obj: item):
     put(inhand_obj, obj)
 
 behavior grab(obj: item):
-  goal: holds_rh(char,obj) or holds_lh(char,obj)
+  goal: inhand(obj)
   body:
     assert grabbable(obj)
     achieve has_a_free_hand()
@@ -243,7 +243,7 @@ behavior pour(obj: item, target: item):
   body:
     assert pourable(obj) or drinkable(obj)
     assert recipient(target)
-    achieve holds_lh(char, obj) or holds_rh(char, obj)
+    achieve inhand(obj)
     achieve close(char, target)
     pour_executor(obj, target)
   eff:

@@ -51,26 +51,62 @@ def state_translation(objname, state):
 }
 
     feature = mapping.get(state, "Unknown feature")
-    return feature.replace("x: item", f"{objname}").replace("x: character", f"x: {objname}")+" = True"
+    return feature.replace("x: item", f"{objname}").replace("x: character", f"x: {objname}")+" = True".replace("-","_")
 
 def relationship_translation(graph,edge):
     relation_mapping = {
         "ON": "on",
         "INSIDE": "inside",
         "BETWEEN": "between",
-        "CLOSE": "close",
-        "FACING": "facing",
+        "CLOSE": "close_item",
+        "FACING": "facing_item",
         "HOLDS_RH": "holds_rh",
         "HOLDS_LH": "holds_lh"
     }
-    from_obj_name=graph._node_map[edge['from_id']].class_name+'.'+str(edge['from_id'])
-    to_obj_name=graph._node_map[edge['to_id']].class_name+'.'+str(edge['to_id'])
     relation_type=edge['relation_type']
+    # if relation_type=="BETWEEN":
+    #     print("between relation")
+    if graph._node_map[edge['from_id']].class_name=="character":
+        from_obj_name="char"
+    else:
+        from_obj_name=graph._node_map[edge['from_id']].class_name+'_'+str(edge['from_id'])
+    to_obj_name=graph._node_map[edge['to_id']].class_name+'_'+str(edge['to_id'])
     if relation_type in relation_mapping:
         relation = relation_mapping[relation_type]
-        return f"{relation}[{from_obj_name},{to_obj_name}]=True"
+        if graph._node_map[edge['from_id']].class_name=="character":
+            if relation=="on":
+                relation="on_char"
+            if relation=="inside":
+                relation="inside_char"
+            if relation=="facing_item":
+                relation="facing"
+            if relation=="close_item":
+                relation="close"
+
+        return f"{relation}[{from_obj_name},{to_obj_name}]=True".replace("-","_")
     else:
         relation = "Unknown relation"
+
+def construct_cdl(objects,states,relationships,properties):
+    problem_file_content = 'problem "virtualhome-problem"\n'
+    problem_file_content += 'domain "virtualhome.cdl"\n\n'
+    problem_file_content += '#!pragma planner_is_goal_serializable=False\n'
+    problem_file_content += '#!pragma planner_is_goal_ordered=True\n'
+    problem_file_content += '#!pragma planner_always_commit_skeleton=True\n\n'
+    problem_file_content += 'objects:\n'
+    for obj in objects:
+        problem_file_content += f'  {obj}\n'
+    problem_file_content += '\ninit:\n'
+    for init_state in states:
+        problem_file_content += f'  {init_state}\n'
+    for init_state in relationships:
+        problem_file_content += f'  {init_state}\n'
+    for init_state in properties:
+        problem_file_content += f'  {init_state}\n'
+    
+    # Write the content to a file
+    with open("generated.cdl", "w") as file:
+        file.write(problem_file_content)
 
 def print_node_names(n_list):
     if len(n_list) > 0:
@@ -106,9 +142,10 @@ def get_nodes_information(graph):
     relationships=[]
     properties=[]
     for node in nodes:
+        executable_objname=(node.class_name).replace("-","_")+'_'+str(node.id)
         if node.category !='Characters':
             category.append(node.category)
-            executable_objname=node.class_name+'.'+str(node.id)
+            
             objects.append(executable_objname+":item")
             for state in node.states:
                 state=state_translation(executable_objname,state)
@@ -116,11 +153,13 @@ def get_nodes_information(graph):
             for property in node.properties:
                 property=state_translation(executable_objname,property)
                 properties.append(property)
+        if node.category=="Rooms":
+            states.append(f"is_room[{executable_objname}]=True")
     for edge in edges:
         relationship=relationship_translation(graph,edge)
         relationships.append(relationship)
 
-            
+    objects.append("char:character")
             # print(node.class_name,node.states)
     return objects,states,relationships,properties
 
@@ -129,6 +168,7 @@ def run():
     get_nodes_information(graph)
     objects,states,relationships,properties=get_nodes_information(graph)
     # print("plate states are:", ini_plate.states)
+    construct_cdl(objects,states,relationships,properties)
     name_equivalence = utils.load_name_equivalence()
     plate = get_node_by_name('cup',graph)
     relationships=relationships_with_node(plate,graph)
