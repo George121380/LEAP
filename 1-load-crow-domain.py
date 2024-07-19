@@ -34,7 +34,7 @@ problem = crow.load_problem_file('virtualhome-problem.cdl')
 executor = domain.make_executor()
 
 result = executor.execute(
-    expression='close[char,light] and is_off(light)',
+    expression='close[char,light_1]',
     state=problem.state,
     bounded_variables=dict()
 )

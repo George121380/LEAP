@@ -18,11 +18,21 @@ parser.add_argument('--verbose', action='store_true')
 args = parser.parse_args()
 
 
+def goal_solver(goal):
+    domain = crow.load_domain_file(args.domain)
+    problem = crow.load_problem_file('virtualhome-problem.cdl', domain=domain)
+    problem = crow.load_problem_file('generated.cdl', domain=domain)
+    
+    state = problem.state
+    goal="close(char, table_63)"
+    plan(domain, problem, goal)
+
+
 def main():
     domain = crow.load_domain_file(args.domain)
     problem = crow.load_problem_file('virtualhome-problem.cdl', domain=domain)
     problem = crow.load_problem_file('generated.cdl', domain=domain)
-
+    
     state = problem.state
     print('=' * 80)
     print('Initial state:')
@@ -38,6 +48,7 @@ def main():
 
 
 def plan(domain, problem, goal):
+    goal=problem.goal
     candidate_plans, search_stat = crow.crow_regression(
         domain, problem, goal=goal, min_search_depth=5, max_search_depth=7,
         is_goal_ordered=True, is_goal_serializable=False, always_commit_skeleton=True
@@ -55,5 +66,26 @@ def plan(domain, problem, goal):
 
 
 if __name__ == '__main__':
-    main()
+    # main()
+    goal="""def dinner_prepared_for_two():
+  return on(plate_1004, table_63) and on(plate_1005, table_63) and on(cup_2010, table_63) and on(cup_1001, table_63) and clean(plate_1004) and clean(plate_1005) and clean(cup_2010) and clean(cup_1001) and sitting(char_1) and sitting(char_2)
+  
+  behavior prepare_dinner_for_two():
+  goal:
+    dinner_prepared_for_two()
+  body:
+    promotable:
+      achieve on(plate_1004, table_63)
+      achieve on(plate_1005, table_63)
+      achieve on(cup_2010, table_63)
+      achieve on(cup_1001, table_63)
+    achieve clean(plate_1004)
+    achieve clean(plate_1005)
+    achieve clean(cup_2010)
+    achieve clean(cup_1001)
+
+GOAL:
+  dinner_prepared_for_two()"""
+    goal_solver(goal)
+    
 

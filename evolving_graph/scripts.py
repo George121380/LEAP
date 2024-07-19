@@ -163,15 +163,18 @@ def read_script(file_name):
     script_lines = []
     with open(file_name) as f:
         index = 1
+        brief_discribtion = f.readline()
+        instruction=f.readline()
         for line in f:
             if '[' not in line:
                 continue
             line = line.strip()
-            
+
             if len(line) > 0 and not line.startswith('#'):
                 script_lines.append(parse_script_line(line, index))
                 index += 1
-    return Script(script_lines)
+    
+    return Script(script_lines),brief_discribtion,instruction
 
 
 def read_script_from_list_string(list_string):
