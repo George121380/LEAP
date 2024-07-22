@@ -18,12 +18,12 @@ def ask_GPT(system,content):
 
 
 
-def goal_interpretation(goal,item_list=None):
+def goal_interpretation(goal,additional_information,item_list=None):
     if ":item" in item_list[0]:
         for item in item_list:
             item=item.replace(":item",'')
     system = "I have a goal described in natural language, and I need it converted into a structured format."
-    content = get_goal_inter_prompt(goal,item_list)
+    content = get_goal_inter_prompt(goal,item_list,additional_information)
 
     print('=' * 80)
     print(f"When Goal instruction is: {goal}")

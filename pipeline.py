@@ -25,7 +25,25 @@ def get_node_by_name(name,graph):
     else:
         return None
 
-def run(graph_path,script_path):
+def transform_plan(plan):
+    # 分隔输入字符串
+    executors = plan[0].split(';')
+    
+    # 定义一个空的列表来存储转换后的动作
+    actions = []
+    
+    # 遍历每个执行器并应用映射规则
+    for executor in executors:
+        # 提取动作和目标
+        action, target = executor.replace(')', '').split('(')
+        action = action.replace('_executor', '').upper()
+        
+        # 生成新的格式并添加到列表中
+        actions.append(f'[{action}] <{target}>')
+    
+    return actions
+
+def run(graph_path,script_path,goal,additional_information):
     #import objects and stats information from graph
     graph = utils.load_graph(graph_path)
     get_nodes_information(graph)
@@ -34,8 +52,7 @@ def run(graph_path,script_path):
     script,brief_discription,introduction = read_script(script_path)
 
     #goal interpretation
-    introduction="close one door"
-    goal_int=goal_interpretation(introduction,classes)
+    goal_int=goal_interpretation(goal,additional_information,classes)
     print("Goal interpretation is:\n",goal_int)
     with open("generated.cdl", "r") as file:
         original_content = file.read()
@@ -46,8 +63,9 @@ def run(graph_path,script_path):
     
     print(f"Combined content saved to {new_file_path}")
     #planning
-    goal_solver(original_content + "\n" + goal_int)
-
+    plan=goal_solver(original_content + "\n" + goal_int)
+    plan=transform_plan(plan)
+    print(plan)
     #execution
     name_equivalence = utils.load_name_equivalence()
     plate = get_node_by_name('cup',graph)
@@ -81,12 +99,13 @@ def run(graph_path,script_path):
 if __name__ == '__main__':
     graph_path='test_graph.json'
     script_path='test_script.txt'
-
+    goal="turn off all the lights"
+    additional_information=None
     # data_path="data/programs_processed_precond_nograb_morepreconds/"
     # with open("combined_generated.cdl", "r") as file:
     #     original_content = file.read()
     # goal_solver(original_content)
-    run(graph_path,script_path)
+    run(graph_path,script_path,goal,additional_information)
     
     
     

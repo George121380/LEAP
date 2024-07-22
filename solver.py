@@ -24,7 +24,8 @@ def goal_solver(goal):
     problem = crow.load_problem_file('combined_generated.cdl', domain=domain)
     
     state = problem.state
-    plan(problem, problem, goal)
+    output=plan(problem, problem, goal)
+    return output
 
 
 def main():
@@ -61,30 +62,14 @@ def plan(domain, problem, goal):
     for i, row in enumerate(table):
         print(f'Plan {i}:', row)
     print(search_stat)
-    input('Press Enter to continue...')
+    # input('Press Enter to continue...')
+    return table
 
 
 if __name__ == '__main__':
     # main()
-    goal="""def dinner_prepared_for_two():
-  return on(plate_1004, table_63) and on(plate_1005, table_63) and on(cup_2010, table_63) and on(cup_1001, table_63) and clean(plate_1004) and clean(plate_1005) and clean(cup_2010) and clean(cup_1001) and sitting(char_1) and sitting(char_2)
-  
-  behavior prepare_dinner_for_two():
-  goal:
-    dinner_prepared_for_two()
-  body:
-    promotable:
-      achieve on(plate_1004, table_63)
-      achieve on(plate_1005, table_63)
-      achieve on(cup_2010, table_63)
-      achieve on(cup_1001, table_63)
-    achieve clean(plate_1004)
-    achieve clean(plate_1005)
-    achieve clean(cup_2010)
-    achieve clean(cup_1001)
-
-GOAL:
-  dinner_prepared_for_two()"""
-    goal_solver(goal)
+    with open("combined_generated.cdl", "r") as file:
+        original_content = file.read()
+    goal_solver(original_content)
     
 

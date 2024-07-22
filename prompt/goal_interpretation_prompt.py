@@ -1,9 +1,12 @@
 def get_goal_inter_prompt(goal,cat_list=None,additional_information=None):
+    if additional_information==None:
+        additional_information="None"
     categories=""
     for cat in cat_list:
         categories+="- is_"+cat+"(x: item)\n"
     prompt="""
 The goal is: """+goal+""".
+The additional information is: """+additional_information+"""
 ## Task Instructions:
 You need to analyze the goal and additional information that I provide(sometimes there may be no additional information), refer to the example, and transform them into the formal representation defined below. Your output may include several behaviors. In the body section of each behavior, you need to declare some intermediate states, intermediate relationships, final states, and final relationships required to achieve the goal. You do not need to provide the actions needed to achieve the goal. Once you provide the intermediate states, intermediate relationships, final states, and final relationships, my algorithm will plan a feasible sequence of actions on its own. Please note that the states, relationships, properties, and keywords you use must not exceed the scope I provided. Please check this carefully before outputting, otherwise the program will not run. Additionally, behavior __goal__(): is a required structure, functioning similarly to the main function in Python.
 
@@ -56,7 +59,7 @@ exist p: item : is_on(p)
 
 # behavior
 # Usage: Defines a behavior rule.
-behavior turn_off_light(light:item)
+behavior turn_off_light(light:item):
 goal: is_off(light)
 body:
     achieve is_on(light)
@@ -139,7 +142,25 @@ behavior __goal__():
 Example Analysis: 
 Completing this goal involves two stages: washing dishes and cups with a dishwasher, then put them on the table. First, all the dishes and cups need to be placed into the dishwasher, then the dishwasher must be closed and started. After washing, the dishes and cups need to be placed on the dining table.
 
+# Example-3:
+When the goal is:
+Close all the doors
+
+The additional information is: None
+
+The output is:
+behavior close_all_doors():
+    body:
+        unordered:
+            foreach o: item:
+                if is_door(o):
+                    achieve close(o)
+
+Example Analysis: 
+This case aims to demonstrate the use of 'unordered' because to close a door, you must be close to it. When closing multiple doors, the order is very important. If you close the wrong door, it might block the path to another door. In such a case, you would have to reopen the already closed door to reach the other one, which might lead to the failure of the task. Therefore, the 'unordered' keyword is used here to automatically find the appropriate execution order.
+
 ## Output Format:
 You can only output the description of the converted goal and additional information. Do not include any explanation or any other symbols.
+
 """
     return prompt
