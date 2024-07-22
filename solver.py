@@ -20,18 +20,17 @@ args = parser.parse_args()
 
 def goal_solver(goal):
     domain = crow.load_domain_file(args.domain)
-    problem = crow.load_problem_file('virtualhome-problem.cdl', domain=domain)
-    problem = crow.load_problem_file('generated.cdl', domain=domain)
+
+    problem = crow.load_problem_file('combined_generated.cdl', domain=domain)
     
     state = problem.state
-    goal="close(char, table_63)"
-    plan(domain, problem, goal)
+    plan(problem, problem, goal)
 
 
 def main():
     domain = crow.load_domain_file(args.domain)
     problem = crow.load_problem_file('virtualhome-problem.cdl', domain=domain)
-    problem = crow.load_problem_file('generated.cdl', domain=domain)
+    problem = crow.load_problem_file('combined_generated.cdl', domain=domain)
     
     state = problem.state
     print('=' * 80)
@@ -48,9 +47,9 @@ def main():
 
 
 def plan(domain, problem, goal):
-    goal=problem.goal
+    goal=None
     candidate_plans, search_stat = crow.crow_regression(
-        domain, problem, goal=goal, min_search_depth=5, max_search_depth=7,
+        problem.domain, problem, goal=goal, min_search_depth=5, max_search_depth=7,
         is_goal_ordered=True, is_goal_serializable=False, always_commit_skeleton=True
     )
     table = list()

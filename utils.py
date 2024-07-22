@@ -10,6 +10,7 @@ from evolving_graph.environment import EnvironmentGraph
 from evolving_graph.preparation import AddMissingScriptObjects, AddRandomObjects, ChangeObjectStates, \
     StatePrepare, AddObject, ChangeState, Destination
 from evolving_graph.environment import *
+import tqdm
 
 def state_translation(objname, state):
     mapping = {
@@ -85,7 +86,7 @@ def relationship_translation(graph,edge):
     else:
         relation = "Unknown relation"
 
-def construct_cdl(objects,states,relationships,properties):
+def construct_cdl(objects,states,relationships,properties,cat_statement):
     problem_file_content = 'problem "virtualhome-problem"\n'
     problem_file_content += 'domain "virtualhome.cdl"\n\n'
     problem_file_content += '#!pragma planner_is_goal_serializable=False\n'
@@ -101,6 +102,8 @@ def construct_cdl(objects,states,relationships,properties):
         problem_file_content += f'  {init_state}\n'
     for init_state in properties:
         problem_file_content += f'  {init_state}\n'
+    for cat in cat_statement:
+        problem_file_content += f'  {cat}\n'
     
     # Write the content to a file
     with open("generated.cdl", "w") as file:
@@ -114,24 +117,105 @@ def get_nodes_information(graph):
     states=[]
     relationships=[]
     properties=[]
+    classes=[]
+    cat_statement=[]
     for node in nodes:
         executable_objname=(node.class_name).replace("-","_")+'_'+str(node.id)
         if node.category !='Characters':
             category.append(node.category)
-            
+            classes.append(node.class_name)
             objects.append(executable_objname+":item")
+            op_classname=node.class_name.replace("-","_")
+            cat_statement.append(f"is_{op_classname}[{executable_objname}]=True")
             for state in node.states:
                 state=state_translation(executable_objname,state)
                 states.append(state)
             for property in node.properties:
                 property=state_translation(executable_objname,property)
                 properties.append(property)
+
         if node.category=="Rooms":
             states.append(f"is_room[{executable_objname}]=True")
+        
     for edge in edges:
         relationship=relationship_translation(graph,edge)
         relationships.append(relationship)
 
     objects.append("char:character")
             # print(node.class_name,node.states)
-    return objects,states,relationships,properties
+    return objects,states,relationships,properties,list(set(category)),list(set(classes)),cat_statement
+
+
+#############################debug#############################
+
+
+
+import json
+
+def extract_categories(json_file_path, output_file_path):
+    with open(json_file_path, 'r') as file:
+        data = json.load(file)
+    
+    category_strings = []
+    for item, categories in data.items():
+        category_string = f"is_{item}(x:item)"
+        category_strings.append(category_string)
+    
+    with open(output_file_path, 'w') as file:
+        for category_string in category_strings:
+            file.write(category_string + '\n')
+
+def process_json_file(file_path,catset):
+    graph = utils.load_graph(file_path)
+    nodes=graph.get_nodes()
+    subset=[]
+    for node in nodes:
+        if node.category !='Characters':
+            subset.append(node.class_name)
+    
+    catset.update(subset)
+    return catset
+
+
+
+def process_directory(directory):
+    catset=set()
+    count=0
+    for root, dirs, files in tqdm.tqdm(os.walk(directory)):
+        for file in files:
+            if file.endswith('.json'):
+                file_path = os.path.join(root, file)
+                catset=process_json_file(file_path,catset)
+                count+=1
+                if count%10==0:
+                    print(len(catset))
+    with open("categories.txt", "w") as file:
+        for cat in catset:
+            file.write(f"is_{cat}(x:item)\n")
+
+def add_feature_to_lines(input_file, output_file):
+    with open(input_file, 'r', encoding='utf-8') as infile:
+
+        lines = infile.readlines()
+
+    with open(output_file, 'w', encoding='utf-8') as outfile:
+        for line in lines:
+            modified_line = line.replace("-", "_")
+            outfile.write(f"feature {modified_line}")
+            
+
+
+# 使用示例
+# json_file_path = '/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/resources/properties_data.json'
+# output_file_path = 'output.txt'
+# extract_categories(json_file_path, output_file_path)
+
+# print(f"Categories have been written to {output_file_path}")
+                
+if __name__ == "__main__":
+    # directory_to_process = '/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/data/programs_processed_precond_nograb_morepreconds/init_and_final_graphs'  # 修改为你的目录路径
+    # process_directory(directory_to_process)
+
+    input_file='categories.txt'
+    output_file='categories.txt'
+    add_feature_to_lines(input_file, output_file)
