@@ -24,7 +24,7 @@ def goal_solver(goal):
     problem = crow.load_problem_file('combined_generated.cdl', domain=domain)
     
     state = problem.state
-    output=plan(problem, problem, goal)
+    output=plan(problem)
     return output
 
 
@@ -47,8 +47,8 @@ def main():
     # plan(domain, problem, 'close_item(apple,light)')
 
 
-def plan(domain, problem, goal):
-    goal=None
+def plan(problem):
+    goal=problem.goal
     candidate_plans, search_stat = crow.crow_regression(
         problem.domain, problem, goal=goal, min_search_depth=5, max_search_depth=7,
         is_goal_ordered=True, is_goal_serializable=False, always_commit_skeleton=True
