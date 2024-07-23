@@ -140,6 +140,6 @@ if __name__ == '__main__':
     
     script="data/programs_processed_precond_nograb_morepreconds/executable_programs/TrimmedTestScene2_graph/results_text_rebuttal_specialparsed_programs_turk_july/split7_2.txt"
     graph="data/programs_processed_precond_nograb_morepreconds/init_and_final_graphs/TrimmedTestScene2_graph/results_text_rebuttal_specialparsed_programs_turk_july/split7_2.json"
-    additional_information=None
+    additional_information="hold the vacuum and walk on the floor can clean the floor"
     test(script,graph,additional_information)
     
