@@ -11,6 +11,8 @@ from evolving_graph.preparation import AddMissingScriptObjects, AddRandomObjects
     StatePrepare, AddObject, ChangeState, Destination
 from evolving_graph.environment import *
 import tqdm
+import random
+import time
 
 def state_translation(objname, state):
     mapping = {
@@ -57,8 +59,8 @@ def relationship_translation(graph,edge):
         "ON": "on",
         "INSIDE": "inside",
         "BETWEEN": "between",
-        "CLOSE": "close_item",
-        "FACING": "facing_item",
+        "CLOSE": "close",
+        "FACING": "facing",
         "HOLDS_RH": "holds_rh",
         "HOLDS_LH": "holds_lh"
     }
@@ -67,9 +69,13 @@ def relationship_translation(graph,edge):
     #     print("between relation")
     if graph._node_map[edge['from_id']].class_name=="character":
         from_obj_name="char"
+    
     else:
         from_obj_name=graph._node_map[edge['from_id']].class_name+'_'+str(edge['from_id'])
-    to_obj_name=graph._node_map[edge['to_id']].class_name+'_'+str(edge['to_id'])
+    if graph._node_map[edge['to_id']].class_name=="character":
+        to_obj_name="char"
+    else:
+        to_obj_name=graph._node_map[edge['to_id']].class_name+'_'+str(edge['to_id'])
     if relation_type in relation_mapping:
         relation = relation_mapping[relation_type]
         if graph._node_map[edge['from_id']].class_name=="character":
@@ -77,10 +83,10 @@ def relationship_translation(graph,edge):
                 relation="on_char"
             if relation=="inside":
                 relation="inside_char"
-            if relation=="facing_item":
-                relation="facing"
-            if relation=="close_item":
-                relation="close"
+            if relation=="facing":
+                relation="facing_char"
+            if relation=="close":
+                relation="close_char"
 
         return f"{relation}[{from_obj_name},{to_obj_name}]=True".replace("-","_")
     else:
@@ -144,6 +150,33 @@ def get_nodes_information(graph):
     objects.append("char:character")
             # print(node.class_name,node.states)
     return objects,states,relationships,properties,list(set(category)),list(set(classes)),cat_statement
+
+def get_all_files(folder):
+    file_paths = []
+    for root, dirs, files in os.walk(folder):
+        for file in files:
+            file_path = os.path.join(root, file)
+            file_paths.append(file_path)
+    return file_paths
+
+def get_symmetric_path(file_path, folder1, folder2):
+    relative_path = os.path.relpath(file_path, folder1).replace(".json", ".txt")
+    symmetric_path = os.path.join(folder2, relative_path)
+    return symmetric_path
+
+def sampler(folder1, folder2):
+    files_folder1 = get_all_files(folder1)
+    
+    if not files_folder1:
+        raise Exception("No files found in the first folder")
+    random.seed(time.time())
+    random_file = random.choice(files_folder1)
+    symmetric_file = get_symmetric_path(random_file, folder1, folder2)
+    
+    if not os.path.exists(symmetric_file):
+        raise Exception(f"Symmetric file not found for {random_file}")
+    
+    return random_file, symmetric_file
 
 
 #############################debug#############################

@@ -309,10 +309,10 @@ feature on_char(x: character, y: item)
 feature inside(x: item, y: item)
 feature inside_char(x: character, y: item)
 feature between(door: item, room: item)
-feature close_item(x: item, y: item)
-feature close(x: character, y: item)
-feature facing_item(x: item, y: item)
-feature facing(x: character, y: item)
+feature close(x: item, y: item)
+feature close_char(x: character, y: item)
+feature facing(x: item, y: item)
+feature facing_char(x: character, y: item)
 feature holds_rh(x: character, y: item)
 feature holds_lh(x: character, y: item)
 
@@ -377,18 +377,18 @@ behavior put(inhand_obj: item, obj: item):
   body:
     assert surfaces(obj)
     achieve inhand(inhand_obj)
-    achieve close(char, obj)
+    achieve close_char(char, obj)
     put_executor(inhand_obj, obj)
   eff:
     holds_rh[char, inhand_obj] = False
     holds_lh[char, inhand_obj] = False
     on[inhand_obj, obj] = True
-    close_item[inhand_obj, obj] = True
-    close_item[obj, inhand_obj] = True
+    close[inhand_obj, obj] = True
+    close[obj, inhand_obj] = True
     foreach inter:item:
-      if close_item(inter, obj):
-        close_item[inter, inhand_obj] = True
-        close_item[inhand_obj, inter] = True
+      if close(inter, obj):
+        close[inter, inhand_obj] = True
+        close[inhand_obj, inter] = True
 
 behavior empty_a_hand():
   goal: has_a_free_hand()
@@ -412,30 +412,31 @@ behavior stand():
 behavior sit(obj: item):
   goal: sitting(char)
   body:
-    assert sittable(obj)
     assert not sitting(char)
-    achieve close(char, obj)
-    sit_executor(char)
+    bind seat:item where:
+      sittable(seat)
+    achieve close_char(char, seat)
+    sit_executor(seat)
   eff:
     sitting[char] = True
-    on_char[char, obj] = True
+    on_char[char, seat] = True
 
 def obj_inside_or_on(obj1: item, obj2: item):
   return inside(obj1, obj2) or on(obj2, obj1)
 
 behavior walk(obj: item):
-  goal: close(char, obj)
+  goal: close_char(char, obj)
   body:
     achieve standing(char)
     walk_executor(obj)
   eff:
     foreach icf:item:
-      close[char, icf]= False
-      facing[char, icf]= False
+      close_char[char, icf]= False
+      facing_char[char, icf]= False
       inside_char[char,icf]= False
       if obj_inside_or_on(obj, icf):
-        close[char, icf] = True
-    close[char,obj] = True
+        close_char[char, icf] = True
+    close_char[char,obj] = True
 
 behavior switch_off(obj: item):
   goal: is_off(obj)
@@ -443,7 +444,7 @@ behavior switch_off(obj: item):
     assert has_switch(obj)
     assert is_on(obj)
     achieve has_a_free_hand()
-    achieve close(char, obj)
+    achieve close_char(char, obj)
     switchoff_executor(obj)
   eff:
     is_off[obj] = True
@@ -455,14 +456,14 @@ behavior switch_on(obj: item):
     assert has_switch(obj)
     assert is_off(obj)
     achieve has_a_free_hand()
-    achieve close(char, obj)
+    achieve close_char(char, obj)
     switchon_executor(obj)
   eff:
     is_off[obj] = False
     is_on[obj] = True
 
 behavior put_close(inhand_obj: item, obj: item):
-  goal: close_item(inhand_obj, obj)
+  goal: close(inhand_obj, obj)
   body:
     put(inhand_obj, obj)
 
@@ -481,7 +482,7 @@ behavior grab(obj: item):
         if not is_room(obj2):
           assert can_open(obj2)
           achieve open(obj2)
-    achieve close(char, obj)
+    achieve close_char(char, obj)
     grab_executor(obj)
   eff:
     holds_rh[char,obj]=True
@@ -490,7 +491,7 @@ behavior wash(obj: item):
   goal: clean(obj)
   body:
     achieve has_a_free_hand()
-    achieve close(char, obj)
+    achieve close_char(char, obj)
     wash_executor(obj)
   eff:
     dirty[obj] = False
@@ -502,7 +503,7 @@ behavior open(obj: item):
     assert can_open(obj)
     assert closed(obj)
     achieve has_a_free_hand()
-    achieve close(char, obj)
+    achieve close_char(char, obj)
     open_executor(obj)
   eff:
     open[obj] = True
@@ -514,7 +515,7 @@ behavior close(obj: item):
     assert can_open(obj)
     assert open(obj)
     achieve has_a_free_hand()
-    achieve close(char, obj)
+    achieve close_char(char, obj)
     close_executor(obj)
   eff:
     open[obj] = False
@@ -526,7 +527,7 @@ behavior pour(obj: item, target: item):
     assert pourable(obj) or drinkable(obj)
     assert recipient(target)
     achieve inhand(obj)
-    achieve close(char, target)
+    achieve close_char(char, target)
     pour_executor(obj, target)
   eff:
     inside[obj, target] = True
@@ -537,7 +538,7 @@ behavior plugin(object:item):
     assert has_plug(object)
     assert unplugged(object)
     achieve has_a_free_hand()
-    achieve close(char, object)
+    achieve close_char(char, object)
     plugin_executor(object)
   eff:
     plugged[object] = True
@@ -549,7 +550,7 @@ behavior plugout(object:item):
     assert has_plug(object)
     assert plugged(object)
     achieve has_a_free_hand()
-    achieve close(char, object)
+    achieve close_char(char, object)
     plugout_executor(object)
   eff:
     plugged[object] = False

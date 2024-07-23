@@ -27,26 +27,6 @@ def goal_solver(goal):
     output=plan(problem)
     return output
 
-
-def main():
-    domain = crow.load_domain_file(args.domain)
-    problem = crow.load_problem_file('virtualhome-problem.cdl', domain=domain)
-    problem = crow.load_problem_file('combined_generated.cdl', domain=domain)
-    
-    state = problem.state
-    print('=' * 80)
-    print('Initial state:')
-    print(state)
-
-    # plan(domain, problem, 'is_off(light)')
-
-    plan(domain, problem, 'clean(pillow_287)')
-
-    # plan(domain, problem, 'on(apple,light)')
-
-    # plan(domain, problem, 'close_item(apple,light)')
-
-
 def plan(problem):
     goal=problem.goal
     candidate_plans, search_stat = crow.crow_regression(

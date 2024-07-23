@@ -1,6 +1,7 @@
 from openai import OpenAI
 
 from prompt.goal_interpretation_prompt import get_goal_inter_prompt
+from prompt.refine_prompt import refine_prompt
 
 def ask_GPT(system,content):
     with open("/Users/liupeiqi/workshop/Research/api_key.txt","r") as f:
@@ -29,7 +30,20 @@ def goal_interpretation(goal,additional_information,item_list=None):
     print(f"When Goal instruction is: {goal}")
     converted_content=ask_GPT(system,content)
     print('=' * 80)
-    print("The Goal interpretation is:\n")
+
+    return converted_content
+
+def refiner(goal,additional_information,item_list=None,goal_representation=None):
+    if ":item" in item_list[0]:
+        for item in item_list:
+            item=item.replace(":item",'')
+    system = "You are a patient, meticulous, and keenly observant grammar expert. I need your help to check and correct any errors in a series of form transformations I have made."
+    content = refine_prompt(goal,item_list,additional_information,goal_representation)
+
+    print(f"After refined:")
+
+    print('=' * 80)
+    converted_content=ask_GPT(system,content)
     print('=' * 80)
 
     return converted_content

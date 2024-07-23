@@ -1,4 +1,4 @@
-def get_goal_inter_prompt(goal,cat_list=None,additional_information=None):
+def refine_prompt(goal,cat_list=None,additional_information=None,goal_representation=None):
     if additional_information==None:
         additional_information="None"
     categories=""
@@ -7,8 +7,19 @@ def get_goal_inter_prompt(goal,cat_list=None,additional_information=None):
     prompt="""
 The goal is: """+goal+""".
 The additional information is: """+additional_information+"""
+
 ## Task Instructions:
-You need to analyze the goal and additional information that I provide(sometimes there may be no additional information), refer to the example, and transform them into the formal representation defined below. Your output may include several behaviors. In the body section of each behavior, you need to declare some intermediate states, intermediate relationships, final states, and final relationships required to achieve the goal. You do not need to provide the actions needed to achieve the goal. Once you provide the intermediate states, intermediate relationships, final states, and final relationships, my algorithm will plan a feasible sequence of actions on its own. Please note that the states, relationships, properties, and keywords you use must not exceed the scope I provided. If you call any function, make sure that you defined them already. Please check these problems carefully before outputting, otherwise the program will not run. Additionally, behavior __goal__(): is a required structure, functioning similarly to the main function in Python.
+I need you to check and correct the goal representations I have made below, one by one, according to the checklist based on the goals and additional information.
+
+## The goal representations are:
+""" + goal_representation + """
+
+## Checklist:
+1.Check if the goal representations use any states, relationships, categories, or keywords outside the specified range. If there are any, please correct them to the closest representation within the specified range.
+2.Check if all functions called in the goal have been declared, ensuring that no undefined or undeclared functions are called. If there are any, please add the undeclared functions.
+3.Check if the syntax used in the goal representations conforms to the definitions in the Syntax rules and keywords. If there are any errors, please help me correct them.
+4.Check if each variable is declared before use.
+5.Check if the character in the body is written as char as required.
 
 ## The available states are:
 - is_on(x: item)
@@ -59,12 +70,16 @@ bind x: item where:
 foreach o: item:
     achieve closed(o)
 
+# exist
+# Usage: Checks if a variable with a certain property exists.
+exist p: item : is_on(p)
+
 # behavior
 # Usage: Defines a behavior rule.
 behavior turn_off_light(light:item):
-    goal: is_off(light)
-    body:
-        achieve is_on(light)
+goal: is_off(light)
+body:
+    achieve is_on(light)
 
 # goal
 # Usage: Specifies the goal condition for a behavior.
@@ -162,7 +177,6 @@ Example Analysis:
 This case aims to demonstrate the use of 'unordered' because to close a door, you must be close to it. When closing multiple doors, the order is very important. If you close the wrong door, it might block the path to another door. In such a case, you would have to reopen the already closed door to reach the other one, which might lead to the failure of the task. Therefore, the 'unordered' keyword is used here to automatically find the appropriate execution order.
 
 ## Output Format:
-You can only output the description of the converted goal and additional information. Do not include any explanation or any other symbols.
-
+Only output the corrected goal representations. Do not add any explanations, comments, or other additional symbols; otherwise, the program will be considered incorrect.
 """
     return prompt
