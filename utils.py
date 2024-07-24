@@ -151,21 +151,27 @@ def get_nodes_information(graph):
             # print(node.class_name,node.states)
     return objects,states,relationships,properties,list(set(category)),list(set(classes)),cat_statement
 
-def get_all_files(folder):
+def get_all_files(folder,k):
     file_paths = []
     for root, dirs, files in os.walk(folder):
         for file in files:
             file_path = os.path.join(root, file)
-            file_paths.append(file_path)
+            try:
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    lines = f.readlines()
+                    if len(lines) > k:
+                        file_paths.append(file_path)
+            except Exception as e:
+                print(f"Could not read file {file_path}: {e}")
     return file_paths
 
 def get_symmetric_path(file_path, folder1, folder2):
-    relative_path = os.path.relpath(file_path, folder1).replace(".json", ".txt")
+    relative_path = os.path.relpath(file_path, folder1).replace(".txt",".json")
     symmetric_path = os.path.join(folder2, relative_path)
     return symmetric_path
 
-def sampler(folder1, folder2):
-    files_folder1 = get_all_files(folder1)
+def sampler(folder1, folder2,low_bound=0):
+    files_folder1 = get_all_files(folder1,low_bound)
     
     if not files_folder1:
         raise Exception("No files found in the first folder")

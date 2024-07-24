@@ -375,20 +375,29 @@ def has_a_free_hand():
 
 behavior put(inhand_obj: item, obj: item):
   body:
-    assert surfaces(obj)
+    assert surfaces(obj) or is_room(obj) or recipient(obj) or containers(obj) or can_open(obj)
     achieve inhand(inhand_obj)
     achieve close_char(char, obj)
+    if can_open(obj) and closed(obj):
+      achieve open(obj)
     put_executor(inhand_obj, obj)
+
   eff:
     holds_rh[char, inhand_obj] = False
     holds_lh[char, inhand_obj] = False
-    on[inhand_obj, obj] = True
+    if surfaces(obj):
+      on[inhand_obj, obj] = True
+    if is_room(obj) or recipient(obj) or containers(obj) or can_open(obj):
+      inside[inhand_obj, obj] = True
     close[inhand_obj, obj] = True
     close[obj, inhand_obj] = True
     foreach inter:item:
       if close(inter, obj):
         close[inter, inhand_obj] = True
         close[inhand_obj, inter] = True
+    if can_open(obj):
+      open[obj] = True
+      closed[obj] = False
 
 behavior empty_a_hand():
   goal: has_a_free_hand()
@@ -472,6 +481,12 @@ behavior put_on(inhand_obj: item, obj: item):
   body:
     put(inhand_obj, obj)
 
+
+behavior put_inside(inhand_obj: item, obj: item):
+  goal: inside(inhand_obj, obj)
+  body:
+    put(inhand_obj, obj)
+
 behavior grab(obj: item):
   goal: inhand(obj)
   body:
@@ -480,12 +495,16 @@ behavior grab(obj: item):
     foreach obj2:item:
       if inside(obj,obj2):
         if not is_room(obj2):
-          assert can_open(obj2)
-          achieve open(obj2)
+          assert can_open(obj2) or recipient(obj2)
+          if can_open(obj2):
+            achieve open(obj2)
     achieve close_char(char, obj)
     grab_executor(obj)
   eff:
-    holds_rh[char,obj]=True
+    if exists item1: item : holds_lh(char, item1):
+      holds_rh[char, obj] = True
+    else:
+      holds_lh[char, obj] = True
 
 behavior wash(obj: item):
   goal: clean(obj)

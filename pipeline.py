@@ -12,7 +12,8 @@ from evolving_graph.environment import *
 from utils import get_nodes_information,construct_cdl,sampler
 from Interpretation import goal_interpretation,refiner
 from solver import goal_solver
-
+from concepts.dm.crow.parsers.cdl_parser import TransformationError
+from auto_debugger import auto_debug
 def print_node_names(n_list):
     if len(n_list) > 0:
         print([n.class_name for n in n_list])
@@ -53,6 +54,8 @@ def transform_plan(plan):
                 id_map[number] = item_count[item]
         else:
             formatted_target = target
+        if action=="PUT":
+            action="PUTBACK"
         formatted_target = f'<{item}>({number}.{id_map[number]})'
         # 生成新的格式并添加到列表中
         actions.append(parse_script_line(f'[{action}] {formatted_target}',index))
@@ -82,7 +85,21 @@ def run(graph_path,script_path,goal,additional_information,debug=False):
     
     print(f"Combined content saved to {new_file_path}")
     #planning
-    plan=goal_solver(original_content + "\n" + goal_int)
+    planning_try_count = 0
+    while planning_try_count < 5:
+        try:
+            plan=goal_solver(original_content + "\n" + goal_int)
+            break
+        except TransformationError as e:
+            error_info=e.errors
+            print("Error information: ",error_info)
+            goal_int=auto_debug(error_info,original_content,goal_int,introduction,additional_information,classes)
+            combined_content = original_content + "\n" + goal_int
+            new_file_path = "combined_generated.cdl"
+            with open(new_file_path, "w") as file:
+                file.write(combined_content)
+
+        
     if len(plan)==0:
         print('No plan found or the goal is already satisfied.')
         return
@@ -120,10 +137,10 @@ def run(graph_path,script_path,goal,additional_information,debug=False):
 def evaluate():
     script="data/programs_processed_precond_nograb_morepreconds/executable_programs"
     graph="data/programs_processed_precond_nograb_morepreconds/init_and_final_graphs"
-    pair=sampler(graph,script)
-    graph=pair[0]
+    pair=sampler(script,graph,40)
+    graph=pair[1]
     print(graph)
-    script=pair[1]
+    script=pair[0]
     print(script)
     run(graph,script,None,None)
 
@@ -131,15 +148,15 @@ def test(script,graph,additional_information):
     run(graph,script,None,additional_information)
 
 if __name__ == '__main__':
-    # evaluate()
+    evaluate()
     # graph_path='test_graph.json'
     # script_path='test_script.txt'
     # goal="turn off all the lights"
     # additional_information=None
     # run(graph_path,script_path,goal,additional_information,debug=True)
     
-    script="data/programs_processed_precond_nograb_morepreconds/executable_programs/TrimmedTestScene2_graph/results_text_rebuttal_specialparsed_programs_turk_july/split7_2.txt"
-    graph="data/programs_processed_precond_nograb_morepreconds/init_and_final_graphs/TrimmedTestScene2_graph/results_text_rebuttal_specialparsed_programs_turk_july/split7_2.json"
-    additional_information="hold the vacuum and walk on the floor can clean the floor"
+    script="/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/candidates/split10_3.txt"
+    graph="/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/candidates/split10_3.json"
+    additional_information=None
     test(script,graph,additional_information)
     
