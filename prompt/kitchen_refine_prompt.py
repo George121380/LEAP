@@ -35,8 +35,13 @@ I need you to check and correct the goal representations I have made below, one 
 - closed(x: item)
 - dirty(x: item)
 - clean(x: item)
-- sitting(x: character)
-- lying(x: character)
+- sliced(x: item)
+- peeled(x: item)
+- mixed(x: item)
+- fried(x: item)
+- boiled(x: item)
+- waterfull(x: item)
+- inhand(x: item)
 
 ## The available relationships are:
 - on(x: item, y: item)
@@ -46,9 +51,6 @@ I need you to check and correct the goal representations I have made below, one 
 - between(door: item, room: item)
 - close(x: item, y: item)
 - close_char(x: character, y: item)
-- facing(x: item, y: item)
-- facing_char(x: character, y: item)
-- inhand(x: item)
 Here are a few easily confusing usages to note:
 In relationships with the _char suffix, the first parameter must always be a char. For example, on and on_char, inside and inside_char, close and close_char, facing and facing_char.
 At the same time, if the category you want to use is not in the available category, please try to find its synonym or a similar category with a close function.
@@ -60,27 +62,16 @@ eg:
 ## available properties:
 - surfaces(x: item)
 - grabbable(x: item)
-- sittable(x: item)
-- lieable(x: item)
-- hangable(x: item)
-- drinkable(x: item)
-- eatable(x: item)
 - recipient(x: item)
 - cuttable(x: item)
 - pourable(x: item)
 - can_open(x: item)
 - has_switch(x: item)
-- readable(x: item)
-- lookable(x: item)
 - containers(x: item)
-- clothes(x: item)
-- person(x: item)
-- body_part(x: item)
-- cover_object(x: item)
 - has_plug(x: item)
 - has_paper(x: item)
-- movable(x: item)
-- cream(x: item)
+- peelable(x: item)
+
 properties cannot be assigned a value; they can only return a boolean value as a predicate. For example, an apple can be grabbed, so grabbable(apple) will return true. Properties are typically used in if conditions or assert statements.
 
 ## available category determination:
@@ -103,28 +94,39 @@ Following are all the keywords that you can use to convert the information into 
 # Usage: Select any item that meets the conditions and assign it to the specified variable.
 bind x: item where:
     is_apple(x)
-
+When extracting multiple items of the same category in a behavior, special attention must be paid to ensure that the items taken out later are not the same as those taken out earlier.
+bind apple1: item where:
+    is_apple(apple1)
+bind apple2: item where:
+    is_apple(apple2) and apple1!=apple2
+bind apple3: item where:
+    is_apple(apple3) and apple1!=apple3 and apple2!=apple3
+To ensure consistency in the use of variables, try to use bind in __goal__ as much as possible and pass the retrieved instances as parameters to the invoked behaviors.
+    
 # achieve
 # Usage: Specifies the state or relationship that needs to be achieved. Only states and relations can follow achieve, not types, properties, or other unchangeable content. You also cannot call functions or behaviors after achieve. If you need to call a function or a behavior, simply write the function directly without any keywords, just like calling a function in Python.
-achieve is_on(countertop)
-achieve not inhand(apple)
+achieve is_on(light)    
 
 # foreach
 # Usage: Iterates over all objects of a certain type.
 foreach o: item:
+    if is_fridge(o) or is_cabinet(o):
     achieve closed(o)
+
+# exist
+# Usage: Checks if a variable with a certain property exists.
+exist p: item : is_on(p)
 
 # behavior
 # Usage: Defines a behavior rule.
 behavior turn_off_light(light:item):
-    goal: is_off(light)
-    body:
-        achieve is_on(light)
+goal: is_off(light)
+body:
+    achieve is_on(light)
 
 # goal
-# Usage: Specifies the goal condition for a behavior. If you want to use the goal, please ensure that you include all the parameters used in the goal in the behavior parameters.
-behavior close_door(door:item):
-    goal: closed(door)
+# Usage: Specifies the goal condition for a behavior.
+goal: clean(o)
 
 # body
 # Usage: Contains the sequence of actions and subgoals to achieve the behavior’s goal.
@@ -134,12 +136,12 @@ body:
 
 # assert
 # Usage: Asserts a condition that must be true for the behavior to succeed.
-assert is_on(stove)
+assert is_on(light)   
 
 #assert_hold
 # Usage: The validity period of assert_hold lasts until the end of the containing behavior. This keyword is designed to express a long-term constraint condition.
 assert_hold closed(fridge)
-    
+
 # eff
 # Usage: Represents the effect of an behavior. In this section, perform a series of bool assignments. Note that you should use [] instead of () here. Only the transition model will use this keyword. 
 When you have additional information like this: A vacuum cleaner is a great tool for cleaning floors. You can carry it around to clean the floor. Before using it, please make sure the vacuum cleaner is plugged in and turned on.
@@ -156,7 +158,6 @@ behavior clean_floow_with_vacuum(floor:item):
         achieve walk(floor)
     eff:
         is_clean[floor]=True
-
 
 # if-else
 # Usage: Conditional statement for branching logic.
@@ -199,28 +200,28 @@ The additional information is:
 - The dishwasher must be closed and turned on to start the cleaning process.
 
 The output is:
-behavior clean_all_plates_and_cups_by_dishwasher():
+behavior clean_all_plates_and_cups_by_dishwasher(dishwasher:item):
     body:
-        bind dishwasher: item where:
-            is_dishwasher(dishwasher)
         foreach o: item:
             if is_plate(o) or is_cup(o):
                 achieve inside(o, dishwasher)
         achieve closed(dishwasher)
         achieve is_on(dishwasher)
 
-behavior put_all_plates_and_cups_on_table():
+behavior put_all_plates_and_cups_on_table(table:item):
     body:
-        bind table: item where:
-            is_table(table)
         foreach o: item:
-        if is_plate(o) or is_cup(o):
-            achieve on(o, table)
+            if is_plate(o) or is_cup(o):
+                achieve on(o, table)
 
 behavior __goal__():
     body:
-        clean_all_plates_and_cups()
-        put_all_plates_and_cups_on_table()
+        bind dishwasher: item where:
+            is_dishwasher(dishwasher)
+        bind table: item where:
+            is_table(table)
+        clean_all_plates_and_cups(dishwasher)
+        put_all_plates_and_cups_on_table(table)
     
 
 Example Analysis: 
@@ -239,10 +240,186 @@ behavior close_all_doors():
             foreach o: item:
                 if is_door(o):
                     achieve close(o)
+behavior __goal__():
+    body:
+        close_all_doors()
 
 Example Analysis: 
 This case aims to demonstrate the use of 'unordered' because to close a door, you must be close to it. When closing multiple doors, the order is very important. If you close the wrong door, it might block the path to another door. In such a case, you would have to reopen the already closed door to reach the other one, which might lead to the failure of the task. Therefore, the 'unordered' keyword is used here to automatically find the appropriate execution order.
+
+# Example-4:
+When the goal is: I want to eat an apple, clean an apple for me.
+The additional information: Do not use the knife.
+
+The output is:
+behavior __goal__():
+    body:
+        bind apple: item where:
+            is_apple(apple)
+        for all o: item:
+            if is_knife(o):
+                assert_hold not inhand(knife)
+        achieve clean(apple)
+
+Example Analysis:
+In this case, the challenge is to make sure that the knife is not used. The 'assert_hold' keyword is used to ensure that the knife is not in hand during the whole process. Notice that the 'assert_hold' keyword always gives a stronger restriction that the whole behavior must follow. So it is only used to express those constrains declared in additional information.
+
+#Example-5:
+When the goal is: Whisk an egg.
+The additional information: None
+
+The output is:
+behavior whisk_an_egg(egg:item, bowl:item):
+    body:
+
+        achieve inside(egg, bowl)
+        achieve peeled(egg)
+        achieve mixed(bowl)
+
+behavior __goal__():
+    body:
+        bind egg: item where:
+            is_egg(egg)
+        bind bowl: item where:
+            is_bowl(bowl)
+        whisk_an_egg(egg, bowl)
+
+Example Analysis: The object to be mixed must be some kind of container, such as a pan, bowl, pot etc. So, to mix certain items, you must first ensure they are placed in a container, then bring the container to a mixed state.
+
+#Example-6:
+When the goal is: Help me make scrambled eggs with tomatoes
+The additional information: To make sure it is healthy, wash the tomatoes and eggs before cooking. I don't like the skin of the tomatoes, so remove them before cooking.
+
+The output is:
+behavior prepare_tomato(tomato:item):
+    body:
+        achieve clean(tomato)        
+        achieve peeled(tomato)
+        achieve sliced(tomato)   
+
+behavior prepare_egg(egg:item, bowl:item):
+    body:
+        achieve inside(egg, bowl)
+        achieve mixed(bowl)
+
+behavior cook_scrambled_eggs_with_tomatoes(pan:item, stove:item, tomato:item, egg:item, sugar:item, salt:item, oil:item):
+    body:
+        achieve on(pan, stove)
+        achieve is_on(stove)
+        achieve inside(tomato, pan)
+        achieve inside(egg, pan)
+        achieve inside(sugar, pan)
+        achieve inside(salt, pan)
+        achieve inside(oil, pan)
+        achieve mixed(pan)
+
+behavior __goal__():
+    body:
+        bind pan: item where:
+            is_pan(pan)
+        bind stove: item where:
+            is_stove(stove)
+        bind tomato: item where:
+            is_tomato(tomato)
+        bind egg: item where:
+            is_egg(egg)
+        bind bowl: item where:
+            is_bowl(bowl)
+        bind sugar: item where:
+            is_sugar(sugar)
+        bind salt: item where:
+            is_salt(salt)
+        bind oil: item where:
+            is_oil(oil)
+        prepare_tomato(tomato)
+        prepare_egg(egg, bowl)
+        cook_scrambled_eggs_with_tomatoes(pan, stove, tomato, egg, sugar, salt, oil)
+
+Example Analysis:
+When handling a complex goal, it can be broken down into several sub-goals. Here, making tomato scrambled eggs can be broken down into "prepare_tomato", "prepare_egg", and "cook_scrambled_eggs_with_tomatoes". In designing sub-goals, you need to design based on goals, additional information, and your common sense. Before invoking these sub-goal actions, ensure that all variables involved are defined and declared.
+During the preparation of the tomatoes, according to additional information, they need to be washed and peeled. According to your common sense, skin removing should be done using the peeled state, and according to common sense, the tomatoes should be sliced before putting them into the pan, otherwise, they cannot be cooked.
+For handling the eggs, since there is no additional information, it relies more on your common sense. The eggs should be cracked into a bowl and beaten until smooth before being put into the pan. Cracking the eggs into the bowl, due to the lack of a fully corresponding action, can be expressed as inside(egg, bowl), and beating them until smooth can be represented by the mixed state.
+The cooking process also relies heavily on your common sense. First, you need to place the pan on the stove to preheat it, then add the prepared ingredients, followed by the various seasonings. Finally, stir everything evenly. Note that the stirring action is applied to the contents of the container as a whole, not to a specific ingredient.
+In the goal_, you only need to invoke these sub-goals. Note that before invoking, you need to declare the corresponding variables, and when invoking, you need to pass the appropriate parameters.
         
+#Example-7:
+When the goal is: put a fried egg in the bowl
+The additional information: None
+
+A wrong output is:
+behavior fry_egg(egg:item):
+    body:
+        achieve fried(egg)
+
+behavior put_fried_egg_in_bowl():
+    body:
+        bind egg: item where:
+            is_egg(egg)
+        bind bowl: item where:
+            is_bowl(bowl)
+        achieve inside(egg, bowl)
+
+behavior __goal__():
+    body:
+        cook_egg()
+        put_fried_egg_in_bowl()
+
+A correct output is:
+behavior cook_egg(egg:item):
+    body:
+        achieve fried(egg)
+
+behavior put_fried_egg_in_bowl(egg:item, bowl:item):
+    body:
+        achieve inside(egg, bowl)
+
+behavior __goal__():
+    body:
+        bind egg: item where:
+            is_egg(egg)
+        bind bowl: item where:
+            is_bowl(bowl)
+        cook_egg(egg)
+        put_fried_egg_in_bowl(egg, bowl)
+
+Example Analysis:
+Consistency between steps is a critical and error-prone issue. In wrong cases, the egg obtained using bind in put_fried_egg_in_bowl may not be the same egg that was previously fried in "fry_egg". Such a definition might result in egg_1 being fried but egg_2 being placed in the bowl. The correct case specifies the egg to be used in __goal__ and ensures that the same egg is operated on in both cook_egg and put_fried_egg_in_bowl through parameter passing.
+Meanwhile, notice that fried() state and boiled state can only be used for food, rather than for a container.
+
+
+#Behavior template:
+The purpose of providing these templates is to prevent you from repeatedly proposing the same achieve objectives.
+
+When you execute achieve boiled(object), the following template will be executed.
+behavior Boil(object:item):
+  goal: boiled(object)
+  body:
+    bind stove:item where:
+      is_stove(stove)
+    bind pot:item where:
+      is_pot(pot)
+    achieve waterfull(pot)
+    achieve on(pot, stove)
+    achieve_once is_on(stove)
+    achieve inside(object, pot)
+  eff:
+    boiled[object] = True
+
+When you execute achieve fried(object), the following template will be executed.
+behavior Fry(object:item):
+  goal: fried(object)
+  body:
+    bind pan:item where:
+      is_pan(pan)
+    bind stove:item where:
+      is_stove(stove)
+    achieve on(pan, stove)
+    achieve_once is_on(stove)
+    achieve inside(object, pan)
+    achieve_once is_off(stove)
+  eff:
+    fried[object] = True
+
 ## Output Format:
 Only output the corrected goal representations. Do not add any explanations, comments, or other additional symbols; otherwise, the program will be considered incorrect.
 """

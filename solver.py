@@ -13,14 +13,13 @@ import concepts.dm.crow as crow
 from concepts.dm.crow.parsers.cdl_parser import TransformationError
 parser = jacinle.JacArgumentParser()
 # parser.add_argument('--domain', default='virtualhome.cdl')
-parser.add_argument('--domain', default='virtualhome.cdl')
+parser.add_argument('--domain', default='kitchen.cdl')
 parser.add_argument('--verbose', action='store_true')
 args = parser.parse_args()
 
 
 def goal_solver(goal):
     domain = crow.load_domain_file(args.domain)
-
     problem = crow.load_problem_file('combined_generated.cdl', domain=domain)
     
     state = problem.state
@@ -30,7 +29,7 @@ def goal_solver(goal):
 def plan(problem):
     goal=problem.goal
     candidate_plans, search_stat = crow.crow_regression(
-        problem.domain, problem, goal=goal, min_search_depth=7, max_search_depth=7,
+        problem.domain, problem, goal=goal, min_search_depth=5, max_search_depth=12,
         is_goal_ordered=True, is_goal_serializable=False, always_commit_skeleton=True
     )
     table = list()
@@ -40,7 +39,10 @@ def plan(problem):
     print('=' * 80)
     print('Goal:', goal)
     for i, row in enumerate(table):
-        print(f'Plan {i}:', row)
+    #     row = row.split('; ')
+    #     for lines in row:
+    #         print(lines.replace("_executor",""))
+        print(f'Plan {i}:', row.replace("_executor",""))
     print(search_stat)
     # input('Press Enter to continue...')
     return table
@@ -48,11 +50,11 @@ def plan(problem):
 
 if __name__ == '__main__':
     # main()
-    with open("/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/failure_cases/is_on(washing_machine).cdl", "r") as file:
-        original_content = file.read()
-    try:
-      goal_solver(original_content)
-    except TransformationError as e:
-        print(f"Transformation failed: {e.errors}")
-    
-
+    # with open("/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/failure_cases/is_on(washing_machine).cdl", "r") as file:
+    #     original_content = file.read()
+    # try:
+    #   goal_solver(original_content)
+    # except TransformationError as e:
+    #     print(f"Transformation failed: {e.errors}")
+    goal=None
+    goal_solver(goal)

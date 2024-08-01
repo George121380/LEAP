@@ -220,6 +220,8 @@ behavior close_all_doors():
 Example Analysis: 
 This case aims to demonstrate the use of 'unordered' because to close a door, you must be close to it. When closing multiple doors, the order is very important. If you close the wrong door, it might block the path to another door. In such a case, you would have to reopen the already closed door to reach the other one, which might lead to the failure of the task. Therefore, the 'unordered' keyword is used here to automatically find the appropriate execution order.
 
+
+
 ## Output Format:
 You can only output the description of the converted goal and additional information. Do not include any explanation or any other symbols.
 

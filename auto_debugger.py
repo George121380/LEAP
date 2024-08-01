@@ -20,7 +20,7 @@ def auto_debug(error_info,original_content,goal_int,goal,additional_information,
         system_prompt="You are a meticulous and detailed assistant. I have defined a set of syntax and written a program, which uses category names outside the specified ones. Please find these category names and replace them."
 
     else:
-        prompt=other_prompt(goal,cat_list,additional_information,goal_int,error_variable)
+        prompt=other_prompt(goal,cat_list,additional_information,goal_int,error_info)
         system_prompt="I encountered this error while running the program. Please try to correct my mistake based on the syntax rules I provided."
         
     debugged_goal_int=ask_GPT(system_prompt,prompt)

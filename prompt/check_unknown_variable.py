@@ -29,7 +29,6 @@ bind b: item where:
 
 ## Example:
 - is_food() -> is_food_food(), Although the first type of translation is intuitive, when is_food is not in the available category, but is_food_food is, such a replacement should be made.
-
 - is_soapy_water() -> is_cleaning_solution(), soapy water is not an available category, but cleaning solution is. They are functionally similar, so such a replacement should be made.
 
 ## Output Format:

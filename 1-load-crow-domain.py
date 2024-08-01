@@ -12,7 +12,7 @@ import jacinle
 import concepts.dm.crow as crow
 
 
-domain = crow.load_domain_file('virtualhome.cdl')
+domain = crow.load_domain_file('kitchen.cdl')
 
 
 print(domain.name)

@@ -9,68 +9,26 @@ from evolving_graph.environment import EnvironmentGraph
 from evolving_graph.preparation import AddMissingScriptObjects, AddRandomObjects, ChangeObjectStates, \
     StatePrepare, AddObject, ChangeState, Destination
 from evolving_graph.environment import *
-from utils import get_nodes_information,construct_cdl,sampler
-from Interpretation import goal_interpretation,refiner
+from utils import get_nodes_information,construct_cdl,sampler,transform_plan
+from Interpretation import goal_interpretation,refiner,feedbackloop
 from solver import goal_solver
 from concepts.dm.crow.parsers.cdl_parser import TransformationError
 from auto_debugger import auto_debug
 def print_node_names(n_list):
     if len(n_list) > 0:
         print([n.class_name for n in n_list])
-
-def get_node_by_name(name,graph):
-    nodes=graph.get_nodes()
-    for node in nodes:
-        if node.class_name == name:
-            return node
-    else:
-        return None
-
-def transform_plan(plan):
-    # 分隔输入字符串
-    executors = plan[0].split('; ')
     
-    # 定义一个空的列表来存储转换后的动作
-    actions = []
-    item_count = {}
-    id_map = {}
-    # 遍历每个执行器并应用映射规则
-    index=1
-    for executor in executors:
-        # 提取动作和目标
-        action, target = executor.replace(')', '').split('(')
-        action = action.replace('_executor', '').upper()
+def remove_special_characters(input_string):
+    allowed_characters = {',', ':', '(', ')', '_', '#', ' ', '\n','!=','='}
+    return ''.join(char for char in input_string if char.isalnum() or char in allowed_characters)
 
-        # 提取目标和编号
-        if '_' in target:
-            item, number = target.rsplit('_', 1)
-            
-            if item not in item_count:
-                item_count[item] = 0
-            if (item in item_count) and number not in id_map:
-                item_count[item] += 1
-            
-            if number not in id_map:
-                id_map[number] = item_count[item]
-        else:
-            formatted_target = target
-        if action=="PUT":
-            action="PUTBACK"
-        formatted_target = f'<{item}>({number}.{id_map[number]})'
-        # 生成新的格式并添加到列表中
-        actions.append(parse_script_line(f'[{action}] {formatted_target}',index))
-        index+=1
-    
-    return actions
-
-def run(graph_path,script_path,goal,additional_information,debug=False):
+def virtualhome_run(graph_path,script_path,goal,additional_information,debug=False):
     #import objects and stats information from graph
     graph = utils.load_graph(graph_path)
     get_nodes_information(graph)
     objects,states,relationships,properties,categories,classes,cat_statement=get_nodes_information(graph)
     construct_cdl(objects,states,relationships,properties,cat_statement)
     GTscript,brief_discription,introduction = read_script(script_path)
-
     #goal interpretation
     if debug:
         introduction=goal
@@ -104,8 +62,6 @@ def run(graph_path,script_path,goal,additional_information,debug=False):
         print('No plan found or the goal is already satisfied.')
         return
     plan=transform_plan(plan)
-    print(plan)
-
     script=Script(plan)
     #execution
     name_equivalence = utils.load_name_equivalence()
@@ -133,6 +89,71 @@ def run(graph_path,script_path,goal,additional_information,debug=False):
             print_node_names(state.get_nodes_from(char, Relation.INSIDE))
             print("Character states are:", char.states)
 
+def kitchen_goal_generation(goal,additional_information,objlist):
+    classes=objlist
+    generate_time=0
+    while generate_time<5:
+        try:
+            goal_int=goal_interpretation(goal,additional_information,classes)
+            goal_int=remove_special_characters(goal_int)
+            # goal_int=refiner(goal_int,additional_information,classes,goal_int)
+            with open("kitchen_problem.cdl", "r") as file:
+                original_content = file.read()
+            combined_content = original_content + "\n" + goal_int
+            new_file_path = "combined_generated.cdl"
+            with open(new_file_path, "w") as file:
+                file.write(combined_content)
+            
+            print(f"Combined content saved to {new_file_path}")
+            #planning
+            correct_time = 0
+            while correct_time < 5:
+                try:
+                    plan=goal_solver(original_content + "\n" + goal_int)
+                    if len(plan)==0:
+                        break
+                    if len(plan)>0:
+                        print('=' * 80)
+                        print("goal representation before loop:")
+                        print('=' * 80)
+                        print(goal_int)
+                        goal_int=feedbackloop(goal,additional_information,classes,goal_int,plan[0])
+                        plan_afterloop=goal_solver(original_content + "\n" + goal_int)
+                        
+                        if len(plan_afterloop)==0:
+                            break
+                        if len(plan_afterloop)>0:
+                            print('=' * 80)
+                            print("Plan found.")
+                            print('=' * 80)
+                            print("Goal representation:")
+                            print(goal_int)
+                            print('=' * 80)
+                            with open(new_file_path, "w") as file:
+                                file.write(combined_content)
+                            return plan_afterloop,goal_int
+
+
+                except TransformationError as e:
+                    error_info=e.errors
+                    print("Error information: ",error_info)
+                    goal_int=auto_debug(error_info,original_content,goal_int,goal,additional_information,classes)
+                    goal_int=remove_special_characters(goal_int)
+                    combined_content = original_content + "\n" + goal_int
+                    new_file_path = "combined_generated.cdl"
+                    with open(new_file_path, "w") as file:
+                        file.write(combined_content)
+                    correct_time+=1
+
+        except:
+            print("Error in generating plan, try again.")
+            generate_time+=1
+
+def pipeline(goal,additional_information):
+    classes=['tomato','egg','pan','stove','sink','bowl','oil','salt','pepper','faucet','fridge','knife','spatula','sugar','countertop','water','bread','onion','bacon','cheese','pot','noodles','chicken','garlic','ginger','vegetables','oven','plate','potato','beef']
+    plan,goal_int=kitchen_goal_generation(goal,additional_information,classes)
+    
+    
 
 def evaluate():
     script="data/programs_processed_precond_nograb_morepreconds/executable_programs"
@@ -148,15 +169,6 @@ def test(script,graph,additional_information):
     run(graph,script,None,additional_information)
 
 if __name__ == '__main__':
-    evaluate()
-    # graph_path='test_graph.json'
-    # script_path='test_script.txt'
-    # goal="turn off all the lights"
-    # additional_information=None
-    # run(graph_path,script_path,goal,additional_information,debug=True)
-    
-    script="/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/candidates/split10_3.txt"
-    graph="/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/candidates/split10_3.json"
-    additional_information=None
-    test(script,graph,additional_information)
-    
+    goal="Make Beef and Potato Hash with Vegetables"
+    additional_information="Start by dicing a potato, onion, tomato, and garlic. In a pan over medium heat, add a bit of oil and cook the diced onion, garlic, and some grated ginger until fragrant. Add diced beef and cook until browned. Add the potatoes and continue cooking until they start to soften. Chop some mixed vegetables and add them to the pan along with the diced tomato. Season with salt, pepper, and a pinch of sugar. Continue to cook until everything is tender and well combined. Serve hot on a plate, garnished with some grated cheese if desired. This hearty hash is perfect for breakfast or dinner!"
+    pipeline(goal,additional_information)

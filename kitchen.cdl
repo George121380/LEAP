@@ -1,0 +1,428 @@
+domain "virtualhome"
+
+typedef item: object
+typedef character: object
+
+# Features without return type annotations are assumed to be returning boolean values.
+
+#state
+feature is_on(x: item)
+feature is_off(x: item)
+feature open(x: item)
+feature closed(x: item)
+feature dirty(x: item)
+feature clean(x: item)
+feature plugged(x: item)
+feature unplugged(x: item)
+feature sliced(x: item)
+feature peeled(x: item)
+feature mixed(x: item)
+feature fried(x: item)
+feature boiled(x: item)
+feature grilled(x: item)
+feature waterfull(x: item)
+
+#add state
+feature is_tomato(x: item)
+feature is_egg(x: item)
+feature is_pan(x: item)
+feature is_stove(x: item)
+feature is_sink(x: item)
+feature is_bowl(x: item)
+feature is_oil(x: item)
+feature is_salt(x: item)
+feature is_pepper(x: item)
+feature is_faucet(x: item)
+feature is_fridge(x: item)
+feature is_knife(x: item)
+feature is_spatula(x: item)
+feature is_sugar(x: item)
+feature is_countertop(x: item)
+feature is_water(x: item)
+feature is_bread(x: item)
+feature is_onion(x: item)
+feature is_bacon(x: item)
+feature is_cheese(x: item)
+feature is_pot(x: item)
+feature is_noodles(x: item)
+feature is_chicken(x: item)
+feature is_garlic(x: item)
+feature is_ginger(x: item)
+feature is_vegetables(x: item)
+feature is_oven(x: item)
+feature is_plate(x: item)
+feature is_cuttingboard(x: item)
+feature is_beef(x: item)
+feature is_potato(x: item)
+
+#relationship
+feature on(x: item, y: item)
+feature on_char(x: character, y: item)
+feature inside(x: item, y: item)
+feature inside_char(x: character, y: item)
+feature between(door: item, room: item)
+feature close(x: item, y: item)
+feature close_char(x: character, y: item)
+feature holds_rh(x: character, y: item)
+feature holds_lh(x: character, y: item)
+
+#Properties 
+feature surfaces(x: item)
+feature grabbable(x: item)
+feature cuttable(x: item)
+feature pourable(x: item)
+feature can_open(x: item)
+feature has_switch(x: item)
+feature containers(x: item)
+feature has_plug(x: item)
+feature peelable(x: item)
+feature storable(x: item)
+feature eatable(x: item)
+feature cookaware(x: item)
+
+object_constant char:character
+
+#controllers
+controller walk_executor(x: item)
+controller switchoff_executor(x: item)
+controller switchon_executor(x: item)
+controller put_executor(x: item, y: item)
+controller grab_executor(x: item)
+controller wash_executor(x: item)
+controller open_executor(x: item)
+controller close_executor(x: item)
+controller pour_executor(x: item, y: item)
+controller plugin_executor(x: item)
+controller plugout_executor(x: item)
+controller stir_executor(x: item)
+controller slice_executor(x: item)
+controller peel_executor(x: item)
+controller debug(x: item)
+
+def inhand(inhand_obj:item):
+  symbol b=holds_rh(char, inhand_obj) or holds_lh(char, inhand_obj)
+  return b
+
+def has_a_free_hand():
+  symbol l=exists item1: item : holds_lh(char, item1)
+  symbol r=exists item2: item : holds_rh(char, item2)
+  return not l or not r
+
+behavior put(inhand_obj: item, obj: item):
+  body:
+    assert surfaces(obj) or containers(obj) or can_open(obj) or eatable(obj)
+    achieve inhand(inhand_obj)
+    achieve close_char(char, obj)
+    if can_open(obj) and closed(obj):
+      achieve open(obj)
+    put_executor(inhand_obj, obj)
+
+  eff:
+    holds_rh[char, inhand_obj] = False
+    holds_lh[char, inhand_obj] = False
+    foreach inter:item:
+      if close(inter, obj):
+        close[inter, inhand_obj] = True
+        close[inhand_obj, inter] = True
+    if can_open(obj):
+      open[obj] = True
+      closed[obj] = False
+
+    foreach cont: item:
+      if inside(cont, obj):
+        if surfaces(obj):
+          on[cont, obj] = True
+        if containers(obj) or can_open(obj):
+          inside[cont, obj] = True
+        close[cont, obj] = True
+        close[obj, cont] = True
+        foreach inter:item:
+          if close(inter, obj):
+            close[inter, cont] = True
+            close[cont, inter] = True
+    if containers(obj):
+      mixed[obj] = False
+            
+
+behavior empty_a_hand():
+  goal: has_a_free_hand()
+  body:
+    assert not has_a_free_hand()
+    bind store_place:item where:
+      storable(store_place)
+    bind give_up_obj:item where:
+      inhand(give_up_obj)
+    put(give_up_obj, store_place)
+
+def obj_inside_or_on(obj1: item, obj2: item):
+  return inside(obj1, obj2) or on(obj2, obj1)
+
+behavior walk(obj: item):
+  goal: close_char(char, obj)
+  body:
+    walk_executor(obj)
+  eff:
+    foreach icf:item:
+      close_char[char, icf]= False
+      inside_char[char,icf]= False
+      if obj_inside_or_on(obj, icf):
+        close_char[char, icf] = True
+    close_char[char,obj] = True
+
+behavior switch_off(obj: item):
+  goal: is_off(obj)
+  body:
+    assert has_switch(obj)
+    assert is_on(obj)
+    achieve has_a_free_hand()
+    achieve close_char(char, obj)
+    switchoff_executor(obj)
+  eff:
+    is_off[obj] = True
+    is_on[obj] = False
+
+behavior switch_on(obj: item):
+  goal: is_on(obj)
+  body:
+    assert has_switch(obj)
+    assert is_off(obj)
+    achieve has_a_free_hand()
+    achieve close_char(char, obj)
+    if can_open(obj):
+      achieve closed(obj)
+    switchon_executor(obj)
+  eff:
+    is_off[obj] = False
+    is_on[obj] = True
+
+behavior put_close(inhand_obj: item, obj: item):
+  goal: close(inhand_obj, obj)
+  body:
+    put(inhand_obj, obj)
+  eff:
+    close[inhand_obj, obj] = True
+    close[obj, inhand_obj] = True
+
+behavior put_on(inhand_obj: item, obj: item):
+  goal: on(inhand_obj, obj)
+  body:
+    put(inhand_obj, obj)
+  eff:
+    on[inhand_obj, obj] = True
+    close[inhand_obj, obj] = True
+    close[obj, inhand_obj] = True
+
+
+behavior put_inside(inhand_obj: item, obj: item):
+  goal: inside(inhand_obj, obj)
+  body:
+    assert not is_water(inhand_obj)
+    put(inhand_obj, obj)
+  eff:
+    inside[inhand_obj, obj] = True
+    close[inhand_obj, obj] = True
+    close[obj, inhand_obj] = True
+  
+behavior get_water(container:item):
+  goal: waterfull(container)
+  body:
+    assert containers(container) or eatable(container)
+    bind faucet:item where:
+      is_faucet(faucet)
+    bind sink:item where:
+      is_sink(sink)
+    achieve close(container, sink)
+    achieve is_on(faucet)
+  eff:
+    waterfull[container] = True
+
+behavior grab(obj: item):
+  goal: inhand(obj)
+  body:
+    assert grabbable(obj)
+    achieve has_a_free_hand()
+    foreach obj2:item:
+      if inside(obj,obj2):
+        assert can_open(obj2) or containers(obj2)
+        if can_open(obj2):
+          achieve open(obj2)
+    achieve close_char(char, obj)
+    grab_executor(obj)
+  eff:
+    if exists item1: item : holds_lh(char, item1):
+      holds_rh[char, obj] = True
+    else:
+      holds_lh[char, obj] = True
+    foreach container:item:
+      if inside(obj,container):
+        inside[obj, container] = False
+
+behavior wash(obj: item):
+  goal: clean(obj)
+  body:
+    bind sink:item where:
+      is_sink(sink)
+    bind faucet:item where:
+      is_faucet(faucet)
+    achieve inside(obj, sink)
+    achieve_once is_on(faucet)
+    wash_executor(obj)
+    achieve_once is_off(faucet)
+  eff:
+    dirty[obj] = False
+    clean[obj] = True
+    inside[obj, sink] = True
+
+behavior open(obj: item):
+  goal: open(obj)
+  body:
+    assert can_open(obj)
+    assert closed(obj)
+    achieve has_a_free_hand()
+    achieve close_char(char, obj)
+    if has_switch(obj):
+      achieve is_off(obj)
+    open_executor(obj)
+  eff:
+    open[obj] = True
+    closed[obj] = False
+
+behavior close(obj: item):
+  goal: closed(obj)
+  body:
+    assert can_open(obj)
+    assert open(obj)
+    achieve has_a_free_hand()
+    achieve close_char(char, obj)
+    close_executor(obj)
+  eff:
+    open[obj] = False
+    closed[obj] = True
+
+behavior pour(obj: item, target: item):
+  goal: inside(obj, target)
+  body:
+    assert pourable(obj)
+    assert containers(target)
+    achieve inhand(obj)
+    achieve close_char(char, target)
+    pour_executor(obj, target)
+  eff:
+    inside[obj, target] = True
+
+behavior plugin(object:item):
+  goal: plugged(object)
+  body:
+    assert has_plug(object)
+    assert unplugged(object)
+    achieve has_a_free_hand()
+    achieve close_char(char, object)
+    plugin_executor(object)
+  eff:
+    plugged[object] = True
+    unplugged[object] = False
+  
+behavior plugout(object:item):
+  goal: unplugged(object)
+  body:
+    assert has_plug(object)
+    assert plugged(object)
+    achieve has_a_free_hand()
+    achieve close_char(char, object)
+    plugout_executor(object)
+  eff:
+    plugged[object] = False
+    unplugged[object] = True
+
+behavior stir(object:item):
+  goal: mixed(object)
+  body:
+    assert containers(object) or eatable(object)
+    bind tool : item where:
+      is_spatula(tool)
+    achieve inhand(tool)
+    achieve close_char(char, object)
+    stir_executor(object)
+
+  eff:
+    foreach ingredients:item:
+      if inside(ingredients, object):
+        mixed[ingredients] = True
+    mixed[object] = True
+
+behavior slice(object:item):
+  goal: sliced(object)
+  body:
+    assert cuttable(object)
+    bind tool : item where:
+      is_knife(tool)
+    bind cuttingboard:item where:
+      is_cuttingboard(cuttingboard)
+    bind countertop:item where:
+      is_countertop(countertop)
+    achieve on(cuttingboard, countertop)
+    achieve on(object, cuttingboard)
+    achieve inhand(tool)
+    achieve close_char(char, object)
+    slice_executor(object)
+  eff:
+    sliced[object] = True
+
+behavior peel(object:item):
+  goal: peeled(object)
+  body:
+    assert peelable(object)
+    if is_tomato(object):
+      bind tool : item where:
+        is_knife(tool)
+      achieve inhand(tool)
+    achieve close_char(char, object)
+    peel_executor(object)
+  eff:
+    peeled[object] = True
+
+behavior Fry(object:item):
+  goal: fried(object)
+  body:
+    bind pan:item where:
+      is_pan(pan)
+    bind stove:item where:
+      is_stove(stove)
+    achieve on(pan, stove)
+    achieve is_on(stove)
+    achieve inside(object, pan)
+  eff:
+    fried[object] = True
+
+behavior Boil(object:item):
+  goal: boiled(object)
+  body:
+    bind stove:item where:
+      is_stove(stove)
+    
+    if exists container:item : inside(object, container) and is_pot(container):
+      bind container:item where:
+        inside(object, container) and is_pot(container)
+      achieve waterfull(container)
+      achieve on(container, stove)
+      achieve is_on(stove)
+      achieve inside(object, container)
+    else:
+      bind container:item where:
+        is_pot(container)
+      achieve waterfull(container)
+      achieve on(container, stove)
+      achieve is_on(stove)
+      achieve inside(object, container)
+  eff:
+    boiled[object] = True
+
+behavior Grill(object:item):
+  goal: grilled(object)
+  body:
+    bind oven:item where:
+      is_oven(oven)
+    achieve inside(object, oven)
+    achieve is_on(oven)
+  eff:
+    grilled[object] = True
