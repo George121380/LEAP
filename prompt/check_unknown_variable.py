@@ -27,6 +27,32 @@ For any instance x:item, you can use is_y(x) to determine if x belongs to catego
 bind b: item where:
     is_box(b)
 
+## available properties (The text following the hash symbol is a comment; please do not include it in the goal representation):
+- surfaces(x: item) # To indicate an item has a surface where things can be placed, such as a kitchen countertop or a table.
+- grabbable(x: item) # To indicate an item can be grabbed in hand.
+- sittable(x: item) # To indicate an item can be sat on.
+- lieable(x: item) # To indicate an item can be lied on.
+- hangable(x: item) # To indicate an item can be hung on.
+- drinkable(x: item) # To indicate an item can be drunk.
+- eatable(x: item) # To indicate an item can be eaten.
+- recipient(x: item) # To indicate an item can be used to receive something.
+- cuttable(x: item) # To indicate an item can be cut with a knife.
+- pourable(x: item) # To indicate an item can be poured into another container or on other items.
+- can_open(x: item) # To indicate an item can be opened.
+- has_switch(x: item) # To indicate an item has a switch to turn on or off.
+- readable(x: item) # To indicate an item can be read.
+- lookable(x: item) # To indicate an item can be looked at.
+- containers(x: item) # To indicate an item is a container.
+- clothes(x: item) # To indicate an item is a piece of clothing.
+- person(x: item) 
+- body_part(x: item)
+- cover_object(x: item)
+- has_plug(x: item) # To indicate an item has a plug.
+- has_paper(x: item) # To indicate an item has paper.
+- movable(x: item) # To indicate an item can be moved.
+- cream(x: item) # To indicate an item is a cream.
+properties cannot be assigned a value; they can only return a boolean value as a predicate. For example, an apple can be grabbed, so grabbable(apple) will return true. Properties are typically used in if conditions or assert statements.
+
 ## Example:
 - is_food() -> is_food_food(), Although the first type of translation is intuitive, when is_food is not in the available category, but is_food_food is, such a replacement should be made.
 - is_soapy_water() -> is_cleaning_solution(), soapy water is not an available category, but cleaning solution is. They are functionally similar, so such a replacement should be made.
@@ -57,16 +83,19 @@ An instance variable is used in the behavior without prior declaration and defin
 In the goal representation, this variable is not defined: """+error_info+""". Please refer to the example below to supplement the declaration of this variable.
 
 ## The available states are:
-- is_on(x: item)
-- is_off(x: item)
+- is_on(x: item) #is working
+- is_off(x: item) #is not working
 - plugged(x: item)
 - unplugged(x: item)
 - open(x: item)
 - closed(x: item)
 - dirty(x: item)
 - clean(x: item)
+- cut(x: item)
 - sitting(x: character)
 - lying(x: character)
+- sleeping(x: character)
+- inhand(x: item) # A item is grasped by a character
 
 ## The available relationships are:
 - on(x: item, y: item)
@@ -78,34 +107,33 @@ In the goal representation, this variable is not defined: """+error_info+""". Pl
 - close_char(x: character, y: item)
 - facing(x: item, y: item)
 - facing_char(x: character, y: item)
-- inhand(x: item)
 Here are a few easily confusing usages to note:
 In relationships with the _char suffix, the first parameter must always be a char. For example, on and on_char, inside and inside_char, close and close_char, facing and facing_char.
 
-## available properties:
-- surfaces(x: item)
-- grabbable(x: item)
-- sittable(x: item)
-- lieable(x: item)
-- hangable(x: item)
-- drinkable(x: item)
-- eatable(x: item)
-- recipient(x: item)
-- cuttable(x: item)
-- pourable(x: item)
-- can_open(x: item)
-- has_switch(x: item)
-- readable(x: item)
-- lookable(x: item)
-- containers(x: item)
-- clothes(x: item)
-- person(x: item)
+## available properties (The text following the hash symbol is a comment; please do not include it in the goal representation):
+- surfaces(x: item) # To indicate an item has a surface where things can be placed, such as a kitchen countertop or a table.
+- grabbable(x: item) # To indicate an item can be grabbed in hand.
+- sittable(x: item) # To indicate an item can be sat on.
+- lieable(x: item) # To indicate an item can be lied on.
+- hangable(x: item) # To indicate an item can be hung on.
+- drinkable(x: item) # To indicate an item can be drunk.
+- eatable(x: item) # To indicate an item can be eaten.
+- recipient(x: item) # To indicate an item can be used to receive something.
+- cuttable(x: item) # To indicate an item can be cut with a knife.
+- pourable(x: item) # To indicate an item can be poured into another container or on other items.
+- can_open(x: item) # To indicate an item can be opened.
+- has_switch(x: item) # To indicate an item has a switch to turn on or off.
+- readable(x: item) # To indicate an item can be read.
+- lookable(x: item) # To indicate an item can be looked at.
+- containers(x: item) # To indicate an item is a container.
+- clothes(x: item) # To indicate an item is a piece of clothing.
+- person(x: item) 
 - body_part(x: item)
 - cover_object(x: item)
-- has_plug(x: item)
-- has_paper(x: item)
-- movable(x: item)
-- cream(x: item)
+- has_plug(x: item) # To indicate an item has a plug.
+- has_paper(x: item) # To indicate an item has paper.
+- movable(x: item) # To indicate an item can be moved.
+- cream(x: item) # To indicate an item is a cream.
 properties cannot be assigned a value; they can only return a boolean value as a predicate. For example, an apple can be grabbed, so grabbable(apple) will return true. Properties are typically used in if conditions or assert statements.
 
 ## available category determination:
@@ -255,6 +283,8 @@ behavior view_neighborhood_from_child_room_window():
         achieve inside_char(char, child_room)
 
 In this example, the original version of the behavior definition contains an undefined variable self in the body of the behavior "view_neighborhood_from_child_room_window". Use "char" directly to represent itself.
+
+Please note that, you can not provide any parameters to __goal__().
 
 ## Output Format:
 Output the goal representation with the supplemented definitions and declarations. You just need to output the modified entire goal representations without adding any symbols, comments, or explanations.

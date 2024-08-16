@@ -8,7 +8,7 @@ def get_goal_inter_prompt(goal,cat_list=None,additional_information=None):
 The goal is: """+goal+""".
 The additional information is: """+additional_information+"""
 ## Task Instructions:
-You need to analyze the goal and additional information that I provide(sometimes there may be no additional information), refer to the example, and transform them into the formal representation defined below. Your output may include several behaviors. In the body section of each behavior, you need to declare some intermediate states, intermediate relationships, final states, and final relationships required to achieve the goal. You do not need to provide the actions needed to achieve the goal. Once you provide the intermediate states, intermediate relationships, final states, and final relationships, my algorithm will plan a feasible sequence of actions on its own. Please note that the states, relationships, properties, and keywords you use must not exceed the scope I provided. If you call any function, make sure that you defined them already. Please check these problems carefully before outputting, otherwise the program will not run. Additionally, behavior __goal__(): is a required structure, functioning similarly to the main function in Python. You usually need to place it at the end of the output.
+You need to analyze the goal and additional information that I provide(sometimes there may be no additional information), refer to the example, and transform them into the formal representation defined below. Your output may include several behaviors. In the body section of each behavior, you need to declare some intermediate states, intermediate relationships, final states, and final relationships required to achieve the goal. You do not need to provide the actions needed to achieve the goal. Once you provide the intermediate states, intermediate relationships, final states, and final relationships, my algorithm will plan a feasible sequence of actions on its own. Please note that the states, relationships, properties, and keywords you use must not exceed the scope I provided. If you call any function, make sure that you defined them already. Please check these problems carefully before outputting, otherwise the program will not run. Additionally, behavior __goal__(): is a required structure, functioning similarly to the main function in Python. You usually need to place it at the end of the output. Please do not provide any parameters to __goal__().
 For additional information, sometimes you need to define a transition model. The characteristic of a transition model is that it includes an eff at the end of a behavior, indicating the effect of this behavior. Note that __goal__ behavior cannot be a transition model.
 
 
@@ -36,7 +36,7 @@ And the fried state and boiled state can only be used for food, not for a contai
 wrong: fried(pan)
 correct: fried(egg)
 
-## The available relationships are (The text following the hash symbol is a comment; please do not include it in the target representation):
+## The available relationships are (The text following the hash symbol is a comment; please do not include it in the goal representation):
 - on(x: item, y: item)
 - on_char(x: character, y: item)
 - inside(x: item, y: item)
@@ -45,9 +45,9 @@ correct: fried(egg)
 - close(x: item, y: item)
 - close_char(x: character, y: item)
 Here are a few easily confusing usages to note:
-In relationships with the _char suffix, the first parameter must always be a char. For example, on and on_char, inside and inside_char, close and close_char, facing and facing_char.
+In relationships with the _char suffix, the first parameter must always be a char. For example, on and on_char, inside and inside_char, close and close_char.
 
-## available properties (The text following the hash symbol is a comment; please do not include it in the target representation):
+## available properties (The text following the hash symbol is a comment; please do not include it in the goal representation):
 - surfaces(x: item) # To indicate an item has a surface where things can be placed, such as a kitchen countertop or a table.
 - grabbable(x: item) # To indicate an item can be grabbed in hand.
 - cuttable(x: item) # To indicate an item can be cut with a knife.
@@ -115,7 +115,7 @@ behavior wash(obj: item):
     inside[obj, sink] = True
 
 # foreach
-# Usage: Iterates over all objects of a certain type.
+# Usage: Iterates over all objects of a certain type. When using the "foreach" statement to operate on items, caution is needed. Many items exist in large quantities in the scene. Directly using "foreach" may lead to performing too many unnecessary operations. When only a few items need to be operated on, it might be better to use bind to extract the item to be operated on.
 foreach o: item:
     if is_fridge(o) or is_cabinet(o):
         achieve closed(o)
@@ -477,6 +477,26 @@ behavior __goal__():
         
 Example Analysis:
 This simple example demonstrates the importance of safety. After frying an egg, the stove, oven, and faucet should be turned off to avoid accidents. The use of "foreach" ensures that all dangerous items are turned off after the egg is fried. Meanwhile, food should be removed from the container after cooking, so the egg is placed inside the container after frying.
+
+#Example-10:
+A common mistake is ignoring the effective duration of "achieve." The effective duration of "achieve" persists until the current action is completed. In other words, after achieving inhand(A) within the same action, A will remain in hand, making it impossible to achieve other operations like on(A,B).
+
+When the goal is: Put the apple on the table.
+The additional information: None
+
+A wrong output is:
+behavior put_apple_on_table(apple:item,table:item):
+    body:
+        achieve inhand(apple)
+        achieve on(apple,table)
+
+Example Analysis:In this example, the apple must both remain in hand and be placed on the table, which is impossible to achieve. The solution to this problem is to remove the unnecessary step of achieving inhand(apple), as the program will automatically determine how to achieve on(apple,table).
+A correct output is:
+behavior put_apple_on_table(apple:item,table:item):
+    body:
+        achieve on(apple,table)
+
+
 
 ## Output Format:
 You can only output the description of the converted goal and additional information. Do not include any explanation or any other symbols.

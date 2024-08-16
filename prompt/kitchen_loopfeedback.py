@@ -116,7 +116,7 @@ behavior wash(obj: item):
     inside[obj, sink] = True
 
 # foreach
-# Usage: Iterates over all objects of a certain type.
+# Usage: Iterates over all objects of a certain type. When using the "foreach" statement to operate on items, caution is needed. Many items exist in large quantities in the scene. Directly using "foreach" may lead to performing too many unnecessary operations. When only a few items need to be operated on, it might be better to use bind to extract the item to be operated on.
 foreach o: item:
     if is_fridge(o) or is_cabinet(o):
         achieve closed(o)
@@ -195,25 +195,8 @@ slice(x: item) # slice the item x, x should be a food
 peel(x: item) # peel the item x, x should be a food
 
 ## Examples of correct goal represenations:
-## Example-1:
-
-When the goal is: 
-Find the groceries and carry them into the kitchen. Place them on the counter and begin to sort them out. Place the vegetables, eggs, cheese, and milk in the fridge.
-
-The additional information is: None
-
-The output is:
-behavior __goal__():
-    body:
-        bind fridge: item where:
-            is_fridge(fridge)
-        foreach o: item:
-            if is_vegetable(o) or is_egg(o) or is_cheese(o) or is_milk(o):
-                achieve inside(o, fridge)
-
-Example Analysis: To achieve the goal, we must first ensure there is a refrigerator in the environment. However, we don't need to specify which refrigerator, so we use the keyword bind to select any refrigerator. Next, we need to place the vegetables, eggs, cheese, and milk into the refrigerator. The "foreach" keyword ensures that all items categorized as vegetables, eggs, cheese, and milk are eventually in the refrigerator.
           
-# Example-2:
+# Example-1:
 When the goal is:
 Clean all the plates and cups with dishwasher. Then put them on the table.
 
@@ -250,7 +233,7 @@ behavior __goal__():
 Example Analysis: 
 Completing this goal involves two stages: washing dishes and cups with a dishwasher, then put them on the table. First, all the dishes and cups need to be placed into the dishwasher, then the dishwasher must be closed and started. After washing, the dishes and cups need to be placed on the dining table.
 
-# Example-3:
+# Example-2:
 When the goal is:
 Close all the doors
 
@@ -271,7 +254,7 @@ behavior __goal__():
 Example Analysis: 
 This case aims to demonstrate the use of 'unordered' because to close a door, you must be close to it. When closing multiple doors, the order is very important. If you close the wrong door, it might block the path to another door. In such a case, you would have to reopen the already closed door to reach the other one, which might lead to the failure of the task. Therefore, the 'unordered' keyword is used here to automatically find the appropriate execution order.
 
-# Example-4:
+# Example-3:
 When the goal is: I want to eat an apple, clean an apple for me.
 The additional information: Do not use the knife.
 
@@ -288,7 +271,7 @@ behavior __goal__():
 Example Analysis:
 In this case, the challenge is to make sure that the knife is not used. The 'assert_hold' keyword is used to ensure that the knife is not in hand during the whole process. Notice that the 'assert_hold' keyword always gives a stronger restriction that the whole behavior must follow. So it is only used to express those constrains declared in additional information.
 
-#Example-5:
+#Example-4:
 When the goal is: Whisk an egg.
 The additional information: None
 
@@ -309,7 +292,7 @@ behavior __goal__():
 
 Example Analysis: The object to be mixed must be some kind of container, such as a pan, bowl, pot etc. So, to mix certain items, you must first ensure they are placed in a container, then bring the container to a mixed state.
 
-#Example-6:
+#Example-5:
 When the goal is: Help me make scrambled eggs with tomatoes
 The additional information: To make sure it is healthy, wash the tomatoes and eggs before cooking. I don't like the skin of the tomatoes, so remove them before cooking.
 
@@ -365,7 +348,7 @@ For handling the eggs, since there is no additional information, it relies more 
 The cooking process also relies heavily on your common sense. First, you need to place the pan on the stove to preheat it, then add the prepared ingredients, followed by the various seasonings. Finally, stir everything evenly. Note that the stirring action is applied to the contents of the container as a whole, not to a specific ingredient.
 In the goal_, you only need to invoke these sub-goals. Note that before invoking, you need to declare the corresponding variables, and when invoking, you need to pass the appropriate parameters.
 
-#Example-7:
+#Example-6:
 When the goal is: put a fried egg in the bowl
 The additional information: None
 
@@ -447,7 +430,7 @@ behavior Fry(object:item):
 Behavior Explaination:
 When you declare "achieve fried(obj)" in the target expression, the program will automatically jump to this behavior. It will automatically find a pan and a stove, place the pan on the stove, turn on the stove, and finally put the item to be fried into the pan. Usually, you only need to declare "achieve fried(obj)" and the program will automatically execute the above steps, without needing to repeat the involved steps. However, if you believe that the provided behavior cannot meet the current goal and additional information, you can design a new behavior by following the pattern of the provided behavior. But please note, if you design a new behavior, do not re-execute "achieve fried," as this may lead to repeated actions.
 
-#Example-8:
+#Example-7:
 A typical error case is when, after redefining how to prepare tomatoes and onions, "fried" is called again.This will cause the actions to be executed repeatedly.
 behavior prepare_tomato_and_onion(tomato:item, onion:item):
     body:
@@ -467,7 +450,7 @@ behavior prepare_tomato_and_onion(tomato:item, onion:item):
 Example Analysis:
 In this case, what is given is a behavior definition rather than a complete goal representation. After specifying the preparation actions, calling "fried" again will result in many actions being executed repeatedly.
 
-#Example-9:
+#Example-8:
 As a general rule, a good habit is to remove the food after cooking.
 when the goal is: Fry an egg.
 The additional information: None

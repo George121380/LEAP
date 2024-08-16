@@ -12,7 +12,7 @@ import jacinle
 import concepts.dm.crow as crow
 
 
-domain = crow.load_domain_file('kitchen.cdl')
+domain = crow.load_domain_file('/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/partial_observation/virtualhome_partial.cdl')
 
 
 print(domain.name)
@@ -30,11 +30,11 @@ for k, v in domain.behaviors.items():
 
 print(jacinle.tabulate(table))
 
-problem = crow.load_problem_file('virtualhome-problem.cdl')
+problem = crow.load_problem_file('/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/partial_observation/virtualhome_partial.cdl')
 executor = domain.make_executor()
 
 result = executor.execute(
-    expression='close[char,light_1]',
+    expression='close_char[char,light_1]',
     state=problem.state,
     bounded_variables=dict()
 )

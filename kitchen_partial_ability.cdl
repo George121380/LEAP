@@ -2,6 +2,8 @@ domain "virtualhome"
 
 typedef item: object
 typedef character: object
+typedef id: int64
+
 
 # Features without return type annotations are assumed to be returning boolean values.
 
@@ -21,7 +23,8 @@ feature fried(x: item)
 feature boiled(x: item)
 feature grilled(x: item)
 feature waterfull(x: item)
-
+feature known(x: item)
+feature checked(x: item, flag:item) #check x around flag
 
 #add state
 feature is_tomato(x: item)
@@ -84,6 +87,8 @@ feature cookaware(x: item)
 
 object_constant char:character
 
+feature id(x:item) -> int64
+
 
 #controllers
 controller walk_executor(x: item)
@@ -127,12 +132,9 @@ behavior put(inhand_obj: item, obj: item):
       if close(inter, obj):
         close[inter, inhand_obj] = True
         close[inhand_obj, inter] = True
-    if can_open(obj):
-      open[obj] = True
-      closed[obj] = False
 
     foreach cont: item:
-      if inside(cont, obj):
+      if inside(cont, inhand_obj):
         if surfaces(obj):
           on[cont, obj] = True
         if containers(obj) or can_open(obj):
@@ -160,9 +162,14 @@ behavior empty_a_hand():
 def obj_inside_or_on(obj1: item, obj2: item):
   return inside(obj1, obj2) or on(obj2, obj1)
 
+def locked(obj: item):
+  symbol b=exists container: item : inside(obj, container) and closed(container) and not eatable(container)
+  return b
+
 behavior walk(obj: item):
   goal: close_char(char, obj)
   body:
+    achieve known(obj)
     walk_executor(obj)
   eff:
     foreach icf:item:
@@ -170,13 +177,20 @@ behavior walk(obj: item):
       inside_char[char,icf]= False
       if obj_inside_or_on(obj, icf):
         close_char[char, icf] = True
+      if close(icf,obj):
+        if not locked(icf):
+          known[icf] = True
+      if not close(icf,obj):
+        checked[icf, obj] = True
     close_char[char,obj] = True
+    
 
 behavior switch_off(obj: item):
   goal: is_off(obj)
   body:
     assert has_switch(obj)
     assert is_on(obj)
+    achieve known(obj)
     achieve has_a_free_hand()
     achieve close_char(char, obj)
     switchoff_executor(obj)
@@ -189,6 +203,7 @@ behavior switch_on(obj: item):
   body:
     assert has_switch(obj)
     assert is_off(obj)
+    achieve known(obj)
     achieve has_a_free_hand()
     achieve close_char(char, obj)
     if can_open(obj):
@@ -243,22 +258,26 @@ behavior grab(obj: item):
   goal: inhand(obj)
   body:
     assert grabbable(obj)
+    achieve known(obj)
     achieve has_a_free_hand()
+    achieve close_char(char, obj)
     foreach obj2:item:
       if inside(obj,obj2):
-        assert can_open(obj2) or containers(obj2)
+        assert can_open(obj2) or containers(obj2) or eatable(obj2)
         if can_open(obj2):
           achieve open(obj2)
-    achieve close_char(char, obj)
     grab_executor(obj)
   eff:
     if exists item1: item : holds_lh(char, item1):
       holds_rh[char, obj] = True
     else:
       holds_lh[char, obj] = True
-    foreach container:item:
-      if inside(obj,container):
-        inside[obj, container] = False
+    foreach close_obj:item:
+      inside[obj, close_obj] = False
+      close[obj, close_obj] = False
+      close[close_obj, obj] = False
+      on[obj, close_obj] = False
+
 
 behavior wash(obj: item):
   goal: clean(obj)
@@ -266,7 +285,7 @@ behavior wash(obj: item):
     bind sink:item where:
       is_sink(sink)
     bind faucet:item where:
-      is_faucet(faucet)
+      is_faucet(faucet) and close(faucet, sink)
     achieve inside(obj, sink)
     achieve_once is_on(faucet)
     wash_executor(obj)
@@ -274,7 +293,6 @@ behavior wash(obj: item):
   eff:
     dirty[obj] = False
     clean[obj] = True
-    inside[obj, sink] = True
 
 behavior open(obj: item):
   goal: open(obj)
@@ -289,12 +307,19 @@ behavior open(obj: item):
   eff:
     open[obj] = True
     closed[obj] = False
+    foreach inter:item:
+      if inside(inter, obj):
+        known[inter] = True
+      if not inside(inter, obj):
+        checked[inter, obj] = True
 
 behavior close(obj: item):
   goal: closed(obj)
   body:
+    achieve known(obj)
     assert can_open(obj)
     assert open(obj)
+
     achieve has_a_free_hand()
     achieve close_char(char, obj)
     close_executor(obj)
@@ -305,8 +330,8 @@ behavior close(obj: item):
 behavior pour(obj: item, target: item):
   goal: inside(obj, target)
   body:
+    achieve known(target)
     assert pourable(obj)
-    assert containers(target)
     achieve inhand(obj)
     achieve close_char(char, target)
     pour_executor(obj, target)
@@ -316,6 +341,7 @@ behavior pour(obj: item, target: item):
 behavior plugin(object:item):
   goal: plugged(object)
   body:
+    achieve known(object)
     assert has_plug(object)
     assert unplugged(object)
     achieve has_a_free_hand()
@@ -328,6 +354,7 @@ behavior plugin(object:item):
 behavior plugout(object:item):
   goal: unplugged(object)
   body:
+    achieve known(object)
     assert has_plug(object)
     assert plugged(object)
     achieve has_a_free_hand()
@@ -340,6 +367,7 @@ behavior plugout(object:item):
 behavior stir(object:item):
   goal: mixed(object)
   body:
+    achieve known(object)
     assert containers(object) or eatable(object)
     bind tool : item where:
       is_spatula(tool)
@@ -356,6 +384,7 @@ behavior stir(object:item):
 behavior slice(object:item):
   goal: sliced(object)
   body:
+    achieve known(object)
     assert cuttable(object)
     bind tool : item where:
       is_knife(tool)
@@ -374,8 +403,9 @@ behavior slice(object:item):
 behavior peel(object:item):
   goal: peeled(object)
   body:
+    achieve known(object)
     assert peelable(object)
-    if is_tomato(object):
+    if is_tomato(object) or is_potato(object) or is_onion(object) or is_garlic(object) or is_ginger(object):
       bind tool : item where:
         is_knife(tool)
       achieve inhand(tool)
@@ -387,6 +417,7 @@ behavior peel(object:item):
 behavior Fry(object:item):
   goal: fried(object)
   body:
+    achieve known(object)
     bind pan:item where:
       is_pan(pan)
     bind stove:item where:
@@ -400,6 +431,7 @@ behavior Fry(object:item):
 behavior Boil(object:item):
   goal: boiled(object)
   body:
+    achieve known(object)
     bind stove:item where:
       is_stove(stove)
     
@@ -423,9 +455,11 @@ behavior Boil(object:item):
 behavior Grill(object:item):
   goal: grilled(object)
   body:
+    achieve known(object)
     bind oven:item where:
       is_oven(oven)
     achieve inside(object, oven)
     achieve is_on(oven)
   eff:
     grilled[object] = True
+

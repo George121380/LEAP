@@ -3,6 +3,7 @@ domain "virtualhome"
 typedef item: object
 typedef character: object
 typedef ObjectList: item[]
+typedef id: int64
 
 # Features without return type annotations are assumed to be returning boolean values.
 
@@ -26,7 +27,6 @@ feature inside(x: item, y: item)
 feature between(door: item, room: item)
 feature close(x: item, y: item)
 feature facing(x: item, y: item)
-
 feature close_char(x: character, y: item)
 feature facing_char(x: character, y: item)
 feature inside_char(x: character, y: item)
@@ -60,8 +60,12 @@ feature has_paper(x: item)
 feature movable(x: item)
 feature cream(x: item)
 
-
 object_constant char:character
+
+feature id(x:item) -> int64
+
+#exploration
+feature unknown(x: item)
 
 #category
 feature is_room(x: item)
@@ -397,6 +401,8 @@ def has_a_free_hand():
 behavior put(inhand_obj: item, obj: item):
   body:
     assert surfaces(obj) or is_room(obj) or recipient(obj) or containers(obj) or can_open(obj) or eatable(obj)
+    achieve not unknown(obj)
+    achieve not unknown(inhand_obj)
     achieve inhand(inhand_obj)
     if can_open(obj) and closed(obj):
       achieve open(obj)
@@ -412,7 +418,7 @@ behavior put(inhand_obj: item, obj: item):
       inside[inhand_obj, obj] = True
     close[inhand_obj, obj] = True
     close[obj, inhand_obj] = True
-    foreach inter in (findall x: item: close(x, obj)):
+    foreach inter in (findall x: item: close(x, obj) and not unknown(x)):
       close[inter, inhand_obj] = True
       close[inhand_obj, inter] = True
 
@@ -421,7 +427,7 @@ behavior empty_a_hand():
   body:
     assert not has_a_free_hand()
     bind surf:item where:
-      surfaces(surf)
+      surfaces(surf) and not unknown(surf)
     bind give_up_obj:item where:
       inhand(give_up_obj)
     put(give_up_obj, surf)
@@ -440,7 +446,7 @@ behavior sit():
   body:
     assert not sitting(char)
     bind seat:item where:
-      sittable(seat)
+      sittable(seat) and not unknown(seat)
     achieve close_char(char, seat)
     sit_executor(seat)
   eff:
@@ -453,7 +459,7 @@ behavior lie():
   body:
     assert not lying(char)
     bind bed:item where:
-      lieable(bed)
+      lieable(bed) and not unknown(bed)
     achieve close_char(char, bed)
     lie_executor(bed)
   eff:
@@ -468,6 +474,7 @@ behavior walk(obj: item):
   goal: close_char(char, obj)
   body:
     achieve standing(char)
+    achieve not unknown(obj)
     walk_executor(obj)
     let inhand_objects=findall o: item where: inhand(o)
 
@@ -499,6 +506,8 @@ behavior walk(obj: item):
 
     foreach icf in (findall t:item: obj_inside_or_on(obj, t)):
       close_char[char, icf] = True
+      if not (can_open(icf) and closed(icf)):
+        unknown[icf] = False
       foreach o in inhand_objects:
         close[o, icf] = True
         close[icf, o] = True
@@ -511,6 +520,7 @@ behavior walk(obj: item):
 behavior find(obj:item):
   goal: facing_char(char, obj) and close_char(char, obj)
   body:
+    achieve not unknown(obj)
     if on_body(obj, char):
       find_executor(obj)
     else:
@@ -524,6 +534,7 @@ behavior find(obj:item):
 behavior turnto(obj:item):
   goal: facing_char(char, obj)
   body:
+    achieve not unknown(obj)
     turnto_executor(obj)
   eff:
     foreach o in (findall t:item: facing_char(char, t)):
@@ -535,6 +546,7 @@ behavior switch_off(obj: item):
   body:
     assert has_switch(obj)
     assert is_on(obj)
+    achieve not unknown(obj)
     achieve has_a_free_hand()
     achieve close_char(char, obj)
     switchoff_executor(obj)
@@ -547,6 +559,7 @@ behavior switch_on(obj: item):
   body:
     assert has_switch(obj)
     achieve has_a_free_hand()
+    achieve not unknown(obj)
     if has_plug(obj):
       achieve plugged(obj)
     if can_open(obj):
@@ -577,6 +590,7 @@ behavior grab(obj: item):
   goal: inhand(obj)
   body:
     assert grabbable(obj)
+    achieve not unknown(obj)
     achieve has_a_free_hand()
     foreach obj2:item:
       if inside(obj,obj2):
@@ -602,6 +616,7 @@ behavior grab(obj: item):
 behavior wash(obj: item):
   goal: clean(obj)
   body:
+    achieve not unknown(obj)
     achieve has_a_free_hand()
     achieve close_char(char, obj)
     wash_executor(obj)
@@ -614,6 +629,7 @@ behavior open(obj: item):
   body:
     assert can_open(obj)
     assert closed(obj)
+    achieve not unknown(obj)
     achieve has_a_free_hand()
     if has_switch(obj):
       achieve is_off(obj)
@@ -622,10 +638,13 @@ behavior open(obj: item):
   eff:
     open[obj] = True
     closed[obj] = False
+    foreach i in (findall x: item: inside(x, obj)):
+      unknown[i] = False
 
 behavior closes(obj: item):
   goal: closed(obj)
   body:
+    achieve not unknown(obj)
     assert can_open(obj)
     assert open(obj)
     achieve has_a_free_hand()
@@ -644,6 +663,8 @@ behavior pour(obj: item, target: item):
 
     assert pourable(obj) or drinkable(obj)
     assert recipient(target) or pour_target(obj)
+    achieve not unknown(obj)
+    achieve not unknown(target)
     achieve inhand(obj)
     achieve close_char(char, target)
     pour_executor(obj, target)
@@ -657,6 +678,7 @@ behavior plugin(object:item):
   goal: plugged(object)
   body:
     assert has_plug(object)
+    achieve not unknown(object)
     achieve has_a_free_hand()
     achieve close_char(char, object)
     plugin_executor(object)
@@ -668,6 +690,7 @@ behavior plugout(object:item):
   goal: unplugged(object)
   body:
     assert has_plug(object)
+    achieve not unknown(object)
     achieve has_a_free_hand()
     if has_switch(object):
       achieve is_off(object)
@@ -681,6 +704,7 @@ behavior cut(object:item):
   goal: cut(object)
   body:
     assert cuttable(object) or eatable(object)
+    achieve not unknown(object)
     achieve has_a_free_hand()
     symbol has_knife=exists knife:item: is_knife(knife) and inhand(knife)
     if not has_knife:
@@ -695,6 +719,7 @@ behavior cut(object:item):
 behavior eat(object:item):
   body:
     assert eatable(object)
+    achieve not unknown(object)
     eat_executor(object)
 
 
@@ -726,6 +751,7 @@ behavior wipe(obj:item):
     if not has_cleaning_solution:
       bind cleaning_tool:item where:
         is_towel(cleaning_tool) or is_rag(cleaning_tool) or is_sponge(cleaning_tool) or is_paper_towel(cleaning_tool) or is_cloth_napkin(cleaning_tool) or is_duster(cleaning_tool) or is_cleaning_solution(cleaning_tool)
+      achieve not unknown(cleaning_tool)
       achieve inhand(cleaning_tool)
     achieve close_char(char, obj)
     wipe_executor(obj)
@@ -737,6 +763,7 @@ behavior put_on_body(inhand_obj: item):
   goal: on_body(inhand_obj, char)
   body:
     assert clothes(inhand_obj)
+    achieve not unknown(inhand_obj)
     achieve inhand(inhand_obj)
     puton_executor(inhand_obj)
   eff:
@@ -753,11 +780,13 @@ behavior put_off_body(clo: item):
 behavior read(material:item):
   body:
     assert readable(material)
+    achieve not unknown(material)
     achieve inhand(material)
     read_executor(material)
 
 behavior touch(obj:item):
   body:
+    achieve not unknown(obj)
     foreach obj2:item:
       if inside(obj,obj2):
         if not is_room(obj2):
@@ -770,33 +799,40 @@ behavior touch(obj:item):
 behavior type(obj:item):
   body:
     assert is_keyboard(obj) or has_switch(obj)
+    achieve not unknown(obj)
+
     achieve close_char(char, obj)
     type_executor(obj)
 
 behavior watch(obj:item):
   body:
     assert lookable(obj)
+    achieve not unknown(obj)
     achieve facing_char(char, obj)
 
 behavior drink(obj: item):
   body:
     assert drinkable(obj) or recipient(obj)
+    achieve not unknown(obj)
     achieve inhand(obj)
     drink_executor(obj)
 
 behavior look_at(obj:item):
   body:
+    achieve not unknown(obj)
     achieve facing_char(char, obj)
     lookat_executor(obj)
 
 behavior greet(person:item):
   body:
     assert person(person)
+    achieve not unknown(person)
     greet_executor(person)
 
 behavior move(obj:item):
   body:
     assert movable(obj) or is_button(obj) or is_chair(obj) or is_curtain(obj)
+    achieve not unknown(obj)
     achieve has_a_free_hand()
     achieve close_char(char, obj)
     move_executor(obj)
@@ -804,5 +840,6 @@ behavior move(obj:item):
 behavior squeeze(obj:item):
   body:
     assert is_cleaning_solution(obj) or is_tooth_paste(obj) or is_shampoo(obj) or is_sponge(obj) or clothes(obj)
+    achieve not unknown(obj)
     achieve has_a_free_hand()
     achieve close_char(char, obj)
