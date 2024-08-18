@@ -4,7 +4,8 @@ from prompt.goal_interpretation_prompt import get_goal_inter_prompt
 # from prompt.kitchen_prompt import get_goal_inter_prompt
 from prompt.kitchen_refine_prompt import refine_prompt
 from prompt.kitchen_loopfeedback import loop_refine
-from prompt.exploration_prompt import get_exp_prompt
+from prompt.exploration_prompt import get_exploration_prompt_gpt,get_exp_behavior
+from auto_debugger import exploration_auto_debug
 
 
 # from prompt.refine_prompt import refine_prompt
@@ -53,7 +54,7 @@ def feedbackloop(goal,additional_information,item_list=None,goal_representation=
 
 def exploration(goal,additional_information,problem_cdl):
     system="You are a grammar expert with good common sense. I have some items that I need to find, and I need you to help me design a series of formal representations of find actions based on a set of grammar rules I define and your own common sense."
-    content=get_exp_prompt(goal,additional_information,problem_cdl)
+    content=get_exploration_prompt_gpt(goal,additional_information,problem_cdl)
     print('=' * 80)
     print(f"Exploration:")
     print('=' * 80)
@@ -62,11 +63,9 @@ def exploration(goal,additional_information,problem_cdl):
     return exploration_content
 
 def exploration_VH(goal,additional_information,problem_cdl):
-    system="You are a grammar expert with good common sense. I have some items that I need to find, and I need you to help me design a series of formal representations of find actions based on a set of grammar rules I define and your own common sense."
-    content=get_exp_prompt(goal,additional_information,problem_cdl)
     print('=' * 80)
     print(f"Exploration:")
     print('=' * 80)
-    exploration_content=ask_GPT(system,content)
+    exp_behavior=get_exp_behavior(goal,additional_information,problem_cdl)
     print('=' * 80)
-    return exploration_content
+    return exp_behavior

@@ -157,9 +157,15 @@ bind x: item where:
 achieve is_on(light)
 
 # foreach
-# Usage: Iterates over all objects of a certain type.
+# Usage: Iterates over all objects of a certain type. Note that you are not suppose to use "where" in foreach statement.
+correct example:
 foreach o: item:
     achieve closed(o)
+
+error example:
+foreach o: item where:
+    achieve closed(o)
+The where keyword was used in the error case.
 
 # behavior
 # Usage: Defines a behavior rule.

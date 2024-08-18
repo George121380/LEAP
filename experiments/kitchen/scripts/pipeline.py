@@ -10,11 +10,11 @@ from evolving_graph.environment import EnvironmentGraph
 from evolving_graph.preparation import AddMissingScriptObjects, AddRandomObjects, ChangeObjectStates, \
     StatePrepare, AddObject, ChangeState, Destination
 from evolving_graph.environment import *
-from utils import get_nodes_information,construct_cdl,sampler,transform_plan
-from Interpretation import goal_interpretation,refiner,feedbackloop,exploration
-from solver import goal_solver
+from utils.utils_all import get_nodes_information,construct_cdl,sampler,transform_plan
+from utils.Interpretation import goal_interpretation,refiner,feedbackloop,exploration
+from utils.solver import goal_solver
 from concepts.dm.crow.parsers.cdl_parser import TransformationError
-from auto_debugger import auto_debug
+from utils.auto_debugger import auto_debug
 
 def print_node_names(n_list):
     if len(n_list) > 0:

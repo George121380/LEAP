@@ -131,9 +131,15 @@ behavior wash(obj: item):
     inside[obj, sink] = True
 
 # foreach
-# Usage: Iterates over all objects of a certain type.
+# Usage: Iterates over all objects of a certain type. Note that you are not suppose to use "where" in foreach statement.
+correct example:
 foreach o: item:
     achieve closed(o)
+
+error example:
+foreach o: item where:
+    achieve closed(o)
+The "where" keyword was used in the error case. So please make sure that you do not use "where" in the foreach statement.
 
 # behavior
 # Usage: Defines a behavior rule.
@@ -189,6 +195,10 @@ else:
 # Usage: Checks if there is at least one object that meets the condition and returns a boolean value.
 template: exists obj_name: objtype : condition()
 eg: exists item1: item : holds_lh(char, item1)
+
+# symbol
+# Usage: Define a symbol and bind it to the output of an expression. You can only use the symbol in the following way.
+symbol l=exists item1: item : holds_lh(char, item1)
 
 # unordered
 # Usage: When the execution order may affect the success of the task and the order cannot be determined in advance, you can use this keyword to allow the program to decide the execution order by itself. This can increase the success rate of complex tasks, but it will also incur higher computational costs.
@@ -282,7 +292,7 @@ behavior __goal__():
     body:
         bind apple: item where:
             is_apple(apple)
-        for all o: item:
+        foreach o: item:
             if is_knife(o):
                 assert_hold not inhand(knife)
         achieve clean(apple)
@@ -337,6 +347,39 @@ behavior __goal__():
         dry_towel(towel)
     
 Example Analysis: In this example, I want to demonstrate how to invoke available behaviors while highlighting the use of the exists keyword and the achieve_once keyword. Please pay particular attention to these aspects. First, according to the goal, we need to clean and dry a towel. So, the overall goal is divided into two steps: cleaning and drying. During the cleaning process, based on additional information, we need to use a sink to clean the towel. Therefore, in the __goal__, first, use bind to find the towel and sink. Please note that bind should only be used in __goal__ whenever possible. Next, design the clean_towel behavior, which uses two items: the towel and the sink, both of which were instantiated in the __goal__. According to common sense, the towel needs to be placed in the sink first. If the sink has a faucet, turn on the faucet to clean the towel, and then turn it off. Since the available states include clean and dirty, in the eff, the towel is set to clean. Secondly, for the wringing stage, directly invoke the available behavior and provide the necessary parameter towel. In principle, the dry_towel behavior should include an eff representing dryness. However, since the available states do not include a state representing dryness, this part is omitted.
+
+# Example-7:
+The following example demonstrates the difference between using foreach and bind.
+When the goal is: Wash all the clothes in the basket.
+The additional information: Please note that there is more than one basket in the scenario, so make sure the basket you are looking for contains clothes. And we have a washing mashine, so I prefer you to use that to wash clothes.
+
+The output is:
+
+def basket_with_clothes(basket:item):
+    symbol has_clothes_inside=exists cloth: item : inside(cloth, basket) and clothes(cloth)
+    return has_clothes_inside and is_basket(basket)
+
+behavior load_washing_machine(basket:item,washing_machine:item):
+    body:
+        foreach c: item:
+            if is_clothes(c) and inside(c,basket):
+                achieve inside(c, washing_machine)
+
+behavior turn_on_washing_machine(washing_machine:item):
+    body:
+        achieve closed(washing_machine)
+        achieve is_on(washing_machine)
+
+behavior __goal__():
+    body:
+        bind basket: item where:
+            basket_with_clothes(basket)
+        bind washing_machine: item where:
+            is_washing_machine(washing_machine)
+        load_washing_machine(basket,washing_machine)
+        turn_on_washing_machine(washing_machine)
+     
+Example Analysis: In this case, I would like to first demonstrate how to perform more complex bind operations. When you need to select items that meet certain criteria (such as choosing a basket containing clothes), you can define a function to specify your conditions (e.g., basket_with_clothes). In the goal, I demonstrated the usage of bind and foreach to you. Please note that bind requires the use of the where keyword, while foreach must not use the where keyword under any circumstances.         
 
 ## Output Format:
 You can only output the description of the converted goal and additional information. Do not include any explanation or any other symbols.
