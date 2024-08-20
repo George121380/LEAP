@@ -401,7 +401,6 @@ def has_a_free_hand():
 
 behavior put(inhand_obj: item, obj: item):
   body:
-    assert surfaces(obj) or is_room(obj) or eatable(obj)
     achieve not unknown(obj)
     achieve not unknown(inhand_obj)
     achieve inhand(inhand_obj)
@@ -411,8 +410,7 @@ behavior put(inhand_obj: item, obj: item):
   eff:
     holds_rh[char, inhand_obj] = False
     holds_lh[char, inhand_obj] = False
-    if surfaces(obj):
-      on[inhand_obj, obj] = True
+    on[inhand_obj, obj] = True
     close[inhand_obj, obj] = True
     close[obj, inhand_obj] = True
     foreach inter in (findall x: item: close(x, obj) and not unknown(x)):
@@ -424,17 +422,16 @@ behavior putin(inhand_obj: item, obj: item):
     assert recipient(obj) or containers(obj) or can_open(obj) or eatable(obj)
     achieve not unknown(obj)
     achieve not unknown(inhand_obj)
-    achieve inhand(inhand_obj)
-    if can_open(obj) and closed(obj):
+    if can_open(obj):
       achieve open(obj)
+    achieve inhand(inhand_obj)
     achieve close_char(char, obj)
     putin_executor(inhand_obj, obj)
 
   eff:
     holds_rh[char, inhand_obj] = False
     holds_lh[char, inhand_obj] = False
-    if recipient(obj) or containers(obj) or can_open(obj):
-      inside[inhand_obj, obj] = True
+    inside[inhand_obj, obj] = True
     close[inhand_obj, obj] = True
     close[obj, inhand_obj] = True
     foreach inter in (findall x: item: close(x, obj) and not unknown(x)):
@@ -446,7 +443,7 @@ behavior empty_a_hand():
   body:
     assert not has_a_free_hand()
     bind surf:item where:
-      surfaces(surf) and not unknown(surf)
+      not unknown(surf)
     bind give_up_obj:item where:
       inhand(give_up_obj)
     put(give_up_obj, surf)
@@ -582,7 +579,7 @@ behavior switch_on(obj: item):
     if has_plug(obj):
       achieve plugged(obj)
     if can_open(obj):
-      achieve closed(obj)
+      achieve_once closed(obj)
     achieve close_char(char, obj)
     switchon_executor(obj)
   eff:
@@ -608,7 +605,7 @@ behavior put_inside(inhand_obj: item, obj: item):
 behavior grab(obj: item):
   goal: inhand(obj)
   body:
-    assert grabbable(obj)
+    assert grabbable(obj) or is_water(obj)
     achieve not unknown(obj)
     achieve has_a_free_hand()
     foreach obj2:item:
@@ -647,7 +644,6 @@ behavior opens(obj: item):
   goal: open(obj)
   body:
     assert can_open(obj)
-    assert closed(obj)
     achieve not unknown(obj)
     achieve has_a_free_hand()
     if has_switch(obj):
@@ -664,8 +660,6 @@ behavior closes(obj: item):
   goal: closed(obj)
   body:
     achieve not unknown(obj)
-    assert can_open(obj)
-    assert open(obj)
     achieve has_a_free_hand()
     achieve close_char(char, obj)
     close_executor(obj)

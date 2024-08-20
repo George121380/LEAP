@@ -62,7 +62,10 @@ In relationships with the _char suffix, the first parameter must always be a cha
 - has_paper(x: item) # To indicate an item has paper.
 - movable(x: item) # To indicate an item can be moved.
 - cream(x: item) # To indicate an item is a cream.
-properties cannot be assigned a value; they can only return a boolean value as a predicate. For example, an apple can be grabbed, so grabbable(apple) will return true. Properties are typically used in if conditions or assert statements.
+"propertie" cannot be assigned a value nor can it be used after "achieve".; they can only return a boolean value as a predicate. For example, an apple can be grabbed, so grabbable(apple) will return true. Properties are typically used in if conditions or assert statements.
+Some typical errors:
+achieve can_open(door) # This is incorrect. Because "propertie" cannot have its value modified, so it cannot be used after "achieve".
+has_plug(lamp) = True # This is incorrect. Because "propertie" cannot have its value modified. So you cannot assign a value to it.
 
 # available behaviors (The text following the hash symbol is a comment; please do not include it in the goal representation):
 The following behaviors can be directly invoked in the goal representation, with parameters passed in like function arguments.
@@ -139,11 +142,7 @@ foreach o: item where:
 The "where" keyword was used in the error case. So please make sure that you do not use "where" in the foreach statement.
 
 # behavior
-# Usage: Defines a behavior rule. There are a few things to note. First, the keywords "goal" and "body" must appear in the behavior. Secondly, the parameters used in the goal must be included in the parameters of the behavior.
-behavior turn_off_light(light:item):
-    goal: is_off(light)
-    body:
-        achieve is_on(light)
+# Usage: Defines a behavior rule. There are a few things to note. First, the keyword "body" must appear in the behavior. Secondly, the parameters used in the goal must be included in the parameters of the behavior.
 
 # goal
 # Usage: Specifies the goal condition for a behavior. If you want to use the goal, please ensure that you include all the parameters used in the goal in the behavior parameters.
@@ -198,14 +197,9 @@ symbol l=exists item1: item : holds_lh(char, item1)
 When the goal is: 
 Put away the food on the table.
 
-The additional information is: Place the eggs and apples in the freezer, and the bread on the kitchen counter. Remember to close the freezer properly.
+The additional information is: Put the eggs and apples on the table into the freezer, and then place the bread from the table onto the kitchen counter. Remember to close the freezer properly.
 
 The output is:
-
-def has_food_on(table:item):
-    symbol has_food=exists food: item : on(food, table) and is_food_egg(food) or is_food_apple(food) or is_food_bread(food)
-    return has_food
-
 behavior store_egg_and_apple_in_freezer(egg:item, apple:item, freezer:item):
     body:
         foreach o: item:
@@ -222,7 +216,7 @@ behavior store_bread_on_kitchen_counter(bread:item, kitchen_counter:item):
 behavior __goal__():
     body:
         bind table: item where:
-            is_table(table) and has_food_on(table)
+            is_table(table)
         bind freezer: item where:
             is_freezer(freezer)
         bind kitchen_counter: item where:
@@ -230,63 +224,50 @@ behavior __goal__():
         store_egg_and_apple_in_freezer(egg, apple, freezer)
         store_bread_on_kitchen_counter(bread, kitchen_counter)
         
-Example Analysis: In this example, all the bind operations are conducted within the __goal__ behavior, ensuring the consistency of item instances across different behaviors. It's important to note that when using the bind keyword to retrieve the table, an additional condition, has_food_on, is added. This condition is defined by a function that uses the "symbol" keyword to bind the has_food variable to the result of an expression, which checks whether the table has an egg, apple, or bread on it. If it does, the function returns true. In the remaining two behaviors, special attention is given to the foreach operation, where an if statement is added. This if statement not only declares the type of item being retrieved but also ensures that the item was originally on the table, aligning with the goal of "Put away the food on the table."
+Example Analysis: In this example, all the bind operations are conducted within the __goal__ behavior, ensuring the consistency of item instances across different behaviors. In the remaining two behaviors, special attention is given to the foreach operation, where an if statement is added. This if statement not only declares the type of item being retrieved but also ensures that the item was originally on the table, aligning with the goal of "Put away the food on the table."
           
 # Example-2:
 When the goal is:
 Clean all the plates and cups with dishwasher. Then put them on the table.
 
 The additional information is:
-- Dishwasher is a good way to clean plates and cups.
-- The dishwasher must be closed and turned on to start the cleaning process.
+Plates and cups are in the sink. And the dishwasher must be closed and turned on to start the cleaning process.
 
 The output is:
-behavior clean_all_plates_and_cups_by_dishwasher(dishwasher:item):
+behavior clean_all_plates_and_cups_by_dishwasher(sink:item,dishwasher:item):
     body:
         foreach o: item:
-            if is_plate(o) or is_cup(o):
+            if (is_plate(o) or is_cup(o)) and inside(o, sink):
                 achieve inside(o, dishwasher)
         achieve closed(dishwasher)
         achieve is_on(dishwasher)
+    eff:
+        foreach o:item:
+            if is_plate(o) or is_cup(o) and inside(o, dishwasher):
+                dirty[o] = False
+                clean[o] = True
 
-behavior put_all_plates_and_cups_on_table(table:item):
+behavior put_all_plates_and_cups_on_table(dishwasher:item, table:item):
     body:
-        
         foreach o: item:
-            if is_plate(o) or is_cup(o):
+            if (is_plate(o) or is_cup(o)) and inside(o, dishwasher):
                 achieve on(o, table)
 
 behavior __goal__():
     body:
+        bind sink: item where:
+            is_sink(sink)
         bind dishwasher: item where:
             is_dishwasher(dishwasher)
         bind table: item where:
             is_table(table)
-        clean_all_plates_and_cups(dishwasher)
-        put_all_plates_and_cups_on_table(table)
+        clean_all_plates_and_cups_by_dishwasher(sink,dishwasher)
+        put_all_plates_and_cups_on_table(dishwasher,table)
     
-
 Example Analysis: 
-Completing this goal involves two stages: washing dishes and cups with a dishwasher, then put them on the table. First, all the dishes and cups need to be placed into the dishwasher, then the dishwasher must be closed and started. After washing, the dishes and cups need to be placed on the dining table.
+Complete this task in two steps: first, place all the plates and cups in the sink into the dishwasher for cleaning; second, take out the cleaned plates and cups and place them on the table. The position assessment is crucial in this process. According to additional information, the plates and cups that need cleaning are originally placed in the sink. Therefore, in the clean_all_plates_and_cups_by_dishwasher function, when using foreach and if for target selection, you should add inside(o, sink). Similarly, in the put_all_plates_and_cups_on_table function, when placing the cleaned plates and bowls on the table, it is also necessary to specify that these items should originally be "inside(o, dishwasher)".
 
-# Example-3:
-When the goal is: I want to eat an apple, clean an apple for me.
-The additional information: Do not use the knife.
-
-The output is:
-behavior __goal__():
-    body:
-        bind apple: item where:
-            is_apple(apple)
-        foreach o: item:
-            if is_knife(o):
-                assert_hold not inhand(knife)
-        achieve clean(apple)
-
-Example Analysis:
-In this case, the challenge is to make sure that the knife is not used. The 'assert_hold' keyword is used to ensure that the knife is not in hand during the whole process. Notice that the 'assert_hold' keyword always gives a stronger restriction that the whole behavior must follow. So it is only used to express those constrains declared in additional information.
-
-#Example-4:
+#Example-3:
 A common mistake is ignoring the effective duration of "achieve." The effective duration of "achieve" persists until the current action is completed. In other words, after achieving inhand(A) within the same action, A will remain in hand, making it impossible to achieve other operations like on(A,B).
 
 When the goal is: Put the apple on the table.
@@ -304,7 +285,7 @@ behavior put_apple_on_table(apple:item,table:item):
     body:
         achieve on(apple,table)
 
-# Example-5:
+# Example-4:
 when the goal is: Clean and dry a towel.
 The additional information: Wash the towel in the sink and wring it out.
 
@@ -334,17 +315,12 @@ behavior __goal__():
     
 Example Analysis: In this example, I want to demonstrate how to invoke available behaviors while highlighting the use of the exists keyword and the achieve_once keyword. Please pay particular attention to these aspects. First, according to the goal, we need to clean and dry a towel. So, the overall goal is divided into two steps: cleaning and drying. During the cleaning process, based on additional information, we need to use a sink to clean the towel. Therefore, in the __goal__, first, use bind to find the towel and sink. Please note that bind should only be used in __goal__ whenever possible. Next, design the clean_towel behavior, which uses two items: the towel and the sink, both of which were instantiated in the __goal__. According to common sense, the towel needs to be placed in the sink first. If the sink has a faucet, turn on the faucet to clean the towel, and then turn it off. Since the available states include clean and dirty, in the eff, the towel is set to clean. Secondly, for the wringing stage, directly invoke the available behavior and provide the necessary parameter towel. In principle, the dry_towel behavior should include an eff representing dryness. However, since the available states do not include a state representing dryness, this part is omitted.
 
-# Example-6:
+# Example-5:
 The following example demonstrates the difference between using foreach and bind.
 When the goal is: Wash all the clothes in the basket.
 The additional information: Please note that there is more than one basket in the scenario, so make sure the basket you are looking for contains clothes. And we have a washing mashine, so I prefer you to use that to wash clothes.
 
 The output is:
-
-def basket_with_clothes(basket:item):
-    symbol has_clothes_inside=exists cloth: item : inside(cloth, basket) and clothes(cloth)
-    return has_clothes_inside and is_basket(basket)
-
 behavior load_washing_machine(basket:item,washing_machine:item):
     body:
         foreach c: item:
@@ -359,13 +335,13 @@ behavior turn_on_washing_machine(washing_machine:item):
 behavior __goal__():
     body:
         bind basket: item where:
-            basket_with_clothes(basket)
+            is_basket_for_clothes(basket)
         bind washing_machine: item where:
             is_washing_machine(washing_machine)
         load_washing_machine(basket,washing_machine)
         turn_on_washing_machine(washing_machine)
      
-Example Analysis: In this case, I would like to first demonstrate how to perform more complex bind operations. When you need to select items that meet certain criteria (such as choosing a basket containing clothes), you can define a function to specify your conditions (e.g., basket_with_clothes). In the goal, I demonstrated the usage of bind and foreach to you. Please note that bind requires the use of the where keyword, while foreach must not use the where keyword under any circumstances.         
+Example Analysis: In the goal, I demonstrated the usage of bind and foreach to you. Please note that bind requires the use of the where keyword, while foreach must not use the where keyword under any circumstances.         
 
 ## Output Format:
 You can only output the description of the converted goal and additional information. Do not include any explanation or any other symbols.

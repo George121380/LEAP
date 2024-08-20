@@ -341,17 +341,14 @@ behavior find_{obj}_around_{LLM_chose_loc}({target_instance_name}:item):
             is_{loc_instance_name}({loc_instance_name}) and id[{loc_instance_name}]=={loc_instance_id}
         achieve close_char(char,{loc_instance_name})
         if can_open({loc_instance_name}):
-            if can_open({loc_instance_name}):
-                opens({loc_instance_name})
-                closes({loc_instance_name})
+            achieve_once open({loc_instance_name})
+            achieve_once closed({loc_instance_name})
     eff:
         foreach o: item:
             if is_{target_instance_name}(o):
                 unknown[o]=False
                 close[o,{loc_instance_name}]=True
                 close[{loc_instance_name},o]=True
-                if can_open({loc_instance_name}):
-                    inside[o,{loc_instance_name}]=True
     """
         # print(template)
         exp_behavior+=template+'\n'
