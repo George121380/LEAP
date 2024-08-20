@@ -358,6 +358,7 @@ controller walk_executor(x: item)
 controller switchoff_executor(x: item)
 controller switchon_executor(x: item)
 controller put_executor(x: item, y: item)
+controller putin_executor(x: item, y: item)
 controller grab_executor(x: item)
 controller standup_executor(x: character)
 controller wash_executor(x: item)
@@ -400,12 +401,10 @@ def has_a_free_hand():
 
 behavior put(inhand_obj: item, obj: item):
   body:
-    assert surfaces(obj) or is_room(obj) or recipient(obj) or containers(obj) or can_open(obj) or eatable(obj)
+    assert surfaces(obj) or is_room(obj) or eatable(obj)
     achieve not unknown(obj)
     achieve not unknown(inhand_obj)
     achieve inhand(inhand_obj)
-    if can_open(obj) and closed(obj):
-      achieve open(obj)
     achieve close_char(char, obj)
     put_executor(inhand_obj, obj)
 
@@ -414,7 +413,27 @@ behavior put(inhand_obj: item, obj: item):
     holds_lh[char, inhand_obj] = False
     if surfaces(obj):
       on[inhand_obj, obj] = True
-    if is_room(obj) or recipient(obj) or containers(obj) or can_open(obj):
+    close[inhand_obj, obj] = True
+    close[obj, inhand_obj] = True
+    foreach inter in (findall x: item: close(x, obj) and not unknown(x)):
+      close[inter, inhand_obj] = True
+      close[inhand_obj, inter] = True
+
+behavior putin(inhand_obj: item, obj: item):
+  body:
+    assert recipient(obj) or containers(obj) or can_open(obj) or eatable(obj)
+    achieve not unknown(obj)
+    achieve not unknown(inhand_obj)
+    achieve inhand(inhand_obj)
+    if can_open(obj) and closed(obj):
+      achieve open(obj)
+    achieve close_char(char, obj)
+    putin_executor(inhand_obj, obj)
+
+  eff:
+    holds_rh[char, inhand_obj] = False
+    holds_lh[char, inhand_obj] = False
+    if recipient(obj) or containers(obj) or can_open(obj):
       inside[inhand_obj, obj] = True
     close[inhand_obj, obj] = True
     close[obj, inhand_obj] = True
@@ -584,7 +603,7 @@ behavior put_on(inhand_obj: item, obj: item):
 behavior put_inside(inhand_obj: item, obj: item):
   goal: inside(inhand_obj, obj)
   body:
-    put(inhand_obj, obj)
+    putin(inhand_obj, obj)
 
 behavior grab(obj: item):
   goal: inhand(obj)
@@ -624,7 +643,7 @@ behavior wash(obj: item):
     dirty[obj] = False
     clean[obj] = True
 
-behavior open(obj: item):
+behavior opens(obj: item):
   goal: open(obj)
   body:
     assert can_open(obj)

@@ -2388,141 +2388,61 @@ init:
 
 #exp_behavior
 
-behavior find_clothes_jacket_1003_around_closetdrawer_160(clothes_jacket:item):
-    goal: not unknown(clothes_jacket)
+behavior find_food_kiwi_2001_around_freezer_289(food_kiwi:item):
+    goal: not unknown(food_kiwi)
     body:
-        assert is_clothes_jacket(clothes_jacket)
-        bind closetdrawer:item where:
-            is_closetdrawer(closetdrawer) and id[closetdrawer]==160
-        achieve close_char(char,closetdrawer)
-        if can_open(closetdrawer):
-            if can_open(closetdrawer):
-                achieve_once open(closetdrawer)
-                achieve_once closed(closetdrawer)
+        assert is_food_kiwi(food_kiwi)
+        bind freezer:item where:
+            is_freezer(freezer) and id[freezer]==289
+        achieve close_char(char,freezer)
+        if can_open(freezer):
+            if can_open(freezer):
+                opens(freezer)
+                closes(freezer)
     eff:
         foreach o: item:
-            if is_clothes_jacket(o):
+            if is_food_kiwi(o):
                 unknown[o]=False
-                close[o,closetdrawer]=True
-                close[closetdrawer,o]=True
-                if can_open(closetdrawer):
-                    inside[o,closetdrawer]=True
-    
-
-behavior find_clothes_skirt_2004_around_closetdrawer_160(clothes_skirt:item):
-    goal: not unknown(clothes_skirt)
-    body:
-        assert is_clothes_skirt(clothes_skirt)
-        bind closetdrawer:item where:
-            is_closetdrawer(closetdrawer) and id[closetdrawer]==160
-        achieve close_char(char,closetdrawer)
-        if can_open(closetdrawer):
-            if can_open(closetdrawer):
-                achieve_once open(closetdrawer)
-                achieve_once closed(closetdrawer)
-    eff:
-        foreach o: item:
-            if is_clothes_skirt(o):
-                unknown[o]=False
-                close[o,closetdrawer]=True
-                close[closetdrawer,o]=True
-                if can_open(closetdrawer):
-                    inside[o,closetdrawer]=True
-    
-
-behavior find_clothes_scarf_2006_around_dresser_358(clothes_scarf:item):
-    goal: not unknown(clothes_scarf)
-    body:
-        assert is_clothes_scarf(clothes_scarf)
-        bind dresser:item where:
-            is_dresser(dresser) and id[dresser]==358
-        achieve close_char(char,dresser)
-        if can_open(dresser):
-            if can_open(dresser):
-                achieve_once open(dresser)
-                achieve_once closed(dresser)
-    eff:
-        foreach o: item:
-            if is_clothes_scarf(o):
-                unknown[o]=False
-                close[o,dresser]=True
-                close[dresser,o]=True
-                if can_open(dresser):
-                    inside[o,dresser]=True
-    
-
-behavior find_basket_for_clothes_1000_around_washing_machine_1001(basket_for_clothes:item):
-    goal: not unknown(basket_for_clothes)
-    body:
-        assert is_basket_for_clothes(basket_for_clothes)
-        bind washing_machine:item where:
-            is_washing_machine(washing_machine) and id[washing_machine]==1001
-        achieve close_char(char,washing_machine)
-        if can_open(washing_machine):
-            if can_open(washing_machine):
-                achieve_once open(washing_machine)
-                achieve_once closed(washing_machine)
-    eff:
-        foreach o: item:
-            if is_basket_for_clothes(o):
-                unknown[o]=False
-                close[o,washing_machine]=True
-                close[washing_machine,o]=True
-                if can_open(washing_machine):
-                    inside[o,washing_machine]=True
-    
-
-behavior find_soap_1002_around_shower_38(soap:item):
-    goal: not unknown(soap)
-    body:
-        assert is_soap(soap)
-        bind shower:item where:
-            is_shower(shower) and id[shower]==38
-        achieve close_char(char,shower)
-        if can_open(shower):
-            if can_open(shower):
-                achieve_once open(shower)
-                achieve_once closed(shower)
-    eff:
-        foreach o: item:
-            if is_soap(o):
-                unknown[o]=False
-                close[o,shower]=True
-                close[shower,o]=True
-                if can_open(shower):
-                    inside[o,shower]=True
+                close[o,freezer]=True
+                close[freezer,o]=True
+                if can_open(freezer):
+                    inside[o,freezer]=True
     
 
 #exp_behavior_end
 
 #goal_representation
-behavior find_and_load_basket(basket: item, washing_machine: item, kitchen_counter: item, soap: item, clothes: item):
+ 
+def has_food_on(table:item):
+    symbol has_food=exists food: item : on(food, table) and is_food_food(food)
+    return has_food
+
+behavior put_kiwi_in_freezer(kiwi:item, freezer:item):
+    body:
+        achieve inside(kiwi, freezer)
+
+behavior store_food_on_kitchen_counter(table:item, kitchen_counter:item):
     body:
         foreach o: item:
-            if clothes(o) and inside(o, basket):
-                achieve inside(o, washing_machine)
-        achieve inside(washing_machine, kitchen_counter)
-        achieve_once plugged(washing_machine)
-        achieve is_off(washing_machine)
-        achieve open(washing_machine)
-        achieve inside(basket, kitchen_counter)
-        achieve inside(soap, washing_machine)
-        achieve inside(clothes, washing_machine)
-        achieve closed(washing_machine)
-        achieve is_on(washing_machine)
+            if is_food_food(o) and not is_food_kiwi(o) and on(o, table):
+                achieve on(o, kitchen_counter)
+
+behavior close_freezer(freezer:item):
+    body:
+        achieve closed(freezer)
 
 behavior __goal__():
     body:
-        bind basket: item where:
-            is_basket_for_clothes(basket)
-        bind washing_machine: item where:
-            is_washing_machine(washing_machine)
-        bind soap: item where:
-            is_soap(soap)
+        bind table: item where:
+            is_table(table) and has_food_on(table)
+        bind freezer: item where:
+            is_freezer(freezer)
         bind kitchen_counter: item where:
             is_kitchen_counter(kitchen_counter)
-        bind clothes: item where:
-            clothes(clothes)
-        achieve inside(basket, kitchen_counter)
-        find_and_load_basket(basket, washing_machine, kitchen_counter, soap, clothes)
+        bind kiwi: item where:
+            is_food_kiwi(kiwi)
+        put_kiwi_in_freezer(kiwi, freezer)
+        store_food_on_kitchen_counter(table, kitchen_counter)
+        close_freezer(freezer)
+
 #goal_representation_end

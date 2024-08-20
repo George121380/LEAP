@@ -45,7 +45,7 @@ def VH_pipeline(goal,add_info,classes,partial_observation=True):
             print(f"Combined content saved to {new_file_path}")
             loop=False
             correct_time=0
-            while correct_time < 5:
+            while correct_time < 3:
                 try:
                     plan=goal_solver(original_content + "\n" + goal_int)
                     if loop:

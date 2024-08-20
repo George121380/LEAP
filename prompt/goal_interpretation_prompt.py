@@ -8,7 +8,7 @@ def get_goal_inter_prompt(goal,cat_list=None,additional_information=None):
 The goal is: """+goal+""".
 The additional information is: """+additional_information+"""
 ## Task Instructions:
-You need to analyze the goal and additional information that I provide(sometimes there may be no additional information), refer to the example, and transform them into the formal representation defined below. Your output may include several behaviors. In the body section of each behavior, you need to declare some intermediate states, intermediate relationships, final states, and final relationships required to achieve the goal. You do not need to provide the actions needed to achieve the goal. Once you provide the intermediate states, intermediate relationships, final states, and final relationships, my algorithm will plan a feasible sequence of actions on its own. Please note that the states, relationships, properties, and keywords you use must not exceed the scope I provided. If you call any function, make sure that you defined them already. Please check these problems carefully before outputting, otherwise the program will not run. Additionally, behavior __goal__(): is a required structure, functioning similarly to the main function in Python. You usually need to place it at the end of the output. Please do not provide any parameters to __goal__().
+You need to analyze the goal and additional information that I provide, refer to the example, and transform them into the formal representation defined below. Your output may include several behaviors. In the body section of each behavior, you need to declare some intermediate states, intermediate relationships, final states, and final relationships required to achieve the goal. You do not need to provide the actions needed to achieve the goal. Once you provide the intermediate states, intermediate relationships, final states, and final relationships, my algorithm will plan a feasible sequence of actions on its own. Please note that the states, relationships, properties, and keywords you use must not exceed the scope I provided. If you call any function, make sure that you defined them already. Please check these problems carefully before outputting, otherwise the program will not run. Additionally, behavior __goal__(): is a required structure, functioning similarly to the main function in Python. You usually need to place it at the end of the output. Please do not provide any parameters to __goal__().
 For additional information, sometimes you need to define a transition model. The characteristic of a transition model is that it includes an eff at the end of a behavior, indicating the effect of this behavior. Note that __goal__ behavior cannot be a transition model.
 
 ## The available states are (The text following the hash symbol is a comment; please do not include it in the goal representation):
@@ -26,16 +26,15 @@ For additional information, sometimes you need to define a transition model. The
 - sleeping(x: character)
 - inhand(x: item) # A item is grasped by a character
 
-## The available relationships are:
-- on(x: item, y: item)
-- on_char(x: character, y: item)
-- inside(x: item, y: item)
-- inside_char(x: character, y: item)
-- between(door: item, room: item)
-- close(x: item, y: item)
-- close_char(x: character, y: item)
-- facing(x: item, y: item)
-- facing_char(x: character, y: item)
+## The available relationships are (The text following the hash symbol is a comment; please do not include it in the goal representation):
+- on(x: item, y: item) # item x is on item y
+- on_char(x: character, y: item) # character is on item y
+- inside(x: item, y: item) # item x is inside item y
+- inside_char(x: character, y: item) # character is inside item y
+- close(x: item, y: item) # item x is close to item y
+- close_char(x: character, y: item) # character is close to item y
+- facing(x: item, y: item) # item x is facing item y
+- facing_char(x: character, y: item) # character is facing item y
 Here are a few easily confusing usages to note:
 In relationships with the _char suffix, the first parameter must always be a char. For example, on and on_char, inside and inside_char, close and close_char, facing and facing_char.
 
@@ -55,7 +54,7 @@ In relationships with the _char suffix, the first parameter must always be a cha
 - readable(x: item) # To indicate an item can be read.
 - lookable(x: item) # To indicate an item can be looked at.
 - containers(x: item) # To indicate an item is a container.
-- clothes(x: item) # To indicate an item is a piece of clothing.
+- clothes(x: item) # To Determine whether item x is clothing.
 - person(x: item) 
 - body_part(x: item)
 - cover_object(x: item)
@@ -76,6 +75,7 @@ The following behaviors can be directly invoked in the goal representation, with
 - type(obj:item) # To type on an item.
 - touch(obj:item) # To touch an item.
 - read(obj:item) # To read an item.
+Note that you must define the parameters before using them in the behaviors. 
 
 ## available category determination:
 """+categories+"""
@@ -84,8 +84,7 @@ bind b: item where:
     is_box(b)
 At the same time, if the category you want to use is not in the available category, please try to find its synonym or a similar category with a close function.
 eg:
-- food -> is_food_food(), Although the first type of translation is intuitive, when is_food is not in the available category, but is_food_food is, such a replacement should be made.
-
+- food -> is_food_food(), Although the first type of translation is intuitive, when is_food is not in the available category, but is_food_food is. These two have similar meanings, so such a replacement should be made.
 - soapy_water -> is_cleaning_solution(), soapy water is not an available category, but cleaning solution is. They are functionally similar, so such a replacement should be made.
 
 ## Syntax rules and keywords:
@@ -94,10 +93,9 @@ eg:
 Following are all the keywords that you can use to convert the information into a structured format, Please ensure that you do not use any keywords other than these.
 
 # bind
-# Usage: Select any item that meets the conditions and assign it to the specified variable.
+# Usage: Select any item that meets the conditions and assign it to the specified variable. Please pay special attention: To ensure consistency in the use of variables, try to use bind in __goal__ as much as possible and pass the retrieved instances as parameters to the invoked behaviors. This means that you should try to use the bind keyword only in the __goal__ behavior, and avoid using it in other behaviors as much as possible. When other behaviors require an item, you can first use bind to obtain the item in the __goal__, and then pass it as a parameter to the behavior that needs to use the item.
 bind x: item where:
     is_light(x)
-
 When extracting multiple items of the same category in a behavior, special attention must be paid to ensure that the items taken out later are not the same as those taken out earlier.
 bind apple1: item where:
     is_apple(apple1)
@@ -105,7 +103,6 @@ bind apple2: item where:
     is_apple(apple2) and apple1!=apple2
 bind apple3: item where:
     is_apple(apple3) and apple1!=apple3 and apple2!=apple3
-To ensure consistency in the use of variables, try to use bind in __goal__ as much as possible and pass the retrieved instances as parameters to the invoked behaviors.
 
 # achieve
 # Usage: Specifies the state or relationship that needs to be achieved. Only states and relations can follow achieve, not types, properties, or other unchangeable content. You also cannot call functions or behaviors after achieve. If you need to call a function or a behavior, simply write the function directly without any keywords, just like calling a function in Python.
@@ -142,7 +139,7 @@ foreach o: item where:
 The "where" keyword was used in the error case. So please make sure that you do not use "where" in the foreach statement.
 
 # behavior
-# Usage: Defines a behavior rule.
+# Usage: Defines a behavior rule. There are a few things to note. First, the keywords "goal" and "body" must appear in the behavior. Secondly, the parameters used in the goal must be included in the parameters of the behavior.
 behavior turn_off_light(light:item):
     goal: is_off(light)
     body:
@@ -150,14 +147,9 @@ behavior turn_off_light(light:item):
 
 # goal
 # Usage: Specifies the goal condition for a behavior. If you want to use the goal, please ensure that you include all the parameters used in the goal in the behavior parameters.
-behavior close_door(door:item):
-    goal: closed(door)
 
 # body
-# Usage: Contains the sequence of actions and subgoals to achieve the behavior’s goal.
-body:
-    achieve close(a)
-    achieve clean(b)
+# Usage: Contains the sequence of Intermediate states and subgoals to achieve the behavior’s goal.
 
 # assert
 # Usage: Asserts a condition that must be true for the behavior to succeed.
@@ -165,12 +157,13 @@ assert is_on(light)
 
 #assert_hold
 # Usage: The validity period of assert_hold lasts until the end of the containing behavior. This keyword is designed to express a long-term constraint condition.
-assert_hold closed(fridge)
+assert_hold closed(freezer)
+that means freezer must be close util the end of all all behaviors.
     
 # eff
 # Usage: Represents the effect of an behavior. In this section, perform a series of bool assignments. Note that you should use [] instead of () here. Only the transition model will use this keyword. 
 When you have additional information like this: A vacuum cleaner is a great tool for cleaning floors. You can carry it around to clean the floor. Before using it, please make sure the vacuum cleaner is plugged in and turned on.
-You can define a transition model like this:
+You should include this transition model in your output:
 behavior clean_floow_with_vacuum(floor:item):
     goal: is_clean(floor)
     body:
@@ -200,30 +193,44 @@ eg: exists item1: item : holds_lh(char, item1)
 # Usage: Define a symbol and bind it to the output of an expression. You can only use the symbol in the following way.
 symbol l=exists item1: item : holds_lh(char, item1)
 
-# unordered
-# Usage: When the execution order may affect the success of the task and the order cannot be determined in advance, you can use this keyword to allow the program to decide the execution order by itself. This can increase the success rate of complex tasks, but it will also incur higher computational costs.
-body:
-    unordered:
-        achieve close(a)
-        achieve clean(b)
-
 ## Example-1:
 
 When the goal is: 
-Find the groceries and carry them into the kitchen. Place them on the counter and begin to sort them out. Place the vegetables, eggs, cheese, and milk in the fridge.
+Put away the food on the table.
 
-The additional information is: None
+The additional information is: Place the eggs and apples in the freezer, and the bread on the kitchen counter. Remember to close the freezer properly.
 
 The output is:
+
+def has_food_on(table:item):
+    symbol has_food=exists food: item : on(food, table) and is_food_egg(food) or is_food_apple(food) or is_food_bread(food)
+    return has_food
+
+behavior store_egg_and_apple_in_freezer(egg:item, apple:item, freezer:item):
+    body:
+        foreach o: item:
+            if is_food_egg(o) or is_food_apple(o) and on(o, table):
+                achieve inside(o, freezer)
+        closes(freezer)
+
+behavior store_bread_on_kitchen_counter(bread:item, kitchen_counter:item):
+    body:
+        foreach o: item:
+            if is_food_bread(o) and on(o, table):
+                achieve on(o, kitchen_counter)
+
 behavior __goal__():
     body:
-        bind fridge: item where:
-            is_fridge(fridge)
-        foreach o: item:
-            if is_vegetable(o) or is_egg(o) or is_cheese(o) or is_milk(o):
-                achieve inside(o, fridge)
-
-Example Analysis: To achieve the goal, we must first ensure there is a refrigerator in the environment. However, we don't need to specify which refrigerator, so we use the keyword bind to select any refrigerator. Next, we need to place the vegetables, eggs, cheese, and milk into the refrigerator. The "foreach" keyword ensures that all items categorized as vegetables, eggs, cheese, and milk are eventually in the refrigerator.
+        bind table: item where:
+            is_table(table) and has_food_on(table)
+        bind freezer: item where:
+            is_freezer(freezer)
+        bind kitchen_counter: item where:
+            is_kitchen_counter(kitchen_counter)
+        store_egg_and_apple_in_freezer(egg, apple, freezer)
+        store_bread_on_kitchen_counter(bread, kitchen_counter)
+        
+Example Analysis: In this example, all the bind operations are conducted within the __goal__ behavior, ensuring the consistency of item instances across different behaviors. It's important to note that when using the bind keyword to retrieve the table, an additional condition, has_food_on, is added. This condition is defined by a function that uses the "symbol" keyword to bind the has_food variable to the result of an expression, which checks whether the table has an egg, apple, or bread on it. If it does, the function returns true. In the remaining two behaviors, special attention is given to the foreach operation, where an if statement is added. This if statement not only declares the type of item being retrieved but also ensures that the item was originally on the table, aligning with the goal of "Put away the food on the table."
           
 # Example-2:
 When the goal is:
@@ -263,27 +270,6 @@ Example Analysis:
 Completing this goal involves two stages: washing dishes and cups with a dishwasher, then put them on the table. First, all the dishes and cups need to be placed into the dishwasher, then the dishwasher must be closed and started. After washing, the dishes and cups need to be placed on the dining table.
 
 # Example-3:
-When the goal is:
-Close all the doors
-
-The additional information is: None
-
-The output is:
-behavior close_all_doors():
-    body:
-        unordered:
-            foreach o: item:
-                if is_door(o):
-                    achieve close(o)
-
-behavior __goal__():
-    body:
-        close_all_doors()
-
-Example Analysis: 
-This case aims to demonstrate the use of 'unordered' because to close a door, you must be close to it. When closing multiple doors, the order is very important. If you close the wrong door, it might block the path to another door. In such a case, you would have to reopen the already closed door to reach the other one, which might lead to the failure of the task. Therefore, the 'unordered' keyword is used here to automatically find the appropriate execution order.
-
-# Example-4:
 When the goal is: I want to eat an apple, clean an apple for me.
 The additional information: Do not use the knife.
 
@@ -300,7 +286,7 @@ behavior __goal__():
 Example Analysis:
 In this case, the challenge is to make sure that the knife is not used. The 'assert_hold' keyword is used to ensure that the knife is not in hand during the whole process. Notice that the 'assert_hold' keyword always gives a stronger restriction that the whole behavior must follow. So it is only used to express those constrains declared in additional information.
 
-#Example-5:
+#Example-4:
 A common mistake is ignoring the effective duration of "achieve." The effective duration of "achieve" persists until the current action is completed. In other words, after achieving inhand(A) within the same action, A will remain in hand, making it impossible to achieve other operations like on(A,B).
 
 When the goal is: Put the apple on the table.
@@ -318,7 +304,7 @@ behavior put_apple_on_table(apple:item,table:item):
     body:
         achieve on(apple,table)
 
-# Example-6:
+# Example-5:
 when the goal is: Clean and dry a towel.
 The additional information: Wash the towel in the sink and wring it out.
 
@@ -348,7 +334,7 @@ behavior __goal__():
     
 Example Analysis: In this example, I want to demonstrate how to invoke available behaviors while highlighting the use of the exists keyword and the achieve_once keyword. Please pay particular attention to these aspects. First, according to the goal, we need to clean and dry a towel. So, the overall goal is divided into two steps: cleaning and drying. During the cleaning process, based on additional information, we need to use a sink to clean the towel. Therefore, in the __goal__, first, use bind to find the towel and sink. Please note that bind should only be used in __goal__ whenever possible. Next, design the clean_towel behavior, which uses two items: the towel and the sink, both of which were instantiated in the __goal__. According to common sense, the towel needs to be placed in the sink first. If the sink has a faucet, turn on the faucet to clean the towel, and then turn it off. Since the available states include clean and dirty, in the eff, the towel is set to clean. Secondly, for the wringing stage, directly invoke the available behavior and provide the necessary parameter towel. In principle, the dry_towel behavior should include an eff representing dryness. However, since the available states do not include a state representing dryness, this part is omitted.
 
-# Example-7:
+# Example-6:
 The following example demonstrates the difference between using foreach and bind.
 When the goal is: Wash all the clothes in the basket.
 The additional information: Please note that there is more than one basket in the scenario, so make sure the basket you are looking for contains clothes. And we have a washing mashine, so I prefer you to use that to wash clothes.

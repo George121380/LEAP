@@ -3,7 +3,7 @@ import sys
 import json
 sys.path.append('/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/embodied-agent-eval/src/VIRTUALHOME/AgentEval-main/virtualhome_eval/evaluation/action_sequence/scripts')
 sys.path.append('/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/embodied-agent-eval/src/VIRTUALHOME/AgentEval-main/virtualhome_eval/simulation/evolving_graph')
-from experiments.virtualhome.VH_scripts.agent import VHAgent,VirtualhomeEnvironment
+from experiments.virtualhome.VH_scripts.agent import VHAgent
 from utils_eval import get_from_dataset,get_nodes_information,construct_cdl
 from env import VH_Env
 
@@ -40,7 +40,7 @@ def run(goal,additional_information,classes,init_scene_graph):
             continue #Planning failed -> reset goal base on current state
         print('Action:', action)
         observation = env.step(action) #Execute action
-        knowledge=agent.updates(observation) #Update agent's state
+        agent.updates(observation) #Update agent's state
 
 def evaluate(scene_id):
     goal,additional_information,classes,init_scene_graph=load_scene(scene_id)

@@ -307,19 +307,44 @@ def transform_plan(plan):
     
     return actions
 
-def transform_action(action):
+def transform_action(action,scripts_index):
     # 分隔输入字符串
+    action=str(action).replace('_executor', '')
     action = action.replace(')', '')
     action = action.replace('(', ' ')
     action = action.split()
     # 提取动作和目标
-    action_name = action[0]
-    target = action[1]
-    # 提取目标和编号
-    if '_' in target:
-        item, number = target.rsplit('_', 1)
+    action_name = action[0].upper()
+    if action_name=='PUT' or action_name=='PUTIN':
+        if action_name=='PUT':
+            action_name="PUTBACK"
+        from_obj=action[1].replace(',','')
+        to_obj=action[2]
+        from_o=''
+        to_o=''
+        if '_' in from_obj:
+            item, number = from_obj.rsplit('_', 1)
+            from_o = f'<{item}>({number})'
+        else:
+            from_o = from_obj
+        if '_' in to_obj:
+            item, number = to_obj.rsplit('_', 1)
+            to_o = f'<{item}>({number})'
+        else:
+            to_o = to_obj
+        return [parse_script_line(f'[{action_name}] {from_o} {to_o}',scripts_index)]
     else:
-        formatted_target = target
-    # 生成新的格式并返回
-    formatted_target = f'<{item}>({number})'
-    return f'[{action_name}] {formatted_target}'
+        target = action[1]
+        if '_' in target:
+            item, number = target.rsplit('_', 1)
+            formatted_target = f'<{item}>({number})'
+        else:
+            formatted_target = target
+        return [parse_script_line(f'[{action_name}] {formatted_target}',scripts_index)]
+    
+def check_unexplorable(location_name):
+    if location_name=='char':
+        return True
+    location_category='_'.join(location_name.split('_')[:-1])
+    unexplorable_list=['room','wall','ceiling','bathroom','bedroom','dining_room','floor']
+    return location_category in unexplorable_list
