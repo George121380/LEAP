@@ -69,8 +69,12 @@ has_plug(lamp) = True # This is incorrect. Because "propertie" cannot have its v
 
 # available behaviors (The text following the hash symbol is a comment; please do not include it in the goal representation):
 The following behaviors can be directly invoked in the goal representation, with parameters passed in like function arguments.
+- scrub(obj:item) # To scrub an item.
 - squeeze(obj:item) # To squeeze an item.
+- rinse(obj:item) # To rinse an item.
 - move(obj:item) # To move an item.
+- pull(obj:item) # To pull an item.
+- push(obj:item) # To push an item.
 - greet(person:item) # To greet a person.
 - look_at(obj:item) # To look at an item.
 - drink(obj: item) # To drink an item.

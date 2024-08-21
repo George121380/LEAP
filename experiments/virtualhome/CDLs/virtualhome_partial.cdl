@@ -351,6 +351,7 @@ feature is_juice(x:item)
 feature is_light(x:item)
 feature is_folder(x:item)
 feature is_bills(x:item)
+feature is_food_lemon(x:item)
 
 
 #controllers
@@ -385,6 +386,7 @@ controller touch_executor(x: item)
 controller type_executor(x: item)
 controller watch_executor(x: item)
 controller move_executor(x: item)
+controller exp(x:item, y:item)
 
 def inhand(inhand_obj:item):
   return holds_rh(char, inhand_obj) or holds_lh(char, inhand_obj)
@@ -640,6 +642,26 @@ behavior wash(obj: item):
     dirty[obj] = False
     clean[obj] = True
 
+behavior scrub(obj: item):
+  body:
+    achieve not unknown(obj)
+    achieve has_a_free_hand()
+    achieve close_char(char, obj)
+    wash_executor(obj)
+  eff:
+    dirty[obj] = False
+    clean[obj] = True
+
+behavior rinse(obj: item):
+  body:
+    achieve not unknown(obj)
+    achieve has_a_free_hand()
+    achieve close_char(char, obj)
+    wash_executor(obj)
+  eff:
+    dirty[obj] = False
+    clean[obj] = True
+
 behavior opens(obj: item):
   goal: open(obj)
   body:
@@ -850,9 +872,25 @@ behavior move(obj:item):
     achieve close_char(char, obj)
     move_executor(obj)
 
+behavior push(obj:item):
+  body:
+    assert movable(obj) or is_button(obj) or is_chair(obj) or is_curtain(obj)
+    achieve not unknown(obj)
+    achieve has_a_free_hand()
+    achieve close_char(char, obj)
+    move_executor(obj)
+
+behavior pull(obj:item):
+  body:
+    assert movable(obj) or is_button(obj) or is_chair(obj) or is_curtain(obj)
+    achieve not unknown(obj)
+    achieve has_a_free_hand()
+    achieve close_char(char, obj)
+    move_executor(obj)
+
 behavior squeeze(obj:item):
   body:
-    assert is_cleaning_solution(obj) or is_tooth_paste(obj) or is_shampoo(obj) or is_sponge(obj) or clothes(obj)
+    assert is_cleaning_solution(obj) or is_tooth_paste(obj) or is_shampoo(obj) or is_dish_soap(obj) or is_soap(obj) or is_towel(obj) or is_rag(obj) or has_paper(obj) or is_sponge(obj) or is_food_lemon(obj) or clothes(obj) or is_check(obj)
     achieve not unknown(obj)
     achieve has_a_free_hand()
     achieve close_char(char, obj)

@@ -18,7 +18,6 @@ parser.add_argument('--domain', default='/Users/liupeiqi/workshop/Research/Instr
 parser.add_argument('--verbose', action='store_true')
 args = parser.parse_args()
 
-
 def goal_solver(goal):
     domain = crow.load_domain_file(args.domain)
     problem = crow.load_problem_file('/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/experiments/virtualhome/CDLs/exicutable_cdl.cdl', domain=domain)
@@ -54,9 +53,6 @@ def plan(problem):
     # input('Press Enter to continue...')
     return table
 
-
-
 if __name__ == '__main__':
-
     goal=None
     goal_solver(goal)

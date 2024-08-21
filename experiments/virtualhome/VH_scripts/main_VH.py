@@ -49,4 +49,4 @@ def evaluate(scene_id):
 
 
 if __name__ == '__main__':
-    evaluate("310_2")
+    evaluate("961_1")

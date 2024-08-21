@@ -22,44 +22,52 @@ class VH_Env:
         return related_edges
 
     def step(self, action):
-        self.executor = ScriptExecutor(self.graph, self.name_equivalence)
-        if 'grab' in action.name.lower():
-            print('debug')
+        exp_flag=True
+        exp_target=None
+        exp_loc=None
+        if action.name!='exp':
+            exp_flag=False
+            self.executor = ScriptExecutor(self.graph, self.name_equivalence)
+            # if 'grab' in action.name.lower():
+            #     print('debug')
 
-        action=transform_action(action,self.scripts_index)
-        self.scripts_index+=1
-        script=Script(action)
-        state_enum = self.executor.find_solutions(script)
-        state = next(state_enum, None)
-        if state is None:
-            print('Script is not executable.')
-            raise Exception('Script is not executable.')
+            action=transform_action(action,self.scripts_index)
+            self.scripts_index+=1
+            script=Script(action)
+            state_enum = self.executor.find_solutions(script)
+            state = next(state_enum, None)
+            if state is None:
+                print('Script is not executable.')
+                raise Exception('Script is not executable.')
+            else:
+                print('Script is executable')
+            observation={}
+            char=state.get_nodes_by_attr('class_name', 'character')[0]
+            for edge in state._new_edges_from:
+                from_id=edge[0]
+                relation=edge[1]
+                to_id_list=list(state._new_edges_from[edge])
+                if len(to_id_list)==0:
+                    continue
+                for to_id in to_id_list:
+                    self.graph.add_edge(state._graph.get_node(from_id), relation, state._graph.get_node(to_id))
+                    
+            for edge in state._removed_edges_from:
+                from_id=edge[0]
+                relation=edge[1]
+                to_id_list=list(state._removed_edges_from[edge])
+                if len(to_id_list)==0:
+                    continue
+                for to_id in to_id_list:
+                    self.graph.delete_edge(state._graph.get_node(from_id), relation, state._graph.get_node(to_id))
+
+            for node in state._new_nodes:
+                self.graph._node_map[node].states=state._new_nodes[node].states
         else:
-            print('Script is executable')
-        observation={}
-        char=state.get_nodes_by_attr('class_name', 'character')[0]
-        for edge in state._new_edges_from:
-            from_id=edge[0]
-            relation=edge[1]
-            to_id_list=list(state._new_edges_from[edge])
-            if len(to_id_list)==0:
-                continue
-            for to_id in to_id_list:
-                self.graph.add_edge(state._graph.get_node(from_id), relation, state._graph.get_node(to_id))
-                
-        for edge in state._removed_edges_from:
-            from_id=edge[0]
-            relation=edge[1]
-            to_id_list=list(state._removed_edges_from[edge])
-            if len(to_id_list)==0:
-                continue
-            for to_id in to_id_list:
-                self.graph.delete_edge(state._graph.get_node(from_id), relation, state._graph.get_node(to_id))
-
-        for node in state._new_nodes:
-            self.graph._node_map[node].states=state._new_nodes[node].states
-            
+            exp_target=action.arguments[0].name
+            exp_loc=action.arguments[1].name
             ###obs###
+        
         around_ids=[]
         state_updates={}
         relations_updates=[]
@@ -100,7 +108,8 @@ class VH_Env:
         observation['relations']=relations_updates
         observation['states']=state_updates
         observation['known']=known_updates
+        observation['exp_flag']=exp_flag
+        observation['exp_target']=exp_target
+        observation['exp_loc']=exp_loc
 
-        return observation               
-
-        
+        return observation
