@@ -23,16 +23,16 @@ def construct_cdl(objects,states,relationships,properties,cat_statement):
     problem_file_content += '#states\n\n'
     for init_state in states:
         if "unknown" in init_state:
-            problem_file_content += f'  {init_state}\n'
             exploration_content+=f'  {init_state}\n'
+            continue
         problem_file_content += f'  {init_state}\n'
     problem_file_content += '#states_end\n\n'
 
     problem_file_content += '#relations\n\n'
     for init_state in relationships:
         if "checked" in init_state:
-            problem_file_content += f'  {init_state}\n'
             exploration_content+=f'  {init_state}\n'
+            continue
         problem_file_content += f'  {init_state}\n'
     problem_file_content += '#relations_end\n\n'
     
@@ -198,6 +198,8 @@ def relationship_translation(graph,edge):
         relation = "Unknown relation"
 
 def get_nodes_information(graph):
+    with open("/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/embodied-agent-eval/src/VIRTUALHOME/AgentEval-main/virtualhome_eval/resources/class_name_equivalence.json", "r") as file:
+        equal_dict=json.load(file)
     nodes=graph.get_nodes()
     edges=graph.get_edges()
     objects=[]
@@ -215,6 +217,18 @@ def get_nodes_information(graph):
             objects.append(executable_objname+":item")
             op_classname=node.class_name.replace("-","_")
             cat_statement.append(f"is_{op_classname}[{executable_objname}]=True")
+
+            if op_classname in equal_dict:
+                for equal_name in equal_dict[op_classname]:
+                    if equal_name!=op_classname:
+                        cat_statement.append(f"is_{equal_name}[{executable_objname}]=True")
+            for equal_name in equal_dict:
+                if op_classname in equal_dict[equal_name] and op_classname!=equal_name:
+                    cat_statement.append(f"is_{equal_name}[{executable_objname}]=True")
+                    for equal_name_ in equal_dict[equal_name]:
+                        if equal_name!=op_classname:
+                            cat_statement.append(f"is_{equal_name_}[{executable_objname}]=True")
+
             for state in node.states:
                 state=state_translation(executable_objname,state)
                 states.append(state)

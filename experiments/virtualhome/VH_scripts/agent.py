@@ -13,7 +13,7 @@ class VHAgent:
         self.name2id = {}
         self.num_items = 0
         self.item_type = np.array([], dtype=object)
-        self.category = np.array([], dtype=object)
+        self.category = {}
         self.properties = {}
         self.relations = {}
         self.state = {}
@@ -70,7 +70,6 @@ class VHAgent:
 
         # Initialize vectors with None values
         self.item_type = np.full(self.num_items, None, dtype=object)
-        self.category = np.full(self.num_items, None, dtype=object)
         known = np.full(self.num_items , False, dtype=bool)
         checked = np.full((self.num_items , self.num_items), False, dtype=bool)
         self.exploration.update({"unknown": known})
@@ -160,8 +159,9 @@ class VHAgent:
                 key, value = line.split("[")
                 key = key.strip()
                 value = value.split("]")[0].strip()
-                obj_id = self.name2opid[value]
-                self.category[obj_id] = key
+                if not value in self.category:
+                    self.category[value]=set()
+                self.category[value].add(key)
 
     def _parse_char_section(self, section):
         lines = section.strip().split("\n")
@@ -330,10 +330,13 @@ class VHAgent:
 
             # Write categories (initial state)
             file.write("init:\n    #categories\n")
-            for i, category in enumerate(self.category):
-                if category:
-                    name = next(name for name, id_ in self.name2opid.items() if id_ == i)
-                    file.write(f"    {category}[{name}]=True\n")
+            for item in self.category:
+                for cat in self.category[item]:
+                    file.write(f"    {cat}[{item}]=True\n")
+            # for i, category in enumerate(self.category):
+            #     if category:
+            #         name = next(name for name, id_ in self.name2opid.items() if id_ == i)
+            #         file.write(f"    {category}[{name}]=True\n")
             file.write("    #categories_end\n\n")
 
             # Write states
@@ -429,6 +432,7 @@ class VHAgent:
         return update_exploration
     
     def updates(self,observation):
+        # print(observation['known'])
         if not observation['exp_flag']:# it is exp this step
             for new_known in observation['known']:
                 if 'character' in new_known:
@@ -436,7 +440,12 @@ class VHAgent:
                 if self.exploration['unknown'][self.name2opid[new_known]]==True:
                     self.exploration['unknown'][self.name2opid[new_known]]=False
                     self.find_new=True
-                self.exploration['checked'][:,self.name2opid[new_known]]=True
+            
+            for check_place in observation['checked']:
+                if 'character' in check_place:
+                    continue
+                self.exploration['checked'][:,self.name2opid[check_place]]=True
+
             for new_relations in observation['relations']:
                 if 'character' in new_relations['to_name']:
                     new_relations['to_name']='char'
@@ -496,14 +505,16 @@ class VHAgent:
                     if self.exploration['unknown'][self.name2opid[new_known]]==True:
                         self.exploration['unknown'][self.name2opid[new_known]]=False
                         self.find_new=True
-                    self.exploration['checked'][:,self.name2opid[new_known]]=True
+            
+            for check_place in observation['checked']:
+                self.exploration['checked'][:,self.name2opid[check_place]]=True
 
-            if exp_target in observation['known'] or not self.exploration['uknown'][self.name2opid[exp_target]]:
+            if exp_target in observation['known'] or not self.exploration['unknown'][self.name2opid[exp_target]]:
                 print(f'{exp_target} is successfully explored around {exp_loc} or already known before')
             else:
                 print(f'{exp_target} is not around {exp_loc}, re-explore')
                 self.save_to_file()
-                self.exploration_behavior=exploration_VH(self.goal_nl,self.add_info_nl,self.internal_state_path)
+                self.exploration_behavior=exploration_VH(self.goal_nl,self.add_info_nl,self.internal_state_path,self.exploration['checked'])
                 self.newfind=True
 
         self.save_to_file()

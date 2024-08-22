@@ -2,6 +2,7 @@ import random
 import sys
 import openai as OpenAI
 import re
+import numpy as np
 sys.path.append('/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home')
 from prompt.relative_obj_prompt import choose_relative_items_prompt
 from prompt.ask_GPT import ask_GPT
@@ -116,6 +117,8 @@ def random_select_target(categories,unknown_cats,checked,objects,name2id,known_o
     target_objs=[]
     posible_locations={}
     for cat in unknown_cats:
+        if cat=='is_sink':
+            print('debug')
         try_count=0
         while True:
             if try_count>10:
@@ -124,24 +127,24 @@ def random_select_target(categories,unknown_cats,checked,objects,name2id,known_o
             ob=random.choice(list(categories[cat]))
             try_count+=1
             ava_known=[]
-            for obb in known_objects:
-                if ob in checked:
-                    if not checked[ob][name2id[obb]]:
+            if isinstance(checked, np.ndarray):
+                for obb in known_objects:
+                    if not checked[name2id[ob]][name2id[obb]]:    
                         ava_known.append(obb)
-                else:
-                    ava_known.append(obb)
                 
-            if len(ava_known)==0:
-                if not False in checked[ob]:
-                    print(f"{ob} all checked")
-                    continue
+                if len(ava_known)==0:
+                    if not False in checked[ob]:
+                        print(f"{ob} all checked")
+                        continue
+            else:
+                ava_known=known_objects
             target_objs.append(ob)
             posible_locations[ob]=ava_known
             break     
     return target_objs,posible_locations
 
-def get_exp_behavior(goal, additional_information, problem_cdl):
-    objects, categories, known_objects, checked, binds,name2id,unknown_objects,goal_representation = parse_file(problem_cdl)
+def get_exp_behavior(goal, additional_information, problem_cdl,checked=None):
+    objects, categories, known_objects, _, binds,name2id,unknown_objects,goal_representation = parse_file(problem_cdl)
     # unknown_attributes_needed = find_unknown_attributes(categories, known_objects, binds)
     unknown_attributes_needed = find_all_unknown(categories, unknown_objects)
     unknown_attributes_needed = choose_relative_items(goal, unknown_attributes_needed, additional_information,goal_representation)

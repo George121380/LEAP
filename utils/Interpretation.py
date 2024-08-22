@@ -62,10 +62,10 @@ def exploration(goal,additional_information,problem_cdl):
     print('=' * 80)
     return exploration_content
 
-def exploration_VH(goal,additional_information,problem_cdl):
+def exploration_VH(goal,additional_information,problem_cdl,checked=None):
     print('=' * 80)
     print(f"Exploration:")
     print('=' * 80)
-    exp_behavior=get_exp_behavior(goal,additional_information,problem_cdl)
+    exp_behavior=get_exp_behavior(goal,additional_information,problem_cdl,checked)
     print('=' * 80)
     return exp_behavior
