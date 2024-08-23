@@ -433,13 +433,12 @@ class VHAgent:
     
     def updates(self,observation):
         # print(observation['known'])
-        if not observation['exp_flag']:# it is exp this step
+        if not observation['exp_flag']:# other actions
             for new_known in observation['known']:
                 if 'character' in new_known:
                     continue
                 if self.exploration['unknown'][self.name2opid[new_known]]==True:
                     self.exploration['unknown'][self.name2opid[new_known]]=False
-                    self.find_new=True
             
             for check_place in observation['checked']:
                 if 'character' in check_place:
@@ -496,7 +495,7 @@ class VHAgent:
 
             
 
-        else:
+        else:# exploration
             exp_target=observation['exp_target']
             exp_loc=observation['exp_loc']
             for new_known in observation['known']:
@@ -504,7 +503,7 @@ class VHAgent:
                         continue
                     if self.exploration['unknown'][self.name2opid[new_known]]==True:
                         self.exploration['unknown'][self.name2opid[new_known]]=False
-                        self.find_new=True
+                        self.newfind=True # find sth new
             
             for check_place in observation['checked']:
                 self.exploration['checked'][:,self.name2opid[check_place]]=True
@@ -531,7 +530,7 @@ class VHAgent:
         if self.newfind:
             cdl_state = self.get_state()
             plans, stats = crow.crow_regression(
-            cdl_state.domain, cdl_state, goal=cdl_state.goal, min_search_depth=5, max_search_depth=8,
+            cdl_state.domain, cdl_state, goal=cdl_state.goal, min_search_depth=8, max_search_depth=8,
             is_goal_ordered=True, is_goal_serializable=False, always_commit_skeleton=True,
             enable_state_hash=False,
             verbose=False
@@ -557,9 +556,6 @@ class VHAgent:
                 raise ValueError('This is the last step')
             action=self.plan[self.current_step]
             self.current_step+=1
-            if self.current_step==len(self.plan):
-                self.newfind=False
-                self.current_step=0
             return action,self.plan
 
     def reset_goal(self,goal,additional_information,classes,First_time=False):

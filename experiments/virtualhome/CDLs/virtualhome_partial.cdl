@@ -501,6 +501,8 @@ controller putin_executor(x: item, y: item)
 controller grab_executor(x: item)
 controller standup_executor(x: character)
 controller wash_executor(x: item)
+controller scrub_executor(x: item)
+controller rinse_executor(x: item)
 controller sit_executor(x: item)
 controller lie_executor(x: item)
 controller open_executor(x: item)
@@ -524,6 +526,8 @@ controller touch_executor(x: item)
 controller type_executor(x: item)
 controller watch_executor(x: item)
 controller move_executor(x: item)
+controller push_executor(x: item)
+controller pull_executor(x: item)
 controller exp(x:item, y:item)
 
 
@@ -544,7 +548,7 @@ behavior put(inhand_obj: item, obj: item):
   body:
     achieve not unknown(obj)
     achieve not unknown(inhand_obj)
-    achieve inhand(inhand_obj)
+    achieve_once inhand(inhand_obj)
     achieve close_char(char, obj)
     put_executor(inhand_obj, obj)
 
@@ -565,7 +569,7 @@ behavior putin(inhand_obj: item, obj: item):
     achieve not unknown(inhand_obj)
     if can_open(obj):
       achieve open(obj)
-    achieve inhand(inhand_obj)
+    achieve_once inhand(inhand_obj)
     achieve close_char(char, obj)
     putin_executor(inhand_obj, obj)
 
@@ -578,6 +582,8 @@ behavior putin(inhand_obj: item, obj: item):
     foreach inter in (findall x: item: close(x, obj) and not unknown(x)):
       close[inter, inhand_obj] = True
       close[inhand_obj, inter] = True
+    foreach inside_obj in (findall x: item: inside(x, inhand_obj)):
+      inside[inside_obj, obj] = True
 
 behavior empty_a_hand():
   goal: has_a_free_hand()
@@ -760,7 +766,6 @@ behavior grab(obj: item):
     on[obj, :] = False
     on[:, obj] = False
     inside[obj, :] = False
-    inside[:, obj] = False
     close[obj, :] = False
     close[:, obj] = False
     if exists item1: item : holds_lh(char, item1):
@@ -785,7 +790,7 @@ behavior scrub(obj: item):
     achieve not unknown(obj)
     achieve has_a_free_hand()
     achieve close_char(char, obj)
-    wash_executor(obj)
+    scrub_executor(obj)
   eff:
     dirty[obj] = False
     clean[obj] = True
@@ -795,7 +800,7 @@ behavior rinse(obj: item):
     achieve not unknown(obj)
     achieve has_a_free_hand()
     achieve close_char(char, obj)
-    wash_executor(obj)
+    rinse_executor(obj)
   eff:
     dirty[obj] = False
     clean[obj] = True
@@ -1016,7 +1021,7 @@ behavior push(obj:item):
     achieve not unknown(obj)
     achieve has_a_free_hand()
     achieve close_char(char, obj)
-    move_executor(obj)
+    push_executor(obj)
 
 behavior pull(obj:item):
   body:
@@ -1024,7 +1029,7 @@ behavior pull(obj:item):
     achieve not unknown(obj)
     achieve has_a_free_hand()
     achieve close_char(char, obj)
-    move_executor(obj)
+    pull_executor(obj)
 
 behavior squeeze(obj:item):
   body:

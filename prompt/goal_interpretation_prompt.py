@@ -25,6 +25,7 @@ For additional information, sometimes you need to define a transition model. The
 - lying(x: character)
 - sleeping(x: character)
 - inhand(x: item) # A item is grasped by a character
+Please note that "inhand" is quite special. If you want to implement "inhand(x)," you can only use the "achieve_once" keyword.
 
 ## The available relationships are (The text following the hash symbol is a comment; please do not include it in the goal representation):
 - on(x: item, y: item) # item x is on item y
@@ -112,12 +113,11 @@ bind apple3: item where:
     is_apple(apple3) and apple1!=apple3 and apple2!=apple3
 
 # achieve
-# Usage: Specifies the state or relationship that needs to be achieved. Only states and relations can follow achieve, not types, properties, or other unchangeable content. You also cannot call functions or behaviors after achieve. If you need to call a function or a behavior, simply write the function directly without any keywords, just like calling a function in Python.
+# Usage: Specifies the state or relationship that needs to be achieved. Only states and relations can follow achieve, not types, properties, or other unchangeable content. You also cannot call functions or behaviors after achieve. If you need to call a function or a behavior, simply write the function directly without any keywords, just like calling a function in Python. Please note that "achieve" cannot be used with "inhand."
 achieve is_on(light)
-achieve not inhand(apple)
 
 # achieve_once
-# Usage: Specifies the state or relationship that needs to be achieved only once. This keyword is used when the state or relationship is temporary and does not need to be maintained to the end of the current behavior.
+# Usage: Specifies the state or relationship that needs to be achieved only once. This keyword is used when the state or relationship is temporary and does not need to be maintained to the end of the current behavior. 
 behavior wash(obj: item):
   goal: clean(obj)
   body:
@@ -133,6 +133,8 @@ behavior wash(obj: item):
     dirty[obj] = False
     clean[obj] = True
     inside[obj, sink] = True
+
+achieve_once inhand(apple) #Please note that "inhand" must be used with "achieve_once."
 
 # foreach
 # Usage: Iterates over all objects of a certain type. Note that you are not suppose to use "where" in foreach statement.
@@ -173,7 +175,7 @@ behavior clean_floow_with_vacuum(floor:item):
         assert dirty(floor)
         bind vacuum: item where:
             is_vacuum_cleaner(vacuum)
-        achieve inhand(vacuum)
+        achieve_once inhand(vacuum)
         achieve is_plugged(vacuum)
         achieve is_on(vacuum)
         achieve walk(floor)

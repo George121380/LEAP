@@ -209,6 +209,8 @@ def get_nodes_information(graph):
     properties=[]
     classes=[]
     cat_statement=[]
+    unknown_set=set()
+
     for node in nodes:
         executable_objname=(node.class_name).replace("-","_")+'_'+str(node.id)
         if node.category !='Characters':
@@ -229,20 +231,30 @@ def get_nodes_information(graph):
                         if equal_name!=op_classname:
                             cat_statement.append(f"is_{equal_name_}[{executable_objname}]=True")
 
-            for state in node.states:
-                state=state_translation(executable_objname,state)
-                states.append(state)
+
             for property in node.properties:
                 property=state_translation(executable_objname,property)
                 properties.append(property)
                 if "grabbable" in property:
                     states.append(f"unknown[{executable_objname}]=True")
+                    unknown_set.add(executable_objname)
+
+            for state in node.states:
+                if executable_objname in unknown_set:
+                    continue
+                state=state_translation(executable_objname,state)
+                states.append(state)
+            
 
         if node.category=="Rooms":
             states.append(f"is_room[{executable_objname}]=True")
         
     for edge in edges:
         relationship=relationship_translation(graph,edge)
+        from_name=graph._node_map[edge['from_id']].class_name+'_'+str(edge['from_id'])
+        to_name=graph._node_map[edge['to_id']].class_name+'_'+str(edge['to_id'])
+        if from_name in unknown_set or to_name in unknown_set:
+            continue
         relationships.append(relationship)
 
     objects.append("char:character")

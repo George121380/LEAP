@@ -49,4 +49,5 @@ def evaluate(scene_id):
 
 
 if __name__ == '__main__':
-    evaluate("961_1")
+    # evaluate("755_2") # cook pasta
+    evaluate("961_1") # wash dishes by hand

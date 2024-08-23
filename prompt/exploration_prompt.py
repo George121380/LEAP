@@ -345,7 +345,6 @@ behavior find_{obj}_around_{LLM_chose_loc}({target_instance_name}:item):
         achieve close_char(char,{loc_instance_name})
         if can_open({loc_instance_name}):
             achieve_once open({loc_instance_name})
-            achieve_once closed({loc_instance_name})
         exp({target_instance_name},{loc_instance_name})
     eff:
         foreach o: item:

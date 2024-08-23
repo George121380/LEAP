@@ -42,7 +42,6 @@ def VH_pipeline(goal,add_info,classes,partial_observation=True):
             combined_content=original_content+"\n#exp_behavior\n"+exploration_content+'\n#exp_behavior_end\n'"\n#goal_representation\n" + goal_int+"\n#goal_representation_end\n"
             with open(new_file_path, "w") as file:
                 file.write(combined_content)
-            print(f"Combined content saved to {new_file_path}")
             loop=False
             correct_time=0
             while correct_time < 3:
