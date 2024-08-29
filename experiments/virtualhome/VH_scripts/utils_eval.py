@@ -1,6 +1,8 @@
 import os
 import json
 import re
+import sys
+sys.path.append('/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/embodied-agent-eval/src/VIRTUALHOME/AgentEval-main')
 from virtualhome_eval.simulation.evolving_graph.environment import EnvironmentGraph, Property
 from virtualhome_eval.simulation.evolving_graph.execution import Relation, State
 from virtualhome_eval.simulation.evolving_graph.scripts import *

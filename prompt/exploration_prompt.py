@@ -149,7 +149,7 @@ def get_exp_behavior(goal, additional_information, problem_cdl,checked=None):
     unknown_attributes_needed = find_all_unknown(categories, unknown_objects)
     unknown_attributes_needed = choose_relative_items(goal, unknown_attributes_needed, additional_information,goal_representation)
     target_objs,locations=random_select_target(categories,unknown_attributes_needed,checked,objects,name2id,known_objects)
-    exp_behavior=get_exploration_prompt_template(locations,unknown_attributes_needed)
+    exp_behavior=get_exploration_prompt_template(locations,unknown_attributes_needed,goal,additional_information)
     return exp_behavior
     
 def get_exploration_prompt_gpt(locations,unknown_attributes_needed):
@@ -306,12 +306,15 @@ def check_unexplorable(location_name):
     return location_category in unexplorable_list
 
 
-def get_exploration_prompt_template(locations,unknown_attributes_needed):
+def get_exploration_prompt_template(locations,unknown_attributes_needed,goal,additional_information):
     
     find_info=""
     exp_behavior=''
     for obj in locations:
-        find_info=''
+        find_info="""I will provide you with my task objectives and some additional information. Most of this information might be useless, but it could include some location data that may help you find my target item. So please refer to this information and make your own judgment. But remember, your output should only be an integer, and do not analyze or explain the content
+        """
+        find_info+=goal+'\n'
+        find_info+=additional_information+'\n'
         num=0
         find_info+=f"# Find {obj}:\n"
         find_info+="The possible locations are:\n"

@@ -44,7 +44,7 @@ def VH_pipeline(goal,add_info,classes,partial_observation=True):
                 file.write(combined_content)
             loop=False
             correct_time=0
-            while correct_time < 3:
+            while correct_time < 5:
                 try:
                     plan=goal_solver(original_content + "\n" + goal_int)
                     if loop:

@@ -8,8 +8,8 @@ def get_goal_inter_prompt(goal,cat_list=None,additional_information=None):
 The goal is: """+goal+""".
 The additional information is: """+additional_information+"""
 ## Task Instructions:
-You need to analyze the goal and additional information that I provide, refer to the example, and transform them into the formal representation defined below. Your output may include several behaviors. In the body section of each behavior, you need to declare some intermediate states, intermediate relationships, final states, and final relationships required to achieve the goal. You do not need to provide the actions needed to achieve the goal. Once you provide the intermediate states, intermediate relationships, final states, and final relationships, my algorithm will plan a feasible sequence of actions on its own. Please note that the states, relationships, properties, and keywords you use must not exceed the scope I provided. If you call any function, make sure that you defined them already. Please check these problems carefully before outputting, otherwise the program will not run. Additionally, behavior __goal__(): is a required structure, functioning similarly to the main function in Python. You usually need to place it at the end of the output. Please do not provide any parameters to __goal__().
-For additional information, sometimes you need to define a transition model. The characteristic of a transition model is that it includes an eff at the end of a behavior, indicating the effect of this behavior. Note that __goal__ behavior cannot be a transition model.
+You need to analyze the goal and additional information that I provide (if there is any additional information), refer to the example, and transform those information into the formal representation defined below. Your output may include several behaviors. In the body section of each behavior, you need to declare some intermediate states, intermediate relationships, final states, and final relationships required to achieve the goal. You do not need to provide the actions needed to achieve the goal. Once you provide the intermediate states, intermediate relationships, final states, and final relationships, my algorithm will plan a feasible sequence of actions on its own. Please note that the states, relationships, properties, and keywords you use must not exceed the scope I provided. If you call a function, first ensure that you have defined the function, and then make sure to provide the necessary parameters when calling it. Additionally, behavior __goal__(): is a required structure, functioning similarly to the main function in Python. You usually need to place it at the end of the output. Please do not provide any parameters to __goal__(). Please check these problems carefully before outputting, otherwise the program will not run. 
+For additional information, sometimes you need to define a transition model. The characteristic of a transition model is that it includes an eff at the end of a behavior, indicating the effect of this behavior. Note that __goal__ behavior must not be a transition model.
 
 ## The available states are (The text following the hash symbol is a comment; please do not include it in the goal representation):
 - is_on(x: item) #is working
@@ -198,12 +198,26 @@ eg: exists item1: item : holds_lh(char, item1)
 # Usage: Define a symbol and bind it to the output of an expression. You can only use the symbol in the following way.
 symbol l=exists item1: item : holds_lh(char, item1)
 
-## Example-1:
+## Example-1-1:
+When the goal is: 
+Put away the food on the table.
 
+The additional information is: None.
+
+Thought:
+
+The output is:
+
+        
+Example Analysis: In this example, all the bind operations are conducted within the __goal__ behavior, ensuring the consistency of item instances across different behaviors. In the remaining two behaviors, special attention is given to the foreach operation, where an if statement is added. This if statement not only declares the type of item being retrieved but also ensures that the item was originally on the table, aligning with the goal of "Put away the food on the table."
+
+# Example-1-2:
 When the goal is: 
 Put away the food on the table.
 
 The additional information is: Put the eggs and apples on the table into the freezer, and then place the bread from the table onto the kitchen counter. Remember to close the freezer properly.
+
+Thought:
 
 The output is:
 behavior store_egg_and_apple_in_freezer(egg:item, apple:item, freezer:item):
@@ -325,6 +339,10 @@ Example Analysis: In this example, I want to demonstrate how to invoke available
 The following example demonstrates the difference between using foreach and bind.
 When the goal is: Wash all the clothes in the basket.
 The additional information: Please note that there is more than one basket in the scenario, so make sure the basket you are looking for contains clothes. And we have a washing mashine, so I prefer you to use that to wash clothes.
+
+
+
+
 
 The output is:
 behavior load_washing_machine(basket:item,washing_machine:item):
