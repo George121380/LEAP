@@ -2,9 +2,7 @@ domain "virtualhome_partial"
 
 typedef item: object
 typedef character: object
-typedef ObjectList: item[]
 typedef id: int64
-
 # Features without return type annotations are assumed to be returning boolean values.
 
 #state
@@ -21,6 +19,7 @@ feature lying(x: character)
 feature cut(x:item)
 feature sleeping(x: character)
 feature inhand(x: item)
+feature visited(x: item)
 
 #relationship
 feature on(x: item, y: item)
@@ -52,7 +51,6 @@ feature has_switch(x: item)
 feature readable(x: item)
 feature lookable(x: item)
 feature containers(x: item)
-feature clothes(x: item)
 feature person(x: item)
 feature body_part(x: item)
 feature cover_object(x: item)
@@ -60,6 +58,8 @@ feature has_plug(x: item)
 feature has_paper(x: item)
 feature movable(x: item)
 feature cream(x: item)
+feature is_clothes(x: item)
+feature is_food(x: item)
 
 object_constant char:character
 
@@ -529,10 +529,7 @@ controller move_executor(x: item)
 controller push_executor(x: item)
 controller pull_executor(x: item)
 controller exp(x:item, y:item)
-
-
-def inhand(inhand_obj:item):
-  return holds_rh(char, inhand_obj) or holds_lh(char, inhand_obj)
+controller obs(x:item,q:string)
 
 def standing(char: character):
   return not sitting(char) and not lying(char)
@@ -546,15 +543,17 @@ def has_a_free_hand():
 
 behavior put(inhand_obj: item, obj: item):
   body:
+    assert not is_room(obj)
     achieve not unknown(obj)
     achieve not unknown(inhand_obj)
     achieve_once inhand(inhand_obj)
-    achieve close_char(char, obj)
+    achieve_once close_char(char, obj)
     put_executor(inhand_obj, obj)
 
   eff:
     holds_rh[char, inhand_obj] = False
     holds_lh[char, inhand_obj] = False
+    inhand[inhand_obj] = False
     on[inhand_obj, obj] = True
     close[inhand_obj, obj] = True
     close[obj, inhand_obj] = True
@@ -576,6 +575,7 @@ behavior putin(inhand_obj: item, obj: item):
   eff:
     holds_rh[char, inhand_obj] = False
     holds_lh[char, inhand_obj] = False
+    inhand[inhand_obj] = False
     inside[inhand_obj, obj] = True
     close[inhand_obj, obj] = True
     close[obj, inhand_obj] = True
@@ -725,7 +725,7 @@ behavior switch_on(obj: item):
     if has_plug(obj):
       achieve plugged(obj)
     if can_open(obj):
-      achieve_once closed(obj)
+      achieve closed(obj)
     achieve close_char(char, obj)
     switchon_executor(obj)
   eff:
@@ -755,16 +755,13 @@ behavior grab(obj: item):
     achieve not unknown(obj)
     achieve has_a_free_hand()
     foreach obj2:item:
-      if inside(obj,obj2):
-        if not is_room(obj2):
-          assert can_open(obj2) or recipient(obj2) or eatable(obj2)
-          if can_open(obj2):
-            achieve open(obj2)
+      if inside(obj,obj2) and can_open(obj2):
+          achieve open(obj2)
     achieve close_char(char, obj)
     grab_executor(obj)
   eff:
+    inhand[obj] = True
     on[obj, :] = False
-    on[:, obj] = False
     inside[obj, :] = False
     close[obj, :] = False
     close[:, obj] = False
@@ -878,14 +875,18 @@ behavior plugout(object:item):
     plugged[object] = False
     unplugged[object] = True
 
-behavior cut(object:item):
+behavior cuts(object:item):
   goal: cut(object)
   body:
     assert cuttable(object) or eatable(object)
     achieve not unknown(object)
+    symbol has_cutting_board=exists item1:item: is_cutting_board(item1)
+    if has_cutting_board:
+      bind cutting_board:item where:
+        is_cutting_board(cutting_board)
+      achieve on(object, cutting_board)
     symbol has_knife=exists knife:item: is_knife(knife) and inhand(knife)
     if not has_knife:
-      achieve_once has_a_free_hand()
       bind new_knife:item where:
         is_knife(new_knife)
       achieve_once inhand(new_knife)
@@ -940,7 +941,7 @@ behavior wipe(obj:item):
 behavior put_on_body(inhand_obj: item):
   goal: on_body(inhand_obj, char)
   body:
-    assert clothes(inhand_obj)
+    assert is_clothes(inhand_obj)
     achieve not unknown(inhand_obj)
     achieve inhand(inhand_obj)
     puton_executor(inhand_obj)
@@ -950,7 +951,7 @@ behavior put_on_body(inhand_obj: item):
 behavior put_off_body(clo: item):
   goal: not on_body(clo, char)
   body:
-    assert clothes(clo)
+    assert is_clothes(clo)
     putoff_executor(clo)
   eff:
     on_body[clo, char] = False
@@ -1033,7 +1034,22 @@ behavior pull(obj:item):
 
 behavior squeeze(obj:item):
   body:
-    assert is_cleaning_solution(obj) or is_tooth_paste(obj) or is_shampoo(obj) or is_dish_soap(obj) or is_soap(obj) or is_towel(obj) or is_rag(obj) or has_paper(obj) or is_sponge(obj) or is_food_lemon(obj) or clothes(obj) or is_check(obj)
+    assert is_cleaning_solution(obj) or is_tooth_paste(obj) or is_shampoo(obj) or is_dish_soap(obj) or is_soap(obj) or is_towel(obj) or is_rag(obj) or has_paper(obj) or is_sponge(obj) or is_food_lemon(obj) or is_clothes(obj) or is_check(obj)
     achieve not unknown(obj)
     achieve has_a_free_hand()
     achieve close_char(char, obj)
+
+behavior observe(obj:item, q:string):
+  body:
+    achieve not unknown(obj)
+    achieve close_char(char, obj)
+    #if can_open(obj):
+    #  achieve_once open(obj)
+    obs(obj,q)
+  eff:
+    visited[obj] = True
+
+behavior visit(item:item):
+  goal: visited(item)
+  body:
+    observe(item,"look around this place")

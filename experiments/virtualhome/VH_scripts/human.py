@@ -1,0 +1,71 @@
+import numpy as np
+import re
+import sys
+import json
+sys.path.append('/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/utils')
+from Interpretation import Exp_helper
+from environment import EnvironmentState, EnvironmentGraph
+
+
+class Human:
+    def __init__(self, scene_graph):
+        self.scene_graph = scene_graph
+        self.name2id = {}
+
+    def set_name2id(self,name2id):
+        self.name2id = name2id
+
+    def QA(self,question):
+        if 'help me to find' in question: # exploration problem
+            target=re.search(r'find (.*?) \?', question).group(1)
+            target_id=self.name2id[target]
+            target_related_info=self.check_related_edges(target_id)
+            discription=''
+            for relation in target_related_info:
+                from_name=relation['from_name']
+                to_name=relation['to_name']
+                r=relation['relation_type']
+                if r=='CLOSE':
+                    discription+=f'- {from_name} is close to {to_name}'
+                elif r=='FACING':
+                    discription+=f'- {from_name} is facing {to_name}'
+                elif r=='INSIDE':
+                    discription+=f'- {from_name} is inside {to_name}'
+                elif r=='ON':
+                    discription+=f'- {from_name} is on {to_name}'
+                elif r=='BETWEEN':
+                    discription+=f'- {from_name} is between {to_name}'
+                discription+='\n'
+            answer=Exp_helper(target,discription)
+            print(answer)
+            return answer
+    
+    def check_related_edges(self,node_id):
+        related_edges=[]
+        for edges in self.scene_graph.get_edges():
+            if node_id==edges['from_id'] or node_id==edges['to_id']:
+                from_id=edges['from_id']
+                to_id=edges['to_id']
+                from_name=f"{self.scene_graph.get_node(from_id).class_name}_{from_id}"
+                to_name=f"{self.scene_graph.get_node(to_id).class_name}_{to_id}"
+                idy_edge={'from_name':from_name,'to_name':to_name,'relation_type':edges['relation_type']}
+                related_edges.append(idy_edge)
+        # print(related_edges)
+        return related_edges
+
+    def human_evaluation(self,goal):
+        pass
+
+
+
+
+def load_task():
+    scene_path='cdl_dataset/assert/Scene.json'
+    with open(scene_path) as f:
+        scene=json.load(f)
+    init_scene_graph = EnvironmentGraph(scene)
+    return init_scene_graph
+
+if __name__=='__main__':
+    scene_graph=load_task()
+    human=Human(scene_graph)

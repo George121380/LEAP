@@ -1,5 +1,5 @@
 #To-Do list
 
-- [x] Finish all executor (domain knowledge)
-- [x] Import objects and states from virtualhome to solver.
-- [ ] How to check wether there is an avaliable path when "walk"?
+- [ ] Improve exp model with more relations information, eg: table_353 clsoe to?
+- [ ] Improve the rule of additional information updates
+- [ ] Improve the question quality for obs() action

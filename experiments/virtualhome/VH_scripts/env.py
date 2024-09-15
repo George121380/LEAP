@@ -4,7 +4,7 @@ from execution import ScriptExecutor
 from utils import load_name_equivalence
 from utils_eval import transform_action,check_unexplorable
 from scripts import *
-
+from logger import logger
 
 
 class VH_Env:
@@ -14,36 +14,56 @@ class VH_Env:
         self.scripts_index=1
         self.char=None
         self.char_room=None
+        self.action_record=[]
 
     def check_related_edges(self,node_id):
         related_edges=[]
         for edges in self.graph.get_edges():
             if node_id==edges['from_id'] or node_id==edges['to_id']:
-                related_edges.append(edges)
-        print(related_edges)
+                from_id=edges['from_id']
+                to_id=edges['to_id']
+                from_name=f"{self.graph.get_node(from_id).class_name}_{from_id}"
+                to_name=f"{self.graph.get_node(to_id).class_name}_{to_id}"
+                idy_edge={'from_name':from_name,'to_name':to_name,'relation_type':edges['relation_type']}
+                related_edges.append(idy_edge)
+        # print(related_edges)
         return related_edges
 
     def find_room(self,node_id):
         for edge in self.graph.get_edges():
-            if edge['from_id']==node_id and edge['relation_type']=='INSIDE':
+            if edge['from_id']==node_id and edge['relation_type']=='INSIDE' and self.graph.get_node(edge['to_id']).category=='Rooms':
                 return f"{self.graph.get_node(edge['to_id']).class_name}_{edge['to_id']}"
         return None
 
+    def extract_id(self,node_name):
+        last_underscore_index = node_name.rfind('_')
+        if last_underscore_index != -1:
+            return int(node_name[last_underscore_index + 1:])
+        else:
+            raise Exception('Node name is not in the correct format.')
+
     def step(self, action):
-        exp_flag=True
+        exp_flag=False
         exp_target=None
         exp_loc=None
+        obs_flag=None
+        obs_target=None
+        question=None
+        obs_result=None
+
+        remove_relations=[]
+
         observation={}
 
-        if action.name!='exp':
-            exp_flag=False
+        if action.name!='exp' and action.name!='obs':
+            self.action_record.append(str(action))
             self.executor = ScriptExecutor(self.graph, self.name_equivalence)
             # if 'grab' in action.name.lower():
             #     print('debug')
 
-            action=transform_action(action,self.scripts_index)
+            exe_action=transform_action(action,self.scripts_index)
             self.scripts_index+=1
-            script=Script(action)
+            script=Script(exe_action)
             state_enum = self.executor.find_solutions(script)
             state = next(state_enum, None)
             if state is None:
@@ -64,19 +84,30 @@ class VH_Env:
                     
             for edge in state._removed_edges_from:
                 from_id=edge[0]
+                from_name=f"{state._graph.get_node(from_id).class_name}_{from_id}"
                 relation=edge[1]
                 to_id_list=list(state._removed_edges_from[edge])
                 if len(to_id_list)==0:
                     continue
                 for to_id in to_id_list:
                     self.graph.delete_edge(state._graph.get_node(from_id), relation, state._graph.get_node(to_id))
+                    to_name=f"{state._graph.get_node(to_id).class_name}_{to_id}"
+                    remove_relations.append({'from_name':from_name,'to_name':to_name,'relation_type':relation.name})
 
             for node in state._new_nodes:
                 self.graph._node_map[node].states=state._new_nodes[node].states
-        else:
+        if action.name=='exp':
+            exp_flag=True
             exp_target=action.arguments[0].name
             exp_loc=action.arguments[1].name
             ###obs###
+
+        if action.name=='obs':
+            obs_flag=True
+            obs_target=action.arguments[0].name
+            question=str(action.arguments[1].tensor)
+            target_id=self.extract_id(action.arguments[0].name)
+            obs_result=self.check_related_edges(target_id)
         
         self.char_room=self.find_room(self.char.id)
             
@@ -154,5 +185,19 @@ class VH_Env:
         observation['exp_target']=exp_target
         observation['exp_loc']=exp_loc
         observation['checked']=checked_name_list
+        observation['obs_flag']=obs_flag
+        observation['obs_target']=obs_target
+        observation['question']=question
+        observation['obs_result']=obs_result
+        observation['remove_relations']=remove_relations
+        observation['action']=action
 
         return observation
+    
+    def report_actions(self):
+        action_num=len(self.action_record)
+        for action in self.action_record:
+            print(action)
+            logger.info(action_num,action,'','','','')
+        print(f'Total number of actions: {action_num}')
+

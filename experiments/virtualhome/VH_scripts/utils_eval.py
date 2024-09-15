@@ -123,43 +123,45 @@ def reformat_actions(commands):
 
 def state_translation(objname, state):
     mapping = {
-    State.CLOSED: "closed[x: item]",
-    State.OPEN: "open[x: item]",
-    State.ON: "is_on[x: item]",
-    State.OFF: "is_off[x: item]",
-    State.SITTING: "sitting[x: character]",
-    State.DIRTY: "dirty[x: item]",
-    State.CLEAN: "clean[x: item]",
-    State.LYING: "lying[x: character]",
-    State.PLUGGED_IN: "plugged[x: item]",
-    State.PLUGGED_OUT: "unplugged[x: item]",
-    Property.SURFACES: "surfaces[x: item]",
-    Property.GRABBABLE: "grabbable[x: item]",
-    Property.SITTABLE: "sittable[x: item]",
-    Property.LIEABLE: "lieable[x: item]",
-    Property.HANGABLE: "hangable[x: item]",
-    Property.DRINKABLE: "drinkable[x: item]",
-    Property.EATABLE: "eatable[x: item]",
-    Property.RECIPIENT: "recipient[x: item]",
-    Property.CUTTABLE: "cuttable[x: item]",
-    Property.POURABLE: "pourable[x: item]",
-    Property.CAN_OPEN: "can_open[x: item]",
-    Property.HAS_SWITCH: "has_switch[x: item]",
-    Property.READABLE: "readable[x: item]",
-    Property.LOOKABLE: "lookable[x: item]",
-    Property.CONTAINERS: "containers[x: item]",
-    Property.CLOTHES: "clothes[x: item]",
-    Property.PERSON: "person[x: item]",
-    Property.BODY_PART: "body_part[x: item]",
-    Property.COVER_OBJECT: "cover_object[x: item]",
-    Property.HAS_PLUG: "has_plug[x: item]",
-    Property.HAS_PAPER: "has_paper[x: item]",
-    Property.MOVABLE: "movable[x: item]",
-    Property.CREAM: "cream[x: item]",
+    "CLOSED": "closed[x: item]",
+    "OPEN": "open[x: item]",
+    "ON": "is_on[x: item]",
+    "OFF": "is_off[x: item]",
+    "SITTING": "sitting[x: character]",
+    "DIRTY": "dirty[x: item]",
+    "CLEAN": "clean[x: item]",
+    "LYING": "lying[x: character]",
+    "PLUGGED_IN": "plugged[x: item]",
+    "PLUGGED_OUT": "unplugged[x: item]",
+    "SURFACES": "surfaces[x: item]",
+    "GRABBABLE": "grabbable[x: item]",
+    "SITTABLE": "sittable[x: item]",
+    "LIEABLE": "lieable[x: item]",
+    "HANGABLE": "hangable[x: item]",
+    "DRINKABLE": "drinkable[x: item]",
+    "EATABLE": "eatable[x: item]",
+    "RECIPIENT": "recipient[x: item]",
+    "CUTTABLE": "cuttable[x: item]",
+    "POURABLE": "pourable[x: item]",
+    "CAN_OPEN": "can_open[x: item]",
+    "HAS_SWITCH": "has_switch[x: item]",
+    "READABLE": "readable[x: item]",
+    "LOOKABLE": "lookable[x: item]",
+    "CONTAINERS": "containers[x: item]",
+    "CLOTHES": "is_clothes[x: item]",
+    "PERSON": "person[x: item]",
+    "BODY_PART": "body_part[x: item]",
+    "COVER_OBJECT": "cover_object[x: item]",
+    "HAS_PLUG": "has_plug[x: item]",
+    "HAS_PAPER": "has_paper[x: item]",
+    "MOVABLE": "movable[x: item]",
+    "CREAM": "cream[x: item]",
 }
 
-    feature = mapping.get(state, "Unknown feature")
-    return feature.replace("x: item", f"{objname}").replace("x: character", f"x: {objname}")+" = True".replace("-","_")
+    state_name=state.name
+    feature = mapping.get(state_name, "Unknown feature")
+    result= feature.replace("x: item", f"{objname}").replace("x: character", f"x: {objname}")+" = True".replace("-","_")
+    return result
 
 def relationship_translation(graph,edge):
     relation_mapping = {
@@ -240,6 +242,8 @@ def get_nodes_information(graph):
                 if "grabbable" in property:
                     states.append(f"unknown[{executable_objname}]=True")
                     unknown_set.add(executable_objname)
+                if "food" in executable_objname:
+                    properties.append(f"is_food[{executable_objname}]=True")
 
             for state in node.states:
                 if executable_objname in unknown_set:

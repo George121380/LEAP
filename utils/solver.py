@@ -20,7 +20,7 @@ args = parser.parse_args()
 
 def goal_solver(goal):
     domain = crow.load_domain_file(args.domain)
-    problem = crow.load_problem_file('/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/experiments/virtualhome/CDLs/exicutable_cdl.cdl', domain=domain)
+    problem = crow.load_problem_file('/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/experiments/virtualhome/CDLs/executable_cdl.cdl', domain=domain)
     # problem = crow.load_problem_file('agent_internal_state.cdl', domain=domain)
 
     # behavior= crow.load_domain_file('explore_test.cdl')

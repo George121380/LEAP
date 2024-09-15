@@ -4,34 +4,58 @@ sys.path.append('/Users/liupeiqi/workshop/Research/Instruction_Representation/lp
 import concepts.dm.crow as crow
 import numpy as np
 import re
+from logger import logger
 from experiments.virtualhome.VH_scripts.planning import VH_pipeline
-from Interpretation import exploration_VH
+from Interpretation import exploration_VH,sub_goal_generater,obs_query,sub_goal_evaluate
+from action_explaination import controller_to_natural_language
 
 class VHAgent:
     def __init__(self, filepath):
         self.name2opid = {}
         self.name2id = {}
-        self.num_items = 0
-        self.item_type = np.array([], dtype=object)
+        self.num_items = 0 # Record how mani items in the scene
+        self.item_type = np.array([], dtype=object) # Record the type of each item
         self.category = {}
         self.properties = {}
         self.relations = {}
         self.state = {}
         self.exploration = {}
         self.goal_nl=''
+        self.current_subgoal_nl=''
+        self.current_subgoal_num=0
+        self.sub_goal_list=[]
         self.add_info_nl=''
+        self.add_info_human_instruction=''
+        self.add_info_action_history=[]
         self.exploration_behavior = ""
         self.goal_representation = ""
         self.internal_state_path = '/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/experiments/virtualhome/CDLs/virtualhome_agent_internal_state.cdl'
         self.domain_path = '/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/experiments/virtualhome/CDLs/virtualhome_partial.cdl'
-
+        self.reset_add_info_record()
         # do not replan every step
         self.newfind=True
         self.plan=[]
         self.current_step=0
-
+        self.exp_fail_num=0
         self._parse_file(filepath)
         self.save_to_file()
+
+
+    def set_human_helper(self,human_helper):
+        self.human_helper=human_helper
+        self.human_helper.set_name2id(self.name2id)
+
+    def update_add_info(self):
+        self.add_info_nl=''
+        if self.add_info_human_instruction:
+            self.add_info_nl+=f"Human Instruction: {self.add_info_human_instruction}\n"
+        if self.add_info_action_history:
+            self.add_info_nl+="The actions you have taken:\n"
+            for id in range(len(self.add_info_action_history)):
+                self.add_info_nl+=f"Action {id+1}: {controller_to_natural_language(self.add_info_action_history[id]['action'])} -> effect: {self.add_info_action_history[id]['effects']}\n"
+        
+    def reset_visited(self):
+        self.state['visited']=np.full(self.num_items , "uncertain", dtype=object)
 
     def _initialize_relationships(self):
         relationship_features = [
@@ -44,7 +68,7 @@ class VHAgent:
     def _initialize_states(self):
         state_features = [
             "is_on", "is_off", "open", "closed", "dirty", 
-            "clean", "plugged", "unplugged", "facing_char","on_char", "on_body","close_char", "inside_char","holds_rh", "holds_lh"
+            "clean", "plugged", "unplugged", "facing_char","on_char", "on_body","close_char", "inside_char","holds_rh", "holds_lh",'visited'
         ]
         for feature in state_features:
             self.state[feature] = np.full(self.num_items , "uncertain", dtype=object)
@@ -52,7 +76,7 @@ class VHAgent:
     def _initialize_properties(self):
         property_features = [
             "surfaces", "grabbable", "sittable","lieable","hangable","drinkable","eatable","recipient","cuttable", "pourable", 
-            "can_open", "has_switch", "containers", "has_plug", "readable","lookable","clothes","person","body_part","cover_object","has_paper","movable","cream"
+            "can_open", "has_switch", "containers", "has_plug", "readable","lookable","is_clothes","is_food","person","body_part","cover_object","has_paper","movable","cream"
         ]
         for feature in property_features:
             self.properties[feature] = np.full(self.num_items , "uncertain", dtype=object)
@@ -413,54 +437,75 @@ class VHAgent:
                 file.write("\n#goal_representation\n")
                 file.write(self.goal_representation)
                 file.write("\n#goal_representation_end\n")
-
-    def updates_from_diy_env(self,observation):
-        update_exploration=observation['exploration']
-        self.exploration['known']+=update_exploration['known']
-        self.exploration['checked']+=update_exploration['checked']
-        for state_name, state_values in observation['state'].items():
-            for item_id, value in state_values:
-                self.state[state_name][item_id] = value
-
-        # Update relations
-        for relation_name, relation_values in observation['relations'].items():
-            for item_id, target_id, value in relation_values:
-                self.relations[relation_name][item_id][target_id] = value
-        self.save_to_file()
-        self.save_to_file("/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/experiments/virtualhome/CDLs/current_agent_state.cdl")
-
-        return update_exploration
     
     def updates(self,observation):
         # print(observation['known'])
-        if not observation['exp_flag']:# other actions
+        action_effects=''
+        if not observation['exp_flag'] and not observation['obs_flag']:# other actions
             for new_known in observation['known']:
                 if 'character' in new_known:
                     continue
                 if self.exploration['unknown'][self.name2opid[new_known]]==True:
                     self.exploration['unknown'][self.name2opid[new_known]]=False
+                    action_effects+=f"Find {new_known}. "
+                    
             
             for check_place in observation['checked']:
                 if 'character' in check_place:
                     continue
                 self.exploration['checked'][:,self.name2opid[check_place]]=True
 
-            for new_relations in observation['relations']:
+            for new_relations in observation['relations']:# add relations
                 if 'character' in new_relations['to_name']:
                     new_relations['to_name']='char'
                 if new_relations['from_name']=='char':
                     
                     if new_relations['relation_type']=='HOLDS_LH':
-                        self.state['holds_lh'][self.name2opid[new_relations['to_name']]]=True
+                        if self.state['holds_lh'][self.name2opid[new_relations['to_name']]]==False:
+                            action_effects+=f"Grabbing {new_relations['to_name']} by left hand. "
+                            self.state['holds_lh'][self.name2opid[new_relations['to_name']]]=True
                     elif new_relations['relation_type']=='HOLDS_RH':
-                        self.state['holds_rh'][self.name2opid[new_relations['to_name']]]=True
+                        if self.state['holds_rh'][self.name2opid[new_relations['to_name']]]==False:
+                            action_effects+=f"Grabbing {new_relations['to_name']} by right hand. "
+                            self.state['holds_rh'][self.name2opid[new_relations['to_name']]]=True
                     else:
                         relation_type=new_relations['relation_type'].lower()+"_char"
                         self.state[relation_type][self.name2opid[new_relations['to_name']]]=True
+
+                        action_effects+=f"Robot is {new_relations['relation_type'].lower()} {new_relations['to_name']}. "
+
                 elif new_relations['to_name']=='char' and new_relations['relation_type']=='ON':
                     self.state['on_body'][self.name2opid[new_relations['from_name']]]=True
                 else:
-                    self.relations[new_relations['relation_type'].lower()][self.name2opid[new_relations['from_name']]][self.name2opid[new_relations['to_name']]]=True
+                    if self.relations[new_relations['relation_type'].lower()][self.name2opid[new_relations['from_name']]][self.name2opid[new_relations['to_name']]]==False:
+                        # action_effects+=f"{new_relations['from_name']} is {new_relations['relation_type'].lower()} {new_relations['to_name']}. "
+                        self.relations[new_relations['relation_type'].lower()][self.name2opid[new_relations['from_name']]][self.name2opid[new_relations['to_name']]]=True
+
+            for delete_relations in observation['remove_relations']:# delete relations
+                if 'character' in delete_relations['to_name']:
+                    delete_relations['to_name']='char'
+                if 'character' in delete_relations['from_name']:
+                    delete_relations['from_name']='char'
+                if delete_relations['from_name']=='char':
+                    if delete_relations['relation_type']=='HOLDS_LH':
+                        if self.state['holds_lh'][self.name2opid[delete_relations['to_name']]]==True:
+                            action_effects+=f"{delete_relations['to_name']} released by left hand. "
+                            self.state['holds_lh'][self.name2opid[delete_relations['to_name']]]=False
+                    elif delete_relations['relation_type']=='HOLDS_RH':
+                        if self.state['holds_rh'][self.name2opid[delete_relations['to_name']]]==True:
+                            action_effects+=f"{delete_relations['to_name']} released by right hand. "
+                            self.state['holds_rh'][self.name2opid[delete_relations['to_name']]]=False
+                    else:
+                        relation_type=delete_relations['relation_type'].lower()+"_char"
+                        if self.state[relation_type][self.name2opid[delete_relations['to_name']]]==True:
+                            action_effects+=f"Robot is no longer {delete_relations['relation_type'].lower()} {delete_relations['to_name']}."
+                            self.state[relation_type][self.name2opid[delete_relations['to_name']]]=False
+                elif delete_relations['to_name']=='char' and delete_relations['relation_type']=='ON':
+                    self.state['on_body'][self.name2opid[delete_relations['from_name']]]=False
+                else:
+                    if self.relations[delete_relations['relation_type'].lower()][self.name2opid[delete_relations['from_name']]][self.name2opid[delete_relations['to_name']]]==True:
+                        # action_effects+=f"{delete_relations['from_name']} is no longer {delete_relations['relation_type'].lower()} {delete_relations['to_name']}."
+                        self.relations[delete_relations['relation_type'].lower()][self.name2opid[delete_relations['from_name']]][self.name2opid[delete_relations['to_name']]]=False
             
             for obj_name in observation['states']:
                 update_list=observation['states'][obj_name]
@@ -495,7 +540,7 @@ class VHAgent:
 
             
 
-        else:# exploration
+        if observation['exp_flag']:# exploration
             exp_target=observation['exp_target']
             exp_loc=observation['exp_loc']
             for new_known in observation['known']:
@@ -510,14 +555,66 @@ class VHAgent:
 
             if exp_target in observation['known'] or not self.exploration['unknown'][self.name2opid[exp_target]]:
                 print(f'{exp_target} is successfully explored around {exp_loc} or already known before')
+                action_effects+=f"Find {exp_target}. "
             else:
+                if self.exp_fail_num==5:
+                    human_answer=self.human_helper.QA(f'Can you help me to find {exp_target} ?')
+                    print(f'Query human about the location of {exp_target}.')
+                    logger.info("","","","",human_answer,"")
+                    self.exp_fail_num=0
+                    self.add_info_human_instruction+=human_answer+'\n'
+                    self.update_add_info()
+                    logger.info("","","",self.add_info_nl,"","")
+                    self.record_add_info()
+
+                self.exp_fail_num+=1
                 print(f'{exp_target} is not around {exp_loc}, re-explore')
+                action_effects+=f"Failed to find {exp_target} around {exp_loc}. "
                 self.save_to_file()
                 self.exploration_behavior=exploration_VH(self.goal_nl,self.add_info_nl,self.internal_state_path,self.exploration['checked'])
                 self.newfind=True
 
+        if observation['obs_flag']:
+            obs_target=observation['obs_target']
+            self.state['visited'][self.name2opid[obs_target]]=True
+            for new_known in observation['known']:
+                if 'character' in new_known:
+                    continue
+                if self.exploration['unknown'][self.name2opid[new_known]]==True:
+                    self.exploration['unknown'][self.name2opid[new_known]]=False
+                    self.newfind=True # find sth new
+            
+            for check_place in observation['checked']:
+                self.exploration['checked'][:,self.name2opid[check_place]]=True
+            obs_information=self.obs_query(observation['obs_target'],observation['obs_result'],observation['question'])+'\n'
+            action_effects+=f"Get this information: {obs_information}"
+
+        self.add_info_action_history.append({'action':str(observation['action']),'effects':action_effects})
+        self.update_add_info()
+        logger.info("","",str(observation['action']),action_effects,"","")
+        self.record_add_info()
         self.save_to_file()
         self.save_to_file("/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/experiments/virtualhome/CDLs/current_agent_state.cdl")   
+
+    def obs_query(self,target_obj,observation,question=None):
+        discription=''
+        for relation in observation:
+            from_name=relation['from_name']
+            to_name=relation['to_name']
+            r=relation['relation_type']
+            if r=='CLOSE':
+                discription+=f'- {from_name} is close to {to_name}'
+            elif r=='FACING':
+                discription+=f'- {from_name} is facing {to_name}'
+            elif r=='INSIDE':
+                discription+=f'- {from_name} is inside {to_name}'
+            elif r=='ON':
+                discription+=f'- {from_name} is on {to_name}'
+            elif r=='BETWEEN':
+                discription+=f'- {from_name} is between {to_name}'
+            discription+='\n'
+        obs_info=obs_query(target_obj,discription,question)
+        return obs_info
 
 
     def get_state(self):
@@ -527,41 +624,129 @@ class VHAgent:
         return problem
 
     def act(self):
-        if self.newfind:
-            cdl_state = self.get_state()
-            plans, stats = crow.crow_regression(
-            cdl_state.domain, cdl_state, goal=cdl_state.goal, min_search_depth=8, max_search_depth=8,
-            is_goal_ordered=True, is_goal_serializable=False, always_commit_skeleton=True,
-            enable_state_hash=False,
-            verbose=False
-        )
-            if len(plans) == 0:
-                    print('No plan found.')
-                    return None,None
+        while True:
+            if self.newfind:
+                cdl_state = self.get_state()
+                plans, stats = crow.crow_regression(
+                cdl_state.domain, cdl_state, goal=cdl_state.goal, min_search_depth=8, max_search_depth=8,
+                is_goal_ordered=True, is_goal_serializable=False, always_commit_skeleton=True,
+                enable_state_hash=False,
+                verbose=False
+            )
+                if len(plans) == 0:
+                    if self.current_subgoal_num==0:
+                        print('No plan found. Reset the whole goal')
+                        self.reset_goal(self.goal_nl,self.add_info_nl,self.classes,First_time=False,sub_goal=True)
+                    else:
+                        print('No plan found. Reset the sub-goal')
+                        self.reset_sub_goal()
+                    continue
 
-            plan = plans[0]
-            if len(plan) == 0:
-                print('No plan found.')
-                return None,None
+                plan = plans[0]
+                if len(plan) == 0:
+                    print('plan is a empty list')
+                    if self.current_subgoal_num==0:
+                            print('No plan found. Reset the whole goal')
+                            self.reset_goal(self.goal_nl,self.add_info_nl,self.classes,First_time=False,sub_goal=True)
+                    else:
+                        print('No plan found. Reset the sub-goal')
+                        self.reset_sub_goal()
+                    continue
+                print('Plan found:', plan)
+                logger.info("","","","","",str(plan))
+                action = plan[0]
+                self.current_step=1
+                self.plan=plan
+                self.newfind=False
+                return action,plan #reset
 
-            action = plan[0]
-            self.current_step=1
-            self.plan=plan
-            self.newfind=False
-            return action,plan
+            else:
+                
+                if self.current_step==len(self.plan):
+                    print('This is the last step for current sub-task')
+                    ##########evaluate subgoal###########
+                    while True:
+                        result,insrtuctions=self.evaluate_current_subgoal()
+                        if result.lower()=='yes':
+                            print('Sub-task is done')
+                            self.current_subgoal_num+=1
+                            break
+                            
+                        if result.lower()=='no':
+                            self.add_info_human_instruction+=insrtuctions+'\n'
+                            self.update_add_info()
+                            logger.info("","","",self.add_info_nl,"","")
+                            self.reset_sub_goal()
+                            self.newfind=True
+                            self.record_add_info()
+                            break
+                        
+                        if result.lower()!='yes' and result.lower()!='no':
+                            print('Evaluate error, try again')
 
-        else:
-            if self.current_step==len(self.plan):
-                print('This is the last step')
-                raise ValueError('This is the last step')
-            action=self.plan[self.current_step]
-            self.current_step+=1
-            return action,self.plan
+                    if result.lower()=='no':
+                        continue
 
-    def reset_goal(self,goal,additional_information,classes,First_time=False):
+                    ##########evaluate subgoal###########
+
+
+
+                    if self.current_subgoal_num==len(self.sub_goal_list):
+                        print('All sub-tasks are done')
+                        return "over",None
+                    else:
+                        self.current_subgoal_nl=self.sub_goal_list[self.current_subgoal_num]
+                        _,self.goal_representation,self.exploration_behavior=VH_pipeline(self.current_subgoal_nl,self.add_info_nl,self.goal_nl,self.sub_goal_list[:self.current_subgoal_num],self.classes)
+                        self.reset_visited()
+                        self.save_to_file()
+                        self.save_to_file("/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/experiments/virtualhome/CDLs/current_agent_state.cdl")
+                        self.newfind=True
+                        continue
+                action=self.plan[self.current_step]
+                self.current_step+=1
+                return action,self.plan
+
+    def reset_goal(self,goal,additional_information,classes,First_time=False,sub_goal=True):
         # self.goal_representation=pipeline(goal,additional_information,loop=False,First_time=First_time)
-        self.goal_nl=goal
-        self.add_info_nl=additional_information
-        _,self.goal_representation,self.exploration_behavior=VH_pipeline(goal,additional_information,classes)
+        if First_time:
+            self.goal_nl=goal
+            self.add_info_nl=additional_information
+            self.record_add_info()
+            self.classes=classes
+        if sub_goal:
+            self.sub_goal_list=sub_goal_generater(goal)
+            print(self.sub_goal_list)
+            logger.info(self.sub_goal_list,"","","","","")
+            self.current_subgoal_nl=self.sub_goal_list[0]
+            _,self.goal_representation,self.exploration_behavior=VH_pipeline(self.current_subgoal_nl,additional_information,self.goal_nl,self.sub_goal_list[:self.current_subgoal_num],self.classes)
+        else:
+            _,self.goal_representation,self.exploration_behavior=VH_pipeline(goal,additional_information,None,self.classes)
+        self.reset_visited()
         self.save_to_file()
         self.save_to_file("/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/experiments/virtualhome/CDLs/current_agent_state.cdl")
+
+    def reset_sub_goal(self):
+        _,self.goal_representation,self.exploration_behavior=VH_pipeline(self.current_subgoal_nl,self.add_info_nl,self.goal_nl,self.sub_goal_list[:self.current_subgoal_num],self.classes)
+        self.reset_visited()
+        self.save_to_file()
+        self.save_to_file("/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/experiments/virtualhome/CDLs/current_agent_state.cdl")
+        
+
+    def evaluate_current_subgoal(self):
+        if self.current_subgoal_num==len(self.sub_goal_list)-1:
+            result,insrtuctions=sub_goal_evaluate(self.goal_representation,self.add_info_action_history,self.current_subgoal_nl,self.goal_nl, 'This is the last sub-task',self.add_info_nl,self.name2opid.keys())
+        else:
+            result,insrtuctions=sub_goal_evaluate(self.goal_representation,self.add_info_action_history,self.current_subgoal_nl,self.goal_nl, self.sub_goal_list[self.current_subgoal_num+1],self.add_info_nl,self.name2opid.keys())
+        return result,insrtuctions
+    
+    def reset_add_info_record(self):
+        record_path='/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/visualization/add_info_monitor.txt'
+        with open(record_path,'w') as f:
+            f.write('')
+
+    def record_add_info(self):
+        record_path='/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/visualization/add_info_monitor.txt'
+        with open(record_path,'a') as f:
+            f.write('#'*30)
+            f.write('\n')
+            f.write(self.add_info_nl)

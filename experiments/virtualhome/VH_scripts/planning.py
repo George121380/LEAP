@@ -1,26 +1,30 @@
 import json
 import os.path as osp
 import sys
+import re
+
 
 sys.path.append('/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/embodied-agent-eval/src/VIRTUALHOME/AgentEval-main')
 sys.path.append('/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/utils')
-
+from logger import logger
 import virtualhome_eval.simulation.evolving_graph.utils as utils
 from virtualhome_eval.simulation.evolving_graph.eval_utils import *
 import virtualhome_eval.evaluation.action_sequence.prompts.one_shot as one_shot
 from virtualhome_eval.evaluation.action_sequence.scripts.utils_lpq import get_nodes_information,construct_cdl,get_from_dataset
-from Interpretation import goal_interpretation,refiner,feedbackloop,exploration_VH
+from Interpretation import goal_interpretation,exploration_VH
 from solver import goal_solver
 from auto_debugger import auto_debug
 from concepts.dm.crow.parsers.cdl_parser import TransformationError
-
+from concepts.dm.crow.executors.crow_executor import ResampleError
 def remove_special_characters(input_string):
     allowed_characters = {',', ':', '(', ')', '_', '#', ' ', '\n','!=','=','[',']'}
     remove_s=''.join(char for char in input_string if char.isalnum() or char in allowed_characters)
     remove_s=remove_s.replace("python"," ")
+    pattern = r'(observe\([^,]+,\s*)([^"()]+)(\))'
+    remove_s = re.sub(pattern, r'\1"\2"\3', remove_s)
     return remove_s
 
-def VH_pipeline(goal,add_info,classes,partial_observation=True):
+def VH_pipeline(goal,add_info,long_horizon_goal,sub_goal_list,classes,partial_observation=True):
     exploration_content = ""
     # objects,states,relationships,properties,categories,classes,cat_statement=get_nodes_information(scene_graph)
     # construct_cdl(objects,states,relationships,properties,cat_statement)
@@ -28,12 +32,13 @@ def VH_pipeline(goal,add_info,classes,partial_observation=True):
     generate_time=0
     while generate_time<5:
         try:
-            goal_int=goal_interpretation(goal,add_info,classes)
+            goal_int=goal_interpretation(goal,add_info,long_horizon_goal,classes,sub_goal_list)
             goal_int=remove_special_characters(goal_int)
+            # logger.info("Goal representation",goal_int)
             with open("/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/experiments/virtualhome/CDLs/init_scene.cdl", "r") as file:
                 original_content = file.read()
             combined_content = original_content + "\n#goal_representation\n" + goal_int+"\n#goal_representation_end\n"
-            new_file_path = "/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/experiments/virtualhome/CDLs/exicutable_cdl.cdl"
+            new_file_path = "/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/experiments/virtualhome/CDLs/executable_cdl.cdl"
             with open(new_file_path, "w") as file:
                 file.write(combined_content)
             if partial_observation and exploration_content=='':#replan exploration behaviors
@@ -47,6 +52,7 @@ def VH_pipeline(goal,add_info,classes,partial_observation=True):
             while correct_time < 5:
                 try:
                     plan=goal_solver(original_content + "\n" + goal_int)
+                    logger.info(goal_int,"","","","",plan)
                     if loop:
                         if len(plan)==0:
                             break
@@ -55,8 +61,11 @@ def VH_pipeline(goal,add_info,classes,partial_observation=True):
                             print("goal representation before loop:")
                             print('=' * 80)
                             print(goal_int)
-                            goal_int=feedbackloop(goal,add_info,
-                            classes,goal_int,plan[0])
+                            # goal_int=feedbackloop(goal,add_info,
+                            # classes,goal_int,plan[0])
+
+
+
                             goal_int=remove_special_characters(goal_int)
                             with open(new_file_path, "w") as file:
                                     combined_content = original_content + "\n" + goal_int
@@ -90,8 +99,15 @@ def VH_pipeline(goal,add_info,classes,partial_observation=True):
                 except TransformationError as e:
                     error_info=e.errors
                     print("Error information: ",error_info)
-                    goal_int=auto_debug(error_info,original_content,goal_int,goal,add_info,classes)
+                    logger.info(goal_int,error_info,"","","","")
+                    with open(new_file_path, "r") as file:
+                        for line_number, line in enumerate(file, start=1):
+                            if '#goal_representation\n' in line:
+                                goal_start_line_num=line_number
+                                break
+                    goal_int=auto_debug(error_info,original_content,goal_int,goal,add_info,classes,goal_start_line_num)
                     goal_int=remove_special_characters(goal_int)
+                    # logger.info("Goal representation after debugging",goal_int)
                     if partial_observation:
                         exploration_content=exploration_VH(goal,add_info,new_file_path)
                         exploration_content=remove_special_characters(exploration_content)
@@ -103,4 +119,17 @@ def VH_pipeline(goal,add_info,classes,partial_observation=True):
         except TransformationError as e:
             error_info=e.errors
             print("Error information: ",error_info)
+            # logger.info("Error information: ",error_info)
+
+            generate_time+=1
+
+        except ResampleError as e:
+            error_info=e.errors
+            print("Error information: ",error_info)
+            # logger.info("Error information: ",error_info)
+            generate_time+=1
+
+        except Exception as e:
+            print("Error information: ",e)
+            # logger.info("Error information: ",e)
             generate_time+=1
