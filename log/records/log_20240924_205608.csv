@@ -1,0 +1,449 @@
+Goal Representation,Debug Result,Action,Add Info,LLM Answer,Plan
+wash the bowls and the plates with dishwasher,,,,,
+"['1. Find the bowls and plates.', '2. Load the dishwasher with the bowls and plates.', '3. Run the d
+ishwasher.', '4. Remove the cleaned bowls and plates from the dishwasher.']",,,,,
+"
+def is_table(x: item):
+    symbol is_table = False
+    symbol exists table_types: item where:
+        is_furniture(table_types)
+    if inside(x,table_types):
+        is_table = True
+    return is_table
+
+def is_bowl_or_plate(x: item):
+    return (is_bowl(x) or is_plate(x))
+
+def location_counterpart(x: item):
+    symbol result = if (inside(x, basket) or inside(x, fridge)), then fridge else: table
+    return result
+
+def select_item(items:item, o: item):
+    symbol result = itemsaccept(o) if is_kitchen_table(o) else find(o: items)
+
+behavior find_items(container: item):
+    goal: is_kitchen_table(o) and is_bowl_or_plate(o)
+    body:
+        bind container: item where:
+            is_sink(container)  or is_cupboard(container)
+        
+        observe(container, ""Checking if there are bowls and plates in the container"")
+        
+behavior observe_container(container: item):
+    body:
+        observe(container, ""Checking if there are bowls and plates in the container"")
+
+behavior load_dishes(item: items):
+    goal: (is_plate(item) or is_bowl(item)) and inhand(item)
+    body:
+        achieve_once inhand(((is_plate(item) or is_bowl(item))))
+        move(item)
+        
+behavior choose_item(items: item, o: item):
+    
+    goal: is_bowl_or_plate(o) and is_not_fragile(o)
+    body:
+        choose(item)
+        observe(item, ""Observe item"")
+
+behavior __goal__():
+    body:
+        
+        foreach containers: item:
+                if is_kitchen_table(containers) and not visited(containers):
+                    observe_container(containers)
+                    move(containers)
+        if exists o: item where:
+            (is_bowl(o) or is_plate(o)):
+                bind container: item where:
+                    is_kitchen_table(o)
+                find_item(o)
+                
+Inject behaviors dictionary into the loop:
+    
+        find: find_item,
+        observe: observe_container
+    ","Unexpected token Token('BASIC_TYPENAME', 'table_types') at line 2543, column 19.
+Expected one of: 
+	* EQUAL
+Previous tokens: [Token('VARNAME', 'exists')]
+",,,,
+" 
+def is_table(x: item):
+    symbol is_tbl = False
+    if is_furniture(x):
+        is_tbl = True
+    return is_tbl
+
+def is_bowl_or_plate(x: item):
+    return is_bowl(x) or is_plate(x)
+
+def location_counterpart(x: item):
+    symbol result = if inside(x, basket) or inside(x, fridge): fridge else: table
+    return result
+
+def select_item(items:item, o: item):
+    symbol result = itemsaccept(o) if is_kitchen_table(o) else find(o: items)
+    return result
+
+behavior find_items(container: item):
+    goal: is_kitchen_table(o) and is_bowl_or_plate(o)
+    body:
+        bind container: item where:
+            is_sink(container) or is_cupboard(container)
+        observe(container, ""Checking if there are bowls and plates in the container"")
+
+behavior observe_container(container: item):
+    body:
+        observe(container, ""Checking if there are bowls and plates in the container"")
+
+behavior load_dishes(item: items):
+    goal: (is_plate(item) or is_bowl(item)) and inhand(item)
+    body:
+        achieve_once inhand(item)
+        move(item)
+        
+behavior choose_item(items: item, o: item):
+    goal: is_bowl_or_plate(o) and is_not_fragile(o)
+    body:
+        choose(o)
+        observe(o, ""Observe item"")
+
+behavior __goal__():
+    body:
+        foreach containers: item:
+            if is_kitchen_table(containers) and not visited(containers):
+                observe_container(containers)
+                move(containers)
+        if exists o: item where:
+            is_bowl(o) or is_plate(o):
+                bind container: item where:
+                    is_kitchen_table(container)
+                find_items(container)
+
+find: find_items,
+observe: observe_container
+","Unexpected token Token('VARNAME', 'inside') at line 2532, column 24.
+Expected one of: 
+	* SEMICOLON
+	* _NEWLINE
+",,,,
+"def is_table(x: item):
+    symbol is_tbl = False
+    if is_furniture(x):
+        is_tbl = True
+    return is_tbl
+
+def is_bowl_or_plate(x: item):
+    return is_bowl(x) or is_plate(x)
+
+def location_counterpart(x: item):
+    symbol result = fridge if inside(x, basket) or inside(x, fridge) else table
+    return result
+
+def select_item(items:item, o: item):
+    symbol result = itemsaccept(o) if is_kitchen_table(o) else find(o: items)
+    return result
+
+behavior find_items(container: item):
+    goal: is_kitchen_table(container) and is_bowl_or_plate(container)
+    body:
+        bind container: item where:
+            is_sink(container) or is_cupboard(container)
+        observe(container, ""Checking if there are bowls and plates in the container"")
+
+behavior observe_container(container: item):
+    body:
+        observe(container, ""Checking if there are bowls and plates in the container"")
+
+behavior load_dishes(item: item):
+    goal: (is_plate(item) or is_bowl(item)) and inhand(item)
+    body:
+        achieve_once inhand(item)
+        move(item)
+
+behavior choose_item(items: item, o: item):
+    goal: is_bowl_or_plate(o) and is_not_fragile(o)
+    body:
+        choose(o)
+        observe(o, ""Observe item"")
+
+behavior __goal__():
+    body:
+        foreach containers: item:
+            if is_kitchen_table(containers) and not visited(containers):
+                observe_container(containers)
+                move(containers)
+        if exists o: item where:
+            is_bowl(o) or is_plate(o):
+                bind container: item where:
+                    is_kitchen_table(container)
+                find_items(container)
+
+find: find_items,
+observe: observe_container","Unexpected token Token('COLON', ':') at line 2535, column 70.
+Expected one of: 
+	* RPAR
+	* EQUAL
+	* COMMA
+",,,,
+"
+def is_table(x: item):
+    symbol is_tbl = False
+    if is_furniture(x):
+        is_tbl = True
+    return is_tbl
+
+def is_bowl_or_plate(x: item):
+    return is_bowl(x) or is_plate(x)
+
+def location_counterpart(x: item):
+    symbol result = fridge if inside(x, basket) or inside(x, fridge) else table
+    return result
+
+def select_item(items:item, o: item):
+    symbol result = accept(o) if is_kitchen_table(o) else find(o, items)
+    return result
+
+behavior find_items(container: item):
+    goal: is_kitchen_table(container) and is_bowl_or_plate(container)
+    body:
+        bind container: item where:
+            is_sink(container) or is_cupboard(container)
+        observe(container, ""Checking if there are bowls and plates in the container"")
+
+behavior observe_container(container: item):
+    body:
+        observe(container, ""Checking if there are bowls and plates in the container"")
+
+behavior load_dishes(item: item):
+    goal: (is_plate(item) or is_bowl(item)) and inhand(item)
+    body:
+        achieve_once inhand(item)
+        move(item)
+
+behavior choose_item(items: item, o: item):
+    goal: is_bowl_or_plate(o) and is_not_fragile(o)
+    body:
+        choose(o)
+        observe(o, ""Observe item"")
+
+behavior __goal__():
+    body:
+        foreach containers: item:
+            if is_kitchen_table(containers) and not visited(containers):
+                observe_container(containers)
+                move(containers)
+        if exists o: item where:
+            is_bowl(o) or is_plate(o):
+                bind container: item where:
+                    is_kitchen_table(container)
+                find_items(container)
+
+find: find_items,
+observe: observe_container
+","Unexpected token Token('_NEWLINE', '\n            ') at line 2587, column 33.
+Expected one of: 
+	* FALSE
+	* TILDE
+	* DO
+	* FLOAT_NUMBER
+	* OCT_NUMBER
+	* LSQB
+	* ELLIPSIS
+	* BIN_NUMBER
+	* VARNAME
+	* NONE
+	* LPAR
+	* PLUS
+	* FORALL
+	* DEC_NUMBER
+	* TRUE
+	* LONG_STRING
+	* FINDONE
+	* EXISTS
+	* MINUS
+	* COLON
+	* FINDALL
+	* STRING
+	* IMAG_NUMBER
+	* HEX_NUMBER
+	* NOT
+",,,,
+" 
+def is_table(x: item):
+    symbol is_tbl = False
+    if is_furniture(x):
+        is_tbl = True
+    return is_tbl
+
+def is_bowl_or_plate(x: item):
+    return is_bowl(x) or is_plate(x)
+
+def location_counterpart(x: item):
+    symbol result = fridge if inside(x, basket) or inside(x, fridge) else table
+    return result
+
+def select_item(items:item, o: item):
+    symbol result = accept(o) if is_kitchen_table(o) else find(o, items)
+    return result
+
+behavior find_items(container: item):
+    goal: is_kitchen_table(container) and is_bowl_or_plate(container)
+    body:
+        bind container: item where:
+            is_sink(container) or is_cupboard(container)
+        observe(container, ""Checking if there are bowls and plates in the container"")
+
+behavior observe_container(container: item):
+    body:
+        observe(container, ""Checking if there are bowls and plates in the container"")
+
+behavior load_dishes(item: item):
+    goal: (is_plate(item) or is_bowl(item)) and inhand(item)
+    body:
+        achieve_once inhand(item)
+        move(item)
+
+behavior choose_item(items: item, o: item):
+    goal: is_bowl_or_plate(o) and is_not_fragile(o)
+    body:
+        choose(o)
+        observe(o, ""Observe item"")
+
+behavior __goal__():
+    body:
+        foreach containers: item:
+            if is_kitchen_table(containers) and not visited(containers):
+                observe_container(containers)
+                move(containers)
+        if exists o: item where:
+            is_bowl(o) or is_plate(o):
+                bind container: item where:
+                    is_kitchen_table(container)
+                find_items(container)
+
+find: find_items,
+observe: observe_container
+","Unexpected token Token('_NEWLINE', '\n            ') at line 2587, column 33.
+Expected one of: 
+	* FALSE
+	* TILDE
+	* DO
+	* FLOAT_NUMBER
+	* OCT_NUMBER
+	* LSQB
+	* ELLIPSIS
+	* BIN_NUMBER
+	* VARNAME
+	* NONE
+	* LPAR
+	* PLUS
+	* FORALL
+	* DEC_NUMBER
+	* TRUE
+	* LONG_STRING
+	* FINDONE
+	* EXISTS
+	* MINUS
+	* COLON
+	* FINDALL
+	* STRING
+	* IMAG_NUMBER
+	* HEX_NUMBER
+	* NOT
+",,,,
+"def is_bowl_or_plate(x:item):
+    symbol is_bowl_or_plate = is_bowl(x) or is_plate(x)
+    return is_bowl_or_plate
+
+behavior __goal__():
+    body:
+        foreach item: item:
+            if is_bowl_or_plate(item) and not visited(item):
+                observe(item,""Check if it is a bowl or plate"")
+",,,,,"['walk_executor(microwave_297); switchoff_executor(microwave_297); open_executor(microwave_297); exp
+(bowl_2071, microwave_297); close_executor(microwave_297); walk_executor(bowl_2071); obs(bowl_2071, 
+Check if it is a bowl or plate); walk_executor(microwave_297); open_executor(microwave_297); exp(bow
+l_2072, microwave_297); close_executor(microwave_297); walk_executor(bowl_2072); obs(bowl_2072, Chec
+k if it is a bowl or plate); walk_executor(dishwasher_1001); open_executor(dishwasher_1001); exp(pla
+te_1000, dishwasher_1001); close_executor(dishwasher_1001); walk_executor(plate_1000); obs(plate_100
+0, Check if it is a bowl or plate)']"
+,,,,,"(CrowControllerApplier<walk_executor(microwave_297)>, CrowControllerApplier<switchoff_executor(micro
+wave_297)>, CrowControllerApplier<open_executor(microwave_297)>, CrowControllerApplier<exp(bowl_2071
+, microwave_297)>, CrowControllerApplier<close_executor(microwave_297)>, CrowControllerApplier<walk_
+executor(bowl_2071)>, CrowControllerApplier<obs(bowl_2071, Check if it is a bowl or plate)>, CrowCon
+trollerApplier<walk_executor(microwave_297)>, CrowControllerApplier<open_executor(microwave_297)>, C
+rowControllerApplier<exp(bowl_2072, microwave_297)>, CrowControllerApplier<close_executor(microwave_
+297)>, CrowControllerApplier<walk_executor(bowl_2072)>, CrowControllerApplier<obs(bowl_2072, Check i
+f it is a bowl or plate)>, CrowControllerApplier<walk_executor(dishwasher_1001)>, CrowControllerAppl
+ier<open_executor(dishwasher_1001)>, CrowControllerApplier<exp(plate_1000, dishwasher_1001)>, CrowCo
+ntrollerApplier<close_executor(dishwasher_1001)>, CrowControllerApplier<walk_executor(plate_1000)>, 
+CrowControllerApplier<obs(plate_1000, Check if it is a bowl or plate)>)"
+,,walk_executor(microwave_297),"Find napkin_2005. Find pot_2069. Find knife_2050. Find cutting_board_2051. Find cup_2063. Find cup_2
+064. Find bowl_2071. Find bowl_2072. Find tray_296. Find drawing_239. Find drawing_238. Find drawing
+_240. Find drawing_241. Find drawing_242. Find drawing_243. Robot is inside dining_room_201. Robot i
+s close microwave_297. Robot is close kitchen_counter_230. Robot is no longer inside bathroom_1.",,
+,,switchoff_executor(microwave_297),Robot is inside dining_room_201. Robot is close microwave_297. Robot is close kitchen_counter_230. ,,
+,,open_executor(microwave_297),Robot is inside dining_room_201. Robot is close microwave_297. Robot is close kitchen_counter_230. ,,
+,,"exp(bowl_2071, microwave_297)",Find bowl_2071. ,,
+,,close_executor(microwave_297),Robot is inside dining_room_201. Robot is close microwave_297. Robot is close kitchen_counter_230. ,,
+,,walk_executor(bowl_2071),"Robot is inside dining_room_201. Robot is close kitchen_counter_230. Robot is close bowl_2071. Robot
+ is no longer close microwave_297.",,
+,,"obs(bowl_2071, Check if it is a bowl or plate)","Get this information:  bowl_2071 is close to kitchen_counter_230. bowl_2071 is close to character_65
+. bowl_2071 is inside dining_room_201. bowl_2071 is on kitchen_counter_230. bowl_2071 is DIRTY.",,
+,,walk_executor(microwave_297),"Robot is inside dining_room_201. Robot is close kitchen_counter_230. Robot is close microwave_297. R
+obot is no longer close bowl_2071.",,
+,,open_executor(microwave_297),Robot is inside dining_room_201. Robot is close kitchen_counter_230. Robot is close microwave_297. ,,
+,,"exp(bowl_2072, microwave_297)",Find bowl_2072. ,,
+,,close_executor(microwave_297),Robot is inside dining_room_201. Robot is close kitchen_counter_230. Robot is close microwave_297. ,,
+,,walk_executor(bowl_2072),"Robot is inside dining_room_201. Robot is close kitchen_counter_230. Robot is close bowl_2072. Robot
+ is no longer close microwave_297.",,
+,,"obs(bowl_2072, Check if it is a bowl or plate)","Get this information:  bowl_2072 is on kitchen_counter_230. bowl_2072 is close to kitchen_counter_23
+0. bowl_2072 is close to character_65. bowl_2072 is inside dining_room_201. bowl_2072 is DIRTY.",,
+,,walk_executor(dishwasher_1001),"Robot is inside dining_room_201. Robot is close dishwasher_1001. Robot is no longer close bowl_2072.
+Robot is no longer close kitchen_counter_230.",,
+,,open_executor(dishwasher_1001),Robot is inside dining_room_201. Robot is close dishwasher_1001. ,,
+,,"exp(plate_1000, dishwasher_1001)",Failed to find plate_1000 around dishwasher_1001. ,,
+,,,,,"(CrowControllerApplier<walk_executor(cupboard_229)>, CrowControllerApplier<open_executor(cupboard_22
+9)>, CrowControllerApplier<exp(plate_1000, cupboard_229)>, CrowControllerApplier<close_executor(cupb
+oard_229)>, CrowControllerApplier<walk_executor(plate_1000)>, CrowControllerApplier<obs(plate_1000, 
+Check if it is a bowl or plate)>)"
+,,walk_executor(cupboard_229),"Robot is inside dining_room_201. Robot is close wall_211. Robot is close cupboard_229. Robot is no l
+onger close dishwasher_1001.",,
+,,open_executor(cupboard_229),Robot is inside dining_room_201. Robot is close wall_211. Robot is close cupboard_229. ,,
+,,"exp(plate_1000, cupboard_229)",Failed to find plate_1000 around cupboard_229. ,,
+,,,,,"(CrowControllerApplier<walk_executor(tray_296)>, CrowControllerApplier<exp(plate_1000, tray_296)>, C
+rowControllerApplier<walk_executor(plate_1000)>, CrowControllerApplier<obs(plate_1000, Check if it i
+s a bowl or plate)>)"
+,,walk_executor(tray_296),"Robot is inside dining_room_201. Robot is close tray_296. Robot is close oven_295. Robot is no longe
+r close wall_211.Robot is no longer close cupboard_229.",,
+,,"exp(plate_1000, tray_296)",Failed to find plate_1000 around tray_296. ,,
+,,,,,"(CrowControllerApplier<walk_executor(stove_2065)>, CrowControllerApplier<open_executor(stove_2065)>,
+ CrowControllerApplier<exp(plate_1000, stove_2065)>, CrowControllerApplier<close_executor(stove_2065
+)>, CrowControllerApplier<walk_executor(plate_1000)>, CrowControllerApplier<obs(plate_1000, Check if
+ it is a bowl or plate)>)"
+,,walk_executor(stove_2065),"Robot is inside dining_room_201. Robot is close stove_2065. Robot is close kitchen_counter_230. Robo
+t is no longer close tray_296.Robot is no longer close oven_295.",,
+"def find_dishwasher_with_dirty_dish(dishwasher:item):
+    # Check if the dishwasher has a dirty dish
+    symbol has_dirty_dish=exists d: item : (is_bowl(d) or is_plate(d)) and inside(d, dishwasher) and
+ dirty(d)
+    return has_dirty_dish
+
+behavior __goal__():
+    body:
+        if exists dishwasher: item : is_dishwasher(dishwasher) and find_dishwasher_with_dirty_dish(d
+ishwasher):
+            # Check if there is a dishwasher with dirty dish
+            bind dishwasher: item where:
+                is_dishwasher(dishwasher) and find_dishwasher_with_dirty_dish(dishwasher) 
+            # Move the character closer to the dishwasher with dirty dish
+            achieve close_char(char, dishwasher) 
+        else:
+            # Check all unvisited dishwashers
+            foreach dishwasher: item:
+                if is_dishwasher(dishwasher) and not visited(dishwasher):
+                    observe(dishwasher,""Check if there is any dirty dish inside the dishwasher"")
+                    # Observe each dishwasher to see if there are dirty dishes",,,,,"['walk_executor(dishwasher_1001); obs(dishwasher_1001, Check if there is any dirty dish inside the d
+ishwasher)']"

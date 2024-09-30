@@ -3,14 +3,15 @@ import re
 import sys
 import json
 sys.path.append('/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/utils')
-from Interpretation import Exp_helper
+from Interpretation import Exp_helper,Guidance_helper
 from environment import EnvironmentState, EnvironmentGraph
 
 
 class Human:
-    def __init__(self, scene_graph):
+    def __init__(self, scene_graph,knowledge):
         self.scene_graph = scene_graph
         self.name2id = {}
+        self.knowledge=knowledge
 
     def set_name2id(self,name2id):
         self.name2id = name2id
@@ -39,6 +40,10 @@ class Human:
             answer=Exp_helper(target,discription)
             print(answer)
             return answer
+        
+        if 'how to' in question: # ask for guidance
+            guidance=Guidance_helper(question,self.knowledge)
+            return guidance
     
     def check_related_edges(self,node_id):
         related_edges=[]

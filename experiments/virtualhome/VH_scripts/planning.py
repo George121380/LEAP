@@ -2,15 +2,14 @@ import json
 import os.path as osp
 import sys
 import re
+import pdb
+import time
 
 
 sys.path.append('/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/embodied-agent-eval/src/VIRTUALHOME/AgentEval-main')
 sys.path.append('/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/utils')
 from logger import logger
-import virtualhome_eval.simulation.evolving_graph.utils as utils
 from virtualhome_eval.simulation.evolving_graph.eval_utils import *
-import virtualhome_eval.evaluation.action_sequence.prompts.one_shot as one_shot
-from virtualhome_eval.evaluation.action_sequence.scripts.utils_lpq import get_nodes_information,construct_cdl,get_from_dataset
 from Interpretation import goal_interpretation,exploration_VH
 from solver import goal_solver
 from auto_debugger import auto_debug
@@ -24,92 +23,76 @@ def remove_special_characters(input_string):
     remove_s = re.sub(pattern, r'\1"\2"\3', remove_s)
     return remove_s
 
-def VH_pipeline(goal,add_info,long_horizon_goal,sub_goal_list,classes,partial_observation=True):
-    exploration_content = ""
-    # objects,states,relationships,properties,categories,classes,cat_statement=get_nodes_information(scene_graph)
-    # construct_cdl(objects,states,relationships,properties,cat_statement)
+def VH_pipeline(state_file:str,execute_file:str,current_subgoal:str,add_info:str,long_horizon_goal:str,sub_goal_list:list,classes,partial_observation=True):
+    """
+    Args:
+    state_file: Path to the file containing the current state for CDL planning
+    execute_file: Path of the file containing the CDL code to be executed
+    current_subgoal: The current subgoal to be achieved
+    add_info: Additional information for the current subgoal
+    long_horizon_goal: The long horizon goal to be achieved
+    sub_goal_list: List of subgoals to be achieved
+    classes: List of classes
+    partial_observation: Whether the observation is partial or not
+    """
     exploration_content=''
     generate_time=0
-    while generate_time<5:
+    while generate_time<3:
         try:
-            goal_int=goal_interpretation(goal,add_info,long_horizon_goal,classes,sub_goal_list)
+            goal_int=goal_interpretation(current_subgoal,add_info,long_horizon_goal,classes,sub_goal_list)
             goal_int=remove_special_characters(goal_int)
             # logger.info("Goal representation",goal_int)
-            with open("/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/experiments/virtualhome/CDLs/init_scene.cdl", "r") as file:
+            with open(state_file, "r") as file:
                 original_content = file.read()
             combined_content = original_content + "\n#goal_representation\n" + goal_int+"\n#goal_representation_end\n"
-            new_file_path = "/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/experiments/virtualhome/CDLs/executable_cdl.cdl"
+            new_file_path = execute_file
             with open(new_file_path, "w") as file:
                 file.write(combined_content)
             if partial_observation and exploration_content=='':#replan exploration behaviors
-                exploration_content=exploration_VH(goal,add_info,new_file_path)
+                # pdb.set_trace()
+                # Timmer
+                exp_start_time=time.time()
+                exploration_content=exploration_VH(current_subgoal,add_info,new_file_path)
+                exp_end_time=time.time()
+                print(f"Time for exploration:{exp_end_time-exp_start_time:.2f}s")
                 exploration_content=remove_special_characters(exploration_content)
             combined_content=original_content+"\n#exp_behavior\n"+exploration_content+'\n#exp_behavior_end\n'"\n#goal_representation\n" + goal_int+"\n#goal_representation_end\n"
             with open(new_file_path, "w") as file:
                 file.write(combined_content)
             loop=False
             correct_time=0
-            while correct_time < 5:
+            while correct_time < 3:
                 try:
-                    plan=goal_solver(original_content + "\n" + goal_int)
+                    # pdb.set_trace()
+                    solver_start_time=time.time()
+                    plan=goal_solver(combined_content + "\n" + goal_int)
+                    solver_end_time=time.time()
+                    # print(f"Time for solving:{solver_end_time-solver_start_time:.4f}s")
                     logger.info(goal_int,"","","","",plan)
                     if loop:
-                        if len(plan)==0:
-                            break
-                        if len(plan)>0:
-                            print('=' * 80)
-                            print("goal representation before loop:")
-                            print('=' * 80)
-                            print(goal_int)
-                            # goal_int=feedbackloop(goal,add_info,
-                            # classes,goal_int,plan[0])
-
-
-
-                            goal_int=remove_special_characters(goal_int)
-                            with open(new_file_path, "w") as file:
-                                    combined_content = original_content + "\n" + goal_int
-                                    file.write(combined_content)
-                            
-                            # exploration_content=exploration(goal,additional_information,new_file_path)
-                            # exploration_content=remove_special_characters(exploration_content)
-                            combined_content=original_content+"\n"+"\n#goal_representation\n"+goal_int+"\n#goal_representation_end\n"
-                            with open(new_file_path, "w") as file:
-                                file.write(combined_content)
-                            plan_afterloop=goal_solver(original_content + "\n" + goal_int)
-                            
-                            if len(plan_afterloop)==0:
-                                break
-                            if len(plan_afterloop)>0:
-                                print('=' * 80)
-                                print("Plan found.")
-                                print('=' * 80)
-                                print("Goal representation:")
-                                print(goal_int)
-                                print('=' * 80)
-                                
-                                return plan_afterloop,goal_int
+                        pass
                     else:
                         if partial_observation:
                             return plan,goal_int,exploration_content
                         else:
                             return plan,goal_int
 
-
                 except TransformationError as e:
+                    solver_end_time=time.time()
+                    print(f"Time for solving:{solver_end_time-solver_start_time:.4f}s")
                     error_info=e.errors
-                    print("Error information: ",error_info)
+                    # print("Error information: ",error_info)
                     logger.info(goal_int,error_info,"","","","")
                     with open(new_file_path, "r") as file:
                         for line_number, line in enumerate(file, start=1):
                             if '#goal_representation\n' in line:
                                 goal_start_line_num=line_number
                                 break
-                    goal_int=auto_debug(error_info,original_content,goal_int,goal,add_info,classes,goal_start_line_num)
+                    goal_int=auto_debug(error_info,original_content,goal_int,current_subgoal,add_info,classes,goal_start_line_num)
                     goal_int=remove_special_characters(goal_int)
                     # logger.info("Goal representation after debugging",goal_int)
                     if partial_observation:
-                        exploration_content=exploration_VH(goal,add_info,new_file_path)
+                        exploration_content=exploration_VH(current_subgoal,add_info,new_file_path)
                         exploration_content=remove_special_characters(exploration_content)
                     combined_content=original_content+"\n#exp_behavior\n"+exploration_content+'\n#exp_behavior_end\n'"\n#goal_representation\n" + goal_int+"\n#goal_representation_end\n"
                     with open(new_file_path, "w") as file:
@@ -117,19 +100,32 @@ def VH_pipeline(goal,add_info,long_horizon_goal,sub_goal_list,classes,partial_ob
                     correct_time+=1
 
         except TransformationError as e:
+            solver_end_time=time.time()
+            print(f"Time for solving:{solver_end_time-solver_start_time:.4f}s")
+
             error_info=e.errors
             print("Error information: ",error_info)
             # logger.info("Error information: ",error_info)
 
             generate_time+=1
+            print("Generate time: ",generate_time)
 
         except ResampleError as e:
+            solver_end_time=time.time()
+            print(f"Time for solving:{solver_end_time-solver_start_time:.4f}s")
+
             error_info=e.errors
             print("Error information: ",error_info)
             # logger.info("Error information: ",error_info)
             generate_time+=1
+            print("Generate time: ",generate_time)
+
 
         except Exception as e:
+            solver_end_time=time.time()
+            print(f"Time for solving:{solver_end_time-solver_start_time:.4f}s")
+
             print("Error information: ",e)
             # logger.info("Error information: ",e)
             generate_time+=1
+            print("Generate time: ",generate_time)

@@ -35,6 +35,7 @@ Please note: The text following each hash symbol (#) is a comment and should not
 - closed(x: item) # The item is closed.
 - dirty(x: item) # The item is dirty.
 - clean(x: item) # The item is clean.
+- has_water(x: item) # The item has water inside or on it.
 - cut(x: item) # The item is cut.
 - sitting(x: character) # The character is sitting.
 - lying(x: character) # The character is lying.
@@ -47,7 +48,7 @@ Important Note: The inhand(x) state is unique. If you intend to use inhand(x), y
 Please note: The text following each hash symbol (#) is a comment and should not be included in the current sub-task goal representation. 
 - on(x: item, y: item) # item x is on top of item y
 - on_char(x: character, y: item) # character is on item y
-- inside(x: item, y: item) # item x is inside item y, and y should be a container
+- inside(x: item, y: item) # item x is inside item y, and y should be a room or a container
 - inside_char(x: character, y: item) # character is inside item y
 - close(x: item, y: item) # item x is close to item y
 - close_char(x: character, y: item) # character is close to item y
@@ -104,6 +105,7 @@ The following behaviors can be directly invoked in the current sub-task goal rep
 - type(obj:item) # Type on an item.
 - touch(obj:item) # Touch an item.
 - read(obj:item) # Read an item.
+- water(obj:item) # Fill item with water.
 Important Note: Ensure that all parameters are properly defined before using them in the behaviors.
 
 ## Available Category Determination:
@@ -572,7 +574,7 @@ bind table: item where:
 Of course, you can also use attributes, states, and other information to more flexibly constrain the instances retrieved by the bind operation.
 
 # Guidance-4:
-The observe(obj:item, question:string) is a powerful but resource-intensive behavior. It allows you to examine an object based on observation, during which you need to specify what information you wish to obtain from the object. Due to the high cost of using observe, the quality of your questions is crucial for improving execution efficiency. Generally speaking, information such as the type of object or its state can be obtained by referring to the methods provided in 'Available Category Determination' and 'Available States', so you usually don't need to invoke the observe behavior for these details. Some situations where observe behavior is necessary include when you want to check what items are placed in a certain location. For example, if you want to see what's inside the oven, you can use 'observe(oven, "What's inside the oven?")', or if you want to check what's on the table, you can use 'observe(table, "check items on the table")'.
+The observe(obj:item, question:string) is a powerful but resource-intensive behavior. It allows you to examine an object based on observation, during which you need to specify what information you wish to obtain from the object. Due to the high cost of using observe, the quality of your questions is crucial for improving execution efficiency. Generally speaking, information such as the type of object or its state can be obtained by referring to the methods provided in 'Available Category Determination' and 'Available States', so you usually don't need to invoke the observe behavior for these details. Some situations where observe behavior is necessary include when you want to check what items are inside or on the item you observe. For example, if you want to see what's inside the oven, you can use 'observe(oven, "What's inside the oven?")', or if you want to check what's on the table, you can use 'observe(table, "check items on the table")'. Also, feel free to ask more questions in the observe behavior to get more detailed information. For example, If you want to check what's inside the oven and whether it's on the kitchen counter, you can use 'observe(oven, "What's inside the oven? Is it on the kitchen counter?")'.
 
 # Guidance-5:
 Try to avoid using the 'inhand(x:item)' state. In most cases, the program will automatically manage the 'inhand' operations. If you define 'inhand' manually, it can easily lead to a situation where the agent is holding too many items, causing the program to crash. There is generally only one situation where you need to declare the 'inhand' operation: when you need to hold certain items to complete a specific task. For example, when cleaning a mirror with a towel, you need to use 'achieve_once inhand(towel)'. Other than this, please avoid defining the 'inhand' state. In some cases, the task information may not clearly specify where certain items should be placed, such as in "gathering the food." In these cases, use your common sense to place the food in an appropriate location, like achieve 'on(food, kitchen_counter)', to avoid the issue of holding too many items. If possible, ensure that the agent's hands are empty after each sub-task is completed.

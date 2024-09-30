@@ -294,17 +294,10 @@ def add_feature_to_lines(input_file, output_file):
             modified_line = line.replace("-", "_")
             outfile.write(f"feature {modified_line}")
             
-# 使用示例
-# json_file_path = '/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/resources/properties_data.json'
-# output_file_path = 'output.txt'
-# extract_categories(json_file_path, output_file_path)
 
-# print(f"Categories have been written to {output_file_path}")
                 
 if __name__ == "__main__":
-    # directory_to_process = '/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/data/programs_processed_precond_nograb_morepreconds/init_and_final_graphs'  # 修改为你的目录路径
-    # process_directory(directory_to_process)
-
+  
     input_file='categories.txt'
     output_file='categories.txt'
     add_feature_to_lines(input_file, output_file)

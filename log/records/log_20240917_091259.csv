@@ -1,0 +1,588 @@
+Goal Representation,Debug Result,Action,Add Info,LLM Answer,Plan
+Control the TV.,,,,,
+"['1. Find the remote control or TV control interface.', '2. Use the remote control or interface to t
+urn on the TV.', '3. Use the remote control or interface to navigate and control the TV functions.']",,,,,
+" 
+def is_remote_control_instance(item: item):
+    return is_remote_control(item)
+
+def is_television_instance(item: item):
+    return is_television(item)
+
+behavior find_remote_control_or_tv():
+    body:
+        if exists remote_control: item : is_remote_control_instance(remote_control) and not visited(
+remote_control):
+            bind rc: item where:
+                is_remote_control_instance(rc) and not visited(rc)
+            observe(rc, ""check if it is the remote control"")
+            achieve close_char(char, rc)
+        
+        if exists television: item : is_television_instance(television) and not visited(television):
+            bind tv: item where:
+                is_television_instance(tv) and not visited(tv)
+            observe(tv, ""check this television control interface"")
+            achieve close_char(char, tv)
+
+behavior __goal__():
+    body:
+        find_remote_control_or_tv()
+",,,,,[]
+"['1. Find the TV.', '2. Use the remote control to turn the TV on or off and change channels.']",,,,,
+"def is_tv_in_room(room: item):
+    # Function to check if theres a TV inside a given room
+    symbol tv_in_room = exists tv: item : is_television(tv) and inside(tv, room)
+    return tv_in_room
+
+behavior __goal__():
+    body:
+        if exists room: item : is_room(room) and is_tv_in_room(room):
+            # Check if theres any room with a TV based on the available information
+            bind room: item where:
+                is_room(room) and is_tv_in_room(room)
+            achieve close_char(char, room)
+            # Move closer to the room with TV
+
+        else:
+            # If no room with a TV is known, start exploring all rooms to find it
+            foreach room: item:
+                if is_room(room) and not visited(room):
+                    observe(room, ""Check if there is a TV inside the room"")
+                    # Observe each unvisited room to see if it contains a TV",,,,,['walk_executor(dining_room_201)']
+,,,,,"(CrowControllerApplier<walk_executor(bathroom_1)>, CrowControllerApplier<obs(bathroom_1, Check if th
+ere is a TV inside the room)>, CrowControllerApplier<walk_executor(bedroom_67)>, CrowControllerAppli
+er<obs(bedroom_67, Check if there is a TV inside the room)>, CrowControllerApplier<walk_executor(din
+ing_room_201)>, CrowControllerApplier<obs(dining_room_201, Check if there is a TV inside the room)>,
+ CrowControllerApplier<walk_executor(home_office_319)>, CrowControllerApplier<obs(home_office_319, C
+heck if there is a TV inside the room)>)"
+,,walk_executor(bathroom_1),Robot is inside bathroom_1. ,,
+,,,,There is no TV inside the room.,
+,,"obs(bathroom_1, Check if there is a TV inside the room)","Get this information: There is no TV inside the room.
+",,
+,,walk_executor(bedroom_67),Robot is inside bedroom_67. Robot is no longer inside bathroom_1.,,
+,,,,There is no TV inside bedroom_67.,
+,,"obs(bedroom_67, Check if there is a TV inside the room)","Get this information: There is no TV inside bedroom_67.
+",,
+,,walk_executor(dining_room_201),Robot is inside dining_room_201. Robot is no longer inside bedroom_67.,,
+,,,,"Yes, there is a TV inside dining_room_201.",
+,,"obs(dining_room_201, Check if there is a TV inside the room)","Get this information: Yes, there is a TV inside dining_room_201.
+",,
+,,walk_executor(home_office_319),Robot is inside home_office_319. Robot is no longer inside dining_room_201.,,
+,,,,"Yes, there is a TV inside home_office_319.",
+,,"obs(home_office_319, Check if there is a TV inside the room)","Get this information: Yes, there is a TV inside home_office_319.
+",,
+,,,,"- Sub-Task Completed: Yes
+- Next Steps: You have successfully found the TV. There is a TV inside dining_room_201 and another T
+V inside home_office_319. Proceed to use the remote control to turn the TV on or off and change chan
+nels.",
+"behavior turn_on_off_tv(tv:item, remote_control:item):
+    body:
+        achieve close_char(char, remote_control)
+        observe(remote_control, ""Check if the remote control has a switch"")
+        bind tv_switch: item where:
+            has_switch(tv_switch) and close(tv_switch, remote_control)
+        if is_off(tv):
+            achieve is_on(tv)
+        else:
+            achieve is_off(tv)
+
+behavior change_tv_channel(tv:item, remote_control:item):
+    body:
+        achieve close_char(char, remote_control)
+        achieve close(remote_control, tv)
+        observe(remote_control, ""Check how to change the channel"")
+        # Assuming changing the channel does not require any specific state,
+        # we assume a gesture like pressing a button can achieve this
+        touch(remote_control)
+
+behavior __goal__():
+    body:
+        bind tv: item where:
+            is_television(tv)
+        bind remote_control: item where:
+            is_remote_control(remote_control) and close(remote_control, tv)
+            
+        turn_on_off_tv(tv, remote_control)
+        change_tv_channel(tv, remote_control)",,,,,[]
+"behavior turn_tv_on_or_off(tv:item, remote:item):
+    body:
+        if is_off(tv):
+            touch(remote)
+            achieve is_on(tv)
+        else:
+            touch(remote)
+            achieve is_off(tv)
+
+behavior change_channel(tv:item, remote:item):
+    body:
+        touch(remote)
+        observe(tv, ""Check current channel"")
+
+def locate_remote():
+    symbol remote_located=exists remote: item : is_remote_control(remote) and close_char(char, remot
+e)
+    return remote_located
+
+behavior __goal__():
+    body:
+        bind tv: item where:
+            is_television(tv)
+        if locate_remote():
+            bind remote: item where:
+                is_remote_control(remote)
+            turn_tv_on_or_off(tv, remote)
+            change_channel(tv, remote)
+        else:
+            foreach obj: item:
+                if is_remote_control(obj) and not visited(obj):
+                    observe(obj, ""Locate the remote control"")",,,,,"['walk_executor(tvstand_225); exp(remote_control_2052, tvstand_225); walk_executor(remote_control_20
+52); obs(remote_control_2052, Locate the remote control)']"
+,,,,,"(CrowControllerApplier<walk_executor(tvstand_225)>, CrowControllerApplier<exp(remote_control_2052, t
+vstand_225)>, CrowControllerApplier<walk_executor(remote_control_2052)>, CrowControllerApplier<obs(r
+emote_control_2052, Locate the remote control)>)"
+,,walk_executor(tvstand_225),"Find cd_player_2060. Find drawing_241. Find drawing_242. Find drawing_243. Robot is inside dining_ro
+om_201. Robot is close floor_208. Robot is close tvstand_225. Robot is no longer inside home_office_
+319.",,
+,,"exp(remote_control_2052, tvstand_225)",Failed to find remote_control_2052 around tvstand_225. ,,
+,,,,,"(CrowControllerApplier<walk_executor(television_410)>, CrowControllerApplier<exp(remote_control_2052
+, television_410)>, CrowControllerApplier<walk_executor(remote_control_2052)>, CrowControllerApplier
+<obs(remote_control_2052, Locate the remote control)>)"
+,,walk_executor(television_410),"Find mat_401. Find dvd_player_2061. Find drawing_400. Find pillow_405. Find pillow_406. Robot is ins
+ide home_office_319. Robot is close tvstand_353. Robot is close television_410. Robot is no longer i
+nside dining_room_201.Robot is no longer close floor_208.Robot is no longer close tvstand_225.",,
+,,"exp(remote_control_2052, television_410)",Failed to find remote_control_2052 around television_410. ,,
+,,,,,"(CrowControllerApplier<walk_executor(dvd_player_2061)>, CrowControllerApplier<exp(remote_control_205
+2, dvd_player_2061)>, CrowControllerApplier<walk_executor(remote_control_2052)>, CrowControllerAppli
+er<obs(remote_control_2052, Locate the remote control)>)"
+,,walk_executor(dvd_player_2061),"Robot is inside home_office_319. Robot is close tvstand_353. Robot is close dvd_player_2061. Robot i
+s no longer close television_410.",,
+,,"exp(remote_control_2052, dvd_player_2061)",Failed to find remote_control_2052 around dvd_player_2061. ,,
+,,,,,"(CrowControllerApplier<walk_executor(light_411)>, CrowControllerApplier<exp(remote_control_2052, lig
+ht_411)>, CrowControllerApplier<walk_executor(remote_control_2052)>, CrowControllerApplier<obs(remot
+e_control_2052, Locate the remote control)>)"
+,,walk_executor(light_411),"Find drawing_402. Find drawing_404. Robot is inside home_office_319. Robot is close light_411. Robot
+ is no longer close tvstand_353.Robot is no longer close dvd_player_2061.",,
+,,"exp(remote_control_2052, light_411)",Failed to find remote_control_2052 around light_411. ,,
+,,,,,"(CrowControllerApplier<walk_executor(cupboard_229)>, CrowControllerApplier<exp(remote_control_2052, 
+cupboard_229)>, CrowControllerApplier<walk_executor(remote_control_2052)>, CrowControllerApplier<obs
+(remote_control_2052, Locate the remote control)>)"
+,,walk_executor(cupboard_229),"Find tray_296. Robot is inside dining_room_201. Robot is close wall_211. Robot is close cupboard_229
+. Robot is no longer inside home_office_319.Robot is no longer close light_411.",,
+,,"exp(remote_control_2052, cupboard_229)",Failed to find remote_control_2052 around cupboard_229. ,,
+,,,,,"(CrowControllerApplier<walk_executor(table_355)>, CrowControllerApplier<exp(remote_control_2052, tab
+le_355)>, CrowControllerApplier<walk_executor(remote_control_2052)>, CrowControllerApplier<obs(remot
+e_control_2052, Locate the remote control)>)"
+,,walk_executor(table_355),"Find remote_control_2052. Find cat_2055. Find hairbrush_2002. Find clothes_jacket_2047. Find headset
+_2062. Robot is inside home_office_319. Robot is close couch_352. Robot is close mat_401. Robot is c
+lose table_355. Robot is no longer inside dining_room_201.Robot is no longer close wall_211.Robot is
+ no longer close cupboard_229.",,
+,,"exp(remote_control_2052, table_355)",Find remote_control_2052. ,,
+,,walk_executor(remote_control_2052),"Robot is inside home_office_319. Robot is close couch_352. Robot is close remote_control_2052. Robot
+ is no longer close mat_401.Robot is no longer close table_355.",,
+,,,,remote_control_2052 is on couch_352.,
+,,"obs(remote_control_2052, Locate the remote control)","Get this information: remote_control_2052 is on couch_352.
+",,
+,,,,"- Sub-Task Completed: No
+- Next Steps: The remote control has been located on couch_352 in home_office_319. You must now use 
+the remote control to turn on or off the TV and change channels. Remember to identify which TV to co
+ntrol since both dining_room_201 and home_office_319 have TVs, and ensure you interact with the remo
+te to achieve the necessary state for the TV.",
+,,,"Human Instruction: The remote control has been located on couch_352 in home_office_319. You must now
+ use the remote control to turn on or off the TV and change channels. Remember to identify which TV 
+to control since both dining_room_201 and home_office_319 have TVs, and ensure you interact with the
+ remote to achieve the necessary state for the TV.
+
+The actions you have taken:
+Action 1: Walk to bathroom_1. -> effect: Robot is inside bathroom_1. 
+Action 2: Observe around bathroom_1 with the question of Check if there is a TV inside the room. -> 
+effect: Get this information: There is no TV inside the room.
+
+Action 3: Walk to bedroom_67. -> effect: Robot is inside bedroom_67. Robot is no longer inside bathr
+oom_1.
+Action 4: Observe around bedroom_67 with the question of Check if there is a TV inside the room. -> 
+effect: Get this information: There is no TV inside bedroom_67.
+
+Action 5: Walk to dining_room_201. -> effect: Robot is inside dining_room_201. Robot is no longer in
+side bedroom_67.
+Action 6: Observe around dining_room_201 with the question of Check if there is a TV inside the room
+. -> effect: Get this information: Yes, there is a TV inside dining_room_201.
+
+Action 7: Walk to home_office_319. -> effect: Robot is inside home_office_319. Robot is no longer in
+side dining_room_201.
+Action 8: Observe around home_office_319 with the question of Check if there is a TV inside the room
+. -> effect: Get this information: Yes, there is a TV inside home_office_319.
+
+Action 9: Walk to tvstand_225. -> effect: Find cd_player_2060. Find drawing_241. Find drawing_242. F
+ind drawing_243. Robot is inside dining_room_201. Robot is close floor_208. Robot is close tvstand_2
+25. Robot is no longer inside home_office_319.
+Action 10: look for remote_control_2052 around tvstand_225. -> effect: Failed to find remote_control
+_2052 around tvstand_225. 
+Action 11: Walk to television_410. -> effect: Find mat_401. Find dvd_player_2061. Find drawing_400. 
+Find pillow_405. Find pillow_406. Robot is inside home_office_319. Robot is close tvstand_353. Robot
+ is close television_410. Robot is no longer inside dining_room_201.Robot is no longer close floor_2
+08.Robot is no longer close tvstand_225.
+Action 12: look for remote_control_2052 around television_410. -> effect: Failed to find remote_cont
+rol_2052 around television_410. 
+Action 13: Walk to dvd_player_2061. -> effect: Robot is inside home_office_319. Robot is close tvsta
+nd_353. Robot is close dvd_player_2061. Robot is no longer close television_410.
+Action 14: look for remote_control_2052 around dvd_player_2061. -> effect: Failed to find remote_con
+trol_2052 around dvd_player_2061. 
+Action 15: Walk to light_411. -> effect: Find drawing_402. Find drawing_404. Robot is inside home_of
+fice_319. Robot is close light_411. Robot is no longer close tvstand_353.Robot is no longer close dv
+d_player_2061.
+Action 16: look for remote_control_2052 around light_411. -> effect: Failed to find remote_control_2
+052 around light_411. 
+Action 17: Walk to cupboard_229. -> effect: Find tray_296. Robot is inside dining_room_201. Robot is
+ close wall_211. Robot is close cupboard_229. Robot is no longer inside home_office_319.Robot is no 
+longer close light_411.
+Action 18: look for remote_control_2052 around cupboard_229. -> effect: Failed to find remote_contro
+l_2052 around cupboard_229. 
+Action 19: Walk to table_355. -> effect: Find remote_control_2052. Find cat_2055. Find hairbrush_200
+2. Find clothes_jacket_2047. Find headset_2062. Robot is inside home_office_319. Robot is close couc
+h_352. Robot is close mat_401. Robot is close table_355. Robot is no longer inside dining_room_201.R
+obot is no longer close wall_211.Robot is no longer close cupboard_229.
+Action 20: look for remote_control_2052 around table_355. -> effect: Find remote_control_2052. 
+Action 21: Walk to remote_control_2052. -> effect: Robot is inside home_office_319. Robot is close c
+ouch_352. Robot is close remote_control_2052. Robot is no longer close mat_401.Robot is no longer cl
+ose table_355.
+Action 22: Observe around remote_control_2052 with the question of Locate the remote control. -> eff
+ect: Get this information: remote_control_2052 is on couch_352.
+
+",,
+"behavior use_remote_control(tv:item, remote:item):
+    body:
+        achieve_once inhand(remote) # Temporarily hold the remote
+        if is_on(tv):
+            achieve is_off(tv) # Turn off the TV if its on
+        else:
+            achieve is_on(tv) # Turn on the TV if its off
+
+behavior change_channel(tv:item, remote:item):
+    body:
+        achieve_once inhand(remote) # Temporarily hold the remote
+        observe(tv, ""Change channel using remote control"")
+
+behavior __goal__():
+    body:
+        bind tv: item where:
+            is_television(tv) and inside(tv, home_office_319)
+        bind remote: item where:
+            is_remote_control(remote) and on(remote, couch_352)
+        use_remote_control(tv, remote)
+        change_channel(tv, remote)","Error trying to process rule ""behavior_definition"":
+
+Unknown variable: home_office_319; available variables: [Variable<tv: item>].",,,,
+"behavior use_remote_control(tv:item, remote:item):
+    body:
+        achieve_once inhand(remote) # Temporarily hold the remote
+        if is_on(tv):
+            achieve is_off(tv) # Turn off the TV if its on
+        else:
+            achieve is_on(tv) # Turn on the TV if its off
+
+behavior change_channel(tv:item, remote:item):
+    body:
+        achieve_once inhand(remote) # Temporarily hold the remote
+        observe(tv, ""Change channel using remote control"")
+
+behavior __goal__():
+    body:
+        bind home_office_319: item where:
+            is_home_office(home_office_319)
+        bind couch_352: item where:
+            is_couch(couch_352)
+        bind tv: item where:
+            is_television(tv) and inside(tv, home_office_319)
+        bind remote: item where:
+            is_remote_control(remote) and on(remote, couch_352)
+        use_remote_control(tv, remote)
+        change_channel(tv, remote)",,,,,[]
+" 
+behavior identify_and_control_tv_within_room(remote_control:item, tv:item):
+    body:
+        achieve close_char(char, remote_control)
+        achieve_once inhand(remote_control)
+        achieve close_char(char, tv)
+        if is_off(tv):
+            achieve is_on(tv)
+        else:
+            achieve is_off(tv)
+
+behavior __goal__():
+    body:
+        bind remote_control: item where:
+            is_remote_control(remote_control) and id[remote_control]==2052
+        bind tv_office: item where:
+            is_television(tv_office) and inside(tv_office, home_office_319)
+        bind tv_dining: item where:
+            is_television(tv_dining) and inside(tv_dining, dining_room_201)
+        
+        identify_and_control_tv_within_room(remote_control, tv_office)
+        identify_and_control_tv_within_room(remote_control, tv_dining)
+","Error trying to process rule ""behavior_definition"":
+
+Unknown variable: home_office_319; available variables: [Variable<tv_office: item>].",,,,
+"plaintext
+behavior identify_and_control_tv_within_room(remote_control:item, tv:item):
+    body:
+        achieve close_char(char, remote_control)
+        achieve_once inhand(remote_control)
+        achieve close_char(char, tv)
+        if is_off(tv):
+            achieve is_on(tv)
+        else:
+            achieve is_off(tv)
+
+behavior __goal__():
+    body:
+        bind remote_control: item where:
+            is_remote_control(remote_control) and id[remote_control]==2052
+        bind tv_office: item where:
+            is_television(tv_office) and inside(tv_office, home_office_319)
+        bind tv_dining: item where:
+            is_television(tv_dining) and inside(tv_dining, dining_room_201)
+        bind home_office_319: item where:
+            is_home_office(home_office_319)
+        bind dining_room_201: item where:
+            is_dining_room(dining_room_201)
+        
+        identify_and_control_tv_within_room(remote_control, tv_office)
+        identify_and_control_tv_within_room(remote_control, tv_dining)
+","Unexpected token Token('BASIC_TYPENAME', 'plaintext') at line 5741, column 1.
+Expected one of: 
+	* ACTION
+	* FEATURE
+	* _PRAGMA_KEYWORD
+	* DOMAIN
+	* CONTROLLER
+	* INIT
+	* GENERATOR
+	* DEF
+	* TYPEDEF
+	* GOAL
+	* $END
+	* _NEWLINE
+	* OBJECTS
+	* UNDIRECTED_GENERATOR
+	* BEHAVIOR
+	* IMPORT
+Previous tokens: [Token('_NEWLINE', '\n    \n\n#exp_behavior_end\n\n#goal_representation\n')]
+",,,,
+"plaintext
+behavior identify_and_control_tv_within_room(remote_control:item, tv:item):
+    body:
+        achieve close_char(char, remote_control)
+        achieve_once inhand(remote_control)
+        achieve close_char(char, tv)
+        if is_off(tv):
+            achieve is_on(tv)
+        else:
+            achieve is_off(tv)
+
+behavior __goal__():
+    body:
+        bind remote_control: item where:
+            is_remote_control(remote_control) and id[remote_control]==2052
+        bind tv_office: item where:
+            is_television(tv_office) and inside(tv_office, home_office_319)
+        bind tv_dining: item where:
+            is_television(tv_dining) and inside(tv_dining, dining_room_201)
+        
+        identify_and_control_tv_within_room(remote_control, tv_office)
+        identify_and_control_tv_within_room(remote_control, tv_dining)
+","Unexpected token Token('BASIC_TYPENAME', 'plaintext') at line 5771, column 1.
+Expected one of: 
+	* ACTION
+	* FEATURE
+	* _PRAGMA_KEYWORD
+	* DOMAIN
+	* CONTROLLER
+	* INIT
+	* GENERATOR
+	* DEF
+	* TYPEDEF
+	* GOAL
+	* $END
+	* _NEWLINE
+	* OBJECTS
+	* UNDIRECTED_GENERATOR
+	* BEHAVIOR
+	* IMPORT
+Previous tokens: [Token('_NEWLINE', '\n    \n\n#exp_behavior_end\n\n#goal_representation\n')]
+",,,,
+"
+behavior identify_and_control_tv_within_room(remote_control:item, tv:item):
+    body:
+        achieve close_char(char, remote_control)
+        achieve_once inhand(remote_control)
+        achieve close_char(char, tv)
+        if is_off(tv):
+            achieve is_on(tv)
+        else:
+            achieve is_off(tv)
+
+behavior __goal__():
+    body:
+        bind remote_control: item where:
+            is_remote_control(remote_control) and id[remote_control]==2052
+        bind tv_office: item where:
+            is_television(tv_office) and inside(tv_office, home_office_319)
+        bind tv_dining: item where:
+            is_television(tv_dining) and inside(tv_dining, dining_room_201)
+        
+        identify_and_control_tv_within_room(remote_control, tv_office)
+        identify_and_control_tv_within_room(remote_control, tv_dining)
+","Error trying to process rule ""behavior_definition"":
+
+Unknown variable: home_office_319; available variables: [Variable<tv_office: item>].",,,,
+"behavior identify_and_control_tv_within_room(remote_control:item, tv:item):
+    body:
+        achieve close_char(char, remote_control)
+        achieve_once inhand(remote_control)
+        achieve close_char(char, tv)
+        if is_off(tv):
+            achieve is_on(tv)
+        else:
+            achieve is_off(tv)
+
+behavior __goal__():
+    body:
+        bind home_office_319: item where:
+            is_home_office(home_office_319)
+        bind dining_room_201: item where:
+            is_dining_room(dining_room_201)
+        bind remote_control: item where:
+            is_remote_control(remote_control) and id[remote_control]==2052
+        bind tv_office: item where:
+            is_television(tv_office) and inside(tv_office, home_office_319)
+        bind tv_dining: item where:
+            is_television(tv_dining) and inside(tv_dining, dining_room_201)
+        
+        identify_and_control_tv_within_room(remote_control, tv_office)
+        identify_and_control_tv_within_room(remote_control, tv_dining)",,,,,[]
+,,,,"To use the remote control to turn the TV on or off and change channels, first, grab the remote contr
+ol in your hand. Then, face the TV so that the remote control is pointed towards it. To turn the TV 
+on or off, simply press the power button on the remote control. To change channels, press the channe
+l buttons, which are usually labeled with up and down arrows, or specific channel numbers. Make sure
+ you're always aiming the remote control at the TV for it to work properly.",
+"behavior turn_tv_on_off_and_change_channels(tv: item, remote_control: item):
+    body:
+        # Ensure the remote control is held in hand to operate the TV
+        achieve_once inhand(remote_control)
+        # Ensure the remote control is facing the TV
+        achieve facing(remote_control, tv)
+
+        # Check the current state of the TV and change accordingly
+        if is_off(tv):
+            achieve is_on(tv)
+        else:
+            achieve is_off(tv)
+
+        # Change the TV channel
+        foreach c: item:
+            if is_channel_button(c) and on(c, remote_control):
+                touch(c)
+
+behavior __goal__():
+    body:
+        bind tv: item where:
+            is_television(tv) and inside(tv, home_office_319)
+        # Select the remote control located on couch_352 in home_office_319
+        bind remote_control: item where:
+            is_remote_control(remote_control) and on(remote_control, couch_352)
+            
+        turn_tv_on_off_and_change_channels(tv, remote_control)","Error trying to process rule ""behavior_definition"":
+
+'Function is_channel_button not found. Note that recursive function calls are not supported in the c
+urrent version.'",,,,
+"behavior turn_tv_on_off_and_change_channels(tv: item, remote_control: item):
+    body:
+        # Ensure the remote control is held in hand to operate the TV
+        achieve_once inhand(remote_control)
+        # Ensure the remote control is facing the TV
+        achieve facing(remote_control, tv)
+
+        # Check the current state of the TV and change accordingly
+        if is_off(tv):
+            achieve is_on(tv)
+        else:
+            achieve is_off(tv)
+
+        # Change the TV channel
+        foreach c: item:
+            if is_button(c) and on(c, remote_control):
+                touch(c)
+
+behavior __goal__():
+    body:
+        bind tv: item where:
+            is_television(tv) and inside(tv, home_office_319)
+        # Select the remote control located on couch_352 in home_office_319
+        bind remote_control: item where:
+            is_remote_control(remote_control) and on(remote_control, couch_352)
+            
+        turn_tv_on_off_and_change_channels(tv, remote_control)","Error trying to process rule ""behavior_definition"":
+
+Unknown variable: home_office_319; available variables: [Variable<tv: item>].",,,,
+"behavior turn_tv_on_off_and_change_channels(tv: item, remote_control: item):
+    body:
+        # Ensure the remote control is held in hand to operate the TV
+        achieve_once inhand(remote_control)
+        # Ensure the remote control is facing the TV
+        achieve facing(remote_control, tv)
+
+        # Check the current state of the TV and change accordingly
+        if is_off(tv):
+            achieve is_on(tv)
+        else:
+            achieve is_off(tv)
+
+        # Change the TV channel
+        foreach c: item:
+            if is_button(c) and on(c, remote_control):
+                touch(c)
+
+behavior __goal__():
+    body:
+        bind home_office_319: item where:
+            is_home_office(home_office_319)
+        
+        bind tv: item where:
+            is_television(tv) and inside(tv, home_office_319)
+        
+        # Select the remote control located on couch_352 in home_office_319
+        bind couch_352: item where:
+            is_couch(couch_352) and inside(couch_352, home_office_319)
+
+        bind remote_control: item where:
+            is_remote_control(remote_control) and on(remote_control, couch_352)
+            
+        turn_tv_on_off_and_change_channels(tv, remote_control)",,,,,[]
+"behavior hold_remote_and_control_tv(remote:item, tv:item):
+    body:
+        achieve_once inhand(remote) # Temporarily hold the remote control
+        achieve facing_char(char, tv) # Ensure the character is facing the TV
+        achieve has_switch(tv) # Check if the TV has a switch
+        if is_off(tv):
+            achieve is_on(tv) # Turn the TV on if it is off
+        else:
+            achieve is_off(tv) # Turn the TV off if it is on
+
+behavior change_channel(remote:item, tv:item):
+    body:
+        achieve_once inhand(remote) # Temporarily hold the remote control
+        achieve facing_char(char, tv) # Ensure the character is facing the TV
+        achieve has_switch(tv) # Check if the TV has a switch
+        # Execute the logic for changing the channel
+        achieve is_on(tv) # Ensure the TV is on to change channels
+
+behavior __goal__():
+    body:
+        bind remote: item where:
+            is_remote_control(remote) and id[remote]==2052
+        bind tv: item where:
+            is_television(tv) and inside(tv, home_office_319)
+        hold_remote_and_control_tv(remote, tv)
+        change_channel(remote, tv)","Error trying to process rule ""behavior_definition"":
+
+Unknown variable: home_office_319; available variables: [Variable<tv: item>].",,,,

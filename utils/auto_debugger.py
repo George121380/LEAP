@@ -5,7 +5,7 @@ from Interpretation import ask_GPT
 def auto_debug(error_info,original_content,goal_int,goal,additional_information,cat_list,goal_start_line_num):
     print('=' * 80)
     print("Debugging...")
-    print('=' * 80)
+    # print('=' * 80)
     # print("Error information: ",error_info)
     if "Unknown variable" in error_info:
         error_variable = re.search(r"Unknown variable:\s*(\w+)", error_info)
@@ -33,7 +33,7 @@ def auto_debug(error_info,original_content,goal_int,goal,additional_information,
         system_prompt="I encountered this error while running the program. Please try to correct my mistake based on the syntax rules I provided."
         
     debugged_goal_int=ask_GPT(system_prompt,prompt)
-    print('=' * 80)
+    # print('=' * 80)
     print("Debugging finished.")
     print('=' * 80)
     return debugged_goal_int

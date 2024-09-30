@@ -20,14 +20,24 @@ class VH_Env:
         related_edges=[]
         for edges in self.graph.get_edges():
             if node_id==edges['from_id'] or node_id==edges['to_id']:
+                if edges['relation_type']=='CLOSE' and edges['from_id']!=node_id:
+                    continue
                 from_id=edges['from_id']
                 to_id=edges['to_id']
                 from_name=f"{self.graph.get_node(from_id).class_name}_{from_id}"
                 to_name=f"{self.graph.get_node(to_id).class_name}_{to_id}"
-                idy_edge={'from_name':from_name,'to_name':to_name,'relation_type':edges['relation_type']}
-                related_edges.append(idy_edge)
+                diy_edge={'from_name':from_name,'to_name':to_name,'relation_type':edges['relation_type']}
+                    
+                related_edges.append(diy_edge)
         # print(related_edges)
         return related_edges
+    
+    def check_states(self,node_id):
+        discription=''
+        states=self.graph.get_node(node_id).states
+        for state in states:
+            discription+=f' {self.graph.get_node(node_id).class_name}_{node_id} is {state.name}.'
+        return discription
 
     def find_room(self,node_id):
         for edge in self.graph.get_edges():
@@ -56,7 +66,7 @@ class VH_Env:
         observation={}
 
         if action.name!='exp' and action.name!='obs':
-            self.action_record.append(str(action))
+            
             self.executor = ScriptExecutor(self.graph, self.name_equivalence)
             # if 'grab' in action.name.lower():
             #     print('debug')
@@ -68,9 +78,12 @@ class VH_Env:
             state = next(state_enum, None)
             if state is None:
                 print('Script is not executable.')
-                raise Exception('Script is not executable.')
+                self.action_record.append(str(action)+' (Failed)')
+                # raise Exception('Script is not executable.')
+                return f"You can not {action.name} {action.arguments[0].name}"
             else:
                 print('Script is executable')
+                self.action_record.append(str(action))
             self.char=state.get_nodes_by_attr('class_name', 'character')[0]
 
             for edge in state._new_edges_from:
@@ -108,6 +121,7 @@ class VH_Env:
             question=str(action.arguments[1].tensor)
             target_id=self.extract_id(action.arguments[0].name)
             obs_result=self.check_related_edges(target_id)
+            obs_result.append({"states":str(self.check_states(target_id))})
         
         self.char_room=self.find_room(self.char.id)
             
@@ -195,6 +209,8 @@ class VH_Env:
         return observation
     
     def report_actions(self):
+        print('='*60)
+        print('Task Summary:')
         action_num=len(self.action_record)
         for action in self.action_record:
             print(action)

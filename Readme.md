@@ -1,5 +1,6 @@
 #To-Do list
+9.16
 
-- [ ] Improve exp model with more relations information, eg: table_353 clsoe to?
-- [ ] Improve the rule of additional information updates
-- [ ] Improve the question quality for obs() action
+- [ ] Loop Feedback
+- [ ] Script not executable
+- [x] Human Guidance

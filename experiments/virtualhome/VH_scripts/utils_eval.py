@@ -8,7 +8,7 @@ from virtualhome_eval.simulation.evolving_graph.execution import Relation, State
 from virtualhome_eval.simulation.evolving_graph.scripts import *
 
 
-def construct_cdl(objects,states,relationships,properties,cat_statement):
+def construct_cdl(init_path,objects,states,relationships,properties,cat_statement):
     exploration_content=''
     problem_file_content = 'problem "virtualhome-problem"\n'
     problem_file_content += 'domain "virtualhome.cdl"\n\n'
@@ -62,7 +62,7 @@ def construct_cdl(objects,states,relationships,properties,cat_statement):
             problem_file_content += f'  id[{name}]={id}\n'
     problem_file_content += '#id_end\n\n'
     
-    with open("/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/experiments/virtualhome/CDLs/init_scene.cdl", "w") as file:
+    with open(init_path, "w") as file:
         file.write(problem_file_content)
     
 
@@ -201,7 +201,7 @@ def relationship_translation(graph,edge):
     else:
         relation = "Unknown relation"
 
-def get_nodes_information(graph):
+def get_nodes_information(graph,PO=True):
     with open("/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/embodied-agent-eval/src/VIRTUALHOME/AgentEval-main/virtualhome_eval/resources/class_name_equivalence.json", "r") as file:
         equal_dict=json.load(file)
     nodes=graph.get_nodes()
@@ -240,8 +240,9 @@ def get_nodes_information(graph):
                 property=state_translation(executable_objname,property)
                 properties.append(property)
                 if "grabbable" in property:
-                    states.append(f"unknown[{executable_objname}]=True")
-                    unknown_set.add(executable_objname)
+                    if PO:
+                        states.append(f"unknown[{executable_objname}]=True")
+                        unknown_set.add(executable_objname)
                 if "food" in executable_objname:
                     properties.append(f"is_food[{executable_objname}]=True")
 

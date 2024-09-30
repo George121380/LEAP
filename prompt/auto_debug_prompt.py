@@ -69,6 +69,7 @@ Please note: The text following each hash symbol (#) is a comment and should not
 - closed(x: item) # The item is closed.
 - dirty(x: item) # The item is dirty.
 - clean(x: item) # The item is clean.
+- has_water(x: item) # The item has water inside or on it.
 - cut(x: item) # The item is cut.
 - sitting(x: character) # The character is sitting.
 - lying(x: character) # The character is lying.
@@ -138,6 +139,7 @@ The following behaviors can be directly invoked in the current sub-task goal rep
 - type(obj:item) # Type on an item.
 - touch(obj:item) # Touch an item.
 - read(obj:item) # Read an item.
+- water(obj:item) # Fill item with water.
 Important Note: Ensure that all parameters are properly defined before using them in the behaviors.
 
 ## Available Category Determination:
@@ -356,6 +358,7 @@ Please note: The text following each hash symbol (#) is a comment and should not
 - closed(x: item) # The item is closed.
 - dirty(x: item) # The item is dirty.
 - clean(x: item) # The item is clean.
+- has_water(x: item) # The item has water inside or on it.
 - cut(x: item) # The item is cut.
 - sitting(x: character) # The character is sitting.
 - lying(x: character) # The character is lying.
@@ -425,6 +428,7 @@ The following behaviors can be directly invoked in the current sub-task goal rep
 - type(obj:item) # Type on an item.
 - touch(obj:item) # Touch an item.
 - read(obj:item) # Read an item.
+- water(obj:item) # Fill item with water.
 Important Note: Ensure that all parameters are properly defined before using them in the behaviors.
 
 ## Available Category Determination:

@@ -17,23 +17,23 @@ def choose_relative_items(goal,unknown=None,additional_information=None,goal_rep
     selected_items=[]
     system="You are an assistant robot with excellent common sense. Now, I need your help to select the items to search for based on the current task and output a list of item serial numbers."
     content=choose_relative_items_prompt(goal,unknown,additional_information,goal_representation)
-    print('=' * 80)
-    print(f"Choose relative items:")
+    # print('=' * 80)
+    # print(f"Choose relative items:")
     while True:
         flag=False
         relative_items=ask_GPT(system,content)
         numbers = re.findall(r'\d+', relative_items)
         number_list = list(map(int, numbers))
-        print('=' * 80)
+        # print('=' * 80)
         for item in number_list:
             if item>len(unknown)-1:
                 selected_items=[]
                 flag=True
                 break
-            print(unknown[item])
+            # print(unknown[item])
             selected_items.append(unknown[item])
         if not flag:
-            print('=' * 80)
+            # print('=' * 80)
             return selected_items
 
 def parse_file(file_path):
@@ -152,6 +152,8 @@ def get_exp_behavior(goal, additional_information, problem_cdl,checked=None):
     objects, categories, known_objects, _, binds,name2id,unknown_objects,goal_representation = parse_file(problem_cdl)
     # unknown_attributes_needed = find_unknown_attributes(categories, known_objects, binds)
     unknown_attributes_needed = find_all_unknown(categories, unknown_objects)
+    if len(unknown_attributes_needed)==0:
+        return ''
     unknown_attributes_needed = choose_relative_items(goal, unknown_attributes_needed, additional_information,goal_representation)
     target_objs,locations=random_select_target(categories,unknown_attributes_needed,checked,objects,name2id,known_objects)
     exp_behavior=get_exploration_prompt_template(locations,unknown_attributes_needed,goal,additional_information)
@@ -207,8 +209,12 @@ behavior find_{obj}_around_{LLM_chose_loc}({target_instance_name}:item):
         bind {loc_instance_name}_instance:item where:
             is_{loc_instance_name}({loc_instance_name}_instance) and id[{loc_instance_name}_instance]=={loc_instance_id}
         achieve close_char(char,{loc_instance_name}_instance)
-        
-        exp({target_instance_name},{loc_instance_name}_instance)
+        if can_open({loc_instance_name}_instance):
+            achieve_once open({loc_instance_name}_instance)
+            exp({target_instance_name},{loc_instance_name}_instance)
+            achieve_once closed({loc_instance_name}_instance)
+        else:
+            exp({target_instance_name},{loc_instance_name}_instance)
     eff:
         unknown[{target_instance_name}]=False
         close[{target_instance_name},{loc_instance_name}_instance]=True

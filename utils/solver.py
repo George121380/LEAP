@@ -14,13 +14,13 @@ import concepts.dm.crow as crow
 # from concepts.dm.crow.behavior_utils import execute_behavior_effect_advanced 
 parser = jacinle.JacArgumentParser()
 # parser.add_argument('--domain', default='virtualhome.cdl')
-parser.add_argument('--domain', default='/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/experiments/virtualhome/CDLs/virtualhome_partial.cdl')
+parser.add_argument('--domain', default='experiments/virtualhome/CDLs/virtualhome_partial.cdl')
 parser.add_argument('--verbose', action='store_true')
 args = parser.parse_args()
 
 def goal_solver(goal):
     domain = crow.load_domain_file(args.domain)
-    problem = crow.load_problem_file('/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/experiments/virtualhome/CDLs/executable_cdl.cdl', domain=domain)
+    problem = crow.load_problem_file('experiments/virtualhome/CDLs/internal_executable.cdl', domain=domain)
     # problem = crow.load_problem_file('agent_internal_state.cdl', domain=domain)
 
     # behavior= crow.load_domain_file('explore_test.cdl')
@@ -42,7 +42,7 @@ def plan(problem):
     for p in candidate_plans:
         table.append('; '.join(map(str, p)))
     print()
-    print('=' * 80)
+    print('=' * 60)
     print('Goal:', goal)
     for i, row in enumerate(table):
     #     row = row.split('; ')
