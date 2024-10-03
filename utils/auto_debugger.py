@@ -2,7 +2,7 @@ import re
 from prompt.auto_debug_prompt import not_found_prompt,unknown_prompt,other_prompt
 from concepts.dm.crow.parsers.cdl_parser import TransformationError
 from Interpretation import ask_GPT
-def auto_debug(error_info,original_content,goal_int,goal,additional_information,cat_list,goal_start_line_num):
+def auto_debug(error_info,original_content,goal_int,goal,additional_information,cat_list,goal_start_line_num,behavior_from_library):
     print('=' * 80)
     print("Debugging...")
     # print('=' * 80)
@@ -10,7 +10,7 @@ def auto_debug(error_info,original_content,goal_int,goal,additional_information,
     if "Unknown variable" in error_info:
         error_variable = re.search(r"Unknown variable:\s*(\w+)", error_info)
         error_variable = error_variable.group(1)
-        prompt=unknown_prompt(goal,cat_list,additional_information,goal_int,error_variable)
+        prompt=unknown_prompt(goal,cat_list,additional_information,goal_int,error_variable,behavior_from_library)
         system_prompt="You are a meticulous and detailed assistant. I have defined a set of syntax and written a program, Some variables were used before being declared. Please help me supplement their declarations."
 
     elif "not found" in error_info:
@@ -24,7 +24,7 @@ def auto_debug(error_info,original_content,goal_int,goal,additional_information,
         error_line_num=error_line_num-goal_start_line_num
         useful_error_info=error_info.split('\n')[0]
         useful_error_info=re.sub(r'(at line )(\d+)', str(error_line_num), useful_error_info)
-        prompt=other_prompt(goal,cat_list,additional_information,goal_int,useful_error_info)
+        prompt=other_prompt(goal,cat_list,additional_information,goal_int,useful_error_info,behavior_from_library)
         system_prompt="I encountered this error while running the program. Please try to correct my mistake based on the syntax rules I provided."
         
 

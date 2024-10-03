@@ -34,12 +34,12 @@ def parse_evaluation(evaluation_text):
     
     return sub_task_completed, next_steps
 
-def goal_interpretation(goal,additional_information,long_horizon_goal,item_list=None,sub_tasks_list=None):
+def goal_interpretation(goal,additional_information,long_horizon_goal,item_list=None,sub_tasks_list=None,behavior_from_library_names=None):
     if ":item" in item_list[0]:
         for item in item_list:
             item=item.replace(":item",'')
     system = "I have a goal described in natural language, and I need it converted into a structured format."
-    content = get_goal_inter_prompt(goal,item_list,additional_information,long_horizon_goal,sub_tasks_list)
+    content = get_goal_inter_prompt(goal,item_list,additional_information,long_horizon_goal,sub_tasks_list,behavior_from_library_names)
     start_time=time.time()
     print('=' * 60+ " Goal CDL Generation")
     print(f"When Goal instruction is: {goal}")

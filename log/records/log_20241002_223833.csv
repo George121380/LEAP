@@ -1,0 +1,132 @@
+Goal Representation,Debug Result,Action,Add Info,LLM Answer,Plan
+"['1. Find the remote control.', '2. Sit on the couch.', '3. Use the remote control to turn on the TV
+.']",,,,,
+" 
+behavior __goal__():
+    body:
+        foreach remote: item:
+            if is_remote_control(remote) and not visited(remote):
+                observe(remote,""Check the state of the remote control"")
+",,,,,"['walk_executor(tvstand_353); exp(remote_control_2052, tvstand_353); walk_executor(remote_control_20
+52); obs(remote_control_2052, Check the state of the remote control)']"
+,,,,,"(CrowControllerApplier<walk_executor(tvstand_353)>, CrowControllerApplier<exp(remote_control_2052, t
+vstand_353)>, CrowControllerApplier<walk_executor(remote_control_2052)>, CrowControllerApplier<obs(r
+emote_control_2052, Check the state of the remote control)>)"
+,,walk_executor(tvstand_353),"Find drawing_400. Find dvd_player_2061. Find mat_401. Robot is inside home_office_319. Robot is clos
+e tvstand_353. Robot is close floor_324. Robot is no longer inside bathroom_1.",,
+,,"exp(remote_control_2052, tvstand_353)",Failed to find remote_control_2052 around tvstand_353. ,,
+,,,,,"(CrowControllerApplier<walk_executor(couch_352)>, CrowControllerApplier<exp(remote_control_2052, cou
+ch_352)>, CrowControllerApplier<walk_executor(remote_control_2052)>, CrowControllerApplier<obs(remot
+e_control_2052, Check the state of the remote control)>)"
+,,walk_executor(couch_352),"Find remote_control_2052. Find hairbrush_2002. Find clothes_jacket_2047. Find pillow_405. Find cat_2
+055. Find pillow_406. Find vacuum_cleaner_2070. Robot is inside home_office_319. Robot is close couc
+h_352. Robot is close mat_401. Robot is no longer close tvstand_353.Robot is no longer close floor_3
+24.",,
+,,"exp(remote_control_2052, couch_352)",Find remote_control_2052. ,,
+,,walk_executor(remote_control_2052),"Robot is inside home_office_319. Robot is close couch_352. Robot is close remote_control_2052. Robot
+ is no longer close mat_401.",,
+,,"obs(remote_control_2052, Check the state of the remote control)","Get this information:  remote_control_2052 is close to couch_352. remote_control_2052 is close to ch
+aracter_65. remote_control_2052 is inside home_office_319. remote_control_2052 is on couch_352. remo
+te_control_2052 is OFF.",,
+,,,,"- Sub-Task Completed: Yes
+- Next Steps: You found the remote control. It is on the couch, and its state is OFF.",
+"behavior __goal__():
+    body:
+        bind couch: item where:
+            is_couch(couch)
+        # Select the couch
+        achieve close_char(char, couch)
+        # Move the character close to the couch
+        achieve on_char(char, couch)
+        # Sit on the couch",,,,,['sit_executor(couch_352)']
+,,,,,"(CrowControllerApplier<sit_executor(couch_352)>,)"
+,,sit_executor(couch_352),"Robot is inside home_office_319. Robot is close couch_352. Robot is close remote_control_2052. Robot
+ is on couch_352. Robot is facing television_410. ",,
+,,,,"- Sub-Task Completed: Yes
+- Next Steps: You walked to the couch, located the remote control, and then successfully sat on the 
+couch. Now, proceed to the next sub-task: Use the remote control to turn on the TV.",
+"def is_at_tv(couch:item):
+    # Determine whether the couch is facing the television
+    symbol facing_tv=exists tv: item : is_television(tv) and facing(couch, tv)
+    return facing_tv
+
+def remote_control_close_to_hand(remote_control:item, couch:item):
+    # Determine if the remote control is within reach from the couch
+    symbol close_to_hand=close(remote_control, couch)
+    return close_to_hand
+
+behavior turn_on_tv(remote_control: item, tv: item):
+    body:
+        achieve facing(remote_control, tv)
+        achieve is_on(tv)
+
+behavior __goal__():
+    body:
+        bind couch: item where:
+            is_couch(couch) and is_at_tv(couch)
+        # Select the couch that is facing the TV
+        
+        bind remote_control: item where:
+            is_remote_control(remote_control) and remote_control_close_to_hand(remote_control, couch
+)
+        # Select the remote control close to the couch
+        
+        bind tv: item where:
+            is_television(tv)
+        # Select the television
+        
+        turn_on_tv(remote_control, tv) 
+        # Use the remote control to turn on the television",,,,,[]
+"behavior turn_on_tv(remote_control:item, tv:item):
+    body:
+        achieve close_char(char, remote_control)
+        achieve close_char(char, tv)
+        achieve is_on(tv)
+
+behavior __goal__():
+    body:
+        bind remote_control: item where:
+            is_remote_control(remote_control)
+        bind tv: item where:
+            is_television(tv)
+        turn_on_tv(remote_control, tv)",,,,,[]
+"behavior turn_on_tv(remote:item, tv:item):
+    body:
+        achieve_once inhand(remote)
+        achieve is_on(tv)
+
+behavior __goal__():
+    body:
+        bind remote: item where:
+            is_remote_control(remote) and id[remote]==2052
+        bind tv: item where:
+            is_television(tv) and id[tv]==410
+        turn_on_tv(remote, tv)",,,,,"['grab_executor(remote_control_2052); walk_executor(television_410); switchon_executor(television_41
+0)']"
+,,,,,"(CrowControllerApplier<grab_executor(remote_control_2052)>, CrowControllerApplier<walk_executor(tele
+vision_410)>, CrowControllerApplier<switchon_executor(television_410)>)"
+,,grab_executor(remote_control_2052),"Robot is inside home_office_319. Robot is close couch_352. Robot is close remote_control_2052. Robot
+ is on couch_352. Robot is facing television_410. Grabbing remote_control_2052 by right hand. ",,
+" 
+behavior turn_on_tv_with_remote(remote:item, tv:item):
+    body:
+        achieve has_switch(tv)
+        achieve is_off(remote)
+        touch(remote)
+        achieve is_on(tv)
+
+behavior __goal__():
+    body:
+        bind remote: item where:
+            is_remote_control(remote) and close_char(char, remote)
+        bind tv: item where:
+            is_television(tv) and facing_char(char, tv)
+        turn_on_tv_with_remote(remote, tv)
+",,,,,"['touch_executor(remote_control_2052); walk_executor(television_410); switchon_executor(television_4
+10)']"
+,,switchon_executor(television_410),"Robot is inside home_office_319. Robot is close couch_352. Robot is close remote_control_2052. Robot
+ is on couch_352. Robot is facing television_410. ",,
+,,,,"- Sub-Task Completed: Yes
+- Next Steps: You walked to the TV stand, looked for the remote control but didn't find it there, th
+en walked to the couch and found the remote control. You sat on the couch, grabbed the remote contro
+l, and used it to turn on the TV.",

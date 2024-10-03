@@ -1,4 +1,4 @@
-def get_goal_inter_prompt(goal,cat_list=None,additional_information=None,long_horizon_task=None,previous_subtasks=None):
+def get_goal_inter_prompt(goal,cat_list=None,additional_information=None,long_horizon_task=None,previous_subtasks=None,behavior_from_library_names=None):
     if additional_information==None or additional_information=='\n':
         additional_information="None"
     categories=""
@@ -11,6 +11,15 @@ def get_goal_inter_prompt(goal,cat_list=None,additional_information=None,long_ho
             completed_tasks+=" "+task+" "
     if completed_tasks=="":
         completed_tasks="None, it is the first sub-task."
+
+    behavior_from_library=''
+    if behavior_from_library_names!=None:
+        behavior_from_library='##Learned Behaviors:\n'
+        behavior_from_library+="Here are some of the skills you've learned, which you can use directly by passing in the corresponding parameters. When the behavior is related to the task, you should prioritize trying these behaviors."
+        for behavior in behavior_from_library_names:
+            if behavior!='':
+                behavior_from_library+="- "+behavior+'\n'
+        behavior_from_library+='Note: you can directly call these behaviors. Do not use achieve, achieve_once, or any other keywords with them.\n'
 
     prompt="""
 ##Task Description: 
@@ -37,8 +46,6 @@ Please note: The text following each hash symbol (#) is a comment and should not
 - clean(x: item) # The item is clean.
 - has_water(x: item) # The item has water inside or on it.
 - cut(x: item) # The item is cut.
-- sitting(x: character) # The character is sitting.
-- lying(x: character) # The character is lying.
 - sleeping(x: character) # The character is sleeping.
 - inhand(x: item) # A item is grasped by a character. Only use it when an item needs to be continuously held in your hand.
 - visited(x: item) # The character has observed the item
@@ -106,8 +113,11 @@ The following behaviors can be directly invoked in the current sub-task goal rep
 - touch(obj:item) # Touch an item.
 - read(obj:item) # Read an item.
 - water(obj:item) # Fill item with water.
+- sit_somewhere(location:item) # Sit at a specific location.
+- lie_somewhere(location:item) # Lie at a specific location.
 Important Note: Ensure that all parameters are properly defined before using them in the behaviors.
 
+"""+behavior_from_library+"""
 ## Available Category Determination:
 """+categories+"""
 For any instance 'x', you can use 'is_y(x)' to determine if 'x' belongs to category 'y'. Categories cannot be operated upon directly; you can only assess the status and relationships of specific instances within a category. If you want to select an item instance that belongs to the category "box", you can use the following syntax:

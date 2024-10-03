@@ -268,19 +268,13 @@ def get_nodes_information(graph,PO=True):
             # print(node.class_name,node.states)
     return objects,states,relationships,properties,list(set(category)),list(set(classes)),cat_statement
 
-def transform_plan(plan):
-    # 分隔输入字符串
-    
+def transform_plan(plan):    
     executors = plan[0].split('; ')
-    
-    # 定义一个空的列表来存储转换后的动作
     actions = []
     item_count = {}
     id_map = {}
-    # 遍历每个执行器并应用映射规则
     index=1
     for executor in executors:
-        # 提取动作和目标
         action, target = executor.replace(')', '').split('(')
         action = action.replace('_executor', '').upper()
         if action=="PUT":
@@ -292,12 +286,10 @@ def transform_plan(plan):
             to_o=''
             if '_' in from_obj:
                 item, number = from_obj.rsplit('_', 1)
-                
                 if item not in item_count:
                     item_count[item] = 0
                 if (item in item_count) and number not in id_map:
                     item_count[item] += 1
-                
                 if number not in id_map:
                     id_map[number] = item_count[item]
                 from_o = f'<{item}>({number}.{id_map[number]})'
@@ -305,19 +297,16 @@ def transform_plan(plan):
                 from_o = from_obj
             if '_' in to_obj:
                 item, number = to_obj.rsplit('_', 1)
-                
                 if item not in item_count:
                     item_count[item] = 0
                 if (item in item_count) and number not in id_map:
                     item_count[item] += 1
-                
                 if number not in id_map:
                     id_map[number] = item_count[item]
                 to_o = f'<{item}>({number}.{id_map[number]})'
             else:
                 to_o = to_obj
             actions.append(parse_script_line(f'[{action}] {from_o} {to_o}',index))
-        # 提取目标和编号
         else:
             if '_' in target:
                 item, number = target.rsplit('_', 1)
@@ -331,22 +320,17 @@ def transform_plan(plan):
                     id_map[number] = item_count[item]
             else:
                 formatted_target = target
-            
-                
             formatted_target = f'<{item}>({number}.{id_map[number]})'
-            # 生成新的格式并添加到列表中
             actions.append(parse_script_line(f'[{action}] {formatted_target}',index))
         index+=1
     
     return actions
 
 def transform_action(action,scripts_index):
-    # 分隔输入字符串
     action=str(action).replace('_executor', '')
     action = action.replace(')', '')
     action = action.replace('(', ' ')
     action = action.split()
-    # 提取动作和目标
     action_name = action[0].upper()
     if action_name=='PUT' or action_name=='PUTIN':
         if action_name=='PUT':

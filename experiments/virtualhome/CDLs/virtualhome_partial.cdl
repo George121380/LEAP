@@ -615,23 +615,9 @@ behavior empty_a_hand():
 behavior stand():
   goal: standing(char)
   body:
-    assert sitting(char) or lying(char)
     standup_executor(char)
   eff:
     sitting[char] = False
-    lying[char] = False
-
-behavior sit():
-  goal: sitting(char)
-  body:
-    assert not sitting(char)
-    bind seat:item where:
-      sittable(seat) and not unknown(seat)
-    achieve close_char(char, seat)
-    sit_executor(seat)
-  eff:
-    sitting[char] = True
-    on_char[char, seat] = True
     lying[char] = False
 
 behavior sit_somewhere(location:item):
@@ -646,20 +632,8 @@ behavior sit_somewhere(location:item):
     on_char[char, location] = True
     lying[char] = False
 
-behavior lie():
-  goal: lying(char)
-  body:
-    assert not lying(char)
-    bind bed:item where:
-      lieable(bed) and not unknown(bed)
-    achieve close_char(char, bed)
-    lie_executor(bed)
-  eff:
-    lying[char] = True
-    sitting[char] = False
-    on_char[char, bed] = True
-
 behavior lie_somewhere(location:item):
+  goal: on_char(char, location)
   body:
     assert lieable(location)
     achieve not unknown(location)
@@ -923,16 +897,15 @@ behavior eat(object:item):
     eat_executor(object)
 
 
-behavior sleep():
-  goal: sleeping(char)
+behavior sleep_somewhere(location:item):
   body:
     symbol has_lieable_place=exists item1:item: lieable(item1)
     symbol has_sittable_place=exists item2:item: sittable(item2)
     assert has_lieable_place or has_sittable_place
     if has_lieable_place:
-      lie()
+      lie_somewhere(location)
     else:
-      sit()
+      sit_somewhere(location)
   eff:
     sleeping[char] = True
 

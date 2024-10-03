@@ -23,7 +23,20 @@ def remove_special_characters(input_string):
     remove_s = re.sub(pattern, r'\1"\2"\3', remove_s)
     return remove_s
 
-def VH_pipeline(state_file:str,execute_file:str,current_subgoal:str,add_info:str,long_horizon_goal:str,sub_goal_list:list,classes,partial_observation=True):
+def find_behavior_from_library(goal_representation,behavior_from_library):
+    # goal_representation may contains behaviors from library, this function will find the behaviors from library
+    add_behaviors=''
+    pattern = re.compile(r'(\w+)\s*\(.*?:.*?\)')
+    for idx in range(len(behavior_from_library['names'])):
+        behavior_name=pattern.findall(behavior_from_library['names'][idx])
+        if behavior_name:
+            behavior_name=behavior_name[0]
+            if behavior_name in goal_representation:
+                add_behaviors+=behavior_from_library['content'][idx]+'\n'
+    return add_behaviors
+
+
+def VH_pipeline(state_file:str,execute_file:str,current_subgoal:str,add_info:str,long_horizon_goal:str,sub_goal_list:list,classes,behavior_from_library,partial_observation=True):
     """
     Args:
     state_file: Path to the file containing the current state for CDL planning
@@ -39,9 +52,11 @@ def VH_pipeline(state_file:str,execute_file:str,current_subgoal:str,add_info:str
     generate_time=0
     while generate_time<3:
         try:
-            goal_int=goal_interpretation(current_subgoal,add_info,long_horizon_goal,classes,sub_goal_list)
+            goal_int=goal_interpretation(current_subgoal,add_info,long_horizon_goal,classes,sub_goal_list,behavior_from_library['names'])
+
             goal_int=remove_special_characters(goal_int)
             # logger.info("Goal representation",goal_int)
+
             with open(state_file, "r") as file:
                 original_content = file.read()
             combined_content = original_content + "\n#goal_representation\n" + goal_int+"\n#goal_representation_end\n"
@@ -56,7 +71,9 @@ def VH_pipeline(state_file:str,execute_file:str,current_subgoal:str,add_info:str
                 exp_end_time=time.time()
                 print(f"Time for exploration:{exp_end_time-exp_start_time:.2f}s")
                 exploration_content=remove_special_characters(exploration_content)
-            combined_content=original_content+"\n#exp_behavior\n"+exploration_content+'\n#exp_behavior_end\n'"\n#goal_representation\n" + goal_int+"\n#goal_representation_end\n"
+
+            add_behavior_from_library=find_behavior_from_library(goal_int,behavior_from_library)
+            combined_content=original_content+"\n#exp_behavior\n"+exploration_content+'\n#exp_behavior_end\n'+"\n#behaviors_from_library\n"+add_behavior_from_library+"\n#behaviors_from_library_end\n"+"\n#goal_representation\n" + goal_int+"\n#goal_representation_end\n"
             with open(new_file_path, "w") as file:
                 file.write(combined_content)
             loop=False
@@ -73,9 +90,9 @@ def VH_pipeline(state_file:str,execute_file:str,current_subgoal:str,add_info:str
                         pass
                     else:
                         if partial_observation:
-                            return plan,goal_int,exploration_content
+                            return plan,goal_int,exploration_content,add_behavior_from_library
                         else:
-                            return plan,goal_int
+                            return plan,goal_int,add_behavior_from_library
 
                 except TransformationError as e:
                     solver_end_time=time.time()
@@ -88,13 +105,13 @@ def VH_pipeline(state_file:str,execute_file:str,current_subgoal:str,add_info:str
                             if '#goal_representation\n' in line:
                                 goal_start_line_num=line_number
                                 break
-                    goal_int=auto_debug(error_info,original_content,goal_int,current_subgoal,add_info,classes,goal_start_line_num)
+                    goal_int=auto_debug(error_info,original_content,goal_int,current_subgoal,add_info,classes,goal_start_line_num,behavior_from_library)
                     goal_int=remove_special_characters(goal_int)
                     # logger.info("Goal representation after debugging",goal_int)
                     if partial_observation:
                         exploration_content=exploration_VH(current_subgoal,add_info,new_file_path)
                         exploration_content=remove_special_characters(exploration_content)
-                    combined_content=original_content+"\n#exp_behavior\n"+exploration_content+'\n#exp_behavior_end\n'"\n#goal_representation\n" + goal_int+"\n#goal_representation_end\n"
+                    combined_content=original_content+"\n#exp_behavior\n"+exploration_content+'\n#exp_behavior_end\n'+"\n#behaviors_from_library\n"+add_behavior_from_library+"\n#behaviors_from_library_end\n"+"\n#goal_representation\n" + goal_int+"\n#goal_representation_end\n"
                     with open(new_file_path, "w") as file:
                         file.write(combined_content)
                     correct_time+=1

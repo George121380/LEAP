@@ -24,7 +24,7 @@ class VHAgent:
         self.relations = {}
         self.state = {}
         self.exploration = {}
-
+        self.download_mode='ALL' # how to download behaviors from library
         # Task information
         self.task_name=''
         self.goal_nl=''
@@ -39,6 +39,8 @@ class VHAgent:
         self.add_info_action_history=[]
         self.exploration_behavior = ""
         self.goal_representation = ""
+        self.behaviors_from_library={} # all skills in library
+        self.behaviors_from_library_representation='' # used skills' representation
         """
         path to the CDL files
         internal_executable_file_path: the file can be solve py planner: state + goal
@@ -66,12 +68,16 @@ class VHAgent:
         self.save_to_file(self.state_file_path)
 
     def lift_behaviors(self):
+        # add executable behaviors to the library
         self.library.lift_group(self.task_name,self.current_subgoal_nl,self.goal_representation)
 
     def download_behaviors_from_library(self):
-        pass
+        # download behaviors from the library
+        self.behaviors_from_library['content'],self.behaviors_from_library['names']=self.library.download_behaviors(self.task_name,self.current_subgoal_nl,self.download_mode)
+        return self.behaviors_from_library
 
     def reset_visited(self):
+        # reset the visited state
         self.state['visited']=np.full(self.num_items , "uncertain", dtype=object)
 
     def set_human_helper(self,human_helper):
@@ -80,6 +86,11 @@ class VHAgent:
 
     def query_human(self,query:str):
         return self.human_helper.QA(query)
+    
+    def set_initial_human_instruction(self,initial_instruction:str):
+        # debug used
+        if initial_instruction!="I don't know.":
+            self.add_info_human_instruction=initial_instruction
 
     def update_add_info(self):
         self.add_info_nl=''
@@ -124,7 +135,6 @@ class VHAgent:
     def _parse_file(self, filepath:str):
         with open(filepath, 'r') as file:
             content = file.read()
-
         # Read IDs and determine the number of items
         id_section = re.search(r'#id\n(.+?)#id_end', content, re.DOTALL).group(1)
         self.num_items = self._parse_id_section(id_section)
@@ -174,6 +184,11 @@ class VHAgent:
         if exploration_behavior:
             exploration_behavior = exploration_behavior.group(1)
             self.exploration_behavior = exploration_behavior
+
+        behavior_from_library = re.search(r'#behaviors_from_library\n(.+?)#behaviors_from_library_end', content, re.DOTALL)
+        if behavior_from_library:
+            behavior_from_library = behavior_from_library.group(1)
+            self.behaviors_from_library_representation = behavior_from_library
 
         # Read goal representation
         goal_rep=re.search(r'#goal_representation\n(.+?)#goal_representation_end', content, re.DOTALL)
@@ -461,6 +476,9 @@ class VHAgent:
                 file.write("\n#exp_behavior\n")
                 file.write(self.exploration_behavior)
                 file.write("\n#exp_behavior_end\n")
+                file.write("\n#behaviors_from_library\n")
+                file.write(self.behaviors_from_library_representation)
+                file.write("\n#behaviors_from_library_end\n")
                 file.write("\n#goal_representation\n")
                 file.write(self.goal_representation)
                 file.write("\n#goal_representation_end\n")
@@ -742,7 +760,7 @@ class VHAgent:
                         return "over",None
                     else:
                         self.current_subgoal_nl=self.sub_goal_list[self.current_subgoal_num]
-                        _,self.goal_representation,self.exploration_behavior=VH_pipeline(self.state_file_path,self.internal_executable_file_path,self.current_subgoal_nl,self.add_info_nl,self.goal_nl,self.sub_goal_list[:self.current_subgoal_num],self.classes)
+                        _,self.goal_representation,self.exploration_behavior,self.behaviors_from_library_representation=VH_pipeline(self.state_file_path,self.internal_executable_file_path,self.current_subgoal_nl,self.add_info_nl,self.goal_nl,self.sub_goal_list[:self.current_subgoal_num],self.classes,self.behaviors_from_library)
                         self.reset_visited()
                         self.save_to_file()
                         self.save_to_file(self.state_file_path)
@@ -786,18 +804,18 @@ class VHAgent:
             logger.info(self.sub_goal_list,"","","","","")
             self.current_subgoal_nl=self.sub_goal_list[0]
             # pdb.set_trace()
-            _,self.goal_representation,self.exploration_behavior=VH_pipeline(self.state_file_path,self.internal_executable_file_path,self.current_subgoal_nl,additional_information,self.goal_nl,self.sub_goal_list[:self.current_subgoal_num],self.classes)
+            _,self.goal_representation,self.exploration_behavior,self.behaviors_from_library_representation=VH_pipeline(self.state_file_path,self.internal_executable_file_path,self.current_subgoal_nl,additional_information,self.goal_nl,self.sub_goal_list[:self.current_subgoal_num],self.classes,self.behaviors_from_library)
             # pdb.set_trace()
 
         else:
-            _,self.goal_representation,self.exploration_behavior=VH_pipeline(self.state_file_path,self.internal_executable_file_path,goal,additional_information,None,self.classes)
+            _,self.goal_representation,self.exploration_behavior,self.behaviors_from_library_representation=VH_pipeline(self.state_file_path,self.internal_executable_file_path,goal,additional_information,None,self.classes,self.behaviors_from_library)
         self.reset_visited()
         self.record_goal_representation()
         self.save_to_file()
         self.save_to_file(self.state_file_path)
 
     def reset_sub_goal(self):
-        _,self.goal_representation,self.exploration_behavior=VH_pipeline(self.state_file_path,self.internal_executable_file_path,self.current_subgoal_nl,self.add_info_nl,self.goal_nl,self.sub_goal_list[:self.current_subgoal_num],self.classes)
+        _,self.goal_representation,self.exploration_behavior,self.behaviors_from_library_representation=VH_pipeline(self.state_file_path,self.internal_executable_file_path,self.current_subgoal_nl,self.add_info_nl,self.goal_nl,self.sub_goal_list[:self.current_subgoal_num],self.classes,self.behaviors_from_library)
         self.reset_visited()
         self.record_goal_representation()
         self.save_to_file()
@@ -812,21 +830,21 @@ class VHAgent:
         return result,insrtuctions
     
     def reset_add_info_record(self):
-        record_path='/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/visualization/add_info_monitor.txt'
+        record_path='visualization/add_info_monitor.txt'
         with open(record_path,'w') as f:
             f.write('')
 
     def record_add_info(self):
-        record_path='/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/visualization/add_info_monitor.txt'
+        record_path='visualization/add_info_monitor.txt'
         with open(record_path,'w') as f:
             f.write(self.add_info_nl)
 
     def reset_goal_representation_record(self):
-        record_path='/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/visualization/goal_representation_monitor.txt'
+        record_path='visualization/goal_representation_monitor.txt'
         with open(record_path,'w') as f:
             f.write('')
     
     def record_goal_representation(self):
-        record_path='/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/visualization/goal_representation_monitor.txt'
+        record_path='visualization/goal_representation_monitor.txt'
         with open(record_path,'w') as f:
             f.write(self.goal_representation)

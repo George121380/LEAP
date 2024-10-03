@@ -39,7 +39,7 @@ Only replace the incorrect category names without modifying any other parts, inc
 """
     return prompt
 
-def unknown_prompt(goal,cat_list=None,additional_information=None,goal_representation=None,error_info=None):
+def unknown_prompt(goal,cat_list=None,additional_information=None,goal_representation=None,error_info=None,behavior_from_library=None):
     if additional_information==None:
         additional_information="None"
     categories=""
@@ -71,12 +71,10 @@ Please note: The text following each hash symbol (#) is a comment and should not
 - clean(x: item) # The item is clean.
 - has_water(x: item) # The item has water inside or on it.
 - cut(x: item) # The item is cut.
-- sitting(x: character) # The character is sitting.
-- lying(x: character) # The character is lying.
 - sleeping(x: character) # The character is sleeping.
 - inhand(x: item) # A item is grasped by a character. Only use it when an item needs to be continuously held in your hand.
 - visited(x: item) # The character has observed the item
-Important Note: The inhand(x) state is unique. If you intend to use inhand(x), you must implement it using the achieve_once keyword.
+Important Note: The inhand(x) state is unique. If you intend to use inhand(x), you must implement it using the achieve_once keyword. At the same time, please note that you can take at most two items. Having too many items in hand will result in no solution. At the same time, please note that you can take at most two items. Having too many items in hand will result in no solution.
 
 ## Available Relationships:
 Please note: The text following each hash symbol (#) is a comment and should not be included in the current sub-task goal representation. 
@@ -140,8 +138,11 @@ The following behaviors can be directly invoked in the current sub-task goal rep
 - touch(obj:item) # Touch an item.
 - read(obj:item) # Read an item.
 - water(obj:item) # Fill item with water.
+- sit_somewhere(location:item) # Sit at a specific location.
+- lie_somewhere(location:item) # Lie at a specific location.
 Important Note: Ensure that all parameters are properly defined before using them in the behaviors.
 
+"""+behavior_from_library+"""
 ## Available Category Determination:
 """+categories+"""
 For any instance 'x', you can use 'is_y(x)' to determine if 'x' belongs to category 'y'. Categories cannot be operated upon directly; you can only assess the status and relationships of specific instances within a category. If you want to select an item instance that belongs to the category "box", you can use the following syntax:
@@ -323,7 +324,7 @@ Output the goal representation with the supplemented definitions and declaration
 """
     return prompt
 
-def other_prompt(goal,cat_list=None,additional_information=None,goal_representation=None,error_info=None):
+def other_prompt(goal,cat_list=None,additional_information=None,goal_representation=None,error_info=None,behavior_from_library=None):
     if additional_information==None:
         additional_information="None"
     categories=""
@@ -360,12 +361,10 @@ Please note: The text following each hash symbol (#) is a comment and should not
 - clean(x: item) # The item is clean.
 - has_water(x: item) # The item has water inside or on it.
 - cut(x: item) # The item is cut.
-- sitting(x: character) # The character is sitting.
-- lying(x: character) # The character is lying.
 - sleeping(x: character) # The character is sleeping.
 - inhand(x: item) # A item is grasped by a character. Only use it when an item needs to be continuously held in your hand.
 - visited(x: item) # The character has observed the item
-Important Note: The inhand(x) state is unique. If you intend to use inhand(x), you must implement it using the achieve_once keyword.
+Important Note: The inhand(x) state is unique. If you intend to use inhand(x), you must implement it using the achieve_once keyword. At the same time, please note that you can take at most two items. Having too many items in hand will result in no solution. At the same time, please note that you can take at most two items. Having too many items in hand will result in no solution.
 
 ## Available Relationships:
 Please note: The text following each hash symbol (#) is a comment and should not be included in the current sub-task goal representation. 
@@ -429,8 +428,11 @@ The following behaviors can be directly invoked in the current sub-task goal rep
 - touch(obj:item) # Touch an item.
 - read(obj:item) # Read an item.
 - water(obj:item) # Fill item with water.
+- sit_somewhere(location:item) # Sit at a specific location.
+- lie_somewhere(location:item) # Lie at a specific location.
 Important Note: Ensure that all parameters are properly defined before using them in the behaviors.
 
+"""+behavior_from_library+"""
 ## Available Category Determination:
 """+categories+"""
 For any instance 'x', you can use 'is_y(x)' to determine if 'x' belongs to category 'y'. Categories cannot be operated upon directly; you can only assess the status and relationships of specific instances within a category. If you want to select an item instance that belongs to the category "box", you can use the following syntax:
