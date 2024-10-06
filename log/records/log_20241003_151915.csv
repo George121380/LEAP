@@ -1,0 +1,237 @@
+Goal Representation,Debug Result,Action,Add Info,LLM Answer,Plan
+"['1. Identify the bathroom sink.', '2. Gather necessary cleaning supplies.', '3. Scrub and clean the
+ sink.']",,,,,
+" 
+behavior __goal__():
+    body:
+        foreach sink: item:
+            if is_sink(sink) and not visited(sink):
+                observe(sink, ""Check if this is the bathroom sink"")
+                # Observe the item to determine if its the bathroom sink
+",,,,,"['walk_executor(sink_42); obs(sink_42, Check if this is the bathroom sink); walk_executor(sink_231);
+ obs(sink_231, Check if this is the bathroom sink)']"
+,,,,,"(CrowControllerApplier<walk_executor(sink_42)>, CrowControllerApplier<obs(sink_42, Check if this is 
+the bathroom sink)>, CrowControllerApplier<walk_executor(sink_231)>, CrowControllerApplier<obs(sink_
+231, Check if this is the bathroom sink)>)"
+,,walk_executor(sink_42),"Find soap_2053. Find towel_rack_32. Find towel_rack_34. Find towel_rack_31. Find cleaning_solution_2
+073. Find basket_for_clothes_2006. Robot is inside bathroom_1. Robot is close bathroom_counter_41. R
+obot is close sink_42. ",,
+,,"obs(sink_42, Check if this is the bathroom sink)","Get this information:  soap_2053 is on sink_42. cleaning_solution_2073 is on sink_42. sink_42 is clo
+se to floor_2. sink_42 is close to floor_3. sink_42 is close to floor_4. sink_42 is close to soap_20
+53. sink_42 is close to bathroom_cabinet_40. sink_42 is close to bathroom_counter_41. sink_42 is clo
+se to wall_9. sink_42 is close to faucet_43. sink_42 is close to wall_12. sink_42 is close to basket
+_for_clothes_2006. sink_42 is close to washing_machine_2007. sink_42 is close to cleaning_solution_2
+073. sink_42 is close to character_65. sink_42 is inside bathroom_1. sink_42 is inside bathroom_coun
+ter_41. sink_42 is DIRTY.",,
+,,walk_executor(sink_231),"Find pot_2069. Find knife_2050. Find drawing_238. Find drawing_239. Find drawing_240. Find drawing_2
+41. Find drawing_242. Find drawing_243. Find cup_2064. Find cutting_board_2051. Find soap_2054. Find
+ napkin_2005. Find cup_2063. Find oil_2079. Find tray_296. Find plate_1000. Robot is inside dining_r
+oom_201. Robot is close kitchen_counter_230. Robot is close sink_231. Robot is no longer inside bath
+room_1.Robot is no longer close bathroom_counter_41.Robot is no longer close sink_42.",,
+,,"obs(sink_231, Check if this is the bathroom sink)","Get this information:  soap_2054 is on sink_231. sink_231 is close to soap_2054. sink_231 is close t
+o floor_7. sink_231 is close to wall_11. sink_231 is close to wall_15. sink_231 is close to coffe_ma
+ker_290. sink_231 is close to toaster_292. sink_231 is close to toilet_37. sink_231 is close to show
+er_36. sink_231 is close to microwave_297. sink_231 is close to floor_202. sink_231 is close to floo
+r_203. sink_231 is close to floor_204. sink_231 is close to wall_211. sink_231 is close to wall_212.
+ sink_231 is close to cupboard_229. sink_231 is close to kitchen_counter_230. sink_231 is close to f
+aucet_232. sink_231 is close to plate_1000. sink_231 is close to dishwasher_1001. sink_231 is close 
+to character_65. sink_231 is inside dining_room_201. sink_231 is inside kitchen_counter_230. plate_1
+000 is on sink_231. sink_231 is DIRTY.",,
+,,,,"- Sub-Task Completed: Yes
+- Next Steps: You identified the bathroom sink by walking to sink_42 and observing the surroundings,
+ confirming it is inside bathroom_1 and close to typical bathroom items like a bathroom counter and 
+cleaning supplies. You can now proceed to gather the necessary cleaning supplies.",
+"behavior gather_supplies(sink:item):
+    body:
+        achieve_once inhand(cleaning_solution)
+        achieve_once inhand(soap)
+        achieve_once inhand(towel)
+
+behavior close_cabinets_door(bathroom_cabinet:item):
+    body:
+        achieve closed(bathroom_cabinet)
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and id[sink] == 42
+        bind cleaning_solution: item where:
+            is_cleaning_solution(cleaning_solution) and on(cleaning_solution, sink)
+        bind soap: item where:
+            is_soap(soap) and on(soap, sink)
+        bind towel_rack: item where:
+            is_towel_rack(towel_rack) and close(towel_rack, sink)
+        bind towel: item where:
+            is_towel(towel) and on(towel, towel_rack)
+        bind bathroom_cabinet: item where:
+            is_bathroom_cabinet(bathroom_cabinet) and close(bathroom_cabinet, sink)
+        
+        gather_supplies(sink)
+        close_cabinets_door(bathroom_cabinet)","Error trying to process rule ""behavior_definition"":
+
+Unknown variable: cleaning_solution; available variables: [Variable<sink: item>].",,,,
+" 
+def has_necessary_cleaning_supplies(bathroom_counter:item):
+    # Function to check if necessary cleaning supplies are on the bathroom counter
+    symbol has_cleaning_supplies = exists o: item : (is_cleaning_solution(o) or is_soap(o) or is_tow
+el(o)) and on(o, bathroom_counter)
+    return has_cleaning_supplies
+
+behavior gather_supplies(supplies:item):
+    body:
+        achieve_once inhand(supplies)
+        # Temporarily gather supplies necessary for cleaning
+
+behavior __goal__():
+    body:
+        bind bathroom_counter: item where:
+            is_bathroom_counter(bathroom_counter) and inside(bathroom_counter, bathroom_1)
+        # Select the bathroom counter inside bathroom_1
+
+        if not has_necessary_cleaning_supplies(bathroom_counter):
+            # If necessary cleaning supplies are not present, check around
+            foreach supplies: item:
+                if (is_cleaning_solution(supplies) or is_soap(supplies) or is_towel(supplies)) and c
+lose(supplies, bathroom_counter) and not visited(supplies):
+                    observe(supplies, ""Check if it is necessary for cleaning the bathroom sink"")
+                    # Observe for necessary cleaning supplies
+        
+        foreach supplies: item:
+            if (is_cleaning_solution(supplies) or is_soap(supplies) or is_towel(supplies)) and on(su
+pplies, bathroom_counter):
+                gather_supplies(supplies)
+                # Gather cleaning supplies found on the bathroom counter
+","Error trying to process rule ""behavior_definition"":
+
+Unknown variable: bathroom_1; available variables: [Variable<bathroom_counter: item>].",,,,
+" 
+behavior gather_cleaning_supplies(sink:item):
+    body:
+        achieve close_char(char, sink)
+        # Move to the sink to gather supplies
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and dirty(sink)
+        # Select the sink that is dirty
+        gather_cleaning_supplies(sink)
+        # Gather the necessary cleaning supplies from the sink
+","Error trying to process rule ""behavior_definition"":
+
+'Function has_soap_and_cleaning_solution_here not found. Note that recursive function calls are not 
+supported in the current version.'",,,,
+" 
+## Formal Representation:
+ 
+behavior gather_cleaning_supplies(sink:item):
+    body:
+        achieve close_char(char, sink)
+        # Move to the sink to gather supplies
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and dirty(sink)
+        # Select the sink that is dirty
+        gather_cleaning_supplies(sink)
+        # Gather the necessary cleaning supplies from the sink
+","Error trying to process rule ""behavior_definition"":
+
+'Function has_soap_and_cleaning_solution_here not found. Note that recursive function calls are not 
+supported in the current version.'",,,,
+" 
+## Formal Representation:
+ 
+behavior gather_cleaning_supplies(sink:item):
+    body:
+        achieve close_char(char, sink)
+        # Move to the sink to gather supplies
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and dirty(sink)
+        # Select the sink that is dirty
+        gather_cleaning_supplies(sink)
+        # Gather the necessary cleaning supplies from the sink
+
+","Error trying to process rule ""behavior_definition"":
+
+'Function has_soap_and_cleaning_solution_here not found. Note that recursive function calls are not 
+supported in the current version.'",,,,
+" 
+behavior gather_cleaning_supplies(sink:item):
+    body:
+        bind cleaning_solution: item where:
+            is_cleaning_solution(cleaning_solution) and on(cleaning_solution, sink)
+        # Select cleaning solution on the sink
+        achieve_once inhand(cleaning_solution) 
+        # Gather the cleaning solution in hand
+
+        bind towel: item where:
+            is_towel(towel)
+        # Select a towel in the environment
+        achieve_once inhand(towel)
+        # Gather a towel in hand
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and id[sink]==42
+        gather_cleaning_supplies(sink)
+","Error trying to process rule ""behavior_definition"":
+
+'Function has_soap_and_cleaning_solution_here not found. Note that recursive function calls are not 
+supported in the current version.'",,,,
+"plaintext
+## Task Instructions:
+I am converting my goals and additional information into a formal representation Currently, my forma
+l representation contains undefined category names Please correct the errors in the formal represent
+ation based on the error messages
+Prioritize using synonyms to replace the undefined category names If thats not possible, use categor
+ies with similar functions However, under all circumstances, ensure that the corrected item categori
+es appear in the available categories I will demonstrate how to make replacements in the example sec
+tion
+
+## Formal Representation:
+ 
+behavior gather_cleaning_supplies(sink:item):
+    body:
+        bind cleaning_solution: item where:
+            is_cleaning_solution(cleaning_solution) and on(cleaning_solution, sink)
+        # Select cleaning solution on the sink
+        achieve_once inhand(cleaning_solution) 
+        # Gather the cleaning solution in hand
+
+        bind towel: item where:
+            is_towel(towel)
+        # Select a towel in the environment
+        achieve_once inhand(towel)
+        # Gather a towel in hand
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and id[sink]==42
+        gather_cleaning_supplies(sink)
+","Unexpected token Token('BASIC_TYPENAME', 'plaintext') at line 2765, column 1.
+Expected one of: 
+	* TYPEDEF
+	* OBJECTS
+	* BEHAVIOR
+	* UNDIRECTED_GENERATOR
+	* FEATURE
+	* $END
+	* DEF
+	* CONTROLLER
+	* _NEWLINE
+	* GENERATOR
+	* ACTION
+	* DOMAIN
+	* INIT
+	* IMPORT
+	* GOAL
+	* _PRAGMA_KEYWORD
+Previous tokens: [Token('_NEWLINE', '\n\n\n#behaviors_from_library_end\n\n#goal_representation\n')]
+",,,,

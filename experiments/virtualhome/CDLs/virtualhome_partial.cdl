@@ -16,8 +16,9 @@ feature dirty(x: item)
 feature clean(x: item)
 feature sitting(x: character)
 feature lying(x: character)
-feature cut(x:item)
 feature sleeping(x: character)
+feature standing(x: character)
+feature cut(x:item)
 feature inhand(x: item)
 feature visited(x: item)
 feature has_water(x: item)
@@ -532,9 +533,6 @@ controller pull_executor(x: item)
 controller exp(x:item, y:item)
 controller obs(x:item,q:string)
 
-def standing(char: character):
-  return not sitting(char) and not lying(char)
-
 def has_a_free_hand():
   symbol l=exists item1: item : holds_lh(char, item1)
   symbol r=exists item2: item : holds_rh(char, item2)
@@ -953,12 +951,20 @@ behavior put_off_body(clo: item):
 behavior get_water(obj:item):
   goal: has_water(obj)
   body:
-    bind faucet:item where:
-      is_faucet(faucet)
-    achieve inhand(obj)
-    achieve close_char(char, faucet)
-    achieve_once is_on(faucet)
-    achieve_once is_off(faucet)
+    symbol has_faucet_around=exists faucet:item: is_faucet(faucet) and close(obj, faucet)
+    if grabbable(obj):
+      bind faucet:item where:
+        is_faucet(faucet)
+      achieve inhand(obj)
+      achieve close_char(char, faucet)
+      achieve_once is_on(faucet)
+      achieve_once is_off(faucet)
+    else:
+      if has_faucet_around:
+        bind faucet:item where:
+          is_faucet(faucet) and close(obj, faucet)
+        achieve_once is_on(faucet)
+        achieve_once is_off(faucet)
   eff:
     has_water[obj] = True
 

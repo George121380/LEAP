@@ -1,16 +1,19 @@
 def sub_goal_prompt(task):
     prompt="""
 ## Task Instruction ##
-I need you to use human common sense to break down a long-term task into several subtasks. You can refer to my case study to accomplish this. I need your sub-goals to be fairly high-level, not too specific. You can generate up to 4 sub-goals at most, however If the task is simple, you can output only one or two sub-goals. And try to think step bt step.
+Please break down a long-term task into several high-level sub-tasks using common sense. Refer to my case study as needed. Aim for up to 4 sub-tasks; if the task is simple, only 1 or 2 are necessary. And try to think step bt step.
 
 ## Long Term task ##
 """+task+"""
 
 ## Principle ##
-Only split subtasks when the next step depends on the information obtained from the previous step.
+Only split into subtasks when the next step relies on information obtained from a previous step. When the task is not very complex, reduce the number of subtasks as much as possible. And avoid setting sub-tasks such as gathering required items. A good task breakdown usually has one and only one clear and specific goal within a single sub-task.
+
+## Tips ##
+Creating a sub-task just for gathering related items is usually inefficient. It is better to find tools or objects as they become necessary during the task.
 
 ## Background Knowledge ##
-This task is to be executed in a complex household setting. Many items often have multiple instances, such as there might be multiple tables, drawers, sinks, and so on. However, not all instances are always relevant to the task. For example, when you want to wash the clothes in a basket, you need to understand that not every basket contains clothes—you need to find the one that does.
+This task occurs in a complex household environment, where items like tables, drawers, and sinks may have multiple instances. However, not all instances are always relevant to the task. For example, when you want to wash the clothes in a basket, you need to understand that not every basket contains clothes—you need to find the one that does.
 
 ## Examples ##
 Example 1:
@@ -31,9 +34,8 @@ Long Term Task: Prepare a plate of salad.
 Chain of thought: To make a salad, you typically need to start by finding and washing the ingredients. Next, you need to prepare these ingredients; for example, if you're adding kiwi, you'll usually need to cut it. Finally, you need to place all the prepared ingredients into a plate.
 
 Output:
-1. Find the ingredients for making salad.
-2. Wash the ingredients for the salad, and for those that need to be cut, cut them accordingly.
-3. Put all the prepared ingredients into a plate.
+1. Wash the ingredients for the salad, and for those that need to be cut, cut them accordingly.
+2. Put all the prepared ingredients into a plate.
 
 Example 3:
 Long Term Task: Wash the plates and cups in the sink using the dishwasher. Then put them on the table in kitchen.
@@ -46,13 +48,12 @@ Output:
 3. Put the plates and cups on the table in the kitchen.
 
 Example 4:
-Long Term Task: Go to the kitchen and turn on the microwave.
+Long Term Task: Turn on the microwave.
 
-Chain of thought: Walking into a room and then searching for an object within the room is often a disjointed way of breaking down tasks in my task environment. A better way to decompose subtasks is to design the subtask directly as finding the object in the room.
+Chain of thought: This task is relatively simple. You can directly find the microwave and turn it on.
 
 Output:
-1. Find the microwave in the kitchen.
-2. Turn on the microwave in the kitchen.
+1. Turn on the microwave.
 
 Example 5:
 Long Term Task: Make some potato chicken noodle, put it in a box, and store it in the fridge.
@@ -64,6 +65,6 @@ Output:
 4. Store the box in the fridge.
 
 ## Output Format ##
-You only need to output several sub-goals with serial numbers, each line representing one sub-goal. Try to use the simplest and most straightforward language. Please do not provide any explanations or additional symbols.
+You only need to output several sub-tasks with serial numbers, each line representing one sub-tasks. Try to use the simplest and most straightforward language. Please do not provide any explanations or additional symbols.
 """
     return prompt

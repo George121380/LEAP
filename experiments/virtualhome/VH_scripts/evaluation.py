@@ -15,7 +15,7 @@ from env import VH_Env
 from environment import EnvironmentState, EnvironmentGraph
 import random
 import time
-from dataset import parse_file_to_json
+from dataset import parse_file_to_json, generate_sequences, is_subsequence, Parser,action_tokenize
 random.seed(time.time())
 
 class ASTNode:
@@ -39,7 +39,7 @@ def tokenize(expression): # tokenize the goal_lt expression
     tokens = re.findall(r'\s*(then|or|\(|\)|k\d+)\s*', expression)
     return tokens
 
-def parse(tokens):
+def logic_parse(tokens):
     def parse_expression(index):
         node, index = parse_term(index)
         while index < len(tokens) and tokens[index] == 'or':
@@ -87,6 +87,7 @@ class Evaluator:
         self.properties = {}
         self.relations = {}
         self.state = {}
+        self.character_state = {}
         self.exploration = {}
         self.init_path="experiments/virtualhome/CDLs/init_scene_NPO.cdl"
         self.state_file_path = 'experiments/virtualhome/CDLs/evaluator_state.cdl'
@@ -97,10 +98,9 @@ class Evaluator:
         self.load_scene()
         self.env=VH_Env(self.init_scene_graph)
         self._parse_file(self.init_path)
-        self.save_to_file()
         self.task_data=parse_file_to_json(task_file_path)
         if 'Logic' in self.task_data:
-            self.goal_lt=parse(tokenize(self.task_data['Logic']))
+            self.goal_lt=logic_parse(tokenize(self.task_data['Logic']))
         else:
             self.goal_lt=None
         self.keystates=self.task_data['Keystates']
@@ -113,6 +113,8 @@ class Evaluator:
         self.required_actions_achieved_flag=False
         self.wrapped_keystates_func={}
         self.wrap_keystates()
+        self.achieved_keystates=set()
+        self.debug()
 
     def load_scene(self)->None:
         scene_path='cdl_dataset/Scene.json'
@@ -140,6 +142,12 @@ class Evaluator:
         for feature in state_features:
             self.state[feature] = np.full(self.num_items , "uncertain", dtype=object)
 
+    def _initialize_character_states(self):
+        self.character_state['standing']=True
+        self.character_state['sitting']=False
+        self.character_state['lying']=False
+        self.character_state['sleeping']=False
+
     def _initialize_properties(self):
         property_features = [
             "surfaces", "grabbable", "sittable","lieable","hangable","drinkable","eatable","recipient","cuttable", "pourable", 
@@ -158,6 +166,8 @@ class Evaluator:
         self._initialize_relationships()
         self._initialize_properties()
         self._initialize_states()
+        self._initialize_character_states()
+
 
         # Initialize vectors with None values
         self.item_type = np.full(self.num_items, None, dtype=object)
@@ -184,6 +194,11 @@ class Evaluator:
             char_section = char_section.group(1)
             self._parse_char_section(char_section)
 
+        char_state_section = re.search(r'#char_states\n(.+?)#char_states_end', content, re.DOTALL)
+        if char_state_section:
+            char_state_section = char_state_section.group(1)
+            self._parse_char_state_section(char_state_section)
+
         # Read properties
         property_section = re.search(r'#properties\n(.+?)#properties_end', content, re.DOTALL).group(1)
         self._parse_properties_section(property_section)
@@ -208,8 +223,9 @@ class Evaluator:
             goal_representation_section = goal_rep.group(1)
             self.goal_representation = goal_representation_section
         # Set uncertain information for unknown items
-        self._set_uncertain_information()
         self.save_to_file()
+        self.save_to_file(self.internal_executable_file_path)
+
 
     def _parse_id_section(self, section:str):
         lines = section.strip().split("\n")
@@ -285,6 +301,22 @@ class Evaluator:
                 
                 self.state[prop_name][obj_id] = value
 
+    def _parse_char_state_section(self, section:str):
+        lines = section.strip().split("\n")
+        for line in lines:
+            if "=" in line:
+                key, value = line.split("=")
+                key = key.strip()
+                value = value.strip().lower() == "true"
+                prop_name = re.match(r'(\w+)\[(char)\]', key).groups()
+                
+                # Initialize property vector if not already done
+                if prop_name not in self.state:
+                    new_state = np.full(self.num_items , False, dtype=bool)
+                    self.state.update({prop_name: new_state})
+                
+                self.character_state[prop_name] = value
+
     def _parse_properties_section(self, section:str):
         lines = section.strip().split("\n")
         for line in lines:
@@ -357,32 +389,6 @@ class Evaluator:
                     i, j = obj_ids
                     self.exploration[expstate_name][i][j] = relation_value
 
-    def _set_uncertain_information(self:str):
-        for obj_id in range(1, self.num_items ):
-            if not self.exploration["unknown"][obj_id]:
-                # For objects that are not known, set properties and relations to "uncertain"
-                # for prop_name in self.properties:
-                #     self.properties[prop_name][obj_id] = "uncertain"
-                for relation_name in self.relations:
-                    for i in range(self.num_items ):
-                        self.relations[relation_name][obj_id][i] = "uncertain"
-                        self.relations[relation_name][i][obj_id] = "uncertain"
-            else:
-                # For known objects, set missing properties/relations explicitly to False
-                # for prop_name, prop_values in self.properties.items():
-                #     if prop_values[obj_id] == "uncertain":
-                #         self.properties[prop_name][obj_id] = False
-                for state_name, state_values in self.state.items():
-                    if state_values[obj_id] == "uncertain":
-                        self.state[state_name][obj_id] = False
-                for relation_name, relation_matrix in self.relations.items():
-                    for i in range(self.num_items ):
-                        if self.exploration["unknown"][i]:
-                            if relation_matrix[obj_id][i] == "uncertain":
-                                self.relations[relation_name][obj_id][i] = False
-                            if relation_matrix[i][obj_id] == "uncertain":
-                                self.relations[relation_name][i][obj_id] = False
-
     def __str__(self):
         properties_str = "\n".join([f"{prop}: {values}" for prop, values in self.properties.items()])
         relations_str = "\n".join([f"{rel}: {pairs}" for rel, pairs in self.relations.items()])
@@ -433,6 +439,11 @@ class Evaluator:
                             file.write(f"    {state_name}[{name}]=True\n")
             file.write("    #states_end\n\n")
 
+            file.write("    #char_states\n")
+            for state_name,state_value in self.character_state.items():
+                file.write(f"    {state_name}[char]={state_value}\n")
+            file.write("    #char_states_end\n\n")
+
             # Write char states
             file.write("    #char\n")
             for state_name, state_values in self.state.items():
@@ -440,7 +451,8 @@ class Evaluator:
                     if has_state and has_state != "uncertain":
                         if ("char" in state_name) or ("hold" in state_name):
                             name = next(name for name, id_ in self.name2opid.items() if id_ == i)
-                            file.write(f"    {state_name}[char,{name}]=True\n")
+                            if name!='char':
+                                file.write(f"    {state_name}[char,{name}]=True\n")
             file.write("    #char_end\n\n")
 
             # Write properties
@@ -561,6 +573,31 @@ class Evaluator:
                     else:
                         print('error in state updates')
 
+            # update character state
+            if observation['action'].name=='standup_executor':
+                self.character_state['standing']=True
+                self.character_state['sitting']=False
+                self.character_state['lying']=False
+                self.character_state['sleeping']=False
+            
+            if observation['action'].name=='sit_executor':
+                self.character_state['standing']=False
+                self.character_state['sitting']=True
+                self.character_state['lying']=False
+                self.character_state['sleeping']=False
+            
+            if observation['action'].name=='lie_executor':
+                self.character_state['standing']=False
+                self.character_state['sitting']=False
+                self.character_state['lying']=True
+                self.character_state['sleeping']=False
+            
+            if observation['action'].name=='sleep_executor':
+                self.character_state['standing']=False
+                self.character_state['sitting']=False
+                self.character_state['lying']=False
+                self.character_state['sleeping']=True
+
             record_action=['switchoff_executor','switchon_executor','put_executor','putin_executor','grab_executor','wash_executor','scrub_executor','rinse_executor','sit_executor','lie_executor','open_executor','close_executor','pour_executor','plugin_executor','plugout_executor','find_executor','turnto_executor','cut_executor','eat_executor','drink_executor','lookat_executor','wipe_executor','puton_executor','putoff_executor','read_executor','touch_executor','type_executor','watch_executor','move_executor','push_executor','pull_executor']
             # update used states
             action=observation['action']
@@ -569,6 +606,7 @@ class Evaluator:
                     used_obj_id=self.name2opid[argument.name]
                     self.state['used'][used_obj_id]=True
         self.save_to_file()
+        self.save_to_file(self.internal_executable_file_path)
         
 
     def get_state(self):
@@ -594,7 +632,12 @@ class Evaluator:
         if len(plans) == 0:
             print("Evaluator failed to find a plan")
             return False
-        print("Evaluator steps left:",len(plans[0]))
+        print("State:",len(plans[0]),"steps left")
+        left_actions=''
+        for action in plans[0]:
+            left_actions+=str(action)+';'
+        print("missed actions:",left_actions)
+
         # print("missed actions:",plans[0])
         return len(plans[0])==0
     
@@ -603,20 +646,40 @@ class Evaluator:
             goal_behavior_template=f"""\nbehavior __goal__():\n     body:\n         {key}()"""
             self.wrapped_keystates_func[key]=(self.keystates[key]+goal_behavior_template)
 
+    def debug(self):
+        try:
+            for keystate in self.keystates:
+                print(f"Checking keystate: {keystate}")
+                result = self.check_single_keystate(self.wrapped_keystates_func[keystate])
+            print("All keystates are correct")
+        except Exception as e:
+            print(f"Error in checking keystate: {keystate}")
+            print(e)
+
     def evaluate_actions(self,action_history):
-        action_history_set = set(action_history)
-        for action in self.required_actions:
-            if action not in action_history_set:
-                print(f"Action {action} not done")
-                return False
-        return True 
+        """
+        Check if the given action sequence matches the required sequence.
+        """
+        tokens = action_tokenize(self.task_data['Actions'])
+        parser = Parser(tokens)
+        expr = parser.parse()
+        sequences = generate_sequences(expr)
+        for seq in sequences:
+            if is_subsequence(seq, action_history):
+                return True
+        return False
 
     def evaluate_keystates(self,ast,Root=False):
         if Root:
             ast=self.goal_lt
         if isinstance(ast, PredicateNode):
             print("Evaluator is checking",ast.name)
-            return self.check_single_keystate(self.wrapped_keystates_func[ast.name])
+            if ast.name in self.achieved_keystates:
+                return True
+            result=self.check_single_keystate(self.wrapped_keystates_func[ast.name])
+            if result:
+                self.achieved_keystates.add(ast.name)
+            return result
         elif isinstance(ast, ThenNode):
             return self.evaluate_keystates(ast.left) and self.evaluate_keystates(ast.right)
         elif isinstance(ast, OrNode):
@@ -634,21 +697,23 @@ class Evaluator:
                 self.keystate_achieved_flag=True
             
         else:
-            print("Keystate achieved")
-                
+            print("State: Achieved")
+                 
         if not self.required_actions_achieved_flag:
             if self.required_actions:
-                extracted_actions=[]
-                for action in action_history:
-                        extracted_actions.append(action['action'])
-                self.required_actions_achieved_flag=self.evaluate_actions(extracted_actions)
+                self.required_actions_achieved_flag=self.evaluate_actions(action_history)
+                if self.required_actions_achieved_flag:
+                    print("Action: Achieved")
             else:
                 self.required_actions_achieved_flag=True
         else:
-            print("Required actions achieved")
+                print("Action: Achieved")
         if self.keystate_achieved_flag and self.required_actions_achieved_flag:
             print("Success")
         print('='*60,"Evaluation: End")
         return self.keystate_achieved_flag and self.required_actions_achieved_flag
         
     
+if __name__=='__main__':
+    task_path='/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/cdl_dataset/dataset/Cook_some_food/g4.txt'
+    evaluator=Evaluator(task_path)

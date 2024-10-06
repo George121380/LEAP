@@ -12,7 +12,7 @@ def sub_goal_evaluate_prompt(goal_representation,action_history,current_subgoal,
         objs+=str(obj)+'\n' 
     prompt="""
 ### Task Overview ###
-Evaluate whether the current sub-task has been completed by reviewing the actions taken and the information collected. Determine if the sub-task is complete and assess readiness to proceed to the next sub-task. Generally, you only need to check if all the necessary items for the task are present; their location and condition are usually correct. And the content in goal representation is achieved already. And you can assume all the actions mentioned below are executed correctly.
+Assess whether the current sub-task is complete by reviewing the actions taken and the information gathered. Focus on whether all necessary items are present, assuming their locations and conditions are correct. Confirm if the goals outlined in the goal representation have been achieved, as all mentioned actions are assumed executed correctly. A goal can be marked as complete as soon as a corresponding action occurs (e.g., turning a faucet on or off indicates water has been filled).
 
 ### Current Sub-Task ###
 """+current_subgoal+"""

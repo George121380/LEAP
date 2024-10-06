@@ -1,0 +1,190 @@
+Goal Representation,Debug Result,Action,Add Info,LLM Answer,Plan
+"['1. Find the bathroom sink.', '2. Wipe the bathroom sink.']",,,,,
+" 
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) 
+        # Select any instance categorized as a sink
+        achieve close_char(char, sink)
+        # Position the character close to the bathroom sink
+",,,,,['walk_executor(sink_42)']
+,,,,,"(CrowControllerApplier<walk_executor(sink_42)>,)"
+,,walk_executor(sink_42),"Find towel_rack_31. Find soap_2053. Find basket_for_clothes_2006. Find cleaning_solution_2073. Find 
+towel_rack_32. Find towel_rack_34. Robot is inside bathroom_1. Robot is close bathroom_counter_41. R
+obot is close sink_42. ",,
+,,,,"- Sub-Task Completed: Yes
+- Next Steps: You located the bathroom sink by walking to sink_42, confirming your proximity to it a
+nd to other relevant items like the bathroom counter. You are now ready to proceed to the next sub-t
+ask: wiping the bathroom sink.",
+" 
+def has_towel(neighboring: item):
+    # Determine if there is a towel nearby
+    symbol towel_nearby=exists towel: item : is_towel(towel) and close(towel, neighboring)
+    return towel_nearby
+
+def has_cleaning_solution(neighboring: item):
+    # Determine if there is cleaning solution nearby
+    symbol solution_nearby=exists solution: item : is_cleaning_solution(solution) and close(solution
+, neighboring)
+    return solution_nearby
+
+behavior clean_sink_with_towel_and_solution(towel: item, sink: item, solution: item):
+    body:
+        achieve_once inhand(towel)
+        # Hold the towel temporarily to clean
+        achieve_once inhand(solution)
+        # Hold the cleaning solution temporarily to clean
+        scrub(sink)
+        scrub(sink)
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and id[sink]==42
+        # Choose the sink with ID 42
+        
+        if has_towel(sink) and has_cleaning_solution(sink):
+            # Check if there are both a towel and cleaning solution nearby the sink
+            bind towel: item where:
+                is_towel(towel) and close(towel, sink)
+            # Choose a nearby towel to the sink
+            bind solution: item where:
+                is_cleaning_solution(solution) and close(solution, sink)
+            # Choose a nearby cleaning solution to the sink
+
+            clean_sink_with_towel_and_solution(towel, sink, solution)
+",,,,,['']
+" 
+def has_cleaning_solution_near_sink(sink:item):
+    # Function to check if there is a cleaning solution close to the specified sink
+    symbol has_solution=exists solution:item: is_cleaning_solution(solution) and close(solution, sin
+k)
+    return has_solution
+
+def has_towel():
+    # Function to check if a towel is present in the room
+    symbol towel_present=exists towel:item: is_towel(towel) and inside(towel, bathroom_1)
+    return towel_present
+
+behavior use_cleaning_solution(sink:item, cleaning_solution:item):
+    body:
+        achieve inside(cleaning_solution, sink) 
+        # Apply cleaning solution to the sink
+
+behavior use_towel(sink:item, towel:item):
+    body:
+        achieve inhand(towel)
+        scrub(sink)
+        achieve clean(sink)
+        # Use the towel to clean the sink, ensuring it is clean
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and id[sink] == 42
+        # Select sink with ID 42
+        
+        if has_cleaning_solution_near_sink(sink):
+            bind cleaning_solution: item where:
+                is_cleaning_solution(cleaning_solution) and close(cleaning_solution, sink)
+            use_cleaning_solution(sink, cleaning_solution)
+
+        if has_towel():
+            bind towel: item where:
+                is_towel(towel) and inside(towel, bathroom_1)
+            use_towel(sink, towel)
+","Error trying to process rule ""function_definition"":
+
+Unknown variable: bathroom_1; available variables: [Variable<towel: item>].",,,,
+" 
+def is_towel_available():
+    # Function to check if there is a towel available
+    symbol towel_available=exists towel:item: is_towel(towel) and (close(towel, sink_42) or on(towel
+, bathroom_counter_41))
+    return towel_available
+
+def is_cleaning_solution_available():
+    # Function to check if there is a cleaning solution available
+    symbol cleaning_solution_available=exists cleaning_solution:item: is_cleaning_solution(cleaning_
+solution) and close(cleaning_solution, sink_42)
+    return cleaning_solution_available
+
+behavior clean_sink_with_towel_and_solution(towel:item, cleaning_solution:item, sink:item):
+    body:
+        achieve_once inhand(towel)
+        achieve_once inhand(cleaning_solution)
+        scrub(sink)
+        # Scrub the sink with the cleaning solution
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and id[sink]==42
+        # Select sink with ID 42
+
+        assert is_towel_available()
+        # Ensure a towel is available
+        
+        assert is_cleaning_solution_available()
+        # Ensure a cleaning solution is available
+
+        bind towel: item where:
+            is_towel(towel) and (close(towel, sink) or on(towel, bathroom_counter_41))
+        # Select an available towel near the sink or on the bathroom counter
+
+        bind cleaning_solution: item where:
+            is_cleaning_solution(cleaning_solution) and close(cleaning_solution, sink)
+        # Select an available cleaning solution close to the sink
+
+        clean_sink_with_towel_and_solution(towel, cleaning_solution, sink)
+","Error trying to process rule ""function_definition"":
+
+Unknown variable: sink_42; available variables: [Variable<towel: item>].",,,,
+" 
+def has_cleaning_items(counter:item):
+    # Function to check if cleaning solution and towel are on the counter
+    symbol has_items = exists cleaning_solution: item : is_cleaning_solution(cleaning_solution) and 
+on(cleaning_solution, counter)
+    has_items = has_items and exists towel: item : is_towel(towel) and on(towel, counter)
+    return has_items
+
+behavior wipe_sink_with_items(sink:item, towel:item, cleaning_solution:item):
+    body:
+        achieve_once inhand(towel)
+        achieve_once inhand(cleaning_solution)
+        achieve clean(sink)
+        # Clean the sink using the towel and cleaning solution
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and id[sink]==42
+        # Select the sink with ID 42 that is in the bathroom
+        
+        bind counter: item where:
+            is_bathroom_counter(counter) and close(counter, sink)
+        # Select the bathroom counter that is near the sink
+        
+        if has_cleaning_items(counter):
+            # Check if the cleaning solution and towel are available on the counter
+            bind cleaning_solution: item where:
+                is_cleaning_solution(cleaning_solution) and on(cleaning_solution, counter)
+            # Select the cleaning solution on the counter
+            
+            bind towel: item where:
+                is_towel(towel) and on(towel, counter)
+            # Select the towel on the counter
+            
+            wipe_sink_with_items(sink, towel, cleaning_solution)
+            # Perform the wiping action on the sink with the towel and cleaning solution
+        
+        else:
+            # If necessary cleaning items are not on the counter, observe the counter for more infor
+mation
+            observe(counter, ""Check if there is a cleaning solution or towel"")
+","Unexpected token Token('VARNAME', 'towel') at line 2665, column 38.
+Expected one of: 
+	* _NEWLINE
+	* SEMICOLON
+",,,,

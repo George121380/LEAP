@@ -2,11 +2,21 @@ import re
 from prompt.auto_debug_prompt import not_found_prompt,unknown_prompt,other_prompt
 from concepts.dm.crow.parsers.cdl_parser import TransformationError
 from Interpretation import ask_GPT
-def auto_debug(error_info,original_content,goal_int,goal,additional_information,cat_list,goal_start_line_num,behavior_from_library):
+def auto_debug(error_info,original_content,goal_int,goal,additional_information,cat_list,goal_start_line_num,behavior_from_library_names):
     print('=' * 80)
     print("Debugging...")
     # print('=' * 80)
     # print("Error information: ",error_info)
+
+    behavior_from_library=''
+    if behavior_from_library_names!=None:
+        behavior_from_library='##Learned Behaviors:\n'
+        behavior_from_library+="Here are some of the skills you've learned, which you can use directly by passing in the corresponding parameters. When the behavior is related to the task, you should prioritize trying these behaviors."
+        for behavior in behavior_from_library_names:
+            if behavior!='':
+                behavior_from_library+="- "+behavior+'\n'
+        behavior_from_library+='Note: you can directly call these behaviors. Do not use achieve, achieve_once, or any other keywords with them.\n'
+
     if "Unknown variable" in error_info:
         error_variable = re.search(r"Unknown variable:\s*(\w+)", error_info)
         error_variable = error_variable.group(1)

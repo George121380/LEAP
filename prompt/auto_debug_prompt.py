@@ -346,8 +346,8 @@ My program is currently encountering an error. Please refer to the error message
 ## Precautions:
 - Ensure that the states, relationships, properties, and keywords used do not exceed the scope I provided. (Available states, relationships, properties, and keywords are listed below.)
 - If you invoke a function, ensure it’s properly defined, and include any necessary parameters when calling it.
+- When using the keyword achieve, it must only be followed by terms defined under ## Available States or ## Available Relationships. It is strictly prohibited to follow achieve with properties, custom symbols, or functions.
 - The behavior __goal__(): is required and functions similarly to the main function in Python; it should typically be placed at the end of your output without any parameters.
-- Double-check for any issues that might prevent the program from running, particularly in relation to the definitions and usage of transition models. Note that the __goal__ behavior should not be a transition model.
 
 ## Available States:
 Please note: The text following each hash symbol (#) is a comment and should not be included in the current sub-task goal representation. 

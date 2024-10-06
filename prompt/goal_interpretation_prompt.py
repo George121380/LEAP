@@ -1,4 +1,4 @@
-def get_goal_inter_prompt(goal,cat_list=None,additional_information=None,long_horizon_task=None,previous_subtasks=None,behavior_from_library_names=None):
+def get_goal_inter_prompt(goal,cat_list=None,additional_information=None,long_horizon_task=None,previous_subtasks=None,behavior_from_library_all=None):
     if additional_information==None or additional_information=='\n':
         additional_information="None"
     categories=""
@@ -12,8 +12,12 @@ def get_goal_inter_prompt(goal,cat_list=None,additional_information=None,long_ho
     if completed_tasks=="":
         completed_tasks="None, it is the first sub-task."
 
+    behavior_from_library_names=[]
+    for behavior in behavior_from_library_all['content']:
+        behavior_from_library_names.append(behavior.split('\n')[0].replace('behavior ','')[:-1])
+
     behavior_from_library=''
-    if behavior_from_library_names!=None:
+    if len(behavior_from_library_names)!=0:
         behavior_from_library='##Learned Behaviors:\n'
         behavior_from_library+="Here are some of the skills you've learned, which you can use directly by passing in the corresponding parameters. When the behavior is related to the task, you should prioritize trying these behaviors."
         for behavior in behavior_from_library_names:
@@ -31,8 +35,8 @@ Focus on the current sub-task's goal. Please analyze this goal and the additiona
 ## Precautions:
 - Ensure that the states, relationships, properties, and keywords used do not exceed the scope I provided. (Available states, relationships, properties, and keywords are listed below.)
 - If you invoke a function, ensure it’s properly defined, and include any necessary parameters when calling it.
+- When using the keyword achieve, it must only be followed by terms defined under ## Available States or ## Available Relationships. It is strictly prohibited to follow achieve with properties, custom symbols, or functions.
 - The behavior __goal__(): is required and functions similarly to the main function in Python; it should typically be placed at the end of your output without any parameters.
-- Double-check for any issues that might prevent the program from running, particularly in relation to the definitions and usage of transition models. Note that the __goal__ behavior should not be a transition model.
 
 ## Available States:
 Please note: The text following each hash symbol (#) is a comment and should not be included in the current sub-task goal representation. 

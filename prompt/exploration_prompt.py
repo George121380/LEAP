@@ -212,7 +212,6 @@ behavior find_{obj}_around_{LLM_chose_loc}({target_instance_name}:item):
         if can_open({loc_instance_name}_instance):
             achieve_once open({loc_instance_name}_instance)
             exp({target_instance_name},{loc_instance_name}_instance)
-            achieve_once closed({loc_instance_name}_instance)
         else:
             exp({target_instance_name},{loc_instance_name}_instance)
     eff:

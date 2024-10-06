@@ -29,7 +29,7 @@ def parse_args():
                         help="Specify the LLM model to be used. gpt-4o, deepseek")
     parser.add_argument('--library_extraction', type=str,
                         help="Specify the library extraction method to be used.")
-    parser.add_argument('--baseline', type=str,default='ours',
+    parser.add_argument('--model', type=str,default='ours',
                         help="ours, LLM, LLM+P, CAP")
     return parser.parse_args()
 
@@ -53,29 +53,37 @@ def select_random_file(dataset_path):
     selected_file = random.choice(files)
     return os.path.join(subdir_path, selected_file)
     
-def run(additional_information,classes,init_scene_graph,guidance):
+def run(args,additional_information,classes,init_scene_graph,guidance):
     task_path=select_random_file('cdl_dataset/dataset')
-    task_path='/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/cdl_dataset/dataset/Change_TV_channel/g2.txt'
+    task_path='/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/cdl_dataset/dataset/Drink/g1.txt'
     task_data=parse_file_to_json(task_path)
     print('='*60)
     print("Task Path is: ",task_path)
     print("Task Goal is: ",task_data['Goal'])
     print('='*60)
-    agent=VHAgent(init_path)
-    all_behaviors_from_library=agent.download_behaviors_from_library()
-    agent.set_human_helper(Human(init_scene_graph,guidance))
-    ini_human_instruction=agent.query_human(f"Can you give me some instruction about how to {task_data['Goal']}")
-    agent.set_initial_human_instruction(ini_human_instruction)
+
+    if args.model=='ours':
+        agent=VHAgent(init_path)
+        all_behaviors_from_library=agent.download_behaviors_from_library()
+        agent.set_human_helper(Human(init_scene_graph,guidance))
+        agent.set_initial_human_instruction(task_data['Goal'])
+        agent.reset_goal(task_data['Goal'],classes,task_data['Task name'],First_time=True)#ini a GR
+        Human_Guidance=[]
+        for sub_goal in agent.sub_goal_list:
+            Human_Guidance.append(agent.query_human(f'Can you teach me how to "{sub_goal.lower()}" ?'))
+            # print('Human Guidance: ',Human_Guidance[-1])
+            
+
+    if args.model=='LLM':
+        pass
+
+    if args.model=='LLM+P':
+        pass
+
+    if args.model=='CAP':
+        pass
+
     evaluator=Evaluator(task_path)
-    # question='Can you tell how to open the window?'
-    # print("Question: ",question)
-    # agent.query_human(question)
-    # question='Can you tell how to wash clothes by washing machine?'
-    # print("Question: ",question)
-    # agent.query_human(question)
-    # return
-    # agent.human_helper.QA("Can you help me to find basket_for_clothes_2006 ?")
-    agent.reset_goal(task_data['Goal'],additional_information,classes,task_data['Task name'],First_time=True)#ini a GR
     env=VH_Env(init_scene_graph)
     while True:
         action,plan = agent.act() #Planning   
@@ -93,11 +101,16 @@ def run(additional_information,classes,init_scene_graph,guidance):
         observation = env.step(action) #Execute action
         agent.updates(observation) #Update agent's state
         evaluator.updates(observation) #Update evaluator's state
-        evaluator.evaluate(ast=None,action_history=agent.add_info_action_history,Root=True)
+        evaluation_result=evaluator.evaluate(ast=None,action_history=agent.add_info_action_history,Root=True)
+        if evaluation_result:
+            env.report_actions()
+            print("Task Success")
+            return
 
-def evaluate():
+def evaluate(args):
     additional_information,classes,init_scene_graph,guidance=load_scene()
-    run(additional_information,classes,init_scene_graph,guidance)
+    run(args,additional_information,classes,init_scene_graph,guidance)
 
 if __name__ == '__main__':
-    evaluate()
+    args = parse_args()
+    evaluate(args)

@@ -11,7 +11,6 @@ from Interpretation import exploration_VH,sub_goal_generater,obs_query,sub_goal_
 from action_explaination import controller_to_natural_language
 import pdb
 
-
 class VHAgent:
     def __init__(self, filepath,PO=True):
         # Initialize dictionaries
@@ -23,6 +22,7 @@ class VHAgent:
         self.properties = {}
         self.relations = {}
         self.state = {}
+        self.character_state = {}
         self.exploration = {}
         self.download_mode='ALL' # how to download behaviors from library
         # Task information
@@ -73,7 +73,7 @@ class VHAgent:
 
     def download_behaviors_from_library(self):
         # download behaviors from the library
-        self.behaviors_from_library['content'],self.behaviors_from_library['names']=self.library.download_behaviors(self.task_name,self.current_subgoal_nl,self.download_mode)
+        self.behaviors_from_library['content'],self.behaviors_from_library['names'],self.behaviors_from_library['function_calls'],self.behaviors_from_library['behavior_calls']=self.library.download_behaviors(self.task_name,self.current_subgoal_nl,self.download_mode)
         return self.behaviors_from_library
 
     def reset_visited(self):
@@ -87,10 +87,23 @@ class VHAgent:
     def query_human(self,query:str):
         return self.human_helper.QA(query)
     
-    def set_initial_human_instruction(self,initial_instruction:str):
+    def ask_for_human_task_guidance(self):
+        self.current_sub_task_guided=True
+        Human_Guidance=self.query_human(f'Can you teach me how to "{self.current_subgoal_nl.lower()}" ?')
+        self.current_subtask_guidance=Human_Guidance
+        self.update_add_info()
+        logger.info("","","","",Human_Guidance,"")
+        self.record_add_info()
+        self.error_times=0
+    
+    def set_initial_human_instruction(self,goal):
         # debug used
-        if initial_instruction!="I don't know.":
-            self.add_info_human_instruction=initial_instruction
+        self.goal_nl=goal
+        ini_human_instruction=self.query_human(f"Can you tell me how to {self.goal_nl.lower()}")
+        if ini_human_instruction!="I don't know.":
+            self.add_info_human_instruction=f"To {self.goal_nl.replace('.',',').lower()} you can {ini_human_instruction.lower()}"
+        self.update_add_info()
+        
 
     def update_add_info(self):
         self.add_info_nl=''
@@ -124,6 +137,12 @@ class VHAgent:
         for feature in state_features:
             self.state[feature] = np.full(self.num_items , "uncertain", dtype=object)
 
+    def _initialize_character_states(self):
+        self.character_state['standing']=True
+        self.character_state['sitting']=False
+        self.character_state['lying']=False
+        self.character_state['sleeping']=False
+
     def _initialize_properties(self):
         property_features = [
             "surfaces", "grabbable", "sittable","lieable","hangable","drinkable","eatable","recipient","cuttable", "pourable", 
@@ -141,6 +160,7 @@ class VHAgent:
         self._initialize_relationships()
         self._initialize_properties()
         self._initialize_states()
+        self._initialize_character_states()
 
         # Initialize vectors with None values
         self.item_type = np.full(self.num_items, None, dtype=object)
@@ -161,11 +181,16 @@ class VHAgent:
         state_section = re.search(r'#states\n(.+?)#states_end', content, re.DOTALL).group(1)
         self._parse_state_section(state_section)
 
-        # Read char states
+        # Read char related states
         char_section = re.search(r'#char\n(.+?)#char_end', content, re.DOTALL)
         if char_section:
             char_section = char_section.group(1)
             self._parse_char_section(char_section)
+
+        char_state_section = re.search(r'#char_states\n(.+?)#char_states_end', content, re.DOTALL)
+        if char_state_section:
+            char_state_section = char_state_section.group(1)
+            self._parse_char_state_section(char_state_section)
 
         # Read properties
         property_section = re.search(r'#properties\n(.+?)#properties_end', content, re.DOTALL).group(1)
@@ -275,6 +300,22 @@ class VHAgent:
                     self.state.update({prop_name: new_state})
                 
                 self.state[prop_name][obj_id] = value
+
+    def _parse_char_state_section(self, section:str):
+        lines = section.strip().split("\n")
+        for line in lines:
+            if "=" in line:
+                key, value = line.split("=")
+                key = key.strip()
+                value = value.strip().lower() == "true"
+                prop_name = re.match(r'(\w+)\[(char)\]', key).groups()
+                
+                # Initialize property vector if not already done
+                if prop_name not in self.state:
+                    new_state = np.full(self.num_items , False, dtype=bool)
+                    self.state.update({prop_name: new_state})
+                
+                self.character_state[prop_name] = value
 
     def _parse_properties_section(self, section:str):
         lines = section.strip().split("\n")
@@ -423,6 +464,11 @@ class VHAgent:
                             name = next(name for name, id_ in self.name2opid.items() if id_ == i)
                             file.write(f"    {state_name}[{name}]=True\n")
             file.write("    #states_end\n\n")
+
+            file.write("    #char_states\n")
+            for state_name,state_value in self.character_state.items():
+                file.write(f"    {state_name}[char]={state_value}\n")
+            file.write("    #char_states_end\n\n")
 
             # Write char states
             file.write("    #char\n")
@@ -640,6 +686,31 @@ class VHAgent:
                 obs_information=self.organize_obs_result(observation['obs_result']) # Use observation information directly
                 action_effects+=f"Get this information: {obs_information}"
 
+            # update character state
+            if observation['action'].name=='standup_executor':
+                self.character_state['standing']=True
+                self.character_state['sitting']=False
+                self.character_state['lying']=False
+                self.character_state['sleeping']=False
+            
+            if observation['action'].name=='sit_executor':
+                self.character_state['standing']=False
+                self.character_state['sitting']=True
+                self.character_state['lying']=False
+                self.character_state['sleeping']=False
+            
+            if observation['action'].name=='lie_executor':
+                self.character_state['standing']=False
+                self.character_state['sitting']=False
+                self.character_state['lying']=True
+                self.character_state['sleeping']=False
+            
+            if observation['action'].name=='sleep_executor':
+                self.character_state['standing']=False
+                self.character_state['sitting']=False
+                self.character_state['lying']=False
+                self.character_state['sleeping']=True
+
             self.add_info_action_history.append({'action':str(observation['action']),'effects':action_effects})
             self.update_add_info()
             logger.info("","",str(observation['action']),action_effects,"","")
@@ -695,7 +766,7 @@ class VHAgent:
                     self.error_times+=1
                     if self.current_subgoal_num==0:
                         print('No plan found. Reset the whole goal')
-                        self.reset_goal(self.goal_nl,self.add_info_nl,self.classes,self.task_name,First_time=False,sub_goal=True)
+                        self.reset_goal(self.goal_nl,self.classes,self.task_name,First_time=False,sub_goal=True)
                     else:
                         print('No plan found. Reset the sub-goal')
                         self.reset_sub_goal()
@@ -707,7 +778,7 @@ class VHAgent:
                     print('plan is a empty list')
                     if self.current_subgoal_num==0:
                             print('No plan found. Reset the whole goal')
-                            self.reset_goal(self.goal_nl,self.add_info_nl,self.classes,self.task_name,First_time=False,sub_goal=True)
+                            self.reset_goal(self.goal_nl,self.classes,self.task_name,First_time=False,sub_goal=True)
                     else:
                         print('No plan found. Reset the sub-goal')
                         self.reset_sub_goal()
@@ -758,32 +829,24 @@ class VHAgent:
                     if self.current_subgoal_num==len(self.sub_goal_list):
                         print('All sub-tasks are done')
                         return "over",None
-                    else:
+                    
+                    else: # generate goal representation for next sub-task
                         self.current_subgoal_nl=self.sub_goal_list[self.current_subgoal_num]
-                        _,self.goal_representation,self.exploration_behavior,self.behaviors_from_library_representation=VH_pipeline(self.state_file_path,self.internal_executable_file_path,self.current_subgoal_nl,self.add_info_nl,self.goal_nl,self.sub_goal_list[:self.current_subgoal_num],self.classes,self.behaviors_from_library)
-                        self.reset_visited()
-                        self.save_to_file()
-                        self.save_to_file(self.state_file_path)
-                        self.newfind=True
+                        self.reset_sub_goal()
                         continue
+
                 action=self.plan[self.current_step]
                 self.current_step+=1
                 return action,self.plan
         # Beyond the max replan number
         if not self.current_sub_task_guided: # if not guided by human
-            self.current_sub_task_guided=True
-            Human_Guidance=self.query_human(f'Can you teach me how to "{self.current_subgoal_nl}" ?')
-            self.current_subtask_guidance=Human_Guidance
-            self.update_add_info()
-            logger.info("","","","",Human_Guidance,"")
-            self.record_add_info()
+            self.ask_for_human_task_guidance()
             self.reset_sub_goal()
-            self.error_times=0
             return "human guided",None
         else:
             return "Failed",None
 
-    def reset_goal(self,goal,additional_information,classes,task_name,First_time=False,sub_goal=True):
+    def reset_goal(self,goal,classes,task_name,First_time=False,sub_goal=True):
         """
         Args:
             goal: Full goal of the whole task
@@ -792,30 +855,44 @@ class VHAgent:
             First_time: whether it is the first time to set the goal
             sub_goal: whether we want to split the goal into sub-goals
         """
+        self.newfind=True
         if First_time:
             self.goal_nl=goal
-            self.add_info_nl=additional_information
             self.task_name=task_name
             self.record_add_info()
             self.classes=classes
-        if sub_goal:
-            self.sub_goal_list=sub_goal_generater(goal)
-            print(self.sub_goal_list)
-            logger.info(self.sub_goal_list,"","","","","")
-            self.current_subgoal_nl=self.sub_goal_list[0]
-            # pdb.set_trace()
-            _,self.goal_representation,self.exploration_behavior,self.behaviors_from_library_representation=VH_pipeline(self.state_file_path,self.internal_executable_file_path,self.current_subgoal_nl,additional_information,self.goal_nl,self.sub_goal_list[:self.current_subgoal_num],self.classes,self.behaviors_from_library)
-            # pdb.set_trace()
 
-        else:
-            _,self.goal_representation,self.exploration_behavior,self.behaviors_from_library_representation=VH_pipeline(self.state_file_path,self.internal_executable_file_path,goal,additional_information,None,self.classes,self.behaviors_from_library)
-        self.reset_visited()
-        self.record_goal_representation()
-        self.save_to_file()
-        self.save_to_file(self.state_file_path)
+        self.sub_goal_list=sub_goal_generater(goal)
+        print(self.sub_goal_list)
+        logger.info(self.sub_goal_list,"","","","","")
+        self.current_subgoal_nl=self.sub_goal_list[0]
+        # pdb.set_trace()
+        _,self.goal_representation,self.exploration_behavior,self.behaviors_from_library_representation=VH_pipeline(self.state_file_path,self.internal_executable_file_path,self.current_subgoal_nl,self.add_info_nl,self.goal_nl,self.sub_goal_list[:self.current_subgoal_num],self.classes,self.behaviors_from_library)
+        # pdb.set_trace()
+        if self.goal_representation==None:
+            if self.current_sub_task_guided:
+                print("Failed to generate the goal representation after asking for human guidance")
+                return
+            else: # Try again after asking for human guidance
+                self.ask_for_human_task_guidance()
+                _,self.goal_representation,self.exploration_behavior,self.behaviors_from_library_representation=VH_pipeline(self.state_file_path,self.internal_executable_file_path,self.current_subgoal_nl,self.add_info_nl,self.goal_nl,self.sub_goal_list[:self.current_subgoal_num],self.classes,self.behaviors_from_library)
+                if self.goal_representation==None:
+                    print("Failed to generate the goal representation after asking for human guidance")
+                    return
 
     def reset_sub_goal(self):
+        self.newfind=True
         _,self.goal_representation,self.exploration_behavior,self.behaviors_from_library_representation=VH_pipeline(self.state_file_path,self.internal_executable_file_path,self.current_subgoal_nl,self.add_info_nl,self.goal_nl,self.sub_goal_list[:self.current_subgoal_num],self.classes,self.behaviors_from_library)
+        if self.goal_representation==None:
+            if self.current_sub_task_guided:
+                print("Failed to generate the goal representation after asking for human guidance")
+                return
+            else: # Try again after asking for human guidance
+                self.ask_for_human_task_guidance()
+                _,self.goal_representation,self.exploration_behavior,self.behaviors_from_library_representation=VH_pipeline(self.state_file_path,self.internal_executable_file_path,self.current_subgoal_nl,self.add_info_nl,self.goal_nl,self.sub_goal_list[:self.current_subgoal_num],self.classes,self.behaviors_from_library)
+                if self.goal_representation==None:
+                    print("Failed to generate the goal representation after asking for human guidance")
+                    return
         self.reset_visited()
         self.record_goal_representation()
         self.save_to_file()

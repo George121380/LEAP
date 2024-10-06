@@ -2,10 +2,10 @@ def Guidance_helper_prompt(task,knowledge):
 
     kl=''
     for k in knowledge:
-        kl+=f'- {k}: {knowledge[k]}\n'
+        kl+=f'- {k}:\n {knowledge[k]}\n'
     prompt="""
 ### Task Instruction ###
-You have a household robot that is completing a task but encounters some difficulties and seeks your help. However, you are a responder with limited knowledge and can only provide specific information. If the robot's question goes beyond that specific information, you must reply with "I don't know."
+A household robot is trying to complete a task but encounters some difficulties and asks for your assistance. You can only provide specific information. If the robot's question is outside the scope of this information, respond with "I don't know."
 
 ### Robot's Question ###
 """+task+"""
@@ -14,7 +14,7 @@ You have a household robot that is completing a task but encounters some difficu
 """+kl+"""
 
 ### Output Format ###
-You must answer carefully. If the robot's question is not related to the info you can provide, you must say "I don't know." If the robot's question is relevant to the information you can provide, for example, if similar keywords and relevant content appear, answer using simple, clear natural language, as if you are teaching a child, with one short sentence. Please do not output in a numbered list; you should organize the content into a complete sentence.
+Answer precisely. If the robot's question does not match the available information, simply reply, "I don't know." If the question is relevant, respond with a concise and clear explanation, as if teaching a child, using one short sentence. Organize your response naturally without using a numbered list, and avoid changing verbs or the sequence of the original content.
 """
 
     return prompt
