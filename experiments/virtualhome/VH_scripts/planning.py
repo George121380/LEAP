@@ -8,7 +8,6 @@ import time
 
 sys.path.append('/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/embodied-agent-eval/src/VIRTUALHOME/AgentEval-main')
 sys.path.append('/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/utils')
-from logger import logger
 from virtualhome_eval.simulation.evolving_graph.eval_utils import *
 from Interpretation import goal_interpretation,exploration_VH
 from solver import goal_solver
@@ -50,6 +49,7 @@ def find_behavior_from_library(goal_representation, behavior_from_library):
     add_behaviors = ''
     add_functions = ''
     
+    behaviors_stack=[]
     # Build a mapping from behavior names to their indices for quick lookup
     behavior_name_to_index = {name: idx for idx, name in enumerate(behavior_from_library['names'])}
     
@@ -77,8 +77,8 @@ def find_behavior_from_library(goal_representation, behavior_from_library):
             return  # Behavior not found in the library
         
         # Add behavior content
-        nonlocal add_behaviors
-        add_behaviors += behavior_from_library['content'][idx] + '\n'
+        nonlocal behaviors_stack
+        behaviors_stack.append(behavior_from_library['content'][idx])
         
         # Add functions called by this behavior
         called_functions = behavior_from_library['function_calls'][idx]['function_calls']
@@ -101,6 +101,10 @@ def find_behavior_from_library(goal_representation, behavior_from_library):
         if function_content in processed_functions or function_content in defined_functions:
             continue
         add_functions += function_content + '\n'
+
+    behaviors_stack.reverse()
+    for behavior_content in behaviors_stack:
+        add_behaviors += behavior_content + '\n'
     
     # Combine functions and behaviors
     full_code = add_functions + add_behaviors
@@ -223,7 +227,7 @@ def VH_pipeline(state_file:str,execute_file:str,current_subgoal:str,add_info:str
                     plan=goal_solver(combined_content + "\n" + goal_int)
                     solver_end_time=time.time()
                     # print(f"Time for solving:{solver_end_time-solver_start_time:.4f}s")
-                    logger.info(goal_int,"","","","",plan)
+                    # logger.info(goal_int,"","","","",plan)
                     if loop:
                         pass
                     else:
@@ -237,7 +241,7 @@ def VH_pipeline(state_file:str,execute_file:str,current_subgoal:str,add_info:str
                     # print(f"Time for solving:{solver_end_time-solver_start_time:.4f}s")
                     error_info=e.errors
                     # print("Error information: ",error_info)
-                    logger.info(goal_int,error_info,"","","","")
+                    # logger.info(goal_int,error_info,"","","","")
                     with open(new_file_path, "r") as file:
                         for line_number, line in enumerate(file, start=1):
                             if '#goal_representation\n' in line:

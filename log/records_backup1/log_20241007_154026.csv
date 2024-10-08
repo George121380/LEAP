@@ -1,0 +1,261 @@
+Goal Representation,Debug Result,Action,Add Info,LLM Answer,Plan
+"['1. Find a cup and fill it with milk.', '2. Place the cup of milk in the microwave and heat it.']",,,,,
+" 
+def find_cup(cup:item):
+    # Determine if there is a known cup
+    symbol has_cup=exists c: item : is_cup(cup)
+    return has_cup
+
+def has_milk_on_kitchen(milk:item):
+    # Determine if there is milk in the kitchen
+    symbol has_milk=exists kitchen: item : is_kitchen(kitchen) and inside(milk, kitchen)
+    return has_milk
+
+behavior __goal__():
+    body:
+        bind cup: item where:
+            is_cup(cup)
+        # Select a cup
+        
+        bind milk: item where:
+            is_milk(milk) and has_milk_on_kitchen(milk)
+        # Select milk in the kitchen
+
+        achieve inside(milk, cup)
+        # Fill the cup with milk
+",,,,,[]
+"['1. Get a cup and pour milk into it.', '2. Place the cup of milk in the microwave and heat it.']",,,,,
+" 
+behavior clean_and_fill_cup_with_milk(cup:item, milk:item):
+    body:
+        achieve clean(cup) # Ensure the cup is clean
+        achieve_once inhand(cup) # Temporarily hold the cup
+        achieve inhand(milk) # Take the milk
+
+def has_faucet(sink:item):
+    # Determine whether this sink has a faucet
+    symbol has_faucet=exists faucet:item: is_faucet(faucet) and close(faucet,sink)
+    return has_faucet
+
+behavior clean_and_prepare_milk(cup:item, milk:item, sink:item):
+    body:
+        # The cup must be clean before filling it with milk
+        achieve_once clean(cup)
+        if has_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet,sink)
+            achieve_once is_on(faucet) # Turn on faucet if available
+            rinse(cup) # Rinse the cup
+            achieve_once is_off(faucet) # Turn off the faucet after
+        else:
+            rinse(cup) # Clean the cup as best as possible
+
+behavior __goal__():
+    body:
+        bind cup: item where:
+            is_cup(cup) and clean(cup)
+        # Ensure the selected cup is clean
+        bind milk: item where:
+            is_milk(milk)
+        # Select the milk item
+        bind sink: item where:
+            is_sink(sink)
+        # Select the sink
+        clean_and_fill_cup_with_milk(cup, milk)
+        # Ensure the cup is clean and fill it with milk
+",,,,,[]
+"['1. Pour milk into a cup.', '2. Heat the cup of milk in the microwave.']",,,,,
+" 
+def is_filled(cup:item):
+    # Determine if the item has milk poured into it
+    symbol filled=exists milk:item: is_milk(milk) and inside(milk, cup)
+    return filled
+
+behavior pour_milk_into_cup(milk:item, cup:item):
+    body:
+        achieve inside(milk, cup)
+
+behavior __goal__():
+    body:
+        bind milk: item where:
+            is_milk(milk)
+        # Bind the milk item
+
+        bind cup: item where:
+            is_cup(cup)
+        # Bind the cup item
+
+        if not is_filled(cup):
+            pour_milk_into_cup(milk, cup)
+            # Pour milk into the cup if its not already filled
+",,,,,"['walk_executor(cupboard_229); open_executor(cupboard_229); exp(cup_2063, cupboard_229); walk_execut
+or(fridge_289); switchoff_executor(fridge_289); open_executor(fridge_289); exp(milk_2043, fridge_289
+); walk_executor(milk_2043); grab_executor(milk_2043); walk_executor(cup_2063); putin_executor(milk_
+2043, cup_2063)']"
+,,,,,"(CrowControllerApplier<walk_executor(cupboard_229)>, CrowControllerApplier<open_executor(cupboard_22
+9)>, CrowControllerApplier<exp(cup_2063, cupboard_229)>, CrowControllerApplier<walk_executor(fridge_
+289)>, CrowControllerApplier<switchoff_executor(fridge_289)>, CrowControllerApplier<open_executor(fr
+idge_289)>, CrowControllerApplier<exp(milk_2043, fridge_289)>, CrowControllerApplier<walk_executor(m
+ilk_2043)>, CrowControllerApplier<grab_executor(milk_2043)>, CrowControllerApplier<walk_executor(cup
+_2063)>, CrowControllerApplier<putin_executor(milk_2043, cup_2063)>)"
+,,walk_executor(cupboard_229),"Find tray_296. Robot is inside dining_room_201. Robot is close wall_211. Robot is close cupboard_229
+. Robot is no longer inside bathroom_1.",,
+,,open_executor(cupboard_229),Robot is inside dining_room_201. Robot is close wall_211. Robot is close cupboard_229. ,,
+,,"exp(cup_2063, cupboard_229)",Failed to find cup_2063 around cupboard_229. ,,
+,,,,,"(CrowControllerApplier<walk_executor(kitchen_counter_230)>, CrowControllerApplier<exp(cup_2063, kitc
+hen_counter_230)>, CrowControllerApplier<walk_executor(fridge_289)>, CrowControllerApplier<switchoff
+_executor(fridge_289)>, CrowControllerApplier<open_executor(fridge_289)>, CrowControllerApplier<exp(
+milk_2043, fridge_289)>, CrowControllerApplier<walk_executor(milk_2043)>, CrowControllerApplier<grab
+_executor(milk_2043)>, CrowControllerApplier<walk_executor(cup_2063)>, CrowControllerApplier<putin_e
+xecutor(milk_2043, cup_2063)>)"
+,,walk_executor(kitchen_counter_230),"Find pot_2069. Find oil_2079. Find knife_2050. Find cutting_board_2051. Find cup_2064. Find cup_2063
+. Find napkin_2005. Find drawing_239. Find drawing_238. Find drawing_240. Find drawing_241. Find dra
+wing_242. Find drawing_243. Robot is inside dining_room_201. Robot is close kitchen_counter_230. Rob
+ot is no longer close wall_211.Robot is no longer close cupboard_229.",,
+,,"exp(cup_2063, kitchen_counter_230)",Find cup_2063. ,,
+,,walk_executor(fridge_289),"Find sauce_2078. Find food_steak_2008. Find food_apple_2009. Find food_bacon_2010. Find food_banana_
+2011. Find food_bread_2012. Find food_cake_2013. Find food_carrot_2014. Find food_cereal_2015. Find 
+food_cheese_2016. Find food_chicken_2017. Find food_dessert_2018. Find food_donut_2019. Find food_eg
+g_2020. Find food_fish_2021. Find food_food_2022. Find food_fruit_2023. Find food_hamburger_2024. Fi
+nd food_ice_cream_2025. Find food_jam_2026. Find food_kiwi_2027. Find food_lemon_2028. Find food_noo
+dles_2029. Find food_oatmeal_2030. Find food_orange_2031. Find food_onion_2032. Find food_peanut_but
+ter_2033. Find food_pizza_2034. Find food_potato_2035. Find food_rice_2036. Find food_salt_2037. Fin
+d food_snack_2038. Find food_sugar_2039. Find food_turkey_2040. Find food_vegetable_2041. Find dry_p
+asta_2042. Find milk_2043. Robot is inside dining_room_201. Robot is close sauce_2078. Robot is clos
+e fridge_289. Robot is close floor_202. Robot is close floor_203. Robot is close food_steak_2008. Ro
+bot is close food_apple_2009. Robot is close food_bacon_2010. Robot is close food_banana_2011. Robot
+ is close food_bread_2012. Robot is close food_cake_2013. Robot is close food_carrot_2014. Robot is 
+close food_cereal_2015. Robot is close food_cheese_2016. Robot is close food_chicken_2017. Robot is 
+close food_dessert_2018. Robot is close food_donut_2019. Robot is close food_egg_2020. Robot is clos
+e food_fish_2021. Robot is close food_food_2022. Robot is close food_fruit_2023. Robot is close food
+_hamburger_2024. Robot is close food_ice_cream_2025. Robot is close food_jam_2026. Robot is close fo
+od_kiwi_2027. Robot is close food_lemon_2028. Robot is close food_noodles_2029. Robot is close food_
+oatmeal_2030. Robot is close food_orange_2031. Robot is close food_onion_2032. Robot is close food_p
+eanut_butter_2033. Robot is close food_pizza_2034. Robot is close food_potato_2035. Robot is close f
+ood_rice_2036. Robot is close food_salt_2037. Robot is close food_snack_2038. Robot is close food_su
+gar_2039. Robot is close food_turkey_2040. Robot is close food_vegetable_2041. Robot is close dry_pa
+sta_2042. Robot is close milk_2043. Robot is no longer close kitchen_counter_230.",,
+,,switchoff_executor(fridge_289),"Robot is inside dining_room_201. Robot is close sauce_2078. Robot is close fridge_289. Robot is clos
+e floor_202. Robot is close floor_203. Robot is close food_steak_2008. Robot is close food_apple_200
+9. Robot is close food_bacon_2010. Robot is close food_banana_2011. Robot is close food_bread_2012. 
+Robot is close food_cake_2013. Robot is close food_carrot_2014. Robot is close food_cereal_2015. Rob
+ot is close food_cheese_2016. Robot is close food_chicken_2017. Robot is close food_dessert_2018. Ro
+bot is close food_donut_2019. Robot is close food_egg_2020. Robot is close food_fish_2021. Robot is 
+close food_food_2022. Robot is close food_fruit_2023. Robot is close food_hamburger_2024. Robot is c
+lose food_ice_cream_2025. Robot is close food_jam_2026. Robot is close food_kiwi_2027. Robot is clos
+e food_lemon_2028. Robot is close food_noodles_2029. Robot is close food_oatmeal_2030. Robot is clos
+e food_orange_2031. Robot is close food_onion_2032. Robot is close food_peanut_butter_2033. Robot is
+ close food_pizza_2034. Robot is close food_potato_2035. Robot is close food_rice_2036. Robot is clo
+se food_salt_2037. Robot is close food_snack_2038. Robot is close food_sugar_2039. Robot is close fo
+od_turkey_2040. Robot is close food_vegetable_2041. Robot is close dry_pasta_2042. Robot is close mi
+lk_2043. ",,
+,,open_executor(fridge_289),"Robot is inside dining_room_201. Robot is close sauce_2078. Robot is close fridge_289. Robot is clos
+e floor_202. Robot is close floor_203. Robot is close food_steak_2008. Robot is close food_apple_200
+9. Robot is close food_bacon_2010. Robot is close food_banana_2011. Robot is close food_bread_2012. 
+Robot is close food_cake_2013. Robot is close food_carrot_2014. Robot is close food_cereal_2015. Rob
+ot is close food_cheese_2016. Robot is close food_chicken_2017. Robot is close food_dessert_2018. Ro
+bot is close food_donut_2019. Robot is close food_egg_2020. Robot is close food_fish_2021. Robot is 
+close food_food_2022. Robot is close food_fruit_2023. Robot is close food_hamburger_2024. Robot is c
+lose food_ice_cream_2025. Robot is close food_jam_2026. Robot is close food_kiwi_2027. Robot is clos
+e food_lemon_2028. Robot is close food_noodles_2029. Robot is close food_oatmeal_2030. Robot is clos
+e food_orange_2031. Robot is close food_onion_2032. Robot is close food_peanut_butter_2033. Robot is
+ close food_pizza_2034. Robot is close food_potato_2035. Robot is close food_rice_2036. Robot is clo
+se food_salt_2037. Robot is close food_snack_2038. Robot is close food_sugar_2039. Robot is close fo
+od_turkey_2040. Robot is close food_vegetable_2041. Robot is close dry_pasta_2042. Robot is close mi
+lk_2043. ",,
+,,"exp(milk_2043, fridge_289)",Find milk_2043. ,,
+,,walk_executor(milk_2043),"Robot is inside dining_room_201. Robot is close fridge_289. Robot is close milk_2043. Robot is no lo
+nger close sauce_2078.Robot is no longer close floor_202.Robot is no longer close floor_203.Robot is
+ no longer close food_steak_2008.Robot is no longer close food_apple_2009.Robot is no longer close f
+ood_bacon_2010.Robot is no longer close food_banana_2011.Robot is no longer close food_bread_2012.Ro
+bot is no longer close food_cake_2013.Robot is no longer close food_carrot_2014.Robot is no longer c
+lose food_cereal_2015.Robot is no longer close food_cheese_2016.Robot is no longer close food_chicke
+n_2017.Robot is no longer close food_dessert_2018.Robot is no longer close food_donut_2019.Robot is 
+no longer close food_egg_2020.Robot is no longer close food_fish_2021.Robot is no longer close food_
+food_2022.Robot is no longer close food_fruit_2023.Robot is no longer close food_hamburger_2024.Robo
+t is no longer close food_ice_cream_2025.Robot is no longer close food_jam_2026.Robot is no longer c
+lose food_kiwi_2027.Robot is no longer close food_lemon_2028.Robot is no longer close food_noodles_2
+029.Robot is no longer close food_oatmeal_2030.Robot is no longer close food_orange_2031.Robot is no
+ longer close food_onion_2032.Robot is no longer close food_peanut_butter_2033.Robot is no longer cl
+ose food_pizza_2034.Robot is no longer close food_potato_2035.Robot is no longer close food_rice_203
+6.Robot is no longer close food_salt_2037.Robot is no longer close food_snack_2038.Robot is no longe
+r close food_sugar_2039.Robot is no longer close food_turkey_2040.Robot is no longer close food_vege
+table_2041.Robot is no longer close dry_pasta_2042.",,
+,,grab_executor(milk_2043),"Robot is inside dining_room_201. Robot is close fridge_289. Robot is close milk_2043. Grabbing milk_
+2043 by right hand. ",,
+,,walk_executor(cup_2063),"Robot is inside dining_room_201. Robot is close milk_2043. Robot is close kitchen_counter_230. Robot
+ is close cup_2063. Robot is no longer close fridge_289.",,
+,,"putin_executor(milk_2043, cup_2063)","Robot is inside dining_room_201. Robot is close milk_2043. Robot is close kitchen_counter_230. Robot
+ is close cup_2063. milk_2043 released by right hand. ",,
+,,,,"- Sub-Task Completed: Yes
+- Next Steps: You poured the milk into the cup as required for this sub-task. Now, proceed to heat t
+he cup of milk in the microwave as outlined in the next sub-task.",
+" 
+def inside_microwave(cup:item, microwave:item):
+    # Function to check if a cup is inside the microwave
+    symbol inside_microwave=exists room: item : is_microwave(room) and inside(cup, microwave)
+    return inside_microwave
+
+def is_heat_mode_available(microwave:item):
+    # Function to check if the heat mode is available for the microwave
+    return True # This assumes the microwave has a heat mode it may be prechecked manually
+
+behavior heat_in_microwave(cup:item, microwave:item):
+    body:
+        achieve inside(cup, microwave) # Place the cup inside the microwave
+        achieve closed(microwave) # Close the microwave
+        if is_heat_mode_available(microwave):
+            achieve is_on(microwave) # Turn on the microwave to heat
+
+behavior __goal__():
+    body:
+        bind cup: item where:
+            is_cup(cup)
+        # Select a cup
+        bind microwave: item where:
+            is_microwave(microwave)
+        # Select a microwave, assuming theres only one or the environment defines which to use
+        heat_in_microwave(cup, microwave) # Heat the cup in the microwave
+",,,,,"['walk_executor(microwave_297); switchoff_executor(microwave_297); open_executor(microwave_297); wal
+k_executor(cup_2063); grab_executor(cup_2063); walk_executor(microwave_297); putin_executor(cup_2063
+, microwave_297); close_executor(microwave_297); switchon_executor(microwave_297)']"
+,,,,,"(CrowControllerApplier<walk_executor(microwave_297)>, CrowControllerApplier<switchoff_executor(micro
+wave_297)>, CrowControllerApplier<open_executor(microwave_297)>, CrowControllerApplier<walk_executor
+(cup_2063)>, CrowControllerApplier<grab_executor(cup_2063)>, CrowControllerApplier<walk_executor(mic
+rowave_297)>, CrowControllerApplier<putin_executor(cup_2063, microwave_297)>, CrowControllerApplier<
+close_executor(microwave_297)>, CrowControllerApplier<switchon_executor(microwave_297)>)"
+,,walk_executor(microwave_297),"Robot is inside dining_room_201. Robot is close kitchen_counter_230. Robot is close microwave_297. R
+obot is no longer close milk_2043.Robot is no longer close cup_2063.",,
+,,switchoff_executor(microwave_297),Robot is inside dining_room_201. Robot is close kitchen_counter_230. Robot is close microwave_297. ,,
+,,open_executor(microwave_297),Robot is inside dining_room_201. Robot is close kitchen_counter_230. Robot is close microwave_297. ,,
+,,walk_executor(cup_2063),"Robot is inside dining_room_201. Robot is close kitchen_counter_230. Robot is close cup_2063. Robot 
+is no longer close microwave_297.",,
+,,grab_executor(cup_2063),"Robot is inside dining_room_201. Robot is close kitchen_counter_230. Robot is close cup_2063. Grabbi
+ng cup_2063 by right hand. ",,
+,,walk_executor(microwave_297),"Robot is inside dining_room_201. Robot is close kitchen_counter_230. Robot is close cup_2063. Robot 
+is close microwave_297. ",,
+,,"putin_executor(cup_2063, microwave_297)","Robot is inside dining_room_201. Robot is close kitchen_counter_230. Robot is close cup_2063. Robot 
+is close microwave_297. cup_2063 released by right hand. ",,
+,,close_executor(microwave_297),"Robot is inside dining_room_201. Robot is close kitchen_counter_230. Robot is close cup_2063. Robot 
+is close microwave_297. ",,
+,,switchon_executor(microwave_297),"Robot is inside dining_room_201. Robot is close kitchen_counter_230. Robot is close cup_2063. Robot 
+is close microwave_297. ",,
+19,walk_executor(cupboard_229),,,,
+19,open_executor(cupboard_229),,,,
+19,walk_executor(kitchen_counter_230),,,,
+19,walk_executor(fridge_289),,,,
+19,switchoff_executor(fridge_289),,,,
+19,open_executor(fridge_289),,,,
+19,walk_executor(milk_2043),,,,
+19,grab_executor(milk_2043),,,,
+19,walk_executor(cup_2063),,,,
+19,"putin_executor(milk_2043, cup_2063)",,,,
+19,walk_executor(microwave_297),,,,
+19,switchoff_executor(microwave_297),,,,
+19,open_executor(microwave_297),,,,
+19,walk_executor(cup_2063),,,,
+19,grab_executor(cup_2063),,,,
+19,walk_executor(microwave_297),,,,
+19,"putin_executor(cup_2063, microwave_297)",,,,
+19,close_executor(microwave_297),,,,
+19,switchon_executor(microwave_297),,,,

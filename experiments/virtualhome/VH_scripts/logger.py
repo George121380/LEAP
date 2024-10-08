@@ -5,7 +5,7 @@ from datetime import datetime
 k = 100  
 
 class CsvFormatter(logging.Formatter):
-    def __init__(self, k):
+    def __init__(self):
         super().__init__()
         self.k = k
 
@@ -62,18 +62,14 @@ class CsvHandler(logging.Handler):
         self.file.close()
         logging.Handler.close(self)
 
-def setup_logger(folder_path, k):
+def setup_logger(folder_path):
     logger = logging.getLogger('csv_logger')
     logger.setLevel(logging.INFO)
 
     # 设置自定义Csv处理器
     handler = CsvHandler(folder_path)
-    formatter = CsvFormatter(k)
+    formatter = CsvFormatter()
     handler.setFormatter(formatter)
     logger.addHandler(handler)
 
     return logger
-
-# 使用指定文件夹存储日志，并设置k的值
-folder_path = 'log/records'
-logger = setup_logger(folder_path, k)

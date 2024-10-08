@@ -1,7 +1,7 @@
 # from env_kitchen import Agent,KitchenEnvironment
 import sys
 import json
-
+import re
 sys.path.append('embodied-agent-eval/src/VIRTUALHOME/AgentEval-main/virtualhome_eval/simulation/evolving_graph')
 sys.path.append('cdl_dataset/scripts')
 
@@ -11,7 +11,7 @@ from env import VH_Env
 from environment import EnvironmentState, EnvironmentGraph
 import random
 import time
-from logger import logger
+from logger import setup_logger
 from human import Human
 from evaluation import Evaluator
 random.seed(time.time())
@@ -20,6 +20,7 @@ import os
 from dataset import parse_file_to_json
 
 init_path="experiments/virtualhome/CDLs/init_scene_PO.cdl"
+dataset_folder_path='cdl_dataset/dataset'
 
 import argparse
 
@@ -45,32 +46,49 @@ def load_scene():
     construct_cdl(init_path,objects,states,relationships,properties,cat_statement)
     return additional_information,classes,init_scene_graph,guidance
 
-def select_random_file(dataset_path):
-    subdirs = [d for d in os.listdir(dataset_path) if os.path.isdir(os.path.join(dataset_path, d))]
+def select_random_file(dataset_folder_path):
+    subdirs = [d for d in os.listdir(dataset_folder_path) if os.path.isdir(os.path.join(dataset_folder_path, d))]
     selected_subdir = random.choice(subdirs)
-    subdir_path = os.path.join(dataset_path, selected_subdir)
+    subdir_path = os.path.join(dataset_folder_path, selected_subdir)
     files = [f for f in os.listdir(subdir_path) if os.path.isfile(os.path.join(subdir_path, f))]
     selected_file = random.choice(files)
     return os.path.join(subdir_path, selected_file)
+
+def evaluation_task_loader(dataset_folder_path):
+    all_files=[]
+    subdirs = [d for d in os.listdir(dataset_folder_path) if os.path.isdir(os.path.join(dataset_folder_path, d))]
+    for subdir in subdirs:
+        subdir_path = os.path.join(dataset_folder_path, subdir)
+        files = [f for f in os.listdir(subdir_path) if os.path.isfile(os.path.join(subdir_path, f))]
+        for file in files:
+            if not 'bug' in file:
+                all_files.append(os.path.join(subdir,file))
+    # subdir_path = os.path.join(dataset_folder_path, selected_subdir)
+    # files = [f for f in os.listdir(subdir_path) if os.path.isfile(os.path.join(subdir_path, f))]
+    return all_files
     
-def run(args,additional_information,classes,init_scene_graph,guidance):
-    task_path=select_random_file('cdl_dataset/dataset')
-    task_path='/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/cdl_dataset/dataset/Drink/g1.txt'
+def run(args,task_path,classes,init_scene_graph,guidance):
+    folder_path = 'log/records'
+    logger = setup_logger(folder_path)
     task_data=parse_file_to_json(task_path)
     print('='*60)
     print("Task Path is: ",task_path)
     print("Task Goal is: ",task_data['Goal'])
     print('='*60)
+    evaluator=Evaluator(task_path)
 
     if args.model=='ours':
-        agent=VHAgent(init_path)
+        agent=VHAgent(init_path,logger)
         all_behaviors_from_library=agent.download_behaviors_from_library()
         agent.set_human_helper(Human(init_scene_graph,guidance))
-        agent.set_initial_human_instruction(task_data['Goal'])
+        # agent.set_initial_human_instruction(task_data['Goal'])
         agent.reset_goal(task_data['Goal'],classes,task_data['Task name'],First_time=True)#ini a GR
         Human_Guidance=[]
         for sub_goal in agent.sub_goal_list:
-            Human_Guidance.append(agent.query_human(f'Can you teach me how to "{sub_goal.lower()}" ?'))
+            question=re.sub(r'^\d+[\.\:]?\s*', '', sub_goal.lower())
+            question="Can you tell me how to "+question
+            answer=agent.query_human(question)
+            Human_Guidance.append(answer)
             # print('Human Guidance: ',Human_Guidance[-1])
             
 
@@ -83,7 +101,6 @@ def run(args,additional_information,classes,init_scene_graph,guidance):
     if args.model=='CAP':
         pass
 
-    evaluator=Evaluator(task_path)
     env=VH_Env(init_scene_graph)
     while True:
         action,plan = agent.act() #Planning   
@@ -107,10 +124,22 @@ def run(args,additional_information,classes,init_scene_graph,guidance):
             print("Task Success")
             return
 
-def evaluate(args):
-    additional_information,classes,init_scene_graph,guidance=load_scene()
-    run(args,additional_information,classes,init_scene_graph,guidance)
+def test_evaluate(args):
+    _,classes,init_scene_graph,guidance=load_scene()
+    # task_path=select_random_file(dataset_folder_path)
+    task_path='/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/cdl_dataset/dataset/Make_coffee/g2.txt'
+    run(args,task_path,classes,init_scene_graph,guidance)
+
+
+def evaluation(args):
+    _,classes,init_scene_graph,guidance=load_scene()
+    files=evaluation_task_loader(dataset_folder_path)
+    for task_file in files:
+        task_path=os.path.join(dataset_folder_path,task_file)
+        run(args,task_path,classes,init_scene_graph,guidance)
+
 
 if __name__ == '__main__':
     args = parse_args()
-    evaluate(args)
+    evaluation(args)
+    # test_evaluate(args)

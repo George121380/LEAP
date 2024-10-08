@@ -192,7 +192,7 @@ def is_subsequence(needle, haystack):
     haystack_len = len(haystack)
     i = 0
     for action in haystack:
-        if action == needle[i]:
+        if action['action'] == needle[i]:
             i += 1
             if i == needle_len:
                 return True

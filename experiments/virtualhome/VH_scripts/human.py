@@ -2,16 +2,42 @@ import numpy as np
 import re
 import sys
 import json
+from sentence_transformers import SentenceTransformer
+import faiss
 sys.path.append('/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/utils')
 from Interpretation import Exp_helper,Guidance_helper
 from environment import EnvironmentState, EnvironmentGraph
 
+import logging
+logging.getLogger('sentence_transformers').setLevel(logging.ERROR)
+import warnings
+warnings.filterwarnings('ignore', category=FutureWarning)
+import os
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 class Human:
     def __init__(self, scene_graph,knowledge):
         self.scene_graph = scene_graph
         self.name2id = {}
         self.knowledge=knowledge
+        ############################
+        self.RAG_model=SentenceTransformer('all-MiniLM-L6-v2')
+        self.init_RAG()
+        ############################
+
+    def init_RAG(self):
+        self.knowledge_embedding = self.RAG_model.encode(list(self.knowledge.keys()),clean_up_tokenization_spaces=False)
+        dimension = self.knowledge_embedding .shape[1]
+        self.index = faiss.IndexFlatL2(dimension)
+        self.index.add(np.array(self.knowledge_embedding))
+        self.knowledge_keys = list(self.knowledge.keys())
+        self.knowledge_values = list(self.knowledge.values())
+
+    def RAG_query(self,question):
+        question_embedding = self.RAG_model.encode(question,clean_up_tokenization_spaces=False)
+        D, I = self.index.search(np.reshape(question_embedding,(1,-1)), 5)
+        relavant_knowledge = {self.knowledge_keys[idx]: self.knowledge_values[idx] for idx in I[0]}
+        return relavant_knowledge
 
     def set_name2id(self,name2id):
         self.name2id = name2id
@@ -42,7 +68,10 @@ class Human:
             return answer
         
         if 'how to' in question: # ask for guidance
-            guidance=Guidance_helper(question,self.knowledge)
+            # guidance=Guidance_helper(question,self.knowledge)
+            RAG_query_result=self.RAG_query(question)
+            guidance=Guidance_helper(question,RAG_query_result)
+
             return guidance
     
     def check_related_edges(self,node_id):

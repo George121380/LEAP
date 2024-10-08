@@ -4,7 +4,7 @@ from execution import ScriptExecutor
 from utils import load_name_equivalence
 from utils_eval import transform_action,check_unexplorable
 from scripts import *
-from logger import logger
+# from logger import logger
 
 
 class VH_Env:
@@ -52,6 +52,15 @@ class VH_Env:
         else:
             raise Exception('Node name is not in the correct format.')
 
+    def add_edge(self, add_edge_list, add_relations):
+        if not any(
+            edge['from_name'] == add_relations['from_name'] and
+            edge['to_name'] == add_relations['to_name'] and
+            edge['relation_type'] == add_relations['relation_type']
+            for edge in add_edge_list
+        ):
+            add_edge_list.append(add_relations)
+
     def step(self, action):
         exp_flag=False
         exp_target=None
@@ -60,6 +69,7 @@ class VH_Env:
         obs_target=None
         question=None
         obs_result=None
+        new_relations=[]            
 
         remove_relations=[]
 
@@ -94,6 +104,11 @@ class VH_Env:
                     continue
                 for to_id in to_id_list:
                     self.graph.add_edge(state._graph.get_node(from_id), relation, state._graph.get_node(to_id))
+                    add_new_relation={}
+                    add_new_relation['from_id']=from_id
+                    add_new_relation['relation_type']=relation.name
+                    add_new_relation['to_id']=to_id
+                    new_relations.append(add_new_relation)
                     
             for edge in state._removed_edges_from:
                 from_id=edge[0]
@@ -127,9 +142,11 @@ class VH_Env:
             
         around_ids=[]
         state_updates={}
+        
         state_check_set=set()
-        relations_updates=[]
         known_updates=[]
+        relations_updates=[]
+
         for edge in self.graph.get_edges():
             if edge['from_id']==self.char.id:
                 add_relation={}
@@ -143,14 +160,24 @@ class VH_Env:
                 add_relation['from_name']=from_name
                 add_relation['to_name']=to_name
                 add_relation['relation_type']=edge['relation_type']
-                relations_updates.append(add_relation)
+                self.add_edge(relations_updates,add_relation)
                 to_obj=self.graph.get_node(edge['to_id'])
                 add_state[to_name]=list(to_obj.states)
                 state_updates.update(add_state)
                 state_check_set.add(to_name)
 
+        # debug=[]
+        # for edge in self.graph.get_edges():
+        #     if edge in new_relations:
+        #             print('debug')
+        #             debug.append(edge)
+        
         for edge in self.graph.get_edges():
-            if (edge['to_id'] in around_ids) or (edge['from_id'] in around_ids):
+            if ((edge['to_id'] in around_ids) or (edge['from_id'] in around_ids)) or (edge in new_relations):
+                #debug
+                # if edge in new_relations:
+                #     print('debug')
+                
                 add_relation={}
 
                 from_name=f"{self.graph.get_node(edge['from_id']).class_name}_{edge['from_id']}"
@@ -165,7 +192,7 @@ class VH_Env:
                 
                 from_room=self.find_room(edge['from_id'])
                 to_room=self.find_room(edge['to_id'])
-                if from_room!=self.char_room or to_room!=self.char_room:
+                if action.name=='walk_executor' and( from_room!=self.char_room or to_room!=self.char_room):
                     continue
 
 
@@ -173,7 +200,7 @@ class VH_Env:
                 add_relation['to_name']=to_name
                 add_relation['relation_type']=edge['relation_type']
 
-                relations_updates.append(add_relation)
+                self.add_edge(relations_updates,add_relation)
                 if from_name not in state_check_set:
                     add_state={}
                     add_state[from_name]=list(self.graph.get_node(edge['from_id']).states)
@@ -214,6 +241,6 @@ class VH_Env:
         action_num=len(self.action_record)
         for action in self.action_record:
             print(action)
-            logger.info(action_num,action,'','','','')
+            # logger.info(action_num,action,'','','','')
         print(f'Total number of actions: {action_num}')
 

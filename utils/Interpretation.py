@@ -10,7 +10,6 @@ from prompt.sub_goal_evaluate_prompt import sub_goal_evaluate_prompt
 from prompt.obs_query_prompt import obs_query_prompt
 import sys
 sys.path.append('experiments/virtualhome/VH_scripts')
-from logger import logger
 import time
 
 from prompt.QA.exp_helper_prompt import Exp_helper_prompt
@@ -78,7 +77,7 @@ def obs_query(observation,target_obj,question):
     content=obs_query_prompt(observation,target_obj,question)
     answer=ask_GPT(system,content)
     print(answer)
-    logger.info('','','','',answer,'')
+    # logger.info('','','','',answer,'')
     print('=' * 60)
     return answer
 
@@ -90,7 +89,7 @@ def sub_goal_evaluate(goal_representation,action_history,current_subgoal,full_go
     evaluation=ask_GPT(system,content)
     result, next_instructions = parse_evaluation(evaluation)
     print(evaluation)
-    logger.info('','','','',evaluation,'')
+    # logger.info('','','','',evaluation,'')
     print('=' * 60)
     return result, next_instructions
 

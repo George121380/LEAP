@@ -1,0 +1,81 @@
+Goal Representation,Debug Result,Action,Add Info,LLM Answer,Plan
+"['1. Locate the spectacles and place them on the coffee table in the home office.', '2. Find the boo
+k and put it on the coffee table in the home office.']",,,,,
+" 
+behavior locate_and_place_spectacles(spectacles: item, coffee_table: item, office: item):
+    body:
+        observe(spectacles, ""Where are the spectacles"")
+        achieve inside(spectacles, office)
+        achieve on(spectacles, coffee_table)
+
+behavior __goal__():
+    body:
+        bind coffee_table: item where:
+            is_coffee_table(coffee_table)
+        bind office: item where:
+            is_home_office(office)
+        bind spectacles: item where:
+            grabbable(spectacles)  # Assuming spectacles are grabbable
+        locate_and_place_spectacles(spectacles, coffee_table, office)
+",,,,,[]
+"['1. Find the spectacles and put them on the coffee table in the home office.', '2. Find the book an
+d put it on the coffee table in the home office.']",,,,,
+" 
+behavior find_spectacles_and_put_on_table(spectacles: item, home_office: item, coffee_table: item):
+    body:
+        achieve close_char(char, home_office)
+        # Ensure the character is in the home office
+
+        if not visited(spectacles):
+            # If spectacles havent been located yet, observe to find them
+            observe(home_office, ""Find the spectacles in the home office"")
+
+        achieve on(spectacles, coffee_table)
+        # Achieve the final state of placing spectacles on the coffee table
+
+behavior __goal__():
+    body:
+        bind home_office: item where:
+            is_home_office(home_office)
+        # Bind to the home office
+        
+        bind coffee_table: item where:
+            is_coffee_table(coffee_table) and inside(coffee_table, home_office)
+        # Bind to a coffee table inside the home office
+        
+        bind spectacles: item where:
+            grabbable(spectacles)
+        # Bind to spectacles that can be grabbed
+
+        find_spectacles_and_put_on_table(spectacles, home_office, coffee_table)
+",,,,,[]
+"['1. Find the spectacles and put them on the coffee table in the home office.', '2. Find the book an
+d put it on the coffee table in the home office.']",,,,,
+" 
+def in_home_office(table: item):
+    # Function to check if a table is in the home office
+    symbol in_home_office=exists room: item : is_home_office(room) and inside(table, room)
+    return in_home_office
+
+behavior find_spectacles(spectacles:item):
+    body:
+        observe(spectacles, ""Find the location of the spectacles"")
+        # Observe the surroundings to find the spectacles
+
+behavior place_on_coffee_table(item:item, table:item):
+    body:
+        achieve on(item, table)
+        # Place the item on the coffee table
+
+behavior __goal__():
+    body:
+        bind table: item where:
+            is_coffee_table(table) and in_home_office(table)
+        # Select a coffee table in the home office
+        
+        bind spectacles: item where:
+            grabbable(spectacles) # Assuming spectacles are grabbable
+        
+        find_spectacles(spectacles)
+        place_on_coffee_table(spectacles, table)
+",,,,,[]

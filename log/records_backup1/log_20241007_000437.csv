@@ -1,0 +1,917 @@
+Goal Representation,Debug Result,Action,Add Info,LLM Answer,Plan
+"['1. Locate the nearest faucet.', '2. Fill a cup with water from the faucet.']",,,,,
+" 
+behavior __goal__():
+    body:
+        if exists faucet: item : is_faucet(faucet) and not visited(faucet):
+            # If the faucet has not been visited, approach it
+            bind faucet: item where:
+                is_faucet(faucet) and not visited(faucet)
+            achieve close_char(char, faucet)
+
+        else:
+            # If the faucet has been visited, observe the surroundings to find others
+            foreach faucet: item:
+                if is_faucet(faucet) and not visited(faucet):
+                    observe(faucet, ""Check the location of this faucet"")
+",,,,,['walk_executor(faucet_43)']
+,,,,,"(CrowControllerApplier<walk_executor(faucet_43)>,)"
+,,walk_executor(faucet_43),"Find towel_rack_31. Find towel_rack_34. Find towel_rack_32. Robot is inside bathroom_1. Robot is clo
+se bathroom_counter_41. Robot is close faucet_43. ",,
+,,,,"- Sub-Task Completed: Yes
+- Next Steps: You walked to faucet_43 and confirmed its location as required by the sub-task.",
+" 
+behavior turn_on_faucet(faucet:item):
+    body:
+        achieve is_on(faucet)
+
+behavior fill_cup(cup:item):
+    body:
+        achieve has_water(cup)
+
+behavior turn_off_faucet(faucet:item):
+    body:
+        achieve is_off(faucet)
+
+behavior __goal__():
+    body:
+        bind faucet: item where:
+            is_faucet(faucet) and close_char(char, faucet)
+        # Select the faucet close to the character
+        
+        bind cup: item where:
+            is_cup(cup) and grabbable(cup)
+        # Select a grabbable cup
+        
+        achieve_once inhand(cup)
+        
+        turn_on_faucet(faucet)
+        
+        fill_cup(cup) 
+        
+        turn_off_faucet(faucet)
+",,,,,"['walk_executor(bathroom_cabinet_40); open_executor(bathroom_cabinet_40); exp(cup_2063, bathroom_cab
+inet_40); walk_executor(cup_2063); grab_executor(cup_2063); walk_executor(faucet_43); switchon_execu
+tor(faucet_43); switchoff_executor(faucet_43)']"
+,,,,,"(CrowControllerApplier<walk_executor(bathroom_cabinet_40)>, CrowControllerApplier<open_executor(bath
+room_cabinet_40)>, CrowControllerApplier<exp(cup_2063, bathroom_cabinet_40)>, CrowControllerApplier<
+walk_executor(cup_2063)>, CrowControllerApplier<grab_executor(cup_2063)>, CrowControllerApplier<walk
+_executor(faucet_43)>, CrowControllerApplier<switchon_executor(faucet_43)>, CrowControllerApplier<sw
+itchoff_executor(faucet_43)>)"
+,,walk_executor(bathroom_cabinet_40),"Robot is inside bathroom_1. Robot is close bathroom_cabinet_40. Robot is close wall_12. Robot is no 
+longer close bathroom_counter_41.Robot is no longer close faucet_43.",,
+,,open_executor(bathroom_cabinet_40),Robot is inside bathroom_1. Robot is close bathroom_cabinet_40. Robot is close wall_12. ,,
+,,"exp(cup_2063, bathroom_cabinet_40)",Failed to find cup_2063 around bathroom_cabinet_40. ,,
+" 
+behavior fill_cup_with_water(cup:item, faucet:item):
+    body:
+        achieve close_char(char, faucet) 
+        # Approach the faucet
+        achieve_once inhand(cup) 
+        # Hold the cup
+        achieve is_on(faucet) 
+        # Turn on the faucet
+        achieve has_water(cup)
+        # Fill the cup with water
+        achieve is_off(faucet)
+        # Turn off the faucet
+
+behavior __goal__():
+    body:
+        bind cup: item where:
+            is_cup(cup)
+        # Select a cup
+        bind faucet: item where:
+            is_faucet(faucet) and close_char(char, faucet)
+        # Select a faucet that is already close to the character
+        fill_cup_with_water(cup, faucet) 
+        # Execute the behavior of filling the cup with water
+",,,,,[]
+" 
+def has_faucet(sink:item):
+    # Determine whether this sink has a faucet
+    symbol has_faucet=exists faucet:item: is_faucet(faucet) and close(faucet,sink)
+    return has_faucet
+
+behavior fill_cup_with_water(cup:item, faucet:item):
+    body:
+        achieve_once inhand(cup) # Temporarily hold the cup
+        assert grabbable(cup)
+        assert is_cup(cup)
+        assert is_faucet(faucet)
+        # Ensure the cup is a grabbable item and the faucet is identified correctly
+        achieve close_char(char, faucet)
+        # Approach the faucet
+        if has_faucet(faucet):
+            achieve_once is_on(faucet)
+            # Turn on the faucet
+            achieve has_water(cup)
+            # Fill the cup with water
+            achieve_once is_off(faucet)
+            # Turn off the faucet after filling
+        
+behavior __goal__():
+    body:
+        bind faucet: item where:
+            is_faucet(faucet) and close_char(char, faucet)
+            # Select the faucet that is currently close to the character
+        
+        bind cup: item where:
+            is_cup(cup) and not visited(cup)
+            # Select a not yet visited cup
+        
+        fill_cup_with_water(cup, faucet)
+",,,,,[]
+" 
+def is_valid_cup(cup:item):
+    # Checks if the given item is a cup
+    symbol is_valid=is_cup(cup)
+    return is_valid
+
+behavior fill_cup_with_water(cup:item, faucet:item):
+    body:
+        achieve close_char(char, faucet) # Ensure the character is close to the faucet
+        achieve close_char(char, cup) # Ensure the character is close to the cup
+        achieve_inside(cup, faucet) # This ensures the cup can catch water from the faucet
+        achieve_once is_on(faucet) # Turn the faucet on
+        water(cup) # Fill the cup with water
+        achieve_once is_off(faucet) # Turn the faucet off
+
+behavior __goal__():
+    body:
+        bind faucet: item where:
+            is_faucet(faucet)
+            # Bind the nearest faucet
+        if exists cup: item : is_valid_cup(cup):
+            bind cup: item where:
+                is_valid_cup(cup)
+            fill_cup_with_water(cup, faucet)
+        else:
+            foreach bathroom_cabinet: item:
+                if is_bathroom_cabinet(bathroom_cabinet) and not visited(bathroom_cabinet):
+                    observe(bathroom_cabinet,""Find a cup"")
+","Error trying to process rule ""behavior_definition"":
+
+'Function achieve_inside not found. Note that recursive function calls are not supported in the curr
+ent version.'",,,,
+" 
+def is_valid_cup(cup:item):
+    # Checks if the given item is a cup
+    symbol is_valid=is_cup(cup)
+    return is_valid
+
+behavior fill_cup_with_water(cup:item, faucet:item):
+    body:
+        achieve close_char(char, faucet) # Ensure the character is close to the faucet
+        achieve close_char(char, cup) # Ensure the character is close to the cup
+        observe(faucet, ""Ensure the cup can catch water from the faucet"") # This ensures the cup can
+ catch water from the faucet
+        achieve_once is_on(faucet) # Turn the faucet on
+        water(cup) # Fill the cup with water
+        achieve_once is_off(faucet) # Turn the faucet off
+
+behavior __goal__():
+    body:
+        bind faucet: item where:
+            is_faucet(faucet)
+            # Bind the nearest faucet
+        if exists cup: item : is_valid_cup(cup):
+            bind cup: item where:
+                is_valid_cup(cup)
+            fill_cup_with_water(cup, faucet)
+        else:
+            foreach bathroom_cabinet: item:
+                if is_bathroom_cabinet(bathroom_cabinet) and not visited(bathroom_cabinet):
+                    observe(bathroom_cabinet, ""Find a cup"")
+","Error trying to process rule ""behavior_definition"":
+
+'Function water not found. Note that recursive function calls are not supported in the current versi
+on.'",,,,
+" 
+def is_valid_cup(cup:item):
+    # Checks if the given item is a cup
+    symbol is_valid=is_cup(cup)
+    return is_valid
+
+behavior fill_cup_with_water(cup:item, faucet:item):
+    body:
+        achieve close_char(char, faucet) # Ensure the character is close to the faucet
+        achieve close_char(char, cup) # Ensure the character is close to the cup
+        observe(faucet, ""Ensure the cup can catch water from the faucet"") # This ensures the cup can
+ catch water from the faucet
+        achieve_once is_on(faucet) # Turn the faucet on
+        is_sink(cup) # Fill the cup with water
+        achieve_once is_off(faucet) # Turn the faucet off
+
+behavior __goal__():
+    body:
+        bind faucet: item where:
+            is_faucet(faucet)
+            # Bind the nearest faucet
+        if exists cup: item : is_valid_cup(cup):
+            bind cup: item where:
+                is_valid_cup(cup)
+            fill_cup_with_water(cup, faucet)
+        else:
+            foreach bathroom_cabinet: item:
+                if is_bathroom_cabinet(bathroom_cabinet) and not visited(bathroom_cabinet):
+                    observe(bathroom_cabinet, ""Find a cup"")
+",,,,,[]
+,,,,"Grab a cup, walk to any faucet, turn on the faucet to fill the cup with water, and then turn off the
+ faucet.",
+" 
+def has_cup_nearby():
+    # Determine if theres a cup nearby
+    symbol has_cup=exists cup:item : is_cup(cup)
+    return has_cup
+
+def has_faucet_nearby():
+    # Determine if theres a faucet nearby
+    symbol has_faucet=exists faucet:item : is_faucet(faucet)
+    return has_faucet
+
+behavior get_water_in_cup(cup:item, faucet:item):
+    body:
+        achieve close_char(char, cup)
+        achieve_once inhand(cup)
+        # Ensure cup is in hand
+        achieve close_char(char, faucet)
+        # Be close to the faucet
+        achieve_once is_on(faucet)
+        # Turn on the faucet briefly
+        water(cup) # Filling the cup with water
+        achieve has_water(cup)
+        achieve_once is_off(faucet)
+        # Turn off the faucet
+
+behavior __goal__():
+    body:
+        if has_cup_nearby() and has_faucet_nearby():
+            bind cup: item where:
+                is_cup(cup)
+            # Select a nearby cup
+
+            bind faucet: item where:
+                is_faucet(faucet)
+            # Select a nearby faucet
+
+            get_water_in_cup(cup, faucet)
+
+        else:
+            if not has_cup_nearby():
+                # If theres no cup nearby, find one
+                foreach cup: item:
+                    if is_cup(cup) and not visited(cup):
+                        observe(cup, ""Check the position of the cup"")
+            if not has_faucet_nearby():
+                # If theres no faucet nearby, find one
+                foreach faucet: item:
+                    if is_faucet(faucet) and not visited(faucet):
+                        observe(faucet, ""Check the position of the faucet"")
+","Error trying to process rule ""behavior_definition"":
+
+'Function water not found. Note that recursive function calls are not supported in the current versi
+on.'",,,,
+" 
+def has_cup_nearby():
+    # Determine if theres a cup nearby
+    symbol has_cup=exists cup:item : is_cup(cup)
+    return has_cup
+
+def has_faucet_nearby():
+    # Determine if theres a faucet nearby
+    symbol has_faucet=exists faucet:item : is_faucet(faucet)
+    return has_faucet
+
+behavior get_water_in_cup(cup:item, faucet:item):
+    body:
+        achieve close_char(char, cup)
+        achieve_once inhand(cup)
+        # Ensure cup is in hand
+        achieve close_char(char, faucet)
+        # Be close to the faucet
+        achieve_once is_on(faucet)
+        # Turn on the faucet briefly
+        is_sink(cup) # Filling the cup with something from the sink
+        achieve has_water(cup)
+        achieve_once is_off(faucet)
+        # Turn off the faucet
+
+behavior __goal__():
+    body:
+        if has_cup_nearby() and has_faucet_nearby():
+            bind cup: item where:
+                is_cup(cup)
+            # Select a nearby cup
+
+            bind faucet: item where:
+                is_faucet(faucet)
+            # Select a nearby faucet
+
+            get_water_in_cup(cup, faucet)
+
+        else:
+            if not has_cup_nearby():
+                # If theres no cup nearby, find one
+                foreach cup: item:
+                    if is_cup(cup) and not visited(cup):
+                        observe(cup, ""Check the position of the cup"")
+            if not has_faucet_nearby():
+                # If theres no faucet nearby, find one
+                foreach faucet: item:
+                    if is_faucet(faucet) and not visited(faucet):
+                        observe(faucet, ""Check the position of the faucet"")
+",,,,,[]
+" 
+def has_faucet(close_item:item):
+    # Determine whether there is a faucet close to the item
+    symbol has_faucet=exists faucet:item: is_faucet(faucet) and close(faucet,close_item)
+    return has_faucet
+
+def in_bathroom_1(cabinet:item):
+    # Determine whether the item is inside bathroom_1
+    symbol in_bathroom_1=inside(bathroom_1, cabinet)
+    return in_bathroom_1
+
+behavior fill_cup_with_faucet(faucet:item, cup:item):
+    body:
+        achieve_once is_on(faucet)
+        # Temporarily turn on the faucet
+
+        achieve has_water(cup)
+        # Fill the cup with water from the faucet
+
+        achieve_once is_off(faucet)
+        # Turn off the faucet after filling
+
+behavior __goal__():
+    body:
+        bind faucet: item where:
+            is_faucet(faucet) and in_bathroom_1(faucet)
+        # Select a faucet inside bathroom_1 since the agent is located there already
+
+        if exists cabinet: item : is_bathroom_cabinet(cabinet) and in_bathroom_1(cabinet):
+            bind cabinet: item where:
+                is_bathroom_cabinet(cabinet) and in_bathroom_1(cabinet)
+            # Select bathroom cabinet in bathroom_1 for finding a cup
+            observe(cabinet, ""Find a cup inside the cabinet"")
+            # Look inside the cabinet for a cup if it hasnt been found yet
+
+        bind cup: item where:
+            is_cup(cup) and grabbable(cup)
+        # Make sure the cup can be grabbed
+        
+        achieve_once inhand(cup)
+        # Temporarily take the cup in hand
+
+        fill_cup_with_faucet(faucet, cup)
+        # Fill the cup with water using the selected faucet
+","Error trying to process rule ""function_definition"":
+
+Unknown variable: bathroom_1; available variables: [Variable<cabinet: item>].",,,,
+" 
+def has_faucet(close_item:item):
+    # Determine whether there is a faucet close to the item
+    symbol has_faucet=exists faucet:item: is_faucet(faucet) and close(faucet,close_item)
+    return has_faucet
+
+def in_bathroom_1(cabinet:item):
+    # Determine whether the item is inside bathroom_1
+    symbol in_bathroom_1=inside(bathroom_1, cabinet)
+    return in_bathroom_1
+
+behavior fill_cup_with_faucet(faucet:item, cup:item):
+    body:
+        achieve_once is_on(faucet)
+        # Temporarily turn on the faucet
+
+        achieve has_water(cup)
+        # Fill the cup with water from the faucet
+
+        achieve_once is_off(faucet)
+        # Turn off the faucet after filling
+
+behavior __goal__():
+    body:
+        bind bathroom_1: item where:
+            is_bathroom(bathroom_1)
+        bind faucet: item where:
+            is_faucet(faucet) and in_bathroom_1(faucet)
+        # Select a faucet inside bathroom_1 since the agent is located there already
+
+        if exists cabinet: item : is_bathroom_cabinet(cabinet) and in_bathroom_1(cabinet):
+            bind cabinet: item where:
+                is_bathroom_cabinet(cabinet) and in_bathroom_1(cabinet)
+            # Select bathroom cabinet in bathroom_1 for finding a cup
+            observe(cabinet, ""Find a cup inside the cabinet"")
+            # Look inside the cabinet for a cup if it hasnt been found yet
+
+        bind cup: item where:
+            is_cup(cup) and grabbable(cup)
+        # Make sure the cup can be grabbed
+        
+        achieve_once inhand(cup)
+        # Temporarily take the cup in hand
+
+        fill_cup_with_faucet(faucet, cup)
+        # Fill the cup with water using the selected faucet
+","Error trying to process rule ""function_definition"":
+
+Unknown variable: bathroom_1; available variables: [Variable<cabinet: item>].",,,,
+" 
+def has_faucet(close_item:item):
+    # Determine whether there is a faucet close to the item
+    symbol has_faucet=exists faucet:item: is_faucet(faucet) and close(faucet,close_item)
+    return has_faucet
+
+def in_bathroom_1(cabinet:item):
+    # Determine whether the item is inside bathroom_1
+    symbol in_bathroom_1=inside(bathroom_1, cabinet)
+    return in_bathroom_1
+
+behavior fill_cup_with_faucet(faucet:item, cup:item):
+    body:
+        achieve_once is_on(faucet)
+        # Temporarily turn on the faucet
+
+        achieve has_water(cup)
+        # Fill the cup with water from the faucet
+
+        achieve_once is_off(faucet)
+        # Turn off the faucet after filling
+
+behavior __goal__():
+    body:
+        bind bathroom_1: item where:
+            is_bathroom(bathroom_1)
+        bind faucet: item where:
+            is_faucet(faucet) and in_bathroom_1(faucet)
+        # Select a faucet inside bathroom_1 since the agent is located there already
+
+        if exists cabinet: item : is_bathroom_cabinet(cabinet) and in_bathroom_1(cabinet):
+            bind cabinet: item where:
+                is_bathroom_cabinet(cabinet) and in_bathroom_1(cabinet)
+            # Select bathroom cabinet in bathroom_1 for finding a cup
+            observe(cabinet, ""Find a cup inside the cabinet"")
+            # Look inside the cabinet for a cup if it hasnt been found yet
+
+        bind cup: item where:
+            is_cup(cup) and grabbable(cup)
+        # Make sure the cup can be grabbed
+        
+        achieve_once inhand(cup)
+        # Temporarily take the cup in hand
+
+        fill_cup_with_faucet(faucet, cup)
+        # Fill the cup with water using the selected faucet
+","Error trying to process rule ""function_definition"":
+
+Unknown variable: bathroom_1; available variables: [Variable<cabinet: item>].",,,,
+" 
+def has_faucet(sink:item):
+    # Determine whether there is a faucet close to the sink
+    symbol has_faucet=exists faucet: item : is_faucet(faucet) and close(faucet,sink)
+    return has_faucet
+
+behavior find_and_grab_cup():
+    body:
+        foreach o: item:
+            if is_cup(o) and grabbable(o) and not visited(o):
+                observe(o,""Check if it is a grabbable cup and grab it"")
+                if grabbable(o):
+                    return
+
+behavior fill_cup_with_water(faucet:item, cup:item):
+    body:
+        achieve_once inhand(cup)
+        achieve close_char(char, faucet)
+        achieve_once is_on(faucet)
+        water(cup)
+        achieve_once is_off(faucet)
+
+behavior __goal__():
+    body:
+        bind faucet: item where:
+            is_faucet(faucet) and close_char(char, faucet)
+        # Bind the current faucet where the character is close
+
+        find_and_grab_cup()
+        
+        bind cup: item where:
+            is_cup(cup) and inhand(cup)
+        
+        fill_cup_with_water(faucet, cup)
+","Unexpected token Token('_NEWLINE', '\n\n') at line 2667, column 27.
+Expected one of: 
+	* DO
+	* LONG_STRING
+	* BIN_NUMBER
+	* ELLIPSIS
+	* DEC_NUMBER
+	* HEX_NUMBER
+	* PLUS
+	* FORALL
+	* TILDE
+	* OCT_NUMBER
+	* STRING
+	* FALSE
+	* LSQB
+	* COLON
+	* FLOAT_NUMBER
+	* TRUE
+	* VARNAME
+	* NOT
+	* NONE
+	* EXISTS
+	* IMAG_NUMBER
+	* MINUS
+	* FINDALL
+	* LPAR
+	* FINDONE
+",,,,
+" 
+behavior find_and_open_bathroom_cabinet(bathroom_cabinet:item):
+    body:
+        achieve close_char(char, bathroom_cabinet)
+        achieve open(bathroom_cabinet)
+
+behavior search_cup_around(bathroom_cabinet:item):
+    body:
+        observe(bathroom_cabinet, ""Look for a grabbable cup"")
+
+behavior __goal__():
+    body:
+        bind faucet: item where:
+            is_faucet(faucet) and id[faucet]==43
+        bind bathroom_cabinet: item where:
+            is_bathroom_cabinet(bathroom_cabinet)
+
+        find_and_open_bathroom_cabinet(bathroom_cabinet)
+        search_cup_around(bathroom_cabinet)
+",,,,,"['obs(bathroom_cabinet_40, Look for a grabbable cup)']"
+,,,,,"(CrowControllerApplier<obs(bathroom_cabinet_40, Look for a grabbable cup)>,)"
+,,"obs(bathroom_cabinet_40, Look for a grabbable cup)","Get this information:  bathroom_cabinet_40 is on wall_12. bathroom_cabinet_40 is close to bathroom_c
+ounter_41. bathroom_cabinet_40 is close to sink_42. bathroom_cabinet_40 is close to faucet_43. bathr
+oom_cabinet_40 is close to wall_12. bathroom_cabinet_40 is close to wall_9. bathroom_cabinet_40 is c
+lose to ceiling_16. bathroom_cabinet_40 is close to drawing_176. bathroom_cabinet_40 is close to cei
+ling_21. bathroom_cabinet_40 is close to walllamp_27. bathroom_cabinet_40 is close to walllamp_28. b
+athroom_cabinet_40 is close to towel_rack_31. bathroom_cabinet_40 is close to character_65. bathroom
+_cabinet_40 is inside bathroom_1. bathroom_cabinet_40 is OPEN. bathroom_cabinet_40 is CLEAN.",,
+,,,,"- Sub-Task Completed: No
+- Next Steps: You need to find a cup to fill with water. Continue searching nearby locations for a g
+rabbable cup, as it was not found around bathroom_cabinet_40.",
+,,,"Human Instruction: You need to find a cup to fill with water. Continue searching nearby locations fo
+r a grabbable cup, as it was not found around bathroom_cabinet_40.
+
+Human Guidance: Grab a cup, walk to any faucet, turn on the faucet to fill the cup with water, and t
+hen turn off the faucet.
+The actions you have taken:
+Action 1: Walk to faucet_43. -> effect: Find towel_rack_31. Find towel_rack_34. Find towel_rack_32. 
+Robot is inside bathroom_1. Robot is close bathroom_counter_41. Robot is close faucet_43. 
+Action 2: Walk to bathroom_cabinet_40. -> effect: Robot is inside bathroom_1. Robot is close bathroo
+m_cabinet_40. Robot is close wall_12. Robot is no longer close bathroom_counter_41.Robot is no longe
+r close faucet_43.
+Action 3: Open bathroom_cabinet_40. -> effect: Robot is inside bathroom_1. Robot is close bathroom_c
+abinet_40. Robot is close wall_12. 
+Action 4: look for cup_2063 around bathroom_cabinet_40. -> effect: Failed to find cup_2063 around ba
+throom_cabinet_40. 
+Action 5: Observe around bathroom_cabinet_40 with the question of Look for a grabbable cup. -> effec
+t: Get this information:  bathroom_cabinet_40 is on wall_12. bathroom_cabinet_40 is close to bathroo
+m_counter_41. bathroom_cabinet_40 is close to sink_42. bathroom_cabinet_40 is close to faucet_43. ba
+throom_cabinet_40 is close to wall_12. bathroom_cabinet_40 is close to wall_9. bathroom_cabinet_40 i
+s close to ceiling_16. bathroom_cabinet_40 is close to drawing_176. bathroom_cabinet_40 is close to 
+ceiling_21. bathroom_cabinet_40 is close to walllamp_27. bathroom_cabinet_40 is close to walllamp_28
+. bathroom_cabinet_40 is close to towel_rack_31. bathroom_cabinet_40 is close to character_65. bathr
+oom_cabinet_40 is inside bathroom_1. bathroom_cabinet_40 is OPEN. bathroom_cabinet_40 is CLEAN.
+",,
+" 
+def has_grabbable_cup_faucet_location():
+    # Function to check nearby locations for a grabbable cup
+    symbol grabbable_cup_found = exists cup: item : is_cup(cup) and grabbable(cup) and close(cup, fa
+ucet)
+    return grabbable_cup_found
+
+behavior grab_cup(cup:item):
+    body:
+        achieve_once inhand(cup)
+        # Grasp the cup
+
+behavior fill_cup_with_water(cup:item, faucet:item):
+    body:
+        achieve close_char(char, faucet)
+        # Ensure in proximity to faucet
+        achieve_once is_on(faucet)
+        # Turn on the faucet to fill the cup
+        water(cup)
+        achieve_once is_off(faucet)
+        # Turn off the faucet after filling
+
+behavior __goal__():
+    body:
+        if has_grabbable_cup_faucet_location():
+            # If a grabbable cup is in close proximity to the faucet, proceed
+            bind cup: item where:
+                is_cup(cup) and grabbable(cup) and close(cup, faucet)
+            # Select a grabbable cup close to the faucet
+
+            grab_cup(cup)
+            # Pick up the cup
+            
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, bathroom_cabinet_40)
+            # Select a faucet close to bathroom_cabinet_40
+
+            fill_cup_with_water(cup, faucet)
+            # Fill the cup with water from the faucet
+
+        else:
+
+            observe(bathroom_counter_41, ""Look for any grabbable cup"")
+            # Observe the bathroom counter for a grabbable cup
+","Error trying to process rule ""function_definition"":
+
+Unknown variable: faucet; available variables: [Variable<cup: item>].",,,,
+" 
+def has_grabbable_cup_faucet_location():
+    # Function to check nearby locations for a grabbable cup
+    symbol grabbable_cup_found = exists cup: item : is_cup(cup) and grabbable(cup) and close(cup, fa
+ucet)
+    return grabbable_cup_found
+
+behavior grab_cup(cup:item):
+    body:
+        achieve_once inhand(cup)
+        # Grasp the cup
+
+behavior fill_cup_with_water(cup:item, faucet:item):
+    body:
+        achieve close_char(char, faucet)
+        # Ensure in proximity to faucet
+        achieve_once is_on(faucet)
+        # Turn on the faucet to fill the cup
+        water(cup)
+        achieve_once is_off(faucet)
+        # Turn off the faucet after filling
+
+behavior __goal__():
+    body:
+        bind faucet: item where:
+            is_faucet(faucet)
+        if has_grabbable_cup_faucet_location():
+            # If a grabbable cup is in close proximity to the faucet, proceed
+            bind cup: item where:
+                is_cup(cup) and grabbable(cup) and close(cup, faucet)
+            # Select a grabbable cup close to the faucet
+
+            grab_cup(cup)
+            # Pick up the cup
+            
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, bathroom_cabinet_40)
+            # Select a faucet close to bathroom_cabinet_40
+
+            fill_cup_with_water(cup, faucet)
+            # Fill the cup with water from the faucet
+
+        else:
+
+            observe(bathroom_counter_41, ""Look for any grabbable cup"")
+            # Observe the bathroom counter for a grabbable cup
+","Error trying to process rule ""function_definition"":
+
+Unknown variable: faucet; available variables: [Variable<cup: item>].",,,,
+" 
+def has_grabbable_cup_faucet_location():
+    # Function to check nearby locations for a grabbable cup
+    symbol grabbable_cup_found = exists cup: item : is_cup(cup) and grabbable(cup) and close(cup, fa
+ucet)
+    return grabbable_cup_found
+
+behavior grab_cup(cup:item):
+    body:
+        achieve_once inhand(cup)
+        # Grasp the cup
+
+behavior fill_cup_with_water(cup:item, faucet:item):
+    body:
+        achieve close_char(char, faucet)
+        # Ensure in proximity to faucet
+        achieve_once is_on(faucet)
+        # Turn on the faucet to fill the cup
+        water(cup)
+        achieve_once is_off(faucet)
+        # Turn off the faucet after filling
+
+behavior __goal__():
+    body:
+        bind faucet: item where:
+            is_faucet(faucet)
+        if has_grabbable_cup_faucet_location():
+            # If a grabbable cup is in close proximity to the faucet, proceed
+            bind cup: item where:
+                is_cup(cup) and grabbable(cup) and close(cup, faucet)
+            # Select a grabbable cup close to the faucet
+
+            grab_cup(cup)
+            # Pick up the cup
+            
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, bathroom_cabinet_40)
+            # Select a faucet close to bathroom_cabinet_40
+
+            fill_cup_with_water(cup, faucet)
+            # Fill the cup with water from the faucet
+
+        else:
+
+            observe(bathroom_counter_41, ""Look for any grabbable cup"")
+            # Observe the bathroom counter for a grabbable cup
+","Error trying to process rule ""function_definition"":
+
+Unknown variable: faucet; available variables: [Variable<cup: item>].",,,,
+" 
+def locate_grabbable_cup():
+    # Determine whether a grabbable cup is present in the scene
+    symbol is_cup_found=exists cup: item : is_cup(cup) and grabbable(cup)
+    return is_cup_found
+
+def is_sink_near_faucet(faucet:item):
+    # Determine whether a sink is close to the faucet
+    symbol is_near=exists sink: item : is_sink(sink) and close(sink, faucet)
+    return is_near
+
+behavior fill_cup_with_water(cup:item, faucet:item):
+    body:
+        achieve_once inhand(cup)
+        # Hold the cup to perform further actions
+
+        if is_sink_near_faucet(faucet):
+            bind sink: item where:
+                is_sink(sink) and close(sink, faucet)
+            # Identify a sink that is close to the faucet
+
+            achieve_once is_on(faucet)
+            water(cup)
+            # Fill the cup with water
+
+            achieve_once is_off(faucet)
+            # Turn off the faucet
+
+behavior __goal__():
+    body:
+        if locate_grabbable_cup():
+            bind cup: item where:
+                is_cup(cup) and grabbable(cup)
+            # Locate the grabbable cup
+
+            bind faucet: item where:
+                is_faucet(faucet) and close_char(char, faucet)
+            # Target the closest faucet for filling water into the cup
+
+            fill_cup_with_water(cup, faucet)
+        else:
+            # If no grabbable cup is found, initiate a search to find one
+            foreach item: item:
+                if is_cup(item) and not visited(item):
+                    observe(item, ""check if there is a grabbable cup nearby"")
+ ","Error trying to process rule ""behavior_definition"":
+
+'Function water not found. Note that recursive function calls are not supported in the current versi
+on.'",,,,
+" 
+def locate_grabbable_cup():
+    # Determine whether a grabbable cup is present in the scene
+    symbol is_cup_found=exists cup: item : is_cup(cup) and grabbable(cup)
+    return is_cup_found
+
+def is_sink_near_faucet(faucet:item):
+    # Determine whether a sink is close to the faucet
+    symbol is_near=exists sink: item : is_sink(sink) and close(sink, faucet)
+    return is_near
+
+behavior fill_cup_with_water(cup:item, faucet:item):
+    body:
+        achieve_once inhand(cup)
+        # Hold the cup to perform further actions
+
+        if is_sink_near_faucet(faucet):
+            bind sink: item where:
+                is_sink(sink) and close(sink, faucet)
+            # Identify a sink that is close to the faucet
+
+            achieve_once is_on(faucet)
+            is_sink(cup)
+            # Fill the cup with water
+
+            achieve_once is_off(faucet)
+            # Turn off the faucet
+
+behavior __goal__():
+    body:
+        if locate_grabbable_cup():
+            bind cup: item where:
+                is_cup(cup) and grabbable(cup)
+            # Locate the grabbable cup
+
+            bind faucet: item where:
+                is_faucet(faucet) and close_char(char, faucet)
+            # Target the closest faucet for filling water into the cup
+
+            fill_cup_with_water(cup, faucet)
+        else:
+            # If no grabbable cup is found, initiate a search to find one
+            foreach item: item:
+                if is_cup(item) and not visited(item):
+                    observe(item, ""check if there is a grabbable cup nearby"")
+","Error trying to process rule ""behavior_definition"":
+
+Number of bare expressions in the true and false branches are not consistent: 1 vs 0",,,,
+" 
+def in_the_bathroom(cup:item):
+    # Function to check if the cup is in the bathroom
+    symbol in_bathroom=exists room: item : is_bathroom(room) and inside(cup, room)
+    return in_bathroom
+
+behavior search_for_grabbable_cup():
+    body:
+        foreach cup: item:
+            if is_cup(cup) and grabbable(cup) and not visited(cup):
+                observe(cup, ""Check if grabbable cup is in bathroom"")
+
+behavior __goal__():
+    body:
+        if exists cup: item : is_cup(cup) and grabbable(cup) and in_the_bathroom(cup):
+            # Check if there is a grabbable cup in the bathroom
+            bind cup: item where:
+                is_cup(cup) and grabbable(cup) and in_the_bathroom(cup)
+            achieve_once inhand(cup)
+            # Take the grabbable cup in hand
+
+            bind faucet: item where:
+                is_faucet(faucet) and inside_char(char, bathroom_1) and close_char(char, faucet)
+            # Bind to the faucet that is physically reachable
+
+            achieve is_on(faucet)
+            achieve has_water(cup)
+            achieve is_off(faucet)
+        else:
+            search_for_grabbable_cup()
+            # If such a cup is not found, perform exploration to find one in the bathroom
+","Error trying to process rule ""behavior_definition"":
+
+Unknown variable: bathroom_1; available variables: [Variable<faucet: item>].",,,,
+" 
+def in_the_bathroom(cup:item):
+    # Function to check if the cup is in the bathroom
+    symbol in_bathroom=exists room: item : is_bathroom(room) and inside(cup, room)
+    return in_bathroom
+
+behavior search_for_grabbable_cup():
+    body:
+        foreach cup: item:
+            if is_cup(cup) and grabbable(cup) and not visited(cup):
+                observe(cup, ""Check if grabbable cup is in bathroom"")
+
+behavior __goal__():
+    body:
+        if exists cup: item : is_cup(cup) and grabbable(cup) and in_the_bathroom(cup):
+            # Check if there is a grabbable cup in the bathroom
+            bind cup: item where:
+                is_cup(cup) and grabbable(cup) and in_the_bathroom(cup)
+            achieve_once inhand(cup)
+            # Take the grabbable cup in hand
+
+            bind faucet: item where:
+                is_faucet(faucet) and inside_char(char, bathroom_1) and close_char(char, faucet)
+            # Bind to the faucet that is physically reachable
+
+            achieve is_on(faucet)
+            achieve has_water(cup)
+            achieve is_off(faucet)
+        else:
+            search_for_grabbable_cup()
+            # If such a cup is not found, perform exploration to find one in the bathroom
+
+# Supplement variable definition for bathroom_1
+symbol bathroom_1 = exists room: item : is_bathroom(room)
+","Unexpected token Token('SYMBOL', 'symbol') at line 2689, column 1.
+Expected one of: 
+	* ACTION
+	* _NEWLINE
+	* BEHAVIOR
+	* GOAL
+	* DEF
+	* CONTROLLER
+	* INIT
+	* FEATURE
+	* DOMAIN
+	* IMPORT
+	* OBJECTS
+	* UNDIRECTED_GENERATOR
+	* TYPEDEF
+	* $END
+	* GENERATOR
+	* _PRAGMA_KEYWORD
+Previous tokens: [Token('_NEWLINE', '\n            # If such a cup is not found, perform exploration
+ to find one in the bathroom\n\n# Supplement variable definition for bathroom_1\n')]
+",,,,

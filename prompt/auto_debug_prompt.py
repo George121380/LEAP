@@ -79,13 +79,13 @@ Important Note: The inhand(x) state is unique. If you intend to use inhand(x), y
 ## Available Relationships:
 Please note: The text following each hash symbol (#) is a comment and should not be included in the current sub-task goal representation. 
 - on(x: item, y: item) # item x is on top of item y
-- on_char(x: character, y: item) # character is on item y
+- on_char(x: character, y: item) # character is on item y (Character is you self. Any other animal like cat is an item)
 - inside(x: item, y: item) # item x is inside item y, and y should be a container
-- inside_char(x: character, y: item) # character is inside item y
+- inside_char(x: character, y: item) # character is inside item y (Character is you self. Any other animal like cat is an item)
 - close(x: item, y: item) # item x is close to item y
-- close_char(x: character, y: item) # character is close to item y
+- close_char(x: character, y: item) # character is close to item y (Character is you self. Any other animal like cat is an item)
 - facing(x: item, y: item) # item x is facing item y
-- facing_char(x: character, y: item) # character is facing item y
+- facing_char(x: character, y: item) # character is facing item y (Character is you self. Any other animal like cat is an item)
 Important Usage Notes: In relationships with the '_char' suffix, the first parameter must always be a char. For example, 'on' and 'on_char', 'inside' and 'inside_char', 'close' and 'close_char', 'facing' and 'facing_char'.
 
 ## Available Properties:
@@ -157,7 +157,7 @@ Examples:
 - soapy_water -> is_cleaning_solution(): If 'soapy_water' is not available, but 'cleaning_solution' is, use the latter as they are functionally similar.
 
 ## Syntax Rules and Keywords:
-"char" is a constant instance representing a character (yourself). The type "character" can only be used when defining an instance. Use "char" consistently when passing parameters, and use "character" when defining a variable and specifying its type.
+"char" is a constant instance representing a character (yourself) and we assume that other animals like cat is an item. The type "character" can only be used when defining an instance. Use "char" consistently when passing parameters, and use "character" when defining a variable and specifying its type.
 
 Below are all the keywords you can use to convert information into a structured format. Please ensure that you do not use any keywords other than those listed here.
 
@@ -369,13 +369,13 @@ Important Note: The inhand(x) state is unique. If you intend to use inhand(x), y
 ## Available Relationships:
 Please note: The text following each hash symbol (#) is a comment and should not be included in the current sub-task goal representation. 
 - on(x: item, y: item) # item x is on top of item y
-- on_char(x: character, y: item) # character is on item y
+- on_char(x: character, y: item) # character is on item y (Character is you self. Any other animal like cat is an item)
 - inside(x: item, y: item) # item x is inside item y, and y should be a container
-- inside_char(x: character, y: item) # character is inside item y
+- inside_char(x: character, y: item) # character is inside item y (Character is you self. Any other animal like cat is an item)
 - close(x: item, y: item) # item x is close to item y
-- close_char(x: character, y: item) # character is close to item y
+- close_char(x: character, y: item) # character is close to item y (Character is you self. Any other animal like cat is an item)
 - facing(x: item, y: item) # item x is facing item y
-- facing_char(x: character, y: item) # character is facing item y
+- facing_char(x: character, y: item) # character is facing item y (Character is you self. Any other animal like cat is an item)
 Important Usage Notes: In relationships with the '_char' suffix, the first parameter must always be a char. For example, 'on' and 'on_char', 'inside' and 'inside_char', 'close' and 'close_char', 'facing' and 'facing_char'.
 
 ## Available Properties:
@@ -447,7 +447,7 @@ Examples:
 - soapy_water -> is_cleaning_solution(): If 'soapy_water' is not available, but 'cleaning_solution' is, use the latter as they are functionally similar.
 
 ## Syntax Rules and Keywords:
-"char" is a constant instance representing a character (yourself). The type "character" can only be used when defining an instance. Use "char" consistently when passing parameters, and use "character" when defining a variable and specifying its type.
+"char" is a constant instance representing a character (yourself) and we assume that other animals like cat is an item. The type "character" can only be used when defining an instance. Use "char" consistently when passing parameters, and use "character" when defining a variable and specifying its type.
 
 Below are all the keywords you can use to convert information into a structured format. Please ensure that you do not use any keywords other than those listed here.
 

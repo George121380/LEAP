@@ -4,7 +4,6 @@ sys.path.append('/Users/liupeiqi/workshop/Research/Instruction_Representation/lp
 import concepts.dm.crow as crow
 import numpy as np
 import re
-from logger import logger
 from library import behavior_library
 from experiments.virtualhome.VH_scripts.planning import VH_pipeline
 from Interpretation import exploration_VH,sub_goal_generater,obs_query,sub_goal_evaluate
@@ -12,8 +11,11 @@ from action_explaination import controller_to_natural_language
 import pdb
 
 class VHAgent:
-    def __init__(self, filepath,PO=True):
+    def __init__(self, filepath,logger,PO=True):
         # Initialize dictionaries
+
+        self.logger=logger
+
         self.name2opid = {}
         self.name2id = {}
         self.num_items = 0 # Record how mani items in the scene
@@ -30,6 +32,7 @@ class VHAgent:
         self.goal_nl=''
         self.current_subgoal_nl=''
         self.current_subgoal_num=0
+        self.self_evaluate_num=0
         self.current_sub_task_guided=False
         self.sub_goal_list=[]
         self.add_info_nl=''
@@ -92,7 +95,7 @@ class VHAgent:
         Human_Guidance=self.query_human(f'Can you teach me how to "{self.current_subgoal_nl.lower()}" ?')
         self.current_subtask_guidance=Human_Guidance
         self.update_add_info()
-        logger.info("","","","",Human_Guidance,"")
+        self.logger.info("","","","",Human_Guidance,"")
         self.record_add_info()
         self.error_times=0
     
@@ -132,7 +135,7 @@ class VHAgent:
     def _initialize_states(self):
         state_features = [
             "is_on", "is_off", "open", "closed", "dirty", 
-            "clean", "plugged", "unplugged", "facing_char","on_char", "on_body","close_char", "inside_char","holds_rh", "holds_lh",'visited'
+            "clean", "plugged", "unplugged", "facing_char","on_char", "on_body","close_char", "inside_char","holds_rh", "holds_lh",'has_water','cut','visited'
         ]
         for feature in state_features:
             self.state[feature] = np.full(self.num_items , "uncertain", dtype=object)
@@ -654,11 +657,11 @@ class VHAgent:
                     if self.exp_fail_num==5:
                         human_answer=self.query_human(f'Can you help me to find {exp_target} ?')
                         print(f'Query human about the location of {exp_target}.')
-                        logger.info("","","","",human_answer,"")
+                        self.logger.info("","","","",human_answer,"")
                         self.exp_fail_num=0
                         self.add_info_human_instruction+=human_answer+'\n'
                         self.update_add_info()
-                        logger.info("","","",self.add_info_nl,"","")
+                        self.logger.info("","","",self.add_info_nl,"","")
                         self.record_add_info()
 
                     self.exp_fail_num+=1
@@ -710,13 +713,40 @@ class VHAgent:
                 self.character_state['sitting']=False
                 self.character_state['lying']=False
                 self.character_state['sleeping']=True
+            
+            self.annotation(observation)
 
             self.add_info_action_history.append({'action':str(observation['action']),'effects':action_effects})
             self.update_add_info()
-            logger.info("","",str(observation['action']),action_effects,"","")
+            self.logger.info("","",str(observation['action']),action_effects,"","")
             self.record_add_info()
             self.save_to_file()
             self.save_to_file(self.state_file_path)   
+
+    def annotation(self,observation):
+        if observation['action'].name=='switchon_executor' and 'faucet' in observation['action'].arguments[0].name:
+            faucet_id=self.name2opid[observation['action'].arguments[0].name]
+            rh = set(np.where(self.state['holds_rh'] == True)[0])
+            lh = set(np.where(self.state['holds_lh'] == True)[0])
+            close_obj=set(np.where(self.relations['close'][faucet_id] == True)[0])
+            container=set(np.where(self.properties['containers'] == True)[0])
+            close_containers=close_obj.intersection(container)
+
+            union_indices = rh.union(lh)
+            for i in union_indices or close_containers:
+                if self.properties['containers'][i]:
+                    self.state['has_water'][i]=True
+
+        if observation['action'].name=='cut_executor':
+            target_id=self.name2opid[observation['action'].arguments[0].name]
+            knife_id=self.name2opid['knife_2050']
+            rh = set(np.where(self.state['holds_rh'] == True)[0])
+            lh = set(np.where(self.state['holds_lh'] == True)[0])
+            union_indices = rh.union(lh)
+            if knife_id in union_indices:
+                self.state['cut'][target_id]=True
+
+
 
     def organize_obs_result(self,observation):
         discription=''
@@ -787,7 +817,7 @@ class VHAgent:
                 # When the plan is found, we need to lift the behaviors to the library
 
                 print('Plan found:', plan)
-                logger.info("","","","","",str(plan))
+                self.logger.info("","","","","",str(plan))
                 action = plan[0]
                 self.current_step=1
                 self.plan=plan
@@ -800,8 +830,11 @@ class VHAgent:
                     ########## evaluate subgoal start ###########
                     while True:
                         result,insrtuctions=self.evaluate_current_subgoal()
+                        self.self_evaluate_num+=1
+                        
                         if result.lower()=='yes':
                             #move to next subgoal
+                            self.self_evaluate_num=0
                             print('Sub-task is done')
                             self.lift_behaviors()
                             self.current_subgoal_num+=1
@@ -809,11 +842,20 @@ class VHAgent:
                             self.current_subtask_guidance=''
                             break
                             
+                        if self.self_evaluate_num==3:
+                            self.self_evaluate_num=0
+                            print('Try to evaluate the sub-task for 3 times, but still failed. Force to move to the next sub task')
+                            result='yes'
+                            self.current_subgoal_num+=1
+                            self.current_sub_task_guided=False # reset the guided flag
+                            self.current_subtask_guidance=''
+                            break
+
                         if result.lower()=='no':
                             # regenerate the subgoal
                             self.add_info_human_instruction=insrtuctions+'\n'
                             self.update_add_info()
-                            logger.info("","","",self.add_info_nl,"","")
+                            self.logger.info("","","",self.add_info_nl,"","")
                             self.reset_sub_goal()
                             self.newfind=True
                             self.record_add_info()
@@ -864,7 +906,7 @@ class VHAgent:
 
         self.sub_goal_list=sub_goal_generater(goal)
         print(self.sub_goal_list)
-        logger.info(self.sub_goal_list,"","","","","")
+        self.logger.info(self.sub_goal_list,"","","","","")
         self.current_subgoal_nl=self.sub_goal_list[0]
         # pdb.set_trace()
         _,self.goal_representation,self.exploration_behavior,self.behaviors_from_library_representation=VH_pipeline(self.state_file_path,self.internal_executable_file_path,self.current_subgoal_nl,self.add_info_nl,self.goal_nl,self.sub_goal_list[:self.current_subgoal_num],self.classes,self.behaviors_from_library)

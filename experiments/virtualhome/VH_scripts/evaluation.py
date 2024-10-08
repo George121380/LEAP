@@ -137,7 +137,7 @@ class Evaluator:
     def _initialize_states(self):
         state_features = [
             "is_on", "is_off", "open", "closed", "dirty", 
-            "clean", "plugged", "unplugged", "facing_char","on_char", "on_body","close_char", "inside_char","holds_rh", "holds_lh",'visited','used'
+            "clean", "plugged", "unplugged", "facing_char","on_char", "on_body","close_char", "inside_char","holds_rh", "holds_lh",'has_water','cut','visited','used'
         ]
         for feature in state_features:
             self.state[feature] = np.full(self.num_items , "uncertain", dtype=object)
@@ -605,10 +605,34 @@ class Evaluator:
                 for argument in action.arguments:
                     used_obj_id=self.name2opid[argument.name]
                     self.state['used'][used_obj_id]=True
+        self.annotation(observation)
         self.save_to_file()
         self.save_to_file(self.internal_executable_file_path)
         
 
+    def annotation(self,observation):
+        if observation['action'].name=='switchon_executor' and 'faucet' in observation['action'].arguments[0].name:
+            faucet_id=self.name2opid[observation['action'].arguments[0].name]
+            rh = set(np.where(self.state['holds_rh'] == True)[0])
+            lh = set(np.where(self.state['holds_lh'] == True)[0])
+            close_obj=set(np.where(self.relations['close'][faucet_id] == True)[0])
+            container=set(np.where(self.properties['containers'] == True)[0])
+            close_containers=close_obj.intersection(container)
+
+            union_indices = rh.union(lh)
+            for i in union_indices or close_containers:
+                if self.properties['containers'][i]:
+                    self.state['has_water'][i]=True
+
+        if observation['action'].name=='cut_executor':
+            target_id=self.name2opid[observation['action'].arguments[0].name]
+            knife_id=self.name2opid['knife_2050']
+            rh = set(np.where(self.state['holds_rh'] == True)[0])
+            lh = set(np.where(self.state['holds_lh'] == True)[0])
+            union_indices = rh.union(lh)
+            if knife_id in union_indices:
+                self.state['cut'][target_id]=True
+    
     def get_state(self):
         # Get the current CDL state of the agent, "problem" will be used by CDL Solver
         domain = crow.load_domain_file(self.basic_domain_knowledge_file_path)
