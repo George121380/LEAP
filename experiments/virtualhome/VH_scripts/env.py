@@ -239,8 +239,11 @@ class VH_Env:
         print('='*60)
         print('Task Summary:')
         action_num=len(self.action_record)
+        action_history=[]
         for action in self.action_record:
             print(action)
+            action_history.append(action)
             # logger.info(action_num,action,'','','','')
         print(f'Total number of actions: {action_num}')
+        return action_history
 

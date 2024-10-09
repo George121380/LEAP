@@ -4,7 +4,7 @@ import json
 import re
 sys.path.append('embodied-agent-eval/src/VIRTUALHOME/AgentEval-main/virtualhome_eval/simulation/evolving_graph')
 sys.path.append('cdl_dataset/scripts')
-
+from datetime import datetime
 from experiments.virtualhome.VH_scripts.agent import VHAgent
 from utils_eval import get_nodes_information,construct_cdl
 from env import VH_Env
@@ -66,10 +66,19 @@ def evaluation_task_loader(dataset_folder_path):
     # subdir_path = os.path.join(dataset_folder_path, selected_subdir)
     # files = [f for f in os.listdir(subdir_path) if os.path.isfile(os.path.join(subdir_path, f))]
     return all_files
+
+def task_summary_record(epoch_logger,task_name,goal,action_history,evaluation_result,complete_rate,counting):
+    epoch_logger.info(task_name,goal,action_history,evaluation_result,complete_rate,counting)
+    # pass
     
-def run(args,task_path,classes,init_scene_graph,guidance):
-    folder_path = 'log/records'
-    logger = setup_logger(folder_path)
+def run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph,guidance):
+
+    c=os.path.basename(os.path.dirname(task_path))
+    g_index=os.path.basename(task_path).replace('.txt','')
+    log_name=c+'_'+g_index
+
+    folder_path = f'log/epoch_{timestamp}/records'
+    logger = setup_logger(folder_path,timestamp=None,task_name=log_name)
     task_data=parse_file_to_json(task_path)
     print('='*60)
     print("Task Path is: ",task_path)
@@ -89,8 +98,6 @@ def run(args,task_path,classes,init_scene_graph,guidance):
             question="Can you tell me how to "+question
             answer=agent.query_human(question)
             Human_Guidance.append(answer)
-            # print('Human Guidance: ',Human_Guidance[-1])
-            
 
     if args.model=='LLM':
         pass
@@ -109,37 +116,52 @@ def run(args,task_path,classes,init_scene_graph,guidance):
         if action=="Failed" or action=='over':
             print("Task Path is: ",task_path)
             print("Task Goal is: ",task_data['Goal'])
-            env.report_actions()
-            evaluation_result=evaluator.evaluate(ast=None,action_history=agent.add_info_action_history,Root=True)
+            executed_actions=env.report_actions()
+            evaluation_result,complete_rate=evaluator.evaluate_final(ast=None,action_history=agent.add_info_action_history,Root=True)
             if action=='Failed':
                 print("Task failed")
+            if epoch_logger:
+                task_summary_record(epoch_logger,task_data['Task name'],task_data['Goal'],executed_actions,evaluation_result,complete_rate,None)
             return
+        
         print('Action: ',action)
         observation = env.step(action) #Execute action
         agent.updates(observation) #Update agent's state
         evaluator.updates(observation) #Update evaluator's state
         evaluation_result=evaluator.evaluate(ast=None,action_history=agent.add_info_action_history,Root=True)
         if evaluation_result:
-            env.report_actions()
+            executed_actions=env.report_actions()
             print("Task Success")
+            if epoch_logger:
+                task_summary_record(epoch_logger,task_data['Task name'],task_data['Goal'],executed_actions,evaluation_result,1,None)
             return
 
 def test_evaluate(args):
     _,classes,init_scene_graph,guidance=load_scene()
     # task_path=select_random_file(dataset_folder_path)
-    task_path='/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/cdl_dataset/dataset/Make_coffee/g2.txt'
-    run(args,task_path,classes,init_scene_graph,guidance)
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    epoch_logger = setup_logger(f'log/epoch_{timestamp}',timestamp=timestamp)
+    task_path='/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/cdl_dataset/dataset/Drink/g2.txt'
+    run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph,guidance)
 
 
 def evaluation(args):
     _,classes,init_scene_graph,guidance=load_scene()
     files=evaluation_task_loader(dataset_folder_path)
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    epoch_logger = setup_logger(f'log/epoch_{timestamp}',timestamp=timestamp)
     for task_file in files:
         task_path=os.path.join(dataset_folder_path,task_file)
-        run(args,task_path,classes,init_scene_graph,guidance)
+        run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph,guidance)
 
+def check_evaluation(args):
+    files=evaluation_task_loader(dataset_folder_path)
+    for task_file in files:
+        task_path=os.path.join(dataset_folder_path,task_file)
+        evaluator=Evaluator(task_path)
 
 if __name__ == '__main__':
     args = parse_args()
     evaluation(args)
     # test_evaluate(args)
+    # check_evaluation(args)

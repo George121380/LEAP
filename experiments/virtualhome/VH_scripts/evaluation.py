@@ -114,7 +114,9 @@ class Evaluator:
         self.wrapped_keystates_func={}
         self.wrap_keystates()
         self.achieved_keystates=set()
-        self.debug()
+        self.start_counting=self.left_action_counting_for_each_keystate()
+        self.end_counting=None
+        self.action_completion_rate="No required actions"
 
     def load_scene(self)->None:
         scene_path='cdl_dataset/Scene.json'
@@ -663,35 +665,75 @@ class Evaluator:
         print("missed actions:",left_actions)
 
         # print("missed actions:",plans[0])
-        return len(plans[0])==0
+        return len(plans[0])
     
     def wrap_keystates(self):
         for key in self.keystates:
             goal_behavior_template=f"""\nbehavior __goal__():\n     body:\n         {key}()"""
             self.wrapped_keystates_func[key]=(self.keystates[key]+goal_behavior_template)
 
-    def debug(self):
-        try:
-            for keystate in self.keystates:
-                print(f"Checking keystate: {keystate}")
-                result = self.check_single_keystate(self.wrapped_keystates_func[keystate])
-            print("All keystates are correct")
-        except Exception as e:
-            print(f"Error in checking keystate: {keystate}")
-            print(e)
+    def calculate_action_completion(self, required_actions, action_history):
+            """
+            Calculate the completion percentage between required actions and the agent's action history.
+            """
+            required_len = len(required_actions)
+            if required_len == 0:
+                return 1.0  # If there are no required actions, consider it fully complete
 
-    def evaluate_actions(self,action_history):
+            # Initialize counters
+            matched_actions = 0
+            action_history_len = len(action_history)
+            action_idx = 0
+
+            for required_action in required_actions:
+                # Find the required action in the action history starting from action_idx
+                while action_idx < action_history_len:
+                    if action_history[action_idx]['action'] == required_action:
+                        matched_actions += 1
+                        action_idx += 1
+                        break
+                    action_idx += 1
+
+            completion_percentage = matched_actions / required_len
+            return completion_percentage
+
+    def left_action_counting_for_each_keystate(self):
+        counting_dict={}
+        debug_flag=False
+        for keystate in self.keystates:
+            print(f"Checking keystate: {keystate}")
+            try:
+                result = self.check_single_keystate(self.wrapped_keystates_func[keystate])
+                counting_dict[keystate]=result
+            except Exception as e:
+                print(f"Error in checking keystate: {keystate}")
+                print(e)
+                counting_dict[keystate]=int(1e9)
+                debug_flag=True
+        if debug_flag:
+            print("Some keystates are incorrect")
+        else:
+            print("All keystates are correct")
+        return counting_dict
+        
+
+    def evaluate_actions(self, action_history):
         """
-        Check if the given action sequence matches the required sequence.
+        Calculate the completion percentage of the required actions.
         """
         tokens = action_tokenize(self.task_data['Actions'])
         parser = Parser(tokens)
         expr = parser.parse()
         sequences = generate_sequences(expr)
+        
+        max_completion = 0.0
         for seq in sequences:
-            if is_subsequence(seq, action_history):
-                return True
-        return False
+            completion = self.calculate_action_completion(seq, action_history)
+            if completion > max_completion:
+                max_completion = completion
+            if completion == 1.0:
+                break  # No need to check further if fully completed
+        return max_completion
 
     def evaluate_keystates(self,ast,Root=False):
         if Root:
@@ -700,7 +742,7 @@ class Evaluator:
             print("Evaluator is checking",ast.name)
             if ast.name in self.achieved_keystates:
                 return True
-            result=self.check_single_keystate(self.wrapped_keystates_func[ast.name])
+            result=(self.check_single_keystate(self.wrapped_keystates_func[ast.name])==0)
             if result:
                 self.achieved_keystates.add(ast.name)
             return result
@@ -710,7 +752,7 @@ class Evaluator:
             return self.evaluate_keystates(ast.left) or self.evaluate_keystates(ast.right)
         else:
             raise ValueError('Unknown AST node')
-
+ 
 
     def evaluate(self,ast,action_history,Root=False):
         print('='*60,"Evaluation: Start")
@@ -725,17 +767,44 @@ class Evaluator:
                  
         if not self.required_actions_achieved_flag:
             if self.required_actions:
-                self.required_actions_achieved_flag=self.evaluate_actions(action_history)
+                self.action_completion_rate = self.evaluate_actions(action_history)
+                self.required_actions_achieved_flag = self.action_completion_rate == 1.0
                 if self.required_actions_achieved_flag:
                     print("Action: Achieved")
+                else:
+                    print(f"Action Completion Rate: {self.action_completion_rate}")
+                    
             else:
-                self.required_actions_achieved_flag=True
+                self.required_actions_achieved_flag = True
+                self.action_completion_rate = 1.0
         else:
                 print("Action: Achieved")
         if self.keystate_achieved_flag and self.required_actions_achieved_flag:
             print("Success")
         print('='*60,"Evaluation: End")
         return self.keystate_achieved_flag and self.required_actions_achieved_flag
+    
+    def evaluate_final(self,ast,action_history,Root=False):
+        evaluate_result=self.evaluate(ast,action_history,Root)
+        self.end_counting=self.left_action_counting_for_each_keystate()
+        # Calculate the completion rate of each keystate
+        complete_rate={}
+        complete_rate['Keystate']={}
+        complete_rate['Action']={}
+        for key in self.start_counting:
+            cr=1-(self.end_counting[key]/self.start_counting[key])
+            complete_rate['Keystate'][key]=max(cr,0)
+            print(f"Keystate: {key} - Completion Rate: {complete_rate['Keystate'][key]}")
+
+        complete_rate['Action']=self.action_completion_rate
+        print(f"Action Completion Rate: {complete_rate['Action']}")
+        complete_rate_info=''
+        for key in complete_rate['Keystate']:
+            complete_rate_info+=f"Keystate: {key} - Completion Rate: {complete_rate['Keystate'][key]}\n"
+        complete_rate_info+=f"Action Completion Rate: {complete_rate['Action']}"
+        print(complete_rate_info)
+
+        return evaluate_result,complete_rate_info
         
     
 if __name__=='__main__':

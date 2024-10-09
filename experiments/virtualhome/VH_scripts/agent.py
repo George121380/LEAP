@@ -683,6 +683,8 @@ class VHAgent:
                         self.newfind=True # find sth new
                 
                 for check_place in observation['checked']:
+                    if 'character' in check_place:
+                        continue
                     self.exploration['checked'][:,self.name2opid[check_place]]=True
 
                 # obs_information=self.obs_query(observation['obs_target'],observation['obs_result'],observation['question'])+'\n'# Query LLM
