@@ -202,7 +202,7 @@ def relationship_translation(graph,edge):
         relation = "Unknown relation"
 
 def get_nodes_information(graph,PO=True):
-    with open("/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/embodied-agent-eval/src/VIRTUALHOME/AgentEval-main/virtualhome_eval/resources/class_name_equivalence.json", "r") as file:
+    with open("embodied-agent-eval/src/VIRTUALHOME/AgentEval-main/virtualhome_eval/resources/class_name_equivalence.json", "r") as file:
         equal_dict=json.load(file)
     nodes=graph.get_nodes()
     edges=graph.get_edges()
@@ -224,11 +224,21 @@ def get_nodes_information(graph,PO=True):
             op_classname=node.class_name.replace("-","_")
             cat_statement.append(f"is_{op_classname}[{executable_objname}]=True")
 
+            black_list=['pot','fryingpan']
+
             if op_classname in equal_dict:
+                if op_classname in black_list:
+                    continue
+
                 for equal_name in equal_dict[op_classname]:
+                    if equal_name in black_list:
+                        continue
                     if equal_name!=op_classname:
                         cat_statement.append(f"is_{equal_name}[{executable_objname}]=True")
+
             for equal_name in equal_dict:
+                if equal_name in black_list:
+                    continue
                 if op_classname in equal_dict[equal_name] and op_classname!=equal_name:
                     cat_statement.append(f"is_{equal_name}[{executable_objname}]=True")
                     for equal_name_ in equal_dict[equal_name]:

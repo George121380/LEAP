@@ -78,7 +78,9 @@ def logic_parse(tokens):
     return ast
 
 class Evaluator:
-    def __init__(self,task_file_path) -> None:
+    def __init__(self,task_file_path,logger) -> None:
+        self.logger=logger
+
         self.name2opid = {}
         self.name2id = {}
         self.num_items = 0 # Record how mani items in the scene
@@ -495,6 +497,8 @@ class Evaluator:
             file.write("    #id_end\n")
 
     def updates(self,observation):
+        if "You can not" in observation:
+            return
         # pdb.set_trace()
         if not isinstance(observation, dict):
             print("debug: ",observation)
@@ -641,7 +645,7 @@ class Evaluator:
         problem = crow.load_problem_file(self.internal_executable_file_path, domain=domain)
         return problem
 
-    def check_single_keystate(self,key_state_representation:str):
+    def check_single_keystate(self,key_state,key_state_representation:str):
         assert key_state_representation != ''
         with open(self.state_file_path, 'r') as file:
             state_content = file.read()
@@ -657,12 +661,15 @@ class Evaluator:
     )
         if len(plans) == 0:
             print("Evaluator failed to find a plan")
-            return False
+            self.logger.info(f'Checking {key_state}',"Evaluator failed to find a plan",'','','','')
+
+            return 1e9
         print("State:",len(plans[0]),"steps left")
         left_actions=''
         for action in plans[0]:
             left_actions+=str(action)+';'
-        print("missed actions:",left_actions)
+        print(key_state," missed actions:",left_actions)
+        self.logger.info(key_state,f"missed actions: {left_actions}",'','','','')
 
         # print("missed actions:",plans[0])
         return len(plans[0])
@@ -703,7 +710,7 @@ class Evaluator:
         for keystate in self.keystates:
             print(f"Checking keystate: {keystate}")
             try:
-                result = self.check_single_keystate(self.wrapped_keystates_func[keystate])
+                result = self.check_single_keystate(keystate,self.wrapped_keystates_func[keystate])
                 counting_dict[keystate]=result
             except Exception as e:
                 print(f"Error in checking keystate: {keystate}")
@@ -742,7 +749,7 @@ class Evaluator:
             print("Evaluator is checking",ast.name)
             if ast.name in self.achieved_keystates:
                 return True
-            result=(self.check_single_keystate(self.wrapped_keystates_func[ast.name])==0)
+            result=(self.check_single_keystate(ast.name,self.wrapped_keystates_func[ast.name])==0)
             if result:
                 self.achieved_keystates.add(ast.name)
             return result
@@ -776,7 +783,7 @@ class Evaluator:
                     
             else:
                 self.required_actions_achieved_flag = True
-                self.action_completion_rate = 1.0
+                self.action_completion_rate = 'No actions required'
         else:
                 print("Action: Achieved")
         if self.keystate_achieved_flag and self.required_actions_achieved_flag:
@@ -792,6 +799,9 @@ class Evaluator:
         complete_rate['Keystate']={}
         complete_rate['Action']={}
         for key in self.start_counting:
+            if self.start_counting[key]==1e9 or self.end_counting[key]==1e9:
+                complete_rate['Keystate'][key]="Keystate Evaluate Error"
+                continue
             cr=1-(self.end_counting[key]/self.start_counting[key])
             complete_rate['Keystate'][key]=max(cr,0)
             print(f"Keystate: {key} - Completion Rate: {complete_rate['Keystate'][key]}")

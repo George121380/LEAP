@@ -1,0 +1,255 @@
+Goal Representation,Debug Result,Action,Add Info,LLM Answer,Plan
+"Reset goals: The sub-goals are: 
+['1. Clean the bathroom sink.']",,,,,
+"
+behavior clean_bathroom_sink(sink:item):
+    body:
+        achieve_once visited(sink)
+        # Initially observe the sink to gather information
+
+        if dirty(sink):
+            scrub(sink) 
+            # Scrub the sink to remove dirt
+
+behavior rinse_bathroom_sink(sink:item):
+    body:
+        achieve has_water(sink) 
+        rinse(sink)
+        # Rinse the sink with water to complete the cleaning
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and is_bathroom_counter(sink)
+        # Bind to the bathroom sink
+
+        clean_bathroom_sink(sink)
+        rinse_bathroom_sink(sink)
+",From function reset_goal,,,,
+,,,,"Record from func query_human in agent.py
+Question: Can you tell me how to clean the bathroom sink.
+Answer: Scrub the sink with cleaner.
+",
+"Reset goals: The sub-goals are: 
+['1. Identify the sink in the bathroom.', '2. Clean the bathroom sink directly.']",,,,,
+"behavior identify_sink_in_bathroom():
+    body:
+        foreach sink: item:
+            if is_sink(sink) and not visited(sink):
+                observe(sink,""Check if this is the bathroom sink"")
+
+behavior __goal__():
+    body:
+        identify_sink_in_bathroom()",From function reset_goal,,,,
+,,,,,"(CrowControllerApplier<walk_executor(sink_42)>, CrowControllerApplier<obs(sink_42, Check if this is 
+the bathroom sink)>, CrowControllerApplier<walk_executor(sink_231)>, CrowControllerApplier<obs(sink_
+231, Check if this is the bathroom sink)>)"
+,,walk_executor(sink_42),"Find cleaning_solution_2073. Find detergent_2084. Find soap_2053. Find towel_rack_31. Find basket_fo
+r_clothes_2006. Find towel_rack_34. Find towel_rack_32. Robot is inside bathroom_1. Robot is close s
+ink_42. Robot is close bathroom_counter_41. ",,
+,,"obs(sink_42, Check if this is the bathroom sink)","Get this information:  cleaning_solution_2073 is on sink_42. detergent_2084 is on sink_42. soap_2053
+ is inside sink_42. sink_42 is close to floor_2. sink_42 is close to floor_3. sink_42 is close to de
+tergent_2084. sink_42 is close to soap_2053. sink_42 is close to floor_4. sink_42 is close to bathro
+om_cabinet_40. sink_42 is close to bathroom_counter_41. sink_42 is close to wall_9. sink_42 is close
+ to faucet_43. sink_42 is close to wall_12. sink_42 is close to basket_for_clothes_2006. sink_42 is 
+close to washing_machine_2007. sink_42 is close to cleaning_solution_2073. sink_42 is close to chara
+cter_65. sink_42 is inside bathroom_1. sink_42 is inside bathroom_counter_41. sink_42 is CLEAN.",,
+,,,,,"(CrowControllerApplier<walk_executor(sink_231)>, CrowControllerApplier<obs(sink_231, Check if this i
+s the bathroom sink)>)"
+,,walk_executor(sink_231),"Find soap_2054. Find napkin_2005. Find knife_2050. Find cutting_board_2051. Find cup_2063. Find cup_
+2064. Find oil_2079. Find fryingpan_2083. Find tray_296. Find drawing_239. Find drawing_238. Find dr
+awing_240. Find drawing_241. Find drawing_242. Find drawing_243. Find plate_1000. Robot is inside di
+ning_room_201. Robot is close kitchen_counter_230. Robot is close sink_231. Robot is no longer insid
+e bathroom_1.Robot is no longer close bathroom_counter_41.Robot is no longer close sink_42.",,
+,,"obs(sink_231, Check if this is the bathroom sink)","Get this information:  sink_231 is inside dining_room_201. sink_231 is inside kitchen_counter_230. s
+oap_2054 is on sink_231. plate_1000 is on sink_231. sink_231 is close to soap_2054. sink_231 is clos
+e to floor_7. sink_231 is close to wall_11. sink_231 is close to wall_15. sink_231 is close to coffe
+_maker_290. sink_231 is close to toaster_292. sink_231 is close to toilet_37. sink_231 is close to s
+hower_36. sink_231 is close to microwave_297. sink_231 is close to floor_202. sink_231 is close to f
+loor_203. sink_231 is close to floor_204. sink_231 is close to wall_211. sink_231 is close to wall_2
+12. sink_231 is close to cupboard_229. sink_231 is close to kitchen_counter_230. sink_231 is close t
+o faucet_232. sink_231 is close to plate_1000. sink_231 is close to dishwasher_1001. sink_231 is clo
+se to character_65. sink_231 is DIRTY.",,
+"Reset goals: The sub-goals are: 
+['1. Identify which sink in the bathroom needs cleaning.', '2. Clean the bathroom sink directly.']",,,,,
+"
+def is_in_bathroom(sink: item):
+    # Function to check if a sink is in the bathroom
+    symbol in_bathroom = exists room: item : is_bathroom(room) and inside(sink, room)
+    return in_bathroom
+
+behavior __goal__():
+    body:
+        if exists sink: item : is_sink(sink) and dirty(sink) and is_in_bathroom(sink):
+            # Check if there is a dirty sink in the bathroom based on the available information
+            bind sink: item where:
+                is_sink(sink) and dirty(sink) and is_in_bathroom(sink)
+            # Select a sink that is dirty and in the bathroom
+            achieve close_char(char, sink) 
+            # Move the character closer to the dirty bathroom sink
+
+        else: 
+           # If no dirty bathroom sink is found, initiate exploration to locate one
+            foreach sink: item:
+                if is_sink(sink) and not visited(sink):
+                    observe(sink, ""Check if this is the bathroom sink and if it is dirty"")
+                    # Observe whether each sink is the bathroom sink and is dirty
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Identify and declutter items in the bathroom sink area.', '2. Clean the sink with appropriate c
+leaning products and tools.', '3. Rinse and dry the sink to finish cleaning.']",,,,,
+" 
+def is_clutter(item: item):
+    # Determine if the item is part of the clutter on or around the bathroom sink
+    symbol clutter_status = is_soap(item) or is_detergent(item) or is_cleaning_solution(item) or is_
+basket_for_clothes(item)
+    return clutter_status
+
+behavior declutter_sink_area():
+    body:
+        bind sink: item where:
+            is_sink(sink) and id[sink]==42
+        bind bathroom: item where:
+            is_bathroom(bathroom) and inside(sink, bathroom)
+
+        foreach item: item:
+            if close(item, sink) and is_clutter(item):
+                # Move each clutter item from around the sink area
+                achieve_once inhand(item)
+                achieve inside(item, bathroom)
+
+behavior __goal__():
+    body:
+        declutter_sink_area()
+",From function reset_goal,,,,
+,,,,"Record from func query_human in agent.py
+Question: Can you teach me how to ""1. identify and declutter items in the bathroom sink area."" ?
+Answer: I don't know.
+",
+" 
+def has_items_on_sink(sink:item):
+    # Function to check if there are items on the sink that need decluttering
+    symbol has_items=exists o: item : (is_cleaning_solution(o) or is_detergent(o) or is_soap(o)) and
+ on(o, sink)
+    return has_items
+
+behavior declutter_items(sink:item, bathroom_counter_41:item):
+    body:
+        foreach o: item:
+        # Move all cleaning items from the sink area
+            if (is_cleaning_solution(o) or is_detergent(o) or is_soap(o)) and on(o, sink):
+                achieve_once inhand(o)
+                # Temporarily hold the item to move it
+                achieve close_char(char, bathroom_counter_41)
+                # Move the item to the bathroom counter
+                achieve on(o, bathroom_counter_41)
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and id[sink]==42
+        # Select the sink with ID 42
+
+        bind bathroom_counter_41: item where:
+            is_bathroom_counter(bathroom_counter_41) and id[bathroom_counter_41]==41
+
+        if has_items_on_sink(sink):
+            # If there are items to declutter, perform decluttering
+            declutter_items(sink, bathroom_counter_41)
+        else:
+            # If no items found based on initial information, observe the sink area to identify item
+s
+            observe(sink,""Check for items to declutter on the sink"")
+",From function reset_sub_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Identify the correct bathroom sink.', '2. Clean the bathroom sink thoroughly.']",,,,,
+" 
+def is_bathroom_sink(sink:item):
+    # Function to determine if a sink is considered a bathroom sink
+    symbol inside_bathroom=exists bathroom: item : is_bathroom(bathroom) and inside(sink, bathroom)
+    return inside_bathroom
+
+behavior __goal__():
+    body:
+        if exists sink: item : is_sink(sink) and is_bathroom_sink(sink):
+            # Check if there is a sink identified as a bathroom sink based on available information
+            bind sink: item where:
+                is_sink(sink) and is_bathroom_sink(sink)
+            # Select the sink that is a bathroom sink
+            achieve close_char(char, sink) 
+            # Move the character closer to the bathroom sink
+
+        else: 
+           # If no bathroom sink is confirmed, check all sinks that have not been visited for more i
+nformation
+            foreach sink: item:
+                if is_sink(sink) and not visited(sink):
+                    observe(sink, ""Check if this is the bathroom sink"")
+                    # Observe and confirm whether each sink is a bathroom sink
+",From function reset_goal,,,,
+,,,,,"(CrowControllerApplier<walk_executor(sink_42)>, CrowControllerApplier<obs(sink_42, Check if this is 
+the bathroom sink)>, CrowControllerApplier<walk_executor(sink_231)>, CrowControllerApplier<obs(sink_
+231, Check if this is the bathroom sink)>)"
+,,walk_executor(sink_42),"Robot is inside bathroom_1. Robot is close bathroom_counter_41. Robot is close sink_42. Robot is no 
+longer inside dining_room_201.Robot is no longer close kitchen_counter_230.Robot is no longer close 
+sink_231.",,
+,,"obs(sink_42, Check if this is the bathroom sink)","Get this information:  cleaning_solution_2073 is on sink_42. detergent_2084 is on sink_42. soap_2053
+ is inside sink_42. sink_42 is close to floor_2. sink_42 is close to floor_3. sink_42 is close to de
+tergent_2084. sink_42 is close to soap_2053. sink_42 is close to floor_4. sink_42 is close to bathro
+om_cabinet_40. sink_42 is close to bathroom_counter_41. sink_42 is close to wall_9. sink_42 is close
+ to faucet_43. sink_42 is close to wall_12. sink_42 is close to basket_for_clothes_2006. sink_42 is 
+close to washing_machine_2007. sink_42 is close to cleaning_solution_2073. sink_42 is close to chara
+cter_65. sink_42 is inside bathroom_1. sink_42 is inside bathroom_counter_41. sink_42 is CLEAN.",,
+,,walk_executor(sink_231),"Robot is inside dining_room_201. Robot is close kitchen_counter_230. Robot is close sink_231. Robot 
+is no longer inside bathroom_1.Robot is no longer close bathroom_counter_41.Robot is no longer close
+ sink_42.",,
+,,"obs(sink_231, Check if this is the bathroom sink)","Get this information:  sink_231 is inside dining_room_201. sink_231 is inside kitchen_counter_230. s
+oap_2054 is on sink_231. plate_1000 is on sink_231. sink_231 is close to soap_2054. sink_231 is clos
+e to floor_7. sink_231 is close to wall_11. sink_231 is close to wall_15. sink_231 is close to coffe
+_maker_290. sink_231 is close to toaster_292. sink_231 is close to toilet_37. sink_231 is close to s
+hower_36. sink_231 is close to microwave_297. sink_231 is close to floor_202. sink_231 is close to f
+loor_203. sink_231 is close to floor_204. sink_231 is close to wall_211. sink_231 is close to wall_2
+12. sink_231 is close to cupboard_229. sink_231 is close to kitchen_counter_230. sink_231 is close t
+o faucet_232. sink_231 is close to plate_1000. sink_231 is close to dishwasher_1001. sink_231 is clo
+se to character_65. sink_231 is DIRTY.",,
+" 
+def is_bathroom_sink(sink:item):
+    # Function to check if a sink is in the bathroom
+    symbol in_bathroom=exists room: item : is_bathroom(room) and inside(sink, room)
+    return in_bathroom
+
+behavior clean_bathroom_sink(sink:item):
+    # Define the behavior to clean a bathroom sink
+    body:
+        assert is_bathroom_sink(sink)
+        achieve clean(sink)
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and id[sink] == 42
+        # Select the sink with ID 42, which is the bathroom sink
+        clean_bathroom_sink(sink)
+",From function reset_sub_goal,,,,
+" 
+behavior clean_sink(sink:item):
+    body:
+        achieve clean(sink)
+        # Ensure that the sink is clean
+
+behavior __goal__():
+    body:
+        bind bathroom_sink: item where:
+            is_sink(bathroom_sink) and id[bathroom_sink]==42
+        # Select the bathroom sink with ID 42
+        
+        achieve close_char(char, bathroom_sink)
+        # Move closer to the bathroom sink
+
+        clean_sink(bathroom_sink)
+        # Clean the bathroom sink thoroughly
+",From function reset_sub_goal,,,,
+,,,,,"(CrowControllerApplier<walk_executor(sink_42)>,)"
+,,walk_executor(sink_42),"Robot is inside bathroom_1. Robot is close bathroom_counter_41. Robot is close sink_42. Robot is no 
+longer inside dining_room_201.Robot is no longer close kitchen_counter_230.Robot is no longer close 
+sink_231.",,

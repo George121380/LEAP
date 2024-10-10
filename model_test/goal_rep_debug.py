@@ -14,13 +14,13 @@ import concepts.dm.crow as crow
 # from concepts.dm.crow.behavior_utils import execute_behavior_effect_advanced 
 parser = jacinle.JacArgumentParser()
 # parser.add_argument('--domain', default='virtualhome.cdl')
-parser.add_argument('--domain', default='experiments/virtualhome/CDLs/virtualhome_partial.cdl')
+parser.add_argument('--domain', default='experiments/virtualhome/CDLs/virtualhome_evaluator.cdl')
 parser.add_argument('--verbose', action='store_true')
 args = parser.parse_args()
 
 def goal_solver(goal):
     domain = crow.load_domain_file(args.domain)
-    problem = crow.load_problem_file('experiments/virtualhome/CDLs/internal_executable.cdl', domain=domain)
+    problem = crow.load_problem_file('experiments/virtualhome/CDLs/evaluator_execution.cdl', domain=domain)
     # problem = crow.load_problem_file('agent_internal_state.cdl', domain=domain)
 
     # behavior= crow.load_domain_file('explore_test.cdl')

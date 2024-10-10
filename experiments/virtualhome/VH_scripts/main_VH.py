@@ -84,7 +84,7 @@ def run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph,guidance)
     print("Task Path is: ",task_path)
     print("Task Goal is: ",task_data['Goal'])
     print('='*60)
-    evaluator=Evaluator(task_path)
+    evaluator=Evaluator(task_path,logger)
 
     if args.model=='ours':
         agent=VHAgent(init_path,logger)
@@ -141,7 +141,7 @@ def test_evaluate(args):
     # task_path=select_random_file(dataset_folder_path)
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     epoch_logger = setup_logger(f'log/epoch_{timestamp}',timestamp=timestamp)
-    task_path='/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/cdl_dataset/dataset/Drink/g2.txt'
+    task_path='/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/cdl_dataset/dataset/Cook_some_food/g1.txt'
     run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph,guidance)
 
 
@@ -151,8 +151,13 @@ def evaluation(args):
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     epoch_logger = setup_logger(f'log/epoch_{timestamp}',timestamp=timestamp)
     for task_file in files:
-        task_path=os.path.join(dataset_folder_path,task_file)
-        run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph,guidance)
+        try:
+            task_path=os.path.join(dataset_folder_path,task_file)
+            run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph,guidance)
+        except Exception as e:
+            print(e)
+            task_summary_record(epoch_logger,task_path,'Syntax Error',None,None,None,None)
+            continue
 
 def check_evaluation(args):
     files=evaluation_task_loader(dataset_folder_path)

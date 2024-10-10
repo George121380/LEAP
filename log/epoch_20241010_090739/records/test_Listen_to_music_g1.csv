@@ -1,0 +1,282 @@
+Goal Representation,Debug Result,Action,Add Info,LLM Answer,Plan
+k1,"missed actions: walk_executor(cd_player_2060);open_executor(cd_player_2060);walk_executor(cd_2075);g
+rab_executor(cd_2075);walk_executor(cd_player_2060);putin_executor(cd_2075, cd_player_2060);plugin_e
+xecutor(cd_player_2060);close_executor(cd_player_2060);switchon_executor(cd_player_2060);",,,,
+"Reset goals: The sub-goals are: 
+['1. Locate the CD player.', '2. Press the power button to turn on the CD player.']",,,,,
+" 
+behavior locate_cd_player(cd_player:item):
+    body:
+        achieve visited(cd_player)
+
+behavior __goal__():
+    body:
+        bind cd_player: item where:
+            is_cd_player(cd_player)
+        locate_cd_player(cd_player)
+",From function reset_goal,,,,
+,,,,"Record from func query_human in agent.py
+Question: Can you tell me how to locate the cd player.
+Answer: I don't know.
+",
+,,,,"Record from func query_human in agent.py
+Question: Can you tell me how to press the power button to turn on the cd player.
+Answer: I don't know.
+",
+,,,,,"(CrowControllerApplier<walk_executor(wallshelf_35)>, CrowControllerApplier<exp(cd_player_2060, walls
+helf_35)>, CrowControllerApplier<walk_executor(cd_player_2060)>, CrowControllerApplier<open_executor
+(cd_player_2060)>, CrowControllerApplier<obs(cd_player_2060, look around this place)>)"
+,,walk_executor(wallshelf_35),"Find remote_control_2052. Find towel_rack_34. Find towel_rack_33. Robot is inside bathroom_1. Robot 
+is close remote_control_2052. Robot is close wallshelf_35. Grabbing remote_control_2052 by right han
+d. Grabbing remote_control_2052 by left hand. ",,
+Checking k1,Evaluator failed to find a plan,,,,
+,,"exp(cd_player_2060, wallshelf_35)",Failed to find cd_player_2060 around wallshelf_35. ,,
+Checking k1,Evaluator failed to find a plan,,,,
+"Reset goals: The sub-goals are: 
+['1. Locate the CD player.', '2. Turn on the CD player.']",,,,,
+" 
+def is_cd_player_in_room(cd_player: item, room: item):
+    symbol in_room = exists o: item : is_cd_player(o) and inside(o, room)
+    return in_room
+
+behavior __goal__():
+    body:
+        bind cd_player: item where:
+            is_cd_player(cd_player)
+
+        bind bathroom: item where:
+            is_bathroom(bathroom) and inside_char(char, bathroom)
+        
+        if is_cd_player_in_room(cd_player, bathroom):
+            # If we have already found the CD player in current room based on existing data, theres 
+no need for further search
+            bind cd_player: item where:
+                is_cd_player(cd_player) and inside(cd_player, bathroom)
+            achieve close_char(char, cd_player)
+        else:
+            # Check all locations in the current room (bathroom) that have not been visited
+            foreach spot: item:
+                if close_char(char, spot) and not visited(spot):
+                    observe(spot, ""Find cd_player_2060 in the current room"")
+",From function reset_goal,,,,
+,,,,,"(CrowControllerApplier<obs(remote_control_2052, Find cd_player_2060 in the current room)>, CrowContr
+ollerApplier<obs(wallshelf_35, Find cd_player_2060 in the current room)>)"
+,,"obs(remote_control_2052, Find cd_player_2060 in the current room)","Get this information:  remote_control_2052 is close to character_65. remote_control_2052 is inside h
+ome_office_319. remote_control_2052 is OFF.",,
+Checking k1,Evaluator failed to find a plan,,,,
+,,"obs(wallshelf_35, Find cd_player_2060 in the current room)","Get this information:  wallshelf_35 is inside bathroom_1. wallshelf_35 is close to towel_rack_33. wa
+llshelf_35 is close to towel_rack_34. wallshelf_35 is close to wall_9. wallshelf_35 is close to wall
+_13. wallshelf_35 is close to ceiling_20. wallshelf_35 is close to ceiling_21. wallshelf_35 is close
+ to curtain_23. wallshelf_35 is close to curtain_24. wallshelf_35 is close to walllamp_27. wallshelf
+_35 is close to bathtub_30. wallshelf_35 is close to character_65. wallshelf_35 is CLEAN.",,
+Checking k1,Evaluator failed to find a plan,,,,
+,,,"Human Instruction: You need to continue searching for the CD player in other locations within the ba
+throom or in different rooms, as it has not been located yet.
+
+The actions you have taken:
+Action 1: Walk to wallshelf_35. -> effect: Find remote_control_2052. Find towel_rack_34. Find towel_
+rack_33. Robot is inside bathroom_1. Robot is close remote_control_2052. Robot is close wallshelf_35
+. Grabbing remote_control_2052 by right hand. Grabbing remote_control_2052 by left hand. 
+Action 2: look for cd_player_2060 around wallshelf_35. -> effect: Failed to find cd_player_2060 arou
+nd wallshelf_35. 
+Action 3: Observe around remote_control_2052 with the question of Find cd_player_2060 in the current
+ room. -> effect: Get this information:  remote_control_2052 is close to character_65. remote_contro
+l_2052 is inside home_office_319. remote_control_2052 is OFF.
+Action 4: Observe around wallshelf_35 with the question of Find cd_player_2060 in the current room. 
+-> effect: Get this information:  wallshelf_35 is inside bathroom_1. wallshelf_35 is close to towel_
+rack_33. wallshelf_35 is close to towel_rack_34. wallshelf_35 is close to wall_9. wallshelf_35 is cl
+ose to wall_13. wallshelf_35 is close to ceiling_20. wallshelf_35 is close to ceiling_21. wallshelf_
+35 is close to curtain_23. wallshelf_35 is close to curtain_24. wallshelf_35 is close to walllamp_27
+. wallshelf_35 is close to bathtub_30. wallshelf_35 is close to character_65. wallshelf_35 is CLEAN.
+",,
+" 
+def is_home_office(remote_control:item):
+    # Check if the remote control is inside the home office
+    symbol in_home_office=exists room: item : is_home_office(room) and inside(remote_control, room)
+    return in_home_office
+
+behavior search_cd_player_in_bathroom(bathroom:item):
+    body:
+        foreach item: item:
+            # Observe all items in the bathroom that have not been visited yet
+            if is_bathroom(bathroom) and inside(item, bathroom) and not visited(item):
+                observe(item, ""Check is cd_player_2060 nearby the item"")
+                # Check if cd_player_2060 is close to the item
+
+behavior search_cd_player_in_home_office(home_office:item):
+    body:
+        foreach item: item:
+            # Observe all items in the home office that have not been visited yet
+            if is_home_office(home_office) and inside(item, home_office) and not visited(item):
+                observe(item, ""Check is cd_player_2060 nearby the item"")
+                # Check if cd_player_2060 is close to the item
+
+behavior __goal__():
+    body:
+        bind remote_control: item where:
+            is_remote_control(remote_control) and is_home_office(remote_control)
+        
+        bind bathroom: item where:
+            is_bathroom(bathroom)
+        
+        bind home_office: item where:
+            is_home_office(home_office)
+
+        search_cd_player_in_bathroom(bathroom)
+        search_cd_player_in_home_office(home_office)
+",From function reset_sub_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Locate the CD player.', '2. Press the power button to turn on the CD player.']",,,,,
+" 
+def is_cd_player_around_location(location:item):
+    # Function to check if the CD player is around a specified location
+    symbol is_cd_player_around=exists o: item : is_cd_player(o) and close(o, location)
+    return is_cd_player_around
+
+behavior __goal__():
+    body:
+        if exists location: item : (is_wallshelf(location) or is_remote_control(location)) and is_cd
+_player_around_location(location):
+            # Check if there is a CD player around a known location
+            bind location: item where:
+                (is_wallshelf(location) or is_remote_control(location)) and is_cd_player_around_loca
+tion(location) 
+            # Select a location around which the CD player is found
+            achieve close_char(char, location)
+            # Move the character closer to the location with the CD player
+
+        else:
+            # If no CD player is found, initiate exploration
+            foreach location: item:
+                if (is_wallshelf(location) or is_remote_control(location)) and not visited(location)
+:
+                    observe(location, ""Is the CD player around here"")
+                    # Observe whether the CD player is around each location
+",From function reset_goal,,,,
+,,,,,"(CrowControllerApplier<obs(remote_control_2052, Is the CD player around here)>, CrowControllerApplie
+r<obs(wallshelf_35, Is the CD player around here)>, CrowControllerApplier<walk_executor(wallshelf_23
+4)>, CrowControllerApplier<obs(wallshelf_234, Is the CD player around here)>, CrowControllerApplier<
+walk_executor(wallshelf_235)>, CrowControllerApplier<obs(wallshelf_235, Is the CD player around here
+)>)"
+,,"obs(remote_control_2052, Is the CD player around here)","Get this information:  remote_control_2052 is close to character_65. remote_control_2052 is inside h
+ome_office_319. remote_control_2052 is OFF.",,
+Checking k1,Evaluator failed to find a plan,,,,
+,,"obs(wallshelf_35, Is the CD player around here)","Get this information:  wallshelf_35 is inside bathroom_1. wallshelf_35 is close to towel_rack_33. wa
+llshelf_35 is close to towel_rack_34. wallshelf_35 is close to wall_9. wallshelf_35 is close to wall
+_13. wallshelf_35 is close to ceiling_20. wallshelf_35 is close to ceiling_21. wallshelf_35 is close
+ to curtain_23. wallshelf_35 is close to curtain_24. wallshelf_35 is close to walllamp_27. wallshelf
+_35 is close to bathtub_30. wallshelf_35 is close to character_65. wallshelf_35 is CLEAN.",,
+Checking k1,Evaluator failed to find a plan,,,,
+,,walk_executor(wallshelf_234),"Find drawing_241. Find drawing_242. Find drawing_243. Find drawing_240. Find drawing_238. Find drawi
+ng_239. Robot is inside dining_room_201. Robot is close remote_control_2052. Robot is close wallshel
+f_234. Robot is close wall_212. Robot is no longer inside bathroom_1.Robot is no longer close wallsh
+elf_35.",,
+Checking k1,Evaluator failed to find a plan,,,,
+,,"obs(wallshelf_234, Is the CD player around here)","Get this information:  wallshelf_234 is inside dining_room_201. wallshelf_234 is close to stovefan_2
+88. wallshelf_234 is close to bookshelf_354. wallshelf_234 is close to oven_295. wallshelf_234 is cl
+ose to wall_332. wallshelf_234 is close to photoframe_430. wallshelf_234 is close to drawing_241. wa
+llshelf_234 is close to drawing_242. wallshelf_234 is close to drawing_243. wallshelf_234 is close t
+o wall_212. wallshelf_234 is close to drawing_403. wallshelf_234 is close to wall_214. wallshelf_234
+ is close to wall_215. wallshelf_234 is close to ceiling_337. wallshelf_234 is close to ceiling_220.
+ wallshelf_234 is close to ceiling_221. wallshelf_234 is close to character_65. wallshelf_234 is on 
+wall_212. wallshelf_234 is facing drawing_240. wallshelf_234 is facing drawing_238. wallshelf_234 is
+ facing drawing_239. wallshelf_234 is CLEAN.",,
+Checking k1,Evaluator failed to find a plan,,,,
+,,,,,"(CrowControllerApplier<walk_executor(wallshelf_235)>, CrowControllerApplier<obs(wallshelf_235, Is th
+e CD player around here)>)"
+,,walk_executor(wallshelf_235),"Robot is inside dining_room_201. Robot is close remote_control_2052. Robot is close wallshelf_235. R
+obot is no longer close wallshelf_234.Robot is no longer close wall_212.",,
+Checking k1,Evaluator failed to find a plan,,,,
+,,"obs(wallshelf_235, Is the CD player around here)","Get this information:  wallshelf_235 is facing television_248. wallshelf_235 is inside dining_room_2
+01. wallshelf_235 is close to table_226. wallshelf_235 is close to wall_331. wallshelf_235 is close 
+to wall_332. wallshelf_235 is close to filing_cabinet_399. wallshelf_235 is close to drawing_241. wa
+llshelf_235 is close to drawing_242. wallshelf_235 is close to drawing_402. wallshelf_235 is close t
+o drawing_404. wallshelf_235 is close to drawing_403. wallshelf_235 is close to wall_214. wallshelf_
+235 is close to drawing_243. wallshelf_235 is close to wall_213. wallshelf_235 is close to ceiling_3
+37. wallshelf_235 is close to doorjamb_346. wallshelf_235 is close to ceiling_219. wallshelf_235 is 
+close to ceiling_220. wallshelf_235 is close to light_411. wallshelf_235 is close to ceiling_342. wa
+llshelf_235 is close to character_65. wallshelf_235 is CLEAN.",,
+Checking k1,Evaluator failed to find a plan,,,,
+"Reset goals: The sub-goals are: 
+['1. Locate the CD player.', '2. Turn on the CD player.']",,,,,
+" 
+def is_cd_player_near(wallshelf:item):
+    # Check if the CD player is around a specified wallshelf
+    symbol cd_player_near = exists cd_player: item : is_cd_player(cd_player) and close(cd_player, wa
+llshelf)
+    return cd_player_near
+
+behavior __goal__():
+    body:
+        if exists wallshelf: item : is_wallshelf(wallshelf) and is_cd_player_near(wallshelf):
+            # If a wallshelf with the CD player nearby is known, approach it
+            bind wallshelf: item where:
+                is_wallshelf(wallshelf) and is_cd_player_near(wallshelf)
+            achieve close_char(char, wallshelf)
+
+        else:
+            # Inspect all unvisited wallshelves to find CD player
+            foreach wallshelf: item:
+                if is_wallshelf(wallshelf) and not visited(wallshelf):
+                    observe(wallshelf, ""Check if the CD player is around the wallshelf"")
+",From function reset_goal,,,,
+,,,,"Record from func query_human in agent.py
+Question: Can you teach me how to ""1. locate the cd player."" ?
+Answer: I don't know.
+",
+" 
+def in_known_location(cd_player: item):
+    symbol known_location = exists room: item : (inside(cd_player, room) or close(cd_player, room))
+    return known_location
+
+behavior locate_cd_player(cd_player: item):
+    goal: visited(cd_player)
+    body:
+        if not in_known_location(cd_player):
+            foreach obj: item:
+                if not visited(obj):
+                    observe(obj, ""Check if cd_player is here"")
+                    if is_cd_player(obj):
+                        achieve visited(obj)
+
+behavior __goal__():
+    body:
+        bind cd_player: item where:
+            is_cd_player(cd_player)
+        locate_cd_player(cd_player)
+",From function reset_sub_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Locate the CD player.', '2. Turn on the CD player.']",,,,,
+" 
+behavior __goal__():
+    body:
+        if exists cd_player: item : is_cd_player(cd_player) and not visited(cd_player):
+            bind cd_player: item where:
+                is_cd_player(cd_player) and not visited(cd_player)
+            achieve close_char(char, cd_player)
+        
+        else:
+            foreach room: item:
+                if not visited(room):
+                    if is_bathroom(room) or is_dining_room(room) or is_home_office(room):
+                        observe(room, ""Check is the CD player in this room"")
+",From function reset_goal,,,,
+,,,,,"(CrowControllerApplier<walk_executor(home_office_319)>, CrowControllerApplier<exp(cd_player_2060, ho
+me_office_319)>, CrowControllerApplier<walk_executor(cd_player_2060)>)"
+,,walk_executor(home_office_319),"Robot is inside home_office_319. Robot is close remote_control_2052. Robot is no longer inside dinin
+g_room_201.Robot is no longer close wallshelf_235.",,
+Checking k1,Evaluator failed to find a plan,,,,
+,,"exp(cd_player_2060, home_office_319)",Failed to find cd_player_2060 around home_office_319. ,,
+Checking k1,Evaluator failed to find a plan,,,,
+,,,,,"(CrowControllerApplier<walk_executor(computer_417)>, CrowControllerApplier<exp(cd_player_2060, compu
+ter_417)>, CrowControllerApplier<walk_executor(cd_player_2060)>)"
+,,walk_executor(computer_417),Robot is inside home_office_319. Robot is close remote_control_2052. Robot is close computer_417. ,,
+Checking k1,Evaluator failed to find a plan,,,,
+,,"exp(cd_player_2060, computer_417)",Failed to find cd_player_2060 around computer_417. ,,
+Checking k1,Evaluator failed to find a plan,,,,
+,,,,,"(CrowControllerApplier<walk_executor(television_410)>, CrowControllerApplier<exp(cd_player_2060, tel
+evision_410)>, CrowControllerApplier<walk_executor(cd_player_2060)>)"
+,,walk_executor(television_410),"Robot is inside home_office_319. Robot is close remote_control_2052. Robot is close tvstand_353. Rob
+ot is close television_410. Robot is no longer close computer_417.",,
+Checking k1,Evaluator failed to find a plan,,,,
+,,"exp(cd_player_2060, television_410)",Failed to find cd_player_2060 around television_410. ,,

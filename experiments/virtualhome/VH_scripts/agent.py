@@ -87,15 +87,21 @@ class VHAgent:
         self.human_helper=human_helper
         self.human_helper.set_name2id(self.name2id)
 
-    def query_human(self,query:str):
-        return self.human_helper.QA(query)
+    def query_human(self,question:str):
+        record='Record from func query_human in agent.py\n'
+        record+=f'Question: {question}\n'
+        answer=self.human_helper.QA(question)
+        record+=f'Answer: {answer}\n'
+        self.logger.info("","","","",record,"")
+        return answer
     
     def ask_for_human_task_guidance(self):
         self.current_sub_task_guided=True
-        Human_Guidance=self.query_human(f'Can you teach me how to "{self.current_subgoal_nl.lower()}" ?')
+        question=f'Can you teach me how to "{self.current_subgoal_nl.lower()}" ?'
+        Human_Guidance=self.query_human(question)
         self.current_subtask_guidance=Human_Guidance
         self.update_add_info()
-        self.logger.info("","","","",Human_Guidance,"")
+
         self.record_add_info()
         self.error_times=0
     
@@ -657,7 +663,6 @@ class VHAgent:
                     if self.exp_fail_num==5:
                         human_answer=self.query_human(f'Can you help me to find {exp_target} ?')
                         print(f'Query human about the location of {exp_target}.')
-                        self.logger.info("","","","",human_answer,"")
                         self.exp_fail_num=0
                         self.add_info_human_instruction+=human_answer+'\n'
                         self.update_add_info()
@@ -817,8 +822,11 @@ class VHAgent:
                     continue
                 
                 # When the plan is found, we need to lift the behaviors to the library
-
-                print('Plan found:', plan)
+                print('Plan found')
+                plan_print=''
+                for action in plan:
+                    plan_print+=(str(action))
+                print(plan_print)
                 self.logger.info("","","","","",str(plan))
                 action = plan[0]
                 self.current_step=1
@@ -908,11 +916,14 @@ class VHAgent:
 
         self.sub_goal_list=sub_goal_generater(goal)
         print(self.sub_goal_list)
-        self.logger.info(self.sub_goal_list,"","","","","")
+        record='Reset goals: The sub-goals are: \n'+str(self.sub_goal_list)
+        self.logger.info(record,"","","","","")
         self.current_subgoal_nl=self.sub_goal_list[0]
         # pdb.set_trace()
         _,self.goal_representation,self.exploration_behavior,self.behaviors_from_library_representation=VH_pipeline(self.state_file_path,self.internal_executable_file_path,self.current_subgoal_nl,self.add_info_nl,self.goal_nl,self.sub_goal_list[:self.current_subgoal_num],self.classes,self.behaviors_from_library)
         # pdb.set_trace()
+        self.logger.info(self.goal_representation,"From function reset_goal","","","","")
+
         if self.goal_representation==None:
             if self.current_sub_task_guided:
                 print("Failed to generate the goal representation after asking for human guidance")
@@ -937,6 +948,7 @@ class VHAgent:
                 if self.goal_representation==None:
                     print("Failed to generate the goal representation after asking for human guidance")
                     return
+        self.logger.info(self.goal_representation,"From function reset_sub_goal","","","","")
         self.reset_visited()
         self.record_goal_representation()
         self.save_to_file()

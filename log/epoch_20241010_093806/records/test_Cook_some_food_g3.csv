@@ -1,0 +1,250 @@
+Goal Representation,Debug Result,Action,Add Info,LLM Answer,Plan
+Checking k1,Evaluator failed to find a plan,,,,
+Checking k2,Evaluator failed to find a plan,,,,
+k3,"missed actions: walk_executor(fridge_289);switchoff_executor(fridge_289);open_executor(fridge_289);w
+alk_executor(food_vegetable_2041);grab_executor(food_vegetable_2041);walk_executor(bowl_2071);putin_
+executor(food_vegetable_2041, bowl_2071);",,,,
+"Reset goals: The sub-goals are: 
+['1. Wash all the vegetables.', '2. Put the vegetables in a pot and boil them on the stove.', '3. Co
+ol the boiled vegetables in a bowl.']",,,,,
+"
+def is_food_vegetable(x: item):
+    # Function to check if an item is a vegetable
+    return is_food_vegetable(x)
+
+behavior wash_vegetable(vegetable:item):
+    body:
+        achieve clean(vegetable)
+
+behavior __goal__():
+    body:
+        foreach vegetable: item:
+            if is_food_vegetable(vegetable) and dirty(vegetable):
+                wash_vegetable(vegetable)
+",From function reset_goal,,,,
+,,,,"Record from func query_human in agent.py
+Question: Can you tell me how to wash all the vegetables.
+Answer: Put the vegetables in the sink, turn on the faucet, wash them, turn off the faucet, and take
+ them out.
+",
+,,,,"Record from func query_human in agent.py
+Question: Can you tell me how to put the vegetables in a pot and boil them on the stove.
+Answer: To put the vegetables in a pot and boil them on the stove: Find a pot, put the pot in a sink
+, turn on the faucet to fill the pot with water, turn off the faucet, put the pot on the stove, turn
+ on the stove, and then put the vegetables into the pot.
+",
+,,,,"Record from func query_human in agent.py
+Question: Can you tell me how to cool the boiled vegetables in a bowl.
+Answer: I don't know.
+",
+"Reset goals: The sub-goals are: 
+['1. Wash all the vegetables.', '2. Boil the vegetables in a pot on the stove.', '3. Cool the vegeta
+bles in a bowl.']",,,,,
+"behavior wash_vegetables(vegetable:item):
+    body:
+        achieve clean(vegetable)
+        # Clean the vegetable
+
+behavior __goal__():
+    body:
+        foreach vegetable: item:
+            if is_food_vegetable(vegetable) and dirty(vegetable):
+                # For each dirty vegetable in the scene, wash it
+                wash_vegetables(vegetable)",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Wash all the vegetables thoroughly.', '2. Put the washed vegetables in a pot and boil them on t
+he stove.', '3. Transfer the boiled vegetables to a bowl to cool them.']",,,,,
+" 
+behavior wash_vegetables(vegetable:item):
+    body:
+        achieve clean(vegetable)
+        # Ensure the vegetable is cleaned thoroughly
+
+behavior __goal__():
+    body:
+        foreach vegetable: item:
+            if is_food_vegetable(vegetable) and dirty(vegetable):
+                wash_vegetables(vegetable)
+        # Iterate through all the vegetables and wash them if they are dirty
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Wash all the vegetables.', '2. Put the vegetables in a pot and boil them on the stove.', '3. Co
+ol the vegetables in a bowl.']",,,,,
+" 
+def has_faucet(sink:item):
+    # Determine whether this sink has a faucet
+    symbol has_faucet=exists faucet:item: is_faucet(faucet) and close(faucet,sink)
+    return has_faucet
+
+behavior clean_vegetable(vegetable:item, sink:item):
+    body:
+        achieve inside(vegetable, sink)
+        # Ensure the vegetable is placed inside the sink
+        
+        if has_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet,sink)
+            achieve_once is_on(faucet)
+            # If the sink has a faucet, turn it on
+        
+        wash(vegetable)
+        # Wash the vegetable
+        
+        if has_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet,sink)
+            achieve_once is_off(faucet)
+            # If the sink has a faucet, turn it off after washing
+
+behavior __goal__():
+    body:
+        bind vegetable: item where:
+            is_food_vegetable(vegetable)
+            # Identify an item that is a vegetable
+            
+        bind sink: item where:
+            is_sink(sink)
+            # Identify an item that is a sink
+            
+        clean_vegetable(vegetable, sink)
+        # Clean the identified vegetable
+",From function reset_goal,,,,
+,,,,"Record from func query_human in agent.py
+Question: Can you teach me how to ""1. wash all the vegetables."" ?
+Answer: I don't know.
+",
+" 
+def is_dirty_vegetable(vegetable:item):
+    # Function to check if the vegetable is dirty
+    symbol is_dirty=dirty(vegetable)
+    return is_dirty
+
+behavior wash_vegetable(vegetable:item, sink:item):
+    body:
+        achieve inside(vegetable, sink)
+        if is_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_on(faucet)
+        wash(vegetable)
+        if is_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_off(faucet)
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink)
+        # Select a sink
+        foreach vegetable: item:
+            if is_food_vegetable(vegetable) and is_dirty_vegetable(vegetable):
+                wash_vegetable(vegetable, sink)
+",From function reset_sub_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Wash all the vegetables.', '2. Put the vegetables in a pot and boil them on the stove.', '3. Co
+ol the boiled vegetables in a bowl.']",,,,,
+"
+def has_faucet(sink:item):
+    # Determine whether this sink has a faucet
+    symbol has_faucet = exists faucet:item : is_faucet(faucet) and close(faucet, sink)
+    return has_faucet
+
+behavior clean_vegetable(vegetable:item, sink:item):
+    body:
+        achieve_once inside(vegetable, sink)
+        # Ensure the vegetable is placed inside the sink
+
+        if has_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_on(faucet)
+            # If the sink has a faucet, turn it on to wash the vegetable
+
+        wash(vegetable)
+        # This is the key step of the behavior, used for cleaning the vegetable
+
+        if has_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet,sink)
+            achieve_once is_off(faucet)
+            # If the sink has a faucet, turn it off after cleaning
+
+behavior __goal__():
+    body:
+        foreach vegetable: item:
+            if is_food_vegetable(vegetable) and dirty(vegetable):
+                bind sink: item where:
+                    is_sink(sink)
+                clean_vegetable(vegetable, sink)
+                # Wash all the dirty vegetables in the available sink
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Wash all the vegetables.', '2. Put the washed vegetables in a pot and boil them on the stove.',
+ '3. Cool the boiled vegetables in a bowl.']",,,,,
+" 
+def is_vegetable(item: item):
+    # Check if the item is a food vegetable
+    return is_food_vegetable(item)
+
+def has_faucet(sink: item):
+    # Determine whether the sink has a faucet
+    symbol has_faucet = exists faucet: item: is_faucet(faucet) and close(faucet, sink)
+    return has_faucet
+
+behavior clean_vegetable(vegetable: item, sink: item):
+    body:
+        achieve_once inside(vegetable, sink) # Ensure the vegetable is inside the sink
+        
+        if has_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_on(faucet) # Turn on the faucet if it is close to the sink
+
+        wash(vegetable) # Wash the vegetable
+
+        if has_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_off(faucet) # Turn off the faucet if it is close to the sink
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) # Select a sink
+
+        foreach vegetable: item:
+            if is_vegetable(vegetable) and dirty(vegetable):
+                clean_vegetable(vegetable, sink) # Clean all dirty vegetables using the sink
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Wash all the vegetables.', '2. Put the vegetables in a pot and boil them on the stove.', '3. Co
+ol the vegetables in a bowl.']",,,,,
+" 
+behavior wash_vegetable(vegetable:item, sink:item):
+    body:
+        achieve_once inside(vegetable, sink)
+        if exists faucet: item : is_faucet(faucet) and close(faucet, sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_on(faucet)
+            wash(vegetable)
+            achieve_once is_off(faucet)
+        else:
+            wash(vegetable)
+
+behavior __goal__():
+    body:
+        foreach vegetable: item:
+            if is_food_vegetable(vegetable) and dirty(vegetable):
+                bind sink: item where:
+                    is_sink(sink)
+                wash_vegetable(vegetable, sink)
+",From function reset_goal,,,,
+Checking k1,Evaluator failed to find a plan,,,,
+Checking k2,Evaluator failed to find a plan,,,,
+Checking k1,Evaluator failed to find a plan,,,,
+Checking k2,Evaluator failed to find a plan,,,,
+k3,"missed actions: walk_executor(fridge_289);switchoff_executor(fridge_289);open_executor(fridge_289);w
+alk_executor(food_vegetable_2041);grab_executor(food_vegetable_2041);walk_executor(bowl_2071);putin_
+executor(food_vegetable_2041, bowl_2071);",,,,

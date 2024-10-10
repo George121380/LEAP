@@ -220,7 +220,7 @@ def VH_pipeline(state_file:str,execute_file:str,current_subgoal:str,add_info:str
                 file.write(combined_content)
             loop=False
             correct_time=0
-            while correct_time < 3:
+            while correct_time < 2:
                 try:
                     # pdb.set_trace()
                     solver_start_time=time.time()
