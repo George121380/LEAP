@@ -33,7 +33,7 @@ def goal_solver(goal):
 def plan(problem):
     goal=problem.goal
     candidate_plans, search_stat = crow.crow_regression(
-        problem.domain, problem, goal=goal, min_search_depth=10, max_search_depth=10,
+        problem.domain, problem, goal=goal, min_search_depth=12, max_search_depth=12,
         is_goal_ordered=True, is_goal_serializable=False, always_commit_skeleton=True,
         enable_state_hash=False,
         verbose=False

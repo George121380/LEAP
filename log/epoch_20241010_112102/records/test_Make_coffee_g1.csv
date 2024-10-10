@@ -1,0 +1,573 @@
+Goal Representation,Debug Result,Action,Add Info,LLM Answer,Plan
+k1,"missed actions: walk_executor(coffe_maker_290);open_executor(coffe_maker_290);walk_executor(cup_2063
+);grab_executor(cup_2063);walk_executor(coffe_maker_290);putin_executor(cup_2063, coffe_maker_290);c
+lose_executor(coffe_maker_290);switchon_executor(coffe_maker_290);",,,,
+"Reset goals: The sub-goals are: 
+['1. Add water and coffee grounds to the coffee maker.', '2. Turn on the coffee maker to start brewi
+ng.', '3. Pour the brewed coffee into a cup.']",,,,,
+" 
+behavior add_water_and_coffee_grounds_to_coffee_maker(coffee_maker:item, water:item, coffee_grounds:
+item):
+    body:
+        achieve open(coffee_maker) # Ensure the coffee maker is open
+        achieve_once inhand(water) # Temporarily hold water
+        achieve_once has_water(coffee_maker) # Pour water into the coffee maker
+        achieve_once inhand(coffee_grounds) # Temporarily hold coffee grounds
+        assert grabbable(coffee_grounds) # Ensure coffee grounds can be grasped
+        achieve inside(coffee_grounds, coffee_maker) # Add coffee grounds to the coffee maker
+        achieve closed(coffee_maker) # Close the coffee maker
+
+behavior __goal__():
+    body:
+        bind coffee_maker: item where:
+            is_coffe_maker(coffee_maker) # Select the coffee maker
+        bind water_container: item where:
+            has_water(water_container) # Select a water container
+        bind coffee_grounds: item where:
+            grabbable(coffee_grounds) and is_food(coffee_grounds)
+        add_water_and_coffee_grounds_to_coffee_maker(coffee_maker, water_container, coffee_grounds)
+
+",From function reset_goal,,,,
+,,,,"Record from func query_human in agent.py
+Question: Can you tell me how to add water and coffee grounds to the coffee maker.
+Answer: I don't know.
+",
+,,,,"Record from func query_human in agent.py
+Question: Can you tell me how to turn on the coffee maker to start brewing.
+Answer: I don't know.
+",
+,,,,"Record from func query_human in agent.py
+Question: Can you tell me how to pour the brewed coffee into a cup.
+Answer: Pour the coffee into a cup.
+",
+"Reset goals: The sub-goals are: 
+['1. Add the appropriate amount of water to the coffee maker.', '2. Place a coffee filter and add gr
+ound coffee to the coffee maker.', '3. Start the coffee maker.']",,,,,
+" 
+behavior fill_water(coffe_maker:item, water_source:item):
+    body:
+        achieve has_water(coffe_maker)
+
+behavior __goal__():
+    body:
+        bind coffe_maker: item where:
+            is_coffe_maker(coffe_maker)
+        # Select the coffee maker
+        
+        bind water_source: item where:
+            is_sink(water_source)
+        # Select a water source, in this case, a sink
+
+        fill_water(coffe_maker, water_source)
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Add coffee grounds and water to the coffee maker.', '2. Start the coffee maker.']",,,,,
+"
+behavior add_ingredients_to_coffee_maker(coffee_grounds:item, water:item, coffee_maker:item):
+    body:
+        achieve inside(coffee_grounds, coffee_maker)
+        # Add coffee grounds to the coffee maker
+
+        achieve inside(water, coffee_maker)
+        # Add water to the coffee maker
+        
+behavior __goal__():
+    body:
+        bind coffee_grounds: item where:
+            is_food(coffee_grounds) and grabbable(coffee_grounds)
+        # Identify coffee grounds to grab and add to the coffee maker
+        
+        bind water: item where:
+            is_water(water) and pourable(water)
+        # Identify water to pour into the coffee maker
+
+        bind coffee_maker: item where:
+            is_coffe_maker(coffee_maker)
+        # Identify the coffee maker to add ingredients to
+
+        add_ingredients_to_coffee_maker(coffee_grounds, water, coffee_maker)
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Fill the coffee maker with water, considering the required amount for a cup of coffee.', '2. Pl
+ace a coffee filter and add the desired amount of ground coffee to the filter basket.', '3. Turn on 
+the coffee maker to brew the coffee.']",,,,,
+" 
+def determine_water_amount(coffee_maker:item):
+    # Function to determine if the coffee maker has enough water for a cup of coffee
+    symbol sufficient_water=has_water(coffee_maker)
+    return sufficient_water
+
+behavior fill_with_water(coffee_maker:item, faucet:item):
+    body:
+        achieve_once is_on(faucet)
+        is_sink(coffee_maker)
+        achieve_once is_off(faucet)
+
+behavior __goal__():
+    body:
+        bind coffee_maker: item where:
+            is_coffe_maker(coffee_maker)
+        # Select the coffee maker
+
+        if not determine_water_amount(coffee_maker):
+            # Check if the coffee maker does not have enough water
+            bind faucet: item where:
+                is_faucet(faucet)
+            # Select a faucet to fill water from
+            fill_with_water(coffee_maker, faucet)
+",From function reset_goal,,,,
+,,,,"Record from func query_human in agent.py
+Question: Can you teach me how to ""1. fill the coffee maker with water, considering the required amo
+unt for a cup of coffee."" ?
+Answer: I don't know.
+",
+" 
+def has_required_water_amount(coffee_maker:item):
+    # Function to check if the coffee maker has the required amount of water
+    symbol has_required_water=exists w: item : is_water(w) and inside(w, coffee_maker)
+    return has_required_water
+
+behavior fill_coffee_maker_with_water(coffee_maker:item, faucet:item):
+    body:
+        assert has_plug(coffee_maker)
+        # Ensure the coffee maker can be plugged
+
+        achieve plugged(coffee_maker)
+        # Plug the coffee maker in
+
+        achieve close_char(char, faucet)
+        # Move the character close to the faucet
+        
+        achieve_once is_on(faucet)
+        # Turn the faucet on to fill with water
+
+        achieve has_water(coffee_maker)
+        # Fill the coffee maker with water
+
+        achieve_once is_off(faucet)
+        # Turn the faucet off after filling
+
+behavior __goal__():
+    body:
+        bind coffee_maker: item where:
+            is_coffe_maker(coffee_maker)
+
+        bind faucet: item where:
+            is_faucet(faucet)
+
+        if not has_required_water_amount(coffee_maker):
+            fill_coffee_maker_with_water(coffee_maker, faucet)
+        # If the coffee maker doesnt have the required amount of water, fill it
+",From function reset_sub_goal,,,,
+,,,,,"(CrowControllerApplier<walk_executor(faucet_43)>, CrowControllerApplier<switchon_executor(faucet_43)
+>, CrowControllerApplier<switchoff_executor(faucet_43)>)"
+,,walk_executor(faucet_43),"Find remote_control_2052. Find towel_rack_31. Find basket_for_clothes_2006. Find towel_rack_34. Find
+ towel_rack_32. Robot is inside bathroom_1. Robot is close remote_control_2052. Robot is close bathr
+oom_counter_41. Robot is close faucet_43. Grabbing remote_control_2052 by right hand. Robot is on co
+uch_352. Grabbing remote_control_2052 by left hand. ",,
+Checking k1,Evaluator failed to find a plan,,,,
+,,switchon_executor(faucet_43),"Find pillow_406. Find mat_401. Find drawing_176. Find cat_2055. Find clothes_jacket_2047. Find pillo
+w_405. Find drawing_400. Find hairbrush_2002. Find vacuum_cleaner_2070. Robot is inside bathroom_1. 
+Robot is close remote_control_2052. Robot is close bathroom_counter_41. Robot is close faucet_43. Ro
+bot is on couch_352. ",,
+Checking k1,Evaluator failed to find a plan,,,,
+,,switchoff_executor(faucet_43),"Robot is inside bathroom_1. Robot is close remote_control_2052. Robot is close bathroom_counter_41. 
+Robot is close faucet_43. Robot is on couch_352. ",,
+Checking k1,Evaluator failed to find a plan,,,,
+,,,"Human Instruction: The robot needs to ensure that water from the faucet is filled into the coffee ma
+ker. The robot only turned the faucet on and off but did not indicate that water was added to the co
+ffee maker. Please ensure the coffee maker has the required amount of water.
+
+Human Guidance: I don't know.
+The actions you have taken:
+Action 1: Walk to faucet_43. -> effect: Find remote_control_2052. Find towel_rack_31. Find basket_fo
+r_clothes_2006. Find towel_rack_34. Find towel_rack_32. Robot is inside bathroom_1. Robot is close r
+emote_control_2052. Robot is close bathroom_counter_41. Robot is close faucet_43. Grabbing remote_co
+ntrol_2052 by right hand. Robot is on couch_352. Grabbing remote_control_2052 by left hand. 
+Action 2: Switch on faucet_43. -> effect: Find pillow_406. Find mat_401. Find drawing_176. Find cat_
+2055. Find clothes_jacket_2047. Find pillow_405. Find drawing_400. Find hairbrush_2002. Find vacuum_
+cleaner_2070. Robot is inside bathroom_1. Robot is close remote_control_2052. Robot is close bathroo
+m_counter_41. Robot is close faucet_43. Robot is on couch_352. 
+Action 3: Switch off faucet_43. -> effect: Robot is inside bathroom_1. Robot is close remote_control
+_2052. Robot is close bathroom_counter_41. Robot is close faucet_43. Robot is on couch_352. 
+",,
+" 
+behavior fill_coffee_maker_with_water(coffee_maker:item, faucet:item):
+    body:
+        achieve close_char(char, faucet)
+        achieve_once is_on(faucet)
+        is_sink(coffee_maker)
+        achieve_once is_off(faucet)
+
+behavior __goal__():
+    body:
+        bind coffee_maker: item where:
+            is_coffe_maker(coffee_maker)
+        bind faucet: item where:
+            is_faucet(faucet)
+        fill_coffee_maker_with_water(coffee_maker, faucet)
+        achieve has_water(coffee_maker)
+",From function reset_sub_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Fill the coffee maker with water and coffee grounds.', '2. Turn on the coffee maker to brew the
+ coffee.', '3. Pour the brewed coffee into a cup.']",,,,,
+" 
+def is_coffee_maker_inside_bathroom(bathroom:item, coffee_maker:item):
+    # Function to check if a coffee maker is inside the bathroom
+    return inside(coffee_maker, bathroom)
+
+behavior fill_coffee_maker_with_water_and_grounds(coffee_maker:item, faucet:item):
+    body:
+        achieve close_char(char, coffee_maker)
+        # Move character to the coffee maker
+        achieve has_water(coffee_maker)
+        # Ensure the coffee maker has water
+        observe(coffee_maker, ""Check if water was added"") 
+        # Check if the water is in the coffee maker
+
+behavior __goal__():
+    body:
+        bind bathroom: item where:
+            is_bathroom(bathroom) 
+        bind faucet: item where:
+            is_faucet(faucet) and inside_char(char, bathroom)
+        # Select faucet inside the bathroom
+        bind coffee_maker: item where:
+            is_coffe_maker(coffee_maker)
+        observe(faucet, ""Is there any coffee maker close to faucet"")
+        if is_coffee_maker_inside_bathroom(bathroom, coffee_maker):
+            fill_coffee_maker_with_water_and_grounds(coffee_maker, faucet)
+        # Fill coffee maker with water and ensure completion
+",From function reset_goal,,,,
+,,,,,"(CrowControllerApplier<obs(faucet_43, Is there any coffee maker close to faucet)>,)"
+,,"obs(faucet_43, Is there any coffee maker close to faucet)","Get this information:  faucet_43 is close to floor_2. faucet_43 is close to floor_3. faucet_43 is cl
+ose to floor_4. faucet_43 is close to bathroom_cabinet_40. faucet_43 is close to bathroom_counter_41
+. faucet_43 is close to sink_42. faucet_43 is close to wall_9. faucet_43 is close to wall_12. faucet
+_43 is close to ceiling_16. faucet_43 is close to ceiling_21. faucet_43 is close to basket_for_cloth
+es_2006. faucet_43 is close to character_65. faucet_43 is on bathroom_counter_41. faucet_43 is insid
+e bathroom_1. faucet_43 is OFF. faucet_43 is CLEAN.",,
+Checking k1,Evaluator failed to find a plan,,,,
+,,,"Human Instruction: The coffee maker still needs to be filled with water and coffee grounds. Ensure y
+ou locate the coffee maker, fill it with water from the faucet, and add the appropriate amount of co
+ffee grounds.
+
+Human Guidance: I don't know.
+The actions you have taken:
+Action 1: Walk to faucet_43. -> effect: Find remote_control_2052. Find towel_rack_31. Find basket_fo
+r_clothes_2006. Find towel_rack_34. Find towel_rack_32. Robot is inside bathroom_1. Robot is close r
+emote_control_2052. Robot is close bathroom_counter_41. Robot is close faucet_43. Grabbing remote_co
+ntrol_2052 by right hand. Robot is on couch_352. Grabbing remote_control_2052 by left hand. 
+Action 2: Switch on faucet_43. -> effect: Find pillow_406. Find mat_401. Find drawing_176. Find cat_
+2055. Find clothes_jacket_2047. Find pillow_405. Find drawing_400. Find hairbrush_2002. Find vacuum_
+cleaner_2070. Robot is inside bathroom_1. Robot is close remote_control_2052. Robot is close bathroo
+m_counter_41. Robot is close faucet_43. Robot is on couch_352. 
+Action 3: Switch off faucet_43. -> effect: Robot is inside bathroom_1. Robot is close remote_control
+_2052. Robot is close bathroom_counter_41. Robot is close faucet_43. Robot is on couch_352. 
+Action 4: Observe around faucet_43 with the question of Is there any coffee maker close to faucet. -
+> effect: Get this information:  faucet_43 is close to floor_2. faucet_43 is close to floor_3. fauce
+t_43 is close to floor_4. faucet_43 is close to bathroom_cabinet_40. faucet_43 is close to bathroom_
+counter_41. faucet_43 is close to sink_42. faucet_43 is close to wall_9. faucet_43 is close to wall_
+12. faucet_43 is close to ceiling_16. faucet_43 is close to ceiling_21. faucet_43 is close to basket
+_for_clothes_2006. faucet_43 is close to character_65. faucet_43 is on bathroom_counter_41. faucet_4
+3 is inside bathroom_1. faucet_43 is OFF. faucet_43 is CLEAN.
+",,
+" 
+def has_coffee_maker_near_faucet(faucet:item):
+    # Function to check if there is a coffee maker close to the specified faucet
+    symbol has_coffee_maker=exists o: item : is_coffe_maker(o) and close(o, faucet)
+    return has_coffee_maker
+
+behavior fill_with_water(coffee_maker:item, faucet:item):
+    body:
+        achieve_once inhand(coffee_maker) # Temporarily hold the coffee maker
+        achieve close(coffee_maker, faucet) # Move the coffee maker near the faucet
+        achieve_once is_on(faucet) # Turn the faucet on for filling water
+        is_sink(coffee_maker) # Fill the coffee maker with water
+        achieve_once is_off(faucet) # Turn the faucet off after filling
+
+behavior add_coffee_grounds(coffee_maker:item, grounds:item):
+    body:
+        achieve_once inhand(grounds) # Temporarily hold the coffee grounds
+        achieve inside(grounds, coffee_maker) # Add the coffee grounds to the coffee maker
+
+behavior __goal__():
+    body:
+        bind faucet: item where:
+            is_faucet(faucet) and id[faucet]==43
+        # Select faucet with ID 43
+        if exists coffee_maker: item : is_coffe_maker(coffee_maker) and has_coffee_maker_near_faucet
+(faucet):
+            bind coffee_maker: item where:
+                is_coffe_maker(coffee_maker) and close(coffee_maker, faucet)
+            # Select a coffee maker close to the faucet
+            fill_with_water(coffee_maker, faucet)
+
+            bind grounds: item where:
+                is_coffee_filter(grounds)
+            # Select the coffee grounds
+            add_coffee_grounds(coffee_maker, grounds)
+        else:
+            foreach coffee_maker: item:
+                if is_coffe_maker(coffee_maker) and not visited(coffee_maker):
+                    observe(coffee_maker,""Check is it close to faucet 43"")
+",From function reset_sub_goal,,,,
+"Reset goals: The sub-goals are: 
+[""1. Fill the coffee maker's water reservoir with the needed amount of water."", '2. Place a coffee f
+ilter and add the desired amount of coffee grounds in the filter basket.', '3. Turn on the coffee ma
+ker and allow the brewing process to complete.', '4. Pour the brewed coffee into a cup from the cara
+fe.']",,,,,
+" 
+def has_faucet_close(faucet:item):
+    # Determine whether there is a faucet close to the faucet
+    symbol has_close_faucet=exists close_item: item : is_faucet(close_item) and close(close_item, fa
+ucet)
+    return has_close_faucet
+
+def has_coffee_maker(close_item:item):
+    # Checks if there is a coffee maker close to the item
+    symbol has_coffee=exists o: item : is_coffe_maker(o) and close(o, close_item)
+    return has_coffee
+
+behavior fill_reservoir_with_water(faucet: item):
+    body:
+        if is_sink(faucet) and is_off(faucet):
+            if has_coffee_maker(faucet):
+                bind coffee_maker: item where:
+                    is_coffe_maker(coffee_maker) and close(faucet, coffee_maker)
+                achieve has_water(coffee_maker)
+
+behavior __goal__():
+    body:
+        bind faucet: item where:
+            is_faucet(faucet) and is_off(faucet)
+        # Select the faucet which is off for this task
+        
+        if not visited(faucet):
+            observe(faucet, ""Check if there is any coffee maker close to faucet"")
+            # If the faucet is unvisited, observe to check nearby if theres a coffee maker
+        
+        if has_coffee_maker(faucet):
+            fill_reservoir_with_water(faucet)
+",From function reset_goal,,,,
+,,,,,"(CrowControllerApplier<obs(faucet_43, Check if there is any coffee maker close to faucet)>,)"
+,,"obs(faucet_43, Check if there is any coffee maker close to faucet)","Get this information:  faucet_43 is close to floor_2. faucet_43 is close to floor_3. faucet_43 is cl
+ose to floor_4. faucet_43 is close to bathroom_cabinet_40. faucet_43 is close to bathroom_counter_41
+. faucet_43 is close to sink_42. faucet_43 is close to wall_9. faucet_43 is close to wall_12. faucet
+_43 is close to ceiling_16. faucet_43 is close to ceiling_21. faucet_43 is close to basket_for_cloth
+es_2006. faucet_43 is close to character_65. faucet_43 is on bathroom_counter_41. faucet_43 is insid
+e bathroom_1. faucet_43 is OFF. faucet_43 is CLEAN.",,
+Checking k1,Evaluator failed to find a plan,,,,
+" 
+def locate_coffee_maker_and_load_items(coffee_maker: item, faucet: item, coffee_filter: item, coffee
+_grounds: item):
+    # Ensure coffee maker is visited and water is filled, then add coffee filter and grounds
+    achieve_once visited(coffee_maker)
+    achieve has_water(coffee_maker)
+    achieve inside(coffee_filter, coffee_maker)
+    achieve inside(coffee_grounds, coffee_maker)
+
+behavior __goal__():
+    body:
+        bind coffee_maker: item where:
+            is_coffe_maker(coffee_maker)
+        # Select the coffee maker
+        
+        bind faucet: item where:
+            is_faucet(faucet) and close(faucet, coffee_maker)
+        # Select a faucet close to coffee maker
+
+        bind coffee_filter: item where:
+            is_coffee_filter(coffee_filter)
+        # Select a coffee filter
+
+        bind coffee_grounds: item where:
+            grabbable(coffee_grounds)
+        # Select coffee grounds
+
+        locate_coffee_maker_and_load_items(coffee_maker, faucet, coffee_filter, coffee_grounds)
+",From function reset_sub_goal,,,,
+" 
+def place_coffee_filter_in_basket(basket:item):
+    # Function to place the coffee filter in the basket
+    bind coffee_filter: item where:
+        is_coffee_filter(coffee_filter)
+    achieve inside(coffee_filter, basket)
+
+def add_coffee_grounds_to_filter(basket:item):
+    # Function to add coffee grounds to the filter basket
+    # This assumes we have a sufficient amount of coffee grounds available
+    achieve is_food_food(basket)
+
+behavior __goal__():
+    body:
+        bind basket: item where:
+            is_basket_for_clothes(basket)
+            
+        # Place the coffee filter in the basket
+        place_coffee_filter_in_basket(basket)
+        
+        # Add the desired amount of coffee grounds
+        add_coffee_grounds_to_filter(basket)
+",From function reset_sub_goal,,,,
+,,,,"Record from func query_human in agent.py
+Question: Can you teach me how to ""2. place a coffee filter and add the desired amount of coffee gro
+unds in the filter basket."" ?
+Answer: I don't know.
+",
+" 
+def is_coffee_filter(x:item):
+    return has_paper(x)
+
+def inside_filter_basket(coffee_filter:item, filter_basket:item):
+    return inside(coffee_filter, filter_basket)
+
+behavior place_filter_and_coffee(coffee_filter:item, coffee_grounds:item, filter_basket:item):
+    body:
+        achieve inside(coffee_filter, filter_basket)
+        achieve inside(coffee_grounds, filter_basket)
+
+behavior __goal__():
+    body:
+        bind filter_basket: item where:
+            is_basket_for_clothes(filter_basket)
+            # Assuming filter_basket here is used as a placeholder for a basket that actually holds 
+coffee filters
+
+        bind coffee_filter: item where:
+            is_coffee_filter(coffee_filter)
+        
+        bind coffee_grounds: item where:
+            is_food(coffee_grounds) # Assuming this identifies coffee grounds because theyre a type 
+of food item
+        
+        place_filter_and_coffee(coffee_filter, coffee_grounds, filter_basket)
+",From function reset_sub_goal,,,,
+" 
+def is_coffee_maker_close(faucet:item):
+    # Check if there is a coffee maker close to the faucet
+    symbol close_to_faucet = exists coffee_maker: item : is_coffe_maker(coffee_maker) and close(coff
+ee_maker, faucet)
+    return close_to_faucet
+
+behavior place_filter_and_grounds(filter_basket:item, coffee_filter:item, coffee_grounds:item):
+    body:
+        achieve inside(coffee_filter, filter_basket)
+        # Place the coffee filter inside the filter basket
+        achieve inside(coffee_grounds, filter_basket)
+        # Add coffee grounds inside the filter basket
+
+behavior __goal__():
+    body:
+        bind faucet: item where:
+            is_faucet(faucet) and id[faucet]==43
+        # Select the faucet with ID 43
+        
+        if not is_coffee_maker_close(faucet):
+            # If the coffee maker is not close to the faucet, observe to find it
+            observe(faucet, ""Check if there is any coffee maker close to the faucet"")
+            
+        bind coffee_maker: item where:
+            is_coffe_maker(coffee_maker) and close(coffee_maker, faucet)
+        # Bind the coffee maker close to the faucet
+
+        bind filter_basket: item where:
+            recipient(filter_basket) and inside(filter_basket, coffee_maker)
+        # Select the filter basket inside the coffee maker
+
+        bind coffee_filter: item where:
+            is_coffee_filter(coffee_filter)
+        # Bind a coffee filter
+
+        bind coffee_grounds: item where:
+            grabbable(coffee_grounds) and is_food_food(coffee_grounds)
+        # Bind coffee grounds
+
+        place_filter_and_grounds(filter_basket, coffee_filter, coffee_grounds)
+        # Place filter and add coffee grounds in basket
+ ",From function reset_sub_goal,,,,
+" 
+def has_coffee_filter_in_basket(basket_for_filter:item):
+    # Function to check if there is a coffee filter in a specified filter basket
+    symbol has_filter=exists o: item : is_coffee_filter(o) and inside(o, basket_for_filter)
+    return has_filter
+
+behavior __goal__():
+    body:
+        if exists basket_for_filter: item : is_coffe_maker(basket_for_filter) and has_coffee_filter_
+in_basket(basket_for_filter):
+            # Check if there is a coffee maker with filter based on the available information
+            bind basket_for_filter: item where:
+                is_coffe_maker(basket_for_filter) and has_coffee_filter_in_basket(basket_for_filter)
+            # Select a maker that has filter in it
+            achieve close_char(char, basket_for_filter) 
+            # Move the character closer to the coffee maker with filter
+
+        else: 
+           # If no coffee maker with filter is found, initiate exploration to locate one
+            foreach basket_for_filter: item:
+                if is_coffe_maker(basket_for_filter) and not visited(basket_for_filter):
+                    observe(basket_for_filter, ""Check if there is any coffee filter and add desired 
+amount in the filter basket"")
+                    # Check whether each maker has any filter and add grounds
+",From function reset_sub_goal,,,,
+" 
+def is_coffee_maker(x:item):
+    # Function to check if an item is a coffee maker
+    symbol maker_check=is_coffe_maker(x)
+    return maker_check
+
+def has_coffee_maker_nearby(position:item):
+    # Function to check if there is a coffee maker close to a given position
+    symbol coffee_maker_nearby=exists cm: item : is_coffee_maker(cm) and close(cm, position)
+    return coffee_maker_nearby
+
+def locate_filter_basket(coffee_maker:item):
+    # Function to locate the filter basket of a coffee maker
+    symbol filter_basket_found=exists basket: item : is_coffee_filter(basket) and close(basket, coff
+ee_maker)
+    return filter_basket_found
+    
+behavior place_coffee_filter(coffee_filter:item, basket:item):
+    body:
+        achieve on(coffee_filter, basket) # Place the coffee filter in the filter basket
+
+behavior add_coffee_grounds(coffee_grounds:item, basket:item):
+    body:
+        achieve inside(coffee_grounds, basket) # Add coffee grounds into the filter basket
+
+behavior __goal__():
+    body:
+        bind faucet: item where:
+            is_faucet(faucet) and id[faucet]==43
+        # Select faucet with ID 43
+        
+        if not has_coffee_maker_nearby(faucet):
+            # If there is no coffee maker close to the faucet, observe to find it
+            observe(faucet, ""Check if there is a coffee maker nearby"")
+        
+        if has_coffee_maker_nearby(faucet):
+            bind coffee_maker: item where:
+                is_coffee_maker(coffee_maker) and close(coffee_maker, faucet)
+            # Select coffee maker close to the faucet
+
+            if not locate_filter_basket(coffee_maker):
+                # If filter basket is not found, observe to locate it
+                observe(coffee_maker, ""Locate the filter basket"")
+            
+            bind filter_basket: item where:
+                is_coffee_filter(filter_basket) and close(filter_basket, coffee_maker)
+            # Select the filter basket close to the coffee maker
+
+            bind coffee_filter: item where:
+                is_coffee_filter(coffee_filter)
+            # Select a coffee filter
+
+            bind coffee_grounds: item where:
+                grabbable(coffee_grounds) and is_food(coffee_grounds)
+            # Select coffee grounds that can be grabbed
+            
+            place_coffee_filter(coffee_filter, filter_basket)
+            add_coffee_grounds(coffee_grounds, filter_basket)
+",From function reset_sub_goal,,,,
+Checking k1,Evaluator failed to find a plan,,,,
+Checking k1,Evaluator failed to find a plan,,,,

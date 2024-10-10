@@ -1,0 +1,258 @@
+Goal Representation,Debug Result,Action,Add Info,LLM Answer,Plan
+k1,"missed actions: walk_executor(dishwasher_1001);open_executor(dishwasher_1001);walk_executor(soap_205
+3);grab_executor(soap_2053);walk_executor(dishwasher_1001);putin_executor(soap_2053, dishwasher_1001
+);",,,,
+k2,"missed actions: walk_executor(dishwasher_1001);open_executor(dishwasher_1001);walk_executor(bowl_207
+1);grab_executor(bowl_2071);walk_executor(dishwasher_1001);putin_executor(bowl_2071, dishwasher_1001
+);walk_executor(bowl_2072);grab_executor(bowl_2072);walk_executor(dishwasher_1001);putin_executor(bo
+wl_2072, dishwasher_1001);walk_executor(plate_1000);grab_executor(plate_1000);walk_executor(dishwash
+er_1001);putin_executor(plate_1000, dishwasher_1001);close_executor(dishwasher_1001);switchon_execut
+or(dishwasher_1001);",,,,
+"Reset goals: The sub-goals are: 
+['1. Put dish soap in the dishwasher.', '2. Load the dishwasher with bowls and plates.', '3. Start t
+he dishwasher to wash the bowls and plates.']",,,,,
+" 
+behavior put_dish_soap_in_dishwasher(dish_soap: item, dishwasher: item):
+    body:
+        achieve inside(dish_soap, dishwasher)
+        # Place the dish soap inside the dishwasher
+
+behavior __goal__():
+    body:
+        bind dish_soap: item where:
+            is_soap(dish_soap)
+        # Select an item categorized as soap, assuming its dish soap
+        
+        bind dishwasher: item where:
+            is_dishwasher(dishwasher)
+        # Select a dishwasher
+        
+        put_dish_soap_in_dishwasher(dish_soap, dishwasher)
+        # Execute behavior to put the dish soap inside the dishwasher
+",From function reset_goal,,,,
+,,,,"Record from func query_human in agent.py
+Question: Can you tell me how to put dish soap in the dishwasher.
+Answer: I don't know.
+",
+,,,,"Record from func query_human in agent.py
+Question: Can you tell me how to load the dishwasher with bowls and plates.
+Answer: I don't know.
+",
+,,,,"Record from func query_human in agent.py
+Question: Can you tell me how to start the dishwasher to wash the bowls and plates.
+Answer: Make sure the dishwasher is off, open it, put the bowls and plates inside, close it, and the
+n turn on the dishwasher.
+",
+"Reset goals: The sub-goals are: 
+['1. Put dish soap in the dishwasher.', '2. Place the bowls and plates in the dishwasher.', '3. Star
+t the dishwasher to wash the bowls and plates.']",,,,,
+" 
+def is_dishwasher_open(dishwasher:item):
+    # Function to check if the dishwasher is open
+    symbol open_dishwasher=open(dishwasher)
+    return open_dishwasher
+
+behavior fill_dishwasher_with_soap(soap:item, dishwasher:item):
+    body:
+        if is_dishwasher_open(dishwasher):
+            achieve_once inhand(soap)
+            achieve inside(soap, dishwasher)
+        else:
+            achieve open(dishwasher)
+            achieve_once inhand(soap)
+            achieve inside(soap, dishwasher)
+            achieve closed(dishwasher)
+
+behavior __goal__():
+    body:
+        bind dish_soap: item where:
+            is_soap(dish_soap)
+        bind dishwasher: item where:
+            is_dishwasher(dishwasher)
+        fill_dishwasher_with_soap(dish_soap, dishwasher)
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Put dish soap in the dishwasher.', '2. Wash the bowls and plates using the dishwasher.']",,,,,
+" 
+behavior put_soap_in_dishwasher(soap:item, dishwasher:item):
+    body:
+        achieve inside(soap, dishwasher)
+        # Place the dish soap inside the dishwasher
+
+behavior __goal__():
+    body:
+        bind soap: item where:
+            is_soap(soap)
+        # Select the dish soap
+        bind dishwasher: item where:
+            is_dishwasher(dishwasher)
+        # Select the dishwasher
+        put_soap_in_dishwasher(soap, dishwasher)
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Put dish soap in the dishwasher.', '2. Wash the bowls and plates using the dishwasher.']",,,,,
+" 
+behavior __goal__():
+    body:
+        bind dishwasher: item where:
+            is_dishwasher(dishwasher)
+        bind soap: item where:
+            is_soap(soap)
+        # Ensure that we are facing the dishwasher to put the soap inside
+        achieve close_char(char, dishwasher)
+        achieve open(dishwasher) # Open the dishwasher to put the soap inside
+
+        # The next step is to put the soap in the dishwasher
+        # To do that, we can temporarily hold the soap while putting it in the dishwasher
+        achieve_once inhand(soap)
+        # Assume there is a container or designated spot for soap inside the dishwasher
+        achieve inside(soap, dishwasher)
+        
+        # Close the dishwasher after adding the soap
+        achieve closed(dishwasher)
+",From function reset_goal,,,,
+,,,,"Record from func query_human in agent.py
+Question: Can you teach me how to ""1. put dish soap in the dishwasher."" ?
+Answer: I don't know.
+",
+" 
+behavior load_dishwasher(obj: item, dishwasher: item):
+    body:
+        achieve inside(obj, dishwasher)
+        # Place the item inside the dishwasher
+
+behavior start_dishwasher(dishwasher: item):
+    body:
+        achieve closed(dishwasher) # Close the dishwasher door
+        achieve is_on(dishwasher) # Turn on the dishwasher
+
+behavior __goal__():
+    body:
+        bind dishwasher: item where:
+            is_dishwasher(dishwasher)
+        # Select a dishwasher
+        bind dish_soap: item where:
+            is_soap(dish_soap)
+        # Select dish soap
+        achieve inside(dish_soap, dishwasher)
+        # Place dish soap inside the dishwasher
+",From function reset_sub_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Put dish soap in the dishwasher.', '2. Wash the bowls and plates using the dishwasher.']",,,,,
+" 
+behavior add_soap(dishwasher:item, soap:item):
+    body:
+        achieve open(dishwasher)
+        # Ensure the dishwasher is open to add soap
+        achieve inside(soap, dishwasher)
+        # Place the soap inside the dishwasher
+
+behavior close_dishwasher(dishwasher:item):
+    body:
+        achieve closed(dishwasher)
+        # Ensure the dishwasher is closed after adding soap
+
+behavior __goal__():
+    body:
+        bind dishwasher: item where:
+            is_dishwasher(dishwasher)
+        # Select a dishwasher
+
+        bind soap: item where:
+            is_soap(soap)
+        # Select the dish soap
+
+        add_soap(dishwasher, soap)
+        close_dishwasher(dishwasher)
+",From function reset_goal,,,,
+,,,,,"(CrowControllerApplier<walk_executor(dishwasher_1001)>, CrowControllerApplier<open_executor(dishwash
+er_1001)>, CrowControllerApplier<walk_executor(kitchen_counter_230)>, CrowControllerApplier<exp(soap
+_2053, kitchen_counter_230)>, CrowControllerApplier<walk_executor(soap_2053)>, CrowControllerApplier
+<grab_executor(soap_2053)>, CrowControllerApplier<walk_executor(dishwasher_1001)>, CrowControllerApp
+lier<putin_executor(soap_2053, dishwasher_1001)>, CrowControllerApplier<close_executor(dishwasher_10
+01)>)"
+,,walk_executor(dishwasher_1001),Robot is inside dining_room_201. Robot is close dishwasher_1001. ,,
+k1,"missed actions: open_executor(dishwasher_1001);walk_executor(soap_2053);grab_executor(soap_2053);wal
+k_executor(dishwasher_1001);putin_executor(soap_2053, dishwasher_1001);",,,,
+,,open_executor(dishwasher_1001),Robot is inside dining_room_201. Robot is close dishwasher_1001. ,,
+k1,"missed actions: walk_executor(soap_2053);grab_executor(soap_2053);walk_executor(dishwasher_1001);put
+in_executor(soap_2053, dishwasher_1001);",,,,
+,,walk_executor(kitchen_counter_230),"Find napkin_2005. Find knife_2050. Find cutting_board_2051. Find cup_2063. Find cup_2064. Find pot_2
+069. Find oil_2079. Find fryingpan_2083. Find tray_296. Find drawing_239. Find drawing_238. Find dra
+wing_240. Find drawing_241. Find drawing_242. Find drawing_243. Robot is inside dining_room_201. Rob
+ot is close kitchen_counter_230. Robot is no longer close dishwasher_1001.",,
+k1,"missed actions: walk_executor(soap_2053);grab_executor(soap_2053);walk_executor(dishwasher_1001);put
+in_executor(soap_2053, dishwasher_1001);",,,,
+,,"exp(soap_2053, kitchen_counter_230)",Failed to find soap_2053 around kitchen_counter_230. ,,
+k1,"missed actions: walk_executor(soap_2053);grab_executor(soap_2053);walk_executor(dishwasher_1001);put
+in_executor(soap_2053, dishwasher_1001);",,,,
+"Reset goals: The sub-goals are: 
+['1. Put dish soap in the dishwasher.', '2. Place the bowls and plates in the dishwasher.', '3. Star
+t the dishwasher to wash the bowls and plates.']",,,,,
+" 
+def find_soap_nearby(location: item):
+    # Function to check if soap is nearby the specified location
+    symbol soap_nearby=exists soap: item: is_soap(soap) and close(soap, location)
+    return soap_nearby
+
+behavior __goal__():
+    body:
+        bind dishwasher: item where:
+            is_dishwasher(dishwasher) and open(dishwasher)
+        # Ensure the dishwasher is open and targeted
+        
+        if not find_soap_nearby(dishwasher):
+            # If soap is not found near the dishwasher, observe the surrounding area
+            observe(dishwasher, ""Check where is the dish soap located"")
+
+        if exists soap: item : is_soap(soap) and close(soap, dishwasher):
+            # If soap is nearby, achieve placing it into the dishwasher
+            bind soap: item where:
+                is_soap(soap) and close(soap, dishwasher)
+            achieve inside(soap, dishwasher)
+        else:
+            # If soap is still not nearby, move and locate soap
+            bind location: item where:
+                is_kitchen_counter(location) or is_sink(location)
+            foreach location: item:
+                if not visited(location):
+                    observe(location, ""Find dish soap"") 
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Add dish soap to the dishwasher.', '2. Wash the bowls and plates using the dishwasher.']",,,,,
+" 
+def find_soap(dishwasher:item):
+    # Function to check if there is soap near the dishwasher
+    symbol soap_found=exists soap: item : is_soap(soap) and close(soap, dishwasher)
+    return soap_found
+
+behavior put_soap_in_dishwasher(soap:item, dishwasher:item):
+    body:
+        achieve inside(soap, dishwasher) # Place the soap inside the dishwasher
+
+behavior __goal__():
+    body:
+        bind dishwasher: item where:
+            is_dishwasher(dishwasher) and id[dishwasher]==1001
+        # Select the dishwasher with ID 1001
+
+        if not find_soap(dishwasher):
+            # If soap is not found near the dishwasher, explore to locate one
+            foreach location: item:
+                if is_kitchen_counter(location) and not visited(location):
+                    observe(location, ""Check for soap in the kitchen counter"")
+        
+        if find_soap(dishwasher):
+            bind soap: item where:
+                is_soap(soap) and close(soap, dishwasher)
+            put_soap_in_dishwasher(soap, dishwasher)
+",From function reset_goal,,,,
+k1,"missed actions: walk_executor(soap_2053);grab_executor(soap_2053);walk_executor(dishwasher_1001);put
+in_executor(soap_2053, dishwasher_1001);",,,,
+k1,"missed actions: walk_executor(soap_2053);grab_executor(soap_2053);walk_executor(dishwasher_1001);put
+in_executor(soap_2053, dishwasher_1001);",,,,
+k2,"missed actions: walk_executor(bowl_2071);grab_executor(bowl_2071);walk_executor(dishwasher_1001);put
+in_executor(bowl_2071, dishwasher_1001);walk_executor(bowl_2072);grab_executor(bowl_2072);walk_execu
+tor(dishwasher_1001);putin_executor(bowl_2072, dishwasher_1001);walk_executor(plate_1000);grab_execu
+tor(plate_1000);walk_executor(dishwasher_1001);putin_executor(plate_1000, dishwasher_1001);close_exe
+cutor(dishwasher_1001);switchon_executor(dishwasher_1001);",,,,

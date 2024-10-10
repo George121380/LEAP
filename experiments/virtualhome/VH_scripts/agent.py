@@ -794,7 +794,7 @@ class VHAgent:
                 # pdb.set_trace()
                 cdl_state = self.get_state()
                 plans, stats = crow.crow_regression(
-                cdl_state.domain, cdl_state, goal=cdl_state.goal, min_search_depth=8, max_search_depth=8,
+                cdl_state.domain, cdl_state, goal=cdl_state.goal, min_search_depth=12, max_search_depth=12,
                 is_goal_ordered=True, is_goal_serializable=False, always_commit_skeleton=True,
                 enable_state_hash=False,
                 verbose=False

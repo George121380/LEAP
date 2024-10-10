@@ -1,0 +1,393 @@
+Goal Representation,Debug Result,Action,Add Info,LLM Answer,Plan
+k1,"missed actions: walk_executor(pot_2069);grab_executor(pot_2069);walk_executor(faucet_43);switchon_ex
+ecutor(faucet_43);switchoff_executor(faucet_43);walk_executor(pot_2069);open_executor(pot_2069);walk
+_executor(fridge_289);switchoff_executor(fridge_289);open_executor(fridge_289);walk_executor(food_ri
+ce_2036);grab_executor(food_rice_2036);walk_executor(pot_2069);putin_executor(food_rice_2036, pot_20
+69);walk_executor(stove_2065);put_executor(pot_2069, stove_2065);switchon_executor(stove_2065);",,,,
+"Reset goals: The sub-goals are: 
+['1. Add the appropriate amount of water to a pot and bring it to a boil.', '2. Add the rice to the 
+boiling water and stir.', '3. Cover the pot and reduce the heat to low, letting the rice cook until 
+done.', '4. Turn off the heat and let the rice sit with the lid on for a few minutes before serving.
+']",,,,,
+" 
+def is_recipient(item:item):
+    # Function to check if an item can receive something
+    return recipient(item)
+
+def has_switch_and_plug(stove:item):
+    # Function to check if the stove has both a switch and a plug
+    return has_switch(stove) and has_plug(stove)
+
+behavior fill_pot_with_water(pot:item, faucet:item):
+    body:
+        achieve_once inhand(pot)
+        achieve_once is_on(faucet)
+        is_water(pot)  # This line is corrected to use is_water instead of an undefined category
+        achieve has_water(pot)
+        achieve_once is_off(faucet)
+
+behavior place_pot_on_stove(pot:item, stove:item):
+    body:
+        achieve on(pot, stove)
+
+behavior turn_on_stove(stove:item):
+    body:
+        achieve is_on(stove)
+        
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot) and not has_water(pot)
+        bind stove: item where:
+            is_stove(stove) and is_recipient(stove)
+        bind faucet: item where:
+            is_faucet(faucet)
+        fill_pot_with_water(pot, faucet)
+        place_pot_on_stove(pot, stove)
+        turn_on_stove(stove)
+        achieve is_on(stove)
+",From function reset_goal,,,,
+,,,,"Record from func query_human in agent.py
+Question: Can you tell me how to add the appropriate amount of water to a pot and bring it to a boil
+.
+Answer: To add water to a pot and bring it to a boil, put the pot in the sink, turn on the faucet to
+ fill the pot with water, turn off the faucet, put the pot on the stove, and turn on the stove.
+",
+,,,,"Record from func query_human in agent.py
+Question: Can you tell me how to add the rice to the boiling water and stir.
+Answer: I don't know.
+",
+,,,,"Record from func query_human in agent.py
+Question: Can you tell me how to cover the pot and reduce the heat to low, letting the rice cook unt
+il done.
+Answer: I don't know.
+",
+,,,,"Record from func query_human in agent.py
+Question: Can you tell me how to turn off the heat and let the rice sit with the lid on for a few mi
+nutes before serving.
+Answer: I don't know.
+",
+"Reset goals: The sub-goals are: 
+['1. Measure and rinse the rice.', '2. Fill a pot with water and combine with rice.', '3. Heat the p
+ot on the stove to cook the rice.', '4. Turn off the stove and let the rice rest.']",,,,,
+" 
+behavior measure_and_rinse_rice(rice:item, container:item, sink:item):
+    body:
+        achieve inside(rice, container)
+        # Ensure the rice is placed inside a container for measuring
+
+        achieve visited(rice)
+        # Verify the amount of rice
+
+        achieve close(container, sink)
+        # Move the container of rice close to the sink
+
+        achieve inside(container, sink)
+        # Place the container of rice inside the sink for rinsing
+
+        if is_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_on(faucet)
+            # If the sink has a faucet close by, turn it on for rinsing
+        
+        rinse(container)
+        # Perform the rinsing of rice inside the container
+
+        if is_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_off(faucet)
+            # Turn off the faucet after rinsing if applicable
+
+behavior __goal__():
+    body:
+        bind rice: item where:
+            is_food_rice(rice)
+        # Select rice item to be measured and rinsed
+
+        bind container: item where:
+            containers(container)
+        # Select a container for holding the rice
+
+        bind sink: item where:
+            is_sink(sink)
+        # Select a sink for rinsing the rice
+
+        measure_and_rinse_rice(rice, container, sink)
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Measure the necessary amount of rice and water.', '2. Add rice and water to the pot.', '3. Boil
+ and simmer the rice until cooked.']",,,,,
+" 
+def calculate_water(rice:item, water: item):
+    # Function to check if water has been measured properly
+    symbol has_water=has_water(water)
+    return has_water
+
+behavior measure_rice(rice:item):
+    body:
+        achieve grabbable(rice) # Select a grabbable rice
+        
+behavior measure_water(water:item):
+    body:
+        achieve drinkable(water) # Select a drinkable container with water
+
+behavior __goal__():
+    body: 
+        bind rice: item where:
+            is_food_rice(rice)
+        # Select rice for the task
+
+        bind water: item where:
+            recipient(water)
+        # Select a water container with water
+
+        measure_rice(rice)
+        measure_water(water)
+
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Measure the appropriate amount of rice and rinse it thoroughly.', '2. Add the rinsed rice and t
+he correct amount of water to the pot.', '3. Place the pot on the stovetop and turn on the heat to b
+ring the water to a boil.', '4. Once boiling, cover the pot and let the rice simmer until cooked.']",,,,,
+"
+behavior measure_rice(rice:item, container:item):
+    body:
+        achieve inside(rice, container)
+        # Measure the rice into the container
+
+behavior rinse_rice(rice:item, sink:item):
+    body:
+        achieve_once inside(rice, sink)
+        # Ensure the rice is placed inside the sink
+        
+        if is_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet,sink)
+            achieve_once is_on(faucet)
+            # If the sink has a faucet, turn it on to rinse the rice
+
+        rinse(rice) 
+        # Rinse the rice in the sink
+
+        if is_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet,sink)
+            achieve_once is_off(faucet)
+            # If the sink has a faucet, turn it off after rinsing
+
+behavior __goal__():
+    body:
+        bind rice: item where:
+            is_food_rice(rice)
+            
+        bind container: item where:
+            is_bowl(container) or is_pot(container)
+        # Select a container like a bowl or a pot to measure rice into
+
+        bind sink: item where:
+            is_sink(sink)
+        # Select a sink to rinse rice
+
+        measure_rice(rice, container)
+        rinse_rice(rice, sink)
+",From function reset_goal,,,,
+,,,,"Record from func query_human in agent.py
+Question: Can you teach me how to ""1. measure the appropriate amount of rice and rinse it thoroughly
+."" ?
+Answer: I don't know.
+",
+" 
+def is_rice_clean(rice:item):
+    # Determine whether the rice is clean
+    symbol is_clean=clean(rice)
+    return is_clean
+
+behavior measure_and_rinse_rice(rice:item, bowl:item, sink:item):
+    body:
+        assert is_food_rice(rice)
+        # Make sure the item is rice
+        
+        achieve inside(rice, bowl)
+        # The rice is placed inside a bowl
+        
+        achieve has_water(bowl)
+        # Add water to the bowl to rinse the rice
+        
+        rinse(rice)
+        # Rinse the rice in the bowl
+        
+        if is_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_on(faucet)
+            # If the sink has a faucet, turn it on to rinse
+
+        rinse(rice)
+        # This is the key step of the behavior, used for rinsing rice
+        
+        if is_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_off(faucet)
+            # If the sink has a faucet, turn it off after rinsing
+
+behavior __goal__():
+    body:
+        bind rice: item where:
+            is_food_rice(rice) and not is_rice_clean(rice)
+        # Select rice that needs to be cleaned
+        bind bowl: item where:
+            is_bowl(bowl)
+        # Select a bowl
+        bind sink: item where:
+            is_sink(sink)
+        # Select a sink
+        measure_and_rinse_rice(rice, bowl, sink)
+",From function reset_sub_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Measure the desired amount of rice and water.', '2. Place the rice and water into the pot.', '3
+. Boil the rice on the stove until cooked.']",,,,,
+" 
+def is_required_amount_measured(rice: item, water: item):
+    # Function to check if the required amount of rice and water has been measured
+    # As an example, assume that if water and rice are distinct items, the requirement is satisfied 
+for this purpose
+    symbol measured = grabbable(rice) and grabbable(water)
+    return measured
+
+behavior measure_rice_and_water(table: item, rice: item, water: item):
+    body:
+        achieve on(rice, table) # Place rice on table
+        achieve on(water, table) # Place water on table
+        assert is_required_amount_measured(rice, water) # Confirm required amount is measured
+
+behavior __goal__():
+    body:
+        bind table: item where:
+            is_table(table)
+        # Select a table
+        
+        bind rice: item where:
+            is_food_rice(rice)
+        # Select rice as a food item
+        
+        bind water: item where:
+            is_cup(water) or is_bowl(water)
+        # Use cup or bowl to represent water
+        
+        measure_rice_and_water(table, rice, water)
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Measure and wash the rice.', '2. Fill the pot with water and add the rice.', '3. Boil the rice 
+on the stove until cooked.']",,,,,
+" 
+behavior measure_rice(rice:item, bowl:item):
+    body:
+        achieve inside(rice, bowl)
+        # Measure rice into the bowl
+
+behavior wash_rice(rice:item, sink:item):
+    body:
+        achieve inside(rice, sink)
+        # Place rice in the sink for washing
+
+        if exists faucet: item: is_faucet(faucet) and close(faucet, sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_on(faucet)
+            # Turn on faucet to wash the rice
+
+        rinse(rice) # Wash the rice
+
+        if is_faucet(sink): # Replacing has_faucet with is_faucet
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_off(faucet)
+            # Turn off faucet post washing
+
+behavior __goal__():
+    body:
+        bind rice: item where:
+            is_food_rice(rice)
+        # Select rice for measurement and washing
+
+        bind bowl: item where:
+            is_bowl(bowl)
+        # Select a bowl for measuring rice
+
+        bind sink: item where:
+            is_sink(sink)
+        # Select a sink for washing rice
+
+        measure_rice(rice, bowl)
+        wash_rice(rice, sink)
+",From function reset_goal,,,,
+,,,,,"(CrowControllerApplier<walk_executor(kitchen_counter_230)>, CrowControllerApplier<exp(bowl_2071, kit
+chen_counter_230)>, CrowControllerApplier<exp(food_rice_2036, kitchen_counter_230)>, CrowControllerA
+pplier<walk_executor(food_rice_2036)>, CrowControllerApplier<grab_executor(food_rice_2036)>, CrowCon
+trollerApplier<walk_executor(bowl_2071)>, CrowControllerApplier<putin_executor(food_rice_2036, bowl_
+2071)>, CrowControllerApplier<walk_executor(food_rice_2036)>, CrowControllerApplier<grab_executor(fo
+od_rice_2036)>, CrowControllerApplier<walk_executor(sink_42)>, CrowControllerApplier<putin_executor(
+food_rice_2036, sink_42)>, CrowControllerApplier<walk_executor(food_rice_2036)>, CrowControllerAppli
+er<rinse_executor(food_rice_2036)>)"
+,,walk_executor(kitchen_counter_230),"Find remote_control_2052. Find napkin_2005. Find knife_2050. Find cutting_board_2051. Find cup_2063.
+ Find cup_2064. Find pot_2069. Find oil_2079. Find fryingpan_2083. Find tray_296. Find drawing_239. 
+Find drawing_238. Find drawing_240. Find drawing_241. Find drawing_242. Find drawing_243. Robot is i
+nside dining_room_201. Robot is close remote_control_2052. Robot is close kitchen_counter_230. Grabb
+ing remote_control_2052 by right hand. Robot is on couch_352. Grabbing remote_control_2052 by left h
+and. ",,
+Checking k1,Evaluator failed to find a plan,,,,
+,,"exp(bowl_2071, kitchen_counter_230)",Failed to find bowl_2071 around kitchen_counter_230. ,,
+Checking k1,Evaluator failed to find a plan,,,,
+"Reset goals: The sub-goals are: 
+['1. Measure the desired amount of rice and rinse it thoroughly.', '2. Add water to the pot with the
+ rinsed rice.', '3. Bring the water to a boil on the stove and then reduce the heat to simmer until 
+the rice is cooked.']",,,,,
+" 
+def find_rice_and_bowl():
+    # Check if there is rice and a bowl available
+    symbol has_rice=exists rice: item : is_food_rice(rice)
+    symbol has_bowl=exists bowl: item : is_bowl(bowl)
+    return has_rice and has_bowl
+
+def rinse_step_defined(bowl:item, sink:item):
+    # Check if rinsing can be performed in the defined step
+    symbol rinse_possible=exists faucet: item : is_faucet(faucet) and close(faucet, sink) and recipi
+ent(bowl)
+    return rinse_possible
+
+behavior start_rinsing(bowl: item, sink: item):
+    body:
+        achieve_once inside(bowl, sink) # Place the bowl inside the sink
+        if rinse_step_defined(bowl, sink):
+            # Ensure the faucet associated with the sink is turned on
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_on(faucet)
+            rinse(bowl)
+            achieve_once is_off(faucet)
+        else:
+            rinse(bowl) # Directly rinse if no faucet exists
+
+behavior __goal__():
+    body:
+        if find_rice_and_bowl():
+            # Proceed if there is rice and a bowl available
+            bind rice: item where: 
+                is_food_rice(rice)
+            bind bowl: item where:
+                is_bowl(bowl) 
+            bind sink: item where:
+                is_sink(sink)
+            start_rinsing(bowl, sink)
+
+        else:
+            foreach bowl: item:
+                # Seek unvisited bowls
+                if is_bowl(bowl) and not visited(bowl):
+                    observe(bowl, ""Check is there any rice or bowl available"")
+",From function reset_goal,,,,
+Checking k1,Evaluator failed to find a plan,,,,
+Checking k1,Evaluator failed to find a plan,,,,

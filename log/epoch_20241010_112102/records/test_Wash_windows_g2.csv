@@ -1,0 +1,190 @@
+Goal Representation,Debug Result,Action,Add Info,LLM Answer,Plan
+k1,missed actions: walk_executor(towel_2056);grab_executor(towel_2056);,,,,
+"Reset goals: The sub-goals are: 
+['1. Identify all the windows in the house that need wiping.', '2. Wipe each window in the house usi
+ng a towel.']",,,,,
+" 
+def identify_windows(window:item):
+    # Determine whether this item is a window
+    symbol is_a_window=is_window(window)
+    return is_a_window
+
+behavior __goal__():
+    body:
+        foreach window: item:
+            if identify_windows(window):
+                # Observe each window to determine if it needs wiping
+                observe(window, ""Check if the window needs wiping"")
+",From function reset_goal,,,,
+,,,,"Record from func query_human in agent.py
+Question: Can you tell me how to identify all the windows in the house that need wiping.
+Answer: I don't know.
+",
+,,,,"Record from func query_human in agent.py
+Question: Can you tell me how to wipe each window in the house using a towel.
+Answer: I don't know.
+",
+,,,,,"(CrowControllerApplier<walk_executor(window_63)>, CrowControllerApplier<open_executor(window_63)>, C
+rowControllerApplier<obs(window_63, Check if the window needs wiping)>, CrowControllerApplier<walk_e
+xecutor(window_86)>, CrowControllerApplier<obs(window_86, Check if the window needs wiping)>, CrowCo
+ntrollerApplier<walk_executor(window_348)>, CrowControllerApplier<open_executor(window_348)>, CrowCo
+ntrollerApplier<obs(window_348, Check if the window needs wiping)>)"
+,,walk_executor(window_63),"Find remote_control_2052. Find towel_rack_33. Robot is inside bathroom_1. Robot is close remote_cont
+rol_2052. Robot is close window_63. Grabbing remote_control_2052 by right hand. Robot is on couch_35
+2. Grabbing remote_control_2052 by left hand. ",,
+Checking k1,Evaluator failed to find a plan,,,,
+" 
+def cannot_open_executor_window(window:item):
+    # Determine if the window cannot be opened with an executor
+    return id[window] == 63
+
+behavior identify_windows_to_wipe():
+    body:
+        foreach window: item:
+            if is_window(window) and not visited(window) and not cannot_open_executor_window(window)
+:
+                observe(window, ""check if the window needs wiping"")
+
+behavior __goal__():
+    body:
+        identify_windows_to_wipe()
+",From function reset_sub_goal,,,,
+Checking k1,Evaluator failed to find a plan,,,,
+"Reset goals: The sub-goals are: 
+['1. Identify all the windows in the house.', '2. Wipe each window thoroughly using a towel.']",,,,,
+"
+behavior identify_windows_in_house():
+    body:
+        foreach window: item:
+            if is_window(window) and not visited(window):
+                observe(window, ""Identify the window location"")
+
+behavior __goal__():
+    body:
+        identify_windows_in_house()
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Identify all the windows in the house.', '2. Wipe each window using a towel.']",,,,,
+" 
+def is_window_inaccessible(window: item):
+    # Function to check if a window is inaccessible
+    symbol inaccessible=exists remote_control: item : is_remote_control(remote_control) and close(re
+mote_control, window)
+    return inaccessible
+
+behavior __goal__():
+    body:
+        foreach window: item:
+            if is_window(window) and not visited(window):
+                observe(window, ""Is this a window"")
+                
+        foreach window: item:
+            if is_window(window) and not visited(window) and not is_window_inaccessible(window):
+                observe(window, ""Check if the window can be accessed"")
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Identify all the windows in the house that need to be wiped.', '2. Wipe each window thoroughly 
+using a towel.']",,,,,
+" 
+def is_window(x: item):
+    # Function to check if an item is a window that requires wiping
+    symbol is_wipeable_window=is_window(x) and dirty(x)
+    return is_wipeable_window
+
+behavior __goal__():
+    body:
+        # Start by observing windows to determine their condition
+        foreach window: item:
+            if is_window(window) and not visited(window):
+                observe(window, ""Determine if the window is dirty and requires wiping"")
+        
+        # After observation, focus on the action
+        foreach window: item:
+            if is_window(window) and dirty(window):
+                # Achieve close_char so the robot is in proximity to the window
+                achieve close_char(char, window)
+",From function reset_goal,,,,
+,,,,"Record from func query_human in agent.py
+Question: Can you teach me how to ""1. identify all the windows in the house that need to be wiped."" 
+?
+Answer: I don't know.
+",
+"
+def has_unvisited_window():
+    # Function to check if therere any unvisited windows in the house
+    symbol unvisited_window_exists=exists w: item: is_window(w) and not visited(w)
+    return unvisited_window_exists
+
+behavior observe_unvisited_window(window:item):
+    body:
+        observe(window, ""Check if the window needs to be wiped"")
+        # Observe if the window requires cleaning
+
+behavior __goal__():
+    body:
+        if has_unvisited_window():
+            foreach window:item:
+                if is_window(window) and not visited(window):
+                    observe_unvisited_window(window)
+        else:
+            foreach window: item:
+                if is_window(window) and not visited(window):
+                    observe(window, ""Check if the window needs to be wiped"")
+
+",From function reset_sub_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Identify all the windows in the house that need wiping.', '2. Wipe each window thoroughly using
+ a towel.']",,,,,
+" 
+def is_window_that_needs_wiping(window:item):
+    # Function to determine if a window needs wiping
+    symbol needs_wiping=dirty(window) or is_window(window)
+    return needs_wiping
+
+behavior __goal__():
+    body:
+        foreach window: item:
+            if is_window(window) and not visited(window) and is_window_that_needs_wiping(window):
+                observe(window, ""Check if the window needs wiping"")
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Identify all the windows in the house.', '2. Assess and categorize windows by level of dirtines
+s.', '3. Wipe each window using a towel, starting from the least dirty to the most dirty.']",,,,,
+" 
+def is_window_in_bathroom(window:item):
+    # Function to check if a window is in the bathroom
+    symbol in_bathroom=exists bathroom: item : is_bathroom(bathroom) and inside(window, bathroom)
+    return in_bathroom
+
+behavior identify_all_windows_in_house():
+    body:
+        foreach window: item:
+            if is_window(window) and not visited(window):
+                observe(window, ""Identifying window Check if it is in the bathroom"")
+
+behavior __goal__():
+    body:
+        if exists window: item : is_window(window) and not visited(window):
+            bind window: item where:
+                is_window(window) and not visited(window)
+            # Invoke behavior to identify windows
+            identify_all_windows_in_house()
+
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Identify all windows in the house that need wiping.', '2. Wipe each window thoroughly using a t
+owel.']",,,,,
+"
+def is_window_in_need_of_wiping(window:item):
+    # Function to check if a window needs wiping
+    symbol needs_wiping=dirty(window) or not clean(window)
+    return needs_wiping
+
+behavior __goal__():
+    body:
+        foreach window: item:
+            if is_window(window) and not visited(window):
+                observe(window, ""Check if the window needs wiping"")
+",From function reset_goal,,,,
+Checking k1,Evaluator failed to find a plan,,,,
+Checking k1,Evaluator failed to find a plan,,,,

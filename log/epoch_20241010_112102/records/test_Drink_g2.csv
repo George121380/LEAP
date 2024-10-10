@@ -1,0 +1,222 @@
+Goal Representation,Debug Result,Action,Add Info,LLM Answer,Plan
+k1,"missed actions: walk_executor(fridge_289);switchoff_executor(fridge_289);open_executor(fridge_289);w
+alk_executor(cup_2063);grab_executor(cup_2063);walk_executor(fridge_289);putin_executor(cup_2063, fr
+idge_289);",,,,
+"Reset goals: The sub-goals are: 
+['1. Fill a cup with water.', '2. Place the cup in the freezer.']",,,,,
+"
+behavior fill_cup_with_water(cup: item, water_source: item):
+    body:
+        achieve close_char(char, water_source)
+        # Ensure the character is close to the water source
+        achieve has_water(cup)
+        # Fill the cup with water
+
+behavior __goal__():
+    body:
+        bind cup: item where:
+            is_cup(cup)
+        # Select a cup to fill with water
+        bind water_source: item where:
+            is_sink(water_source) or is_faucet(water_source)
+        # Select a water source such as a sink or faucet
+        fill_cup_with_water(cup, water_source)
+",From function reset_goal,,,,
+,,,,"Record from func query_human in agent.py
+Question: Can you tell me how to fill a cup with water.
+Answer: Grab a cup, walk to any faucet, turn on the faucet to fill the cup with water, then turn off
+ the faucet.
+",
+,,,,"Record from func query_human in agent.py
+Question: Can you tell me how to place the cup in the freezer.
+Answer: I don't know.
+",
+"Reset goals: The sub-goals are: 
+['1. Find a cup and fill it with water.', '2. Place the cup of water in the freezer.']",,,,,
+" 
+def has_free_water_cup(cup: item):
+    # Function to check if a cup is filled with water
+    symbol has_water_cup = has_water(cup)
+    return has_water_cup
+
+behavior __goal__():
+    body:
+        if exists cup: item : is_cup(cup) and has_free_water_cup(cup):
+            # If a cup is already found with water, retrieve it
+            bind cup: item where:
+                is_cup(cup) and has_free_water_cup(cup)
+            achieve close_char(char, cup)
+            # Move closer to the cup with water
+
+        else:
+            # Check all unvisited items for a cup to fill with water
+            foreach cup: item:
+                if is_cup(cup) and not visited(cup):
+                    observe(cup, ""Check if it is empty to be filled with water"")
+                    # Observe each unvisited cup to see if its appropriate to fill
+",From function reset_goal,,,,
+,,,,,"(CrowControllerApplier<walk_executor(kitchen_counter_230)>, CrowControllerApplier<exp(cup_2063, kitc
+hen_counter_230)>, CrowControllerApplier<walk_executor(cup_2063)>, CrowControllerApplier<obs(cup_206
+3, Check if it is empty to be filled with water)>, CrowControllerApplier<walk_executor(kitchen_count
+er_230)>, CrowControllerApplier<exp(cup_2064, kitchen_counter_230)>, CrowControllerApplier<walk_exec
+utor(cup_2064)>, CrowControllerApplier<obs(cup_2064, Check if it is empty to be filled with water)>)"
+"
+behavior find_cup_and_fill_water(cup:item, faucet:item):
+    body:
+        achieve close_char(char, faucet)
+        achieve_once inhand(cup)
+        achieve is_on(faucet)
+        is_sink(cup)
+        achieve_once is_off(faucet)
+
+behavior __goal__():
+    body:
+        bind cup: item where:
+            is_cup(cup)
+        bind faucet: item where:
+            is_faucet(faucet)
+        find_cup_and_fill_water(cup, faucet)
+",From function reset_sub_goal,,,,
+k1,"missed actions: walk_executor(fridge_289);switchoff_executor(fridge_289);open_executor(fridge_289);w
+alk_executor(cup_2063);grab_executor(cup_2063);walk_executor(fridge_289);putin_executor(cup_2063, fr
+idge_289);",,,,
+"Reset goals: The sub-goals are: 
+['1. Fill a cup with water.', '2. Place the cup of water in the freezer.']",,,,,
+" 
+behavior fill_cup_with_water(cup:item, tap:item):
+    body:
+        achieve has_water(cup)
+
+behavior __goal__():
+    body:
+        bind cup: item where:
+            is_cup(cup)
+        bind tap: item where:
+            is_faucet(tap)
+        fill_cup_with_water(cup, tap)
+",From function reset_goal,,,,
+,,,,,"(CrowControllerApplier<walk_executor(table_355)>, CrowControllerApplier<exp(cup_2063, table_355)>, C
+rowControllerApplier<walk_executor(cup_2063)>, CrowControllerApplier<grab_executor(cup_2063)>, CrowC
+ontrollerApplier<walk_executor(faucet_43)>, CrowControllerApplier<switchon_executor(faucet_43)>, Cro
+wControllerApplier<switchoff_executor(faucet_43)>)"
+"
+## Formal Representation:
+
+behavior fill_cup_with_water(cup:item, sink:item):
+    body:
+        achieve_once inhand(cup)
+        # Temporarily hold the cup in hand
+
+        achieve inside(cup, sink)
+        # Place the cup in the sink
+
+        bind faucet: item where:
+            is_faucet(faucet) and close(faucet, sink)
+        # Select a faucet close to the sink
+
+        achieve_once is_on(faucet)
+        # Temporarily turn on the faucet
+
+        is_food_food(cup)
+        # Fill the cup with water
+
+        achieve_once is_off(faucet)
+        # Temporarily turn off the faucet after filling the cup
+
+behavior __goal__():
+    body:
+        bind cup: item where:
+            is_cup(cup)
+        # Select a cup
+
+        bind sink: item where:
+            is_sink(sink)
+        # Select a sink
+
+        fill_cup_with_water(cup, sink)
+",From function reset_sub_goal,,,,
+k1,"missed actions: walk_executor(fridge_289);switchoff_executor(fridge_289);open_executor(fridge_289);w
+alk_executor(cup_2063);grab_executor(cup_2063);walk_executor(fridge_289);putin_executor(cup_2063, fr
+idge_289);",,,,
+"Reset goals: The sub-goals are: 
+['1. Fill a cup with water.', '2. Place the cup of water in the freezer until frozen.']",,,,,
+"behavior fill_cup_with_water(cup:item, sink:item):
+    body:
+        achieve_once inside(cup, sink)
+        # Place the cup in the sink to fill it with water
+        if exists faucet: item : is_faucet(faucet) and close(faucet, sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet,sink)
+            achieve_once is_on(faucet)
+            # Turn on the faucet to fill the cup
+        achieve has_water(cup)
+        # Ensure the cup is filled with water
+
+behavior __goal__():
+    body:
+        bind cup: item where:
+            is_cup(cup) and not has_water(cup)
+        # Select a cup that is not already filled with water
+        bind sink: item where:
+            is_sink(sink)
+        # Select a sink to fill the cup with water
+        fill_cup_with_water(cup, sink)",From function reset_goal,,,,
+,,,,"Record from func query_human in agent.py
+Question: Can you teach me how to ""1. fill a cup with water."" ?
+Answer: Grab a cup, walk to any faucet, turn on the faucet to fill the cup with water, and then turn
+ off the faucet.
+",
+" 
+behavior fill_cup_with_water(cup:item, faucet:item):
+    body:
+        achieve_once inhand(cup)
+        # Hold the cup in hand
+        
+        achieve close_char(char, faucet)
+        # Move close to the faucet
+        
+        achieve is_on(faucet)
+        # Turn on the faucet
+        
+        is_sink(cup)
+        # Fill the cup with water
+        
+        achieve is_off(faucet)
+        # Turn off the faucet
+
+behavior __goal__():
+    body:
+        bind cup: item where:
+            is_cup(cup)
+        # Bind a cup to fill with water
+
+        bind faucet: item where:
+            is_faucet(faucet)
+        # Bind any available faucet
+
+        fill_cup_with_water(cup, faucet)
+        # Fill the cup with water from the faucet
+",From function reset_sub_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Get a cup of water.', '2. Place the cup of water in the freezer.']",,,,,
+"
+behavior fetch_cup_and_fill_with_water(cup:item, faucet:item):
+    body:
+        achieve_once inhand(cup)
+        achieve close_char(char, faucet)
+        achieve_once is_on(faucet)
+        is_sink(cup)
+        achieve_once is_off(faucet)
+
+behavior __goal__():
+    body:
+        bind cup: item where:
+            is_cup(cup)
+        bind faucet: item where:
+            is_faucet(faucet) and not close_char(char, cup)
+        fetch_cup_and_fill_with_water(cup, faucet)
+",From function reset_goal,,,,
+,,,,,"(CrowControllerApplier<walk_executor(bathroom_counter_41)>, CrowControllerApplier<exp(cup_2063, bath
+room_counter_41)>, CrowControllerApplier<walk_executor(cup_2063)>, CrowControllerApplier<grab_execut
+or(cup_2063)>, CrowControllerApplier<walk_executor(faucet_43)>, CrowControllerApplier<switchon_execu
+tor(faucet_43)>, CrowControllerApplier<switchoff_executor(faucet_43)>)"

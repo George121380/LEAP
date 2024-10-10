@@ -1,0 +1,288 @@
+Goal Representation,Debug Result,Action,Add Info,LLM Answer,Plan
+k1,"missed actions: walk_executor(washing_machine_2007);open_executor(washing_machine_2007);walk_executo
+r(clothes_jacket_2047);grab_executor(clothes_jacket_2047);walk_executor(washing_machine_2007);putin_
+executor(clothes_jacket_2047, washing_machine_2007);plugin_executor(washing_machine_2007);close_exec
+utor(washing_machine_2007);switchon_executor(washing_machine_2007);",,,,
+"Reset goals: The sub-goals are: 
+['1. Hand wash the jacket.', '2. Wash the jacket using the washing machine.']",,,,,
+" 
+behavior __goal__():
+    body:
+        bind jacket: item where:
+            is_clothes_jacket(jacket)
+        bind sink: item where:
+            is_sink(sink)
+        
+        # Ensure the jacket is placed in the sink for washing
+        achieve inside(jacket, sink)
+        
+        # Wash the jacket by hand using the provided wash behavior
+        wash(jacket)
+
+        # After washing, ensure the jacket is clean
+        achieve clean(jacket)
+",From function reset_goal,,,,
+,,,,"Record from func query_human in agent.py
+Question: Can you tell me how to hand wash the jacket.
+Answer: Put the jacket in the sink, turn on the faucet, wash/scrub/rinse the jacket, turn off the fa
+ucet, and take out the jacket.
+",
+,,,,"Record from func query_human in agent.py
+Question: Can you tell me how to wash the jacket using the washing machine.
+Answer: I don't know.
+",
+,,,,,"(CrowControllerApplier<walk_executor(dresser_108)>, CrowControllerApplier<open_executor(dresser_108)
+>, CrowControllerApplier<exp(clothes_jacket_2047, dresser_108)>, CrowControllerApplier<walk_executor
+(clothes_jacket_2047)>, CrowControllerApplier<grab_executor(clothes_jacket_2047)>, CrowControllerApp
+lier<walk_executor(sink_42)>, CrowControllerApplier<putin_executor(clothes_jacket_2047, sink_42)>, C
+rowControllerApplier<walk_executor(clothes_jacket_2047)>, CrowControllerApplier<wash_executor(clothe
+s_jacket_2047)>)"
+,,walk_executor(dresser_108),"Find remote_control_2052. Find hanger_109. Find hanger_110. Find hanger_111. Find hanger_112. Find h
+anger_113. Find hanger_114. Find hanger_115. Find hanger_140. Find hanger_130. Find hanger_132. Find
+ hanger_134. Find hanger_136. Find hanger_126. Find hanger_142. Find mat_173. Find hanger_124. Find 
+hanger_138. Find hanger_141. Find hanger_128. Robot is inside bedroom_67. Robot is close remote_cont
+rol_2052. Robot is close dresser_108. Robot is close hanger_109. Robot is close hanger_110. Robot is
+ close hanger_111. Robot is close hanger_112. Robot is close hanger_113. Robot is close hanger_114. 
+Robot is close hanger_115. Robot is close closetdrawer_116. Robot is close closetdrawer_117. Robot i
+s close closetdrawer_118. Robot is close closetdrawer_119. Robot is close closetdrawer_120. Robot is
+ close closetdrawer_121. Robot is close closetdrawer_122. Grabbing remote_control_2052 by right hand
+. Robot is on couch_352. Grabbing remote_control_2052 by left hand. ",,
+Checking k1,Evaluator failed to find a plan,,,,
+" 
+def has_faucet(sink:item):
+    # Determine whether the sink has a faucet
+    symbol has_faucet=exists faucet:item: is_faucet(faucet) and close(faucet,sink)
+    return has_faucet
+
+behavior clean_jacket(jacket:item, sink:item):
+    body:
+        achieve_once inhand(jacket)
+        # Hold the jacket in hand for washing
+        
+        if has_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet,sink)
+            achieve_once is_on(faucet)
+            # Turn on the faucet if it exists
+        
+        wash(jacket)
+        # Wash the jacket by hand
+        
+        if has_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet,sink)
+            achieve_once is_off(faucet)
+            # Turn off the faucet after washing
+
+behavior __goal__():
+    body:
+        bind jacket: item where:
+            is_clothes_jacket(jacket) and dirty(jacket)
+        # Select the jacket to be washed
+        bind sink: item where:
+            is_sink(sink)
+        # Select a sink to wash the jacket
+        clean_jacket(jacket, sink)
+",From function reset_sub_goal,,,,
+Checking k1,Evaluator failed to find a plan,,,,
+"Reset goals: The sub-goals are: 
+['1. Hand wash the jacket.', '2. Machine wash the hand-washed jacket.']",,,,,
+" 
+behavior hand_wash_jacket(jacket: item):
+    body:
+        scrub(jacket)
+        # Scrub the jacket to clean it
+        
+        rinse(jacket)
+        # Rinse the jacket to remove soap and dirt
+
+        squeeze(jacket)
+        # Squeeze the jacket to expel excess water
+
+behavior __goal__():
+    body:
+        bind jacket: item where:
+            is_clothes_jacket(jacket)
+        # Select a jacket to be washed
+        
+        hand_wash_jacket(jacket)
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Hand wash the jacket.', '2. Wash the jacket using the washing machine.']",,,,,
+" 
+behavior hand_wash_jacket(jacket: item, sink: item):
+    body:
+        achieve_once inhand(jacket)
+        achieve inside(jacket, sink)
+        wash(jacket)
+        rinse(jacket)
+        achieve_once not inhand(jacket)
+
+def has_jacket_in_dresser(dresser: item):
+    symbol has_jacket = exists jacket: item : is_clothes_jacket(jacket) and inside(jacket, dresser)
+    return has_jacket
+
+behavior __goal__():
+    body:
+        bind dresser: item where:
+            is_dresser(dresser) and id[dresser] == 108
+        bind sink: item where:
+            is_sink(sink)
+        if not has_jacket_in_dresser(dresser):
+            foreach closetdrawer: item:
+                if is_closetdrawer(closetdrawer) and not visited(closetdrawer):
+                    observe(closetdrawer, ""Check is there a jacket in the drawer"")
+        
+        bind jacket: item where:
+            is_clothes_jacket(jacket) and inside(jacket, dresser)
+        hand_wash_jacket(jacket, sink)
+        achieve clean(jacket)
+        achieve has_water(jacket)
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Hand wash the jacket.', '2. Wash the jacket using the washing machine.']",,,,,
+" 
+behavior __goal__():
+    body:
+        bind jacket: item where:
+            is_clothes_jacket(jacket)
+        # Select the jacket
+
+        bind sink_for_handwashing: item where:
+            is_sink(sink_for_handwashing) and inside_char(char, sink_for_handwashing)
+        # Select a sink for handwashing
+
+        achieve close_char(char, sink_for_handwashing)
+        # Make sure the character is close to the sink for handwashing
+
+        wash(jacket)
+        # Hand wash the jacket
+",From function reset_goal,,,,
+,,,,"Record from func query_human in agent.py
+Question: Can you teach me how to ""1. hand wash the jacket."" ?
+Answer: I don't know.
+",
+"behavior __goal__():
+    body:
+        bind jacket: item where:
+            is_clothes_jacket(jacket)
+        # Select the jacket to be washed
+        
+        assert dirty(jacket)
+        # Ensure the jacket is dirty and needs washing
+
+        if exists sink: item : is_sink(sink) and has_water(sink):
+            # Check if there is a sink with water available for hand washing
+            bind sink: item where:
+                is_sink(sink) and has_water(sink)
+            wash(jacket) # Hand wash the jacket in the sink
+
+        else:
+            foreach sink: item:
+                if is_sink(sink) and not visited(sink):
+                    observe(sink, ""Check if there is water available in the sink for washing the jac
+ket"")
+                    # Observe to find a suitable sink with water",From function reset_sub_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Hand wash the jacket.', '2. Wash the jacket using the washing machine.']",,,,,
+" 
+def has_faucet(sink:item):
+    symbol has_faucet=exists faucet:item: is_faucet(faucet) and close(faucet,sink)
+    return has_faucet
+
+behavior clean_clothes(jacket:item, sink:item):
+    body:
+        achieve_once inside(jacket, sink)
+        if has_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_on(faucet)
+        wash(jacket)
+        if has_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_off(faucet)
+
+behavior __goal__():
+    body:
+        # Step 1: Select a jacket
+        bind jacket: item where:
+            is_clothes_jacket(jacket)
+
+        # Step 2: Find a sink
+        bind sink: item where:
+            is_sink(sink)
+
+        # Step 3: Start the cleaning process
+        clean_clothes(jacket, sink)
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Hand wash the jacket.', '2. Wash the jacket using the washing machine.']",,,,,
+" 
+def has_faucet(sink:item):
+    # Determine whether this sink has a faucet
+    symbol has_faucet=exists faucet:item: is_faucet(faucet) and close(faucet,sink)
+    return has_faucet
+
+behavior clean_clothes(clothing:item, sink:item):
+    # Define the behavior to clean clothes by hand in a sink
+    body:
+        achieve_once inside(clothing, sink)
+        # Ensure the clothing is placed inside the sink
+
+        if has_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet,sink)
+            achieve_once is_on(faucet)
+            # If the sink has a faucet, turn it on to wash the clothing
+
+        wash(clothing) # This is the main step of the behavior, used for washing clothing
+
+        if has_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet,sink)
+            achieve_once is_off(faucet)
+            # If the sink has a faucet, turn it off after washing
+
+behavior __goal__():
+    body:
+        bind jacket: item where:
+            is_clothes_jacket(jacket)
+        # Select the jacket instance in the scene
+
+        bind sink: item where:
+            is_sink(sink)
+        # Select a sink in the scene
+
+        clean_clothes(jacket, sink)
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Hand wash the jacket.', '2. Place the jacket in the washing machine and run a wash cycle.']",,,,,
+" 
+behavior wash_jacket_by_hand(jacket:item):
+    body:
+        achieve dirty(jacket)
+        # Ensure that the jacket is dirty and needs washing
+
+        bind sink: item where:
+            is_sink(sink)
+        # Select a sink for washing
+
+        achieve inside(jacket, sink)
+        # Place the jacket inside the sink
+
+        wash(jacket)
+        # Wash the jacket by hand
+
+behavior __goal__():
+    body:
+        bind jacket: item where:
+            is_clothes_jacket(jacket)
+        # Select a jacket
+
+        wash_jacket_by_hand(jacket)
+        # Perform the hand wash of the jacket
+
+",From function reset_goal,,,,
+Checking k1,Evaluator failed to find a plan,,,,
+Checking k1,Evaluator failed to find a plan,,,,

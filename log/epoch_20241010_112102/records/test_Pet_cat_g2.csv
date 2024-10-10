@@ -1,0 +1,308 @@
+Goal Representation,Debug Result,Action,Add Info,LLM Answer,Plan
+k1,"missed actions: walk_executor(fridge_289);switchoff_executor(fridge_289);open_executor(fridge_289);w
+alk_executor(food_chicken_2017);grab_executor(food_chicken_2017);walk_executor(cutting_board_2051);p
+ut_executor(food_chicken_2017, cutting_board_2051);walk_executor(knife_2050);grab_executor(knife_205
+0);walk_executor(food_chicken_2017);cut_executor(food_chicken_2017);",,,,
+Checking k2,Evaluator failed to find a plan,,,,
+"Reset goals: The sub-goals are: 
+['1. Slice the chicken.', '2. Give the sliced chicken to the cat.']",,,,,
+" 
+def is_on_surface(surface: item, obj: item):
+    # Function to check if an item is on a specified surface
+    symbol on_surface = on(obj, surface) and surfaces(surface)
+    return on_surface
+
+def has_cuttable_food(item: item):
+    # Determine if a given item is cuttable food, ie, chicken in this case
+    return is_food_chicken(item) and cuttable(item)
+
+behavior find_and_cut_chicken():
+    body:
+        bind knife: item where:
+            is_knife(knife)
+        # Select a knife
+
+        bind cutting_board: item where:
+            is_cutting_board(cutting_board)
+        # Select a cutting board
+
+        if exists chicken: item : is_food_chicken(chicken) and has_cuttable_food(chicken):
+            bind chicken: item where:
+                is_food_chicken(chicken) and has_cuttable_food(chicken)
+            # Select the chicken to be cut
+
+            if not is_on_surface(cutting_board, chicken):
+                # Make sure the chicken is on the cutting board
+                achieve on(chicken, cutting_board)
+
+            # Use the knife to cut the chicken
+            achieve_once inhand(knife)
+
+            achieve cut(chicken)
+            # Cut the chicken
+
+behavior __goal__():
+    body:
+        find_and_cut_chicken()
+",From function reset_goal,,,,
+,,,,"Record from func query_human in agent.py
+Question: Can you tell me how to slice the chicken.
+Answer: I don't know.
+",
+,,,,"Record from func query_human in agent.py
+Question: Can you tell me how to give the sliced chicken to the cat.
+Answer: I don't know.
+",
+,,,,,"(CrowControllerApplier<walk_executor(kitchen_counter_230)>, CrowControllerApplier<exp(cutting_board_
+2051, kitchen_counter_230)>, CrowControllerApplier<walk_executor(fridge_289)>, CrowControllerApplier
+<switchoff_executor(fridge_289)>, CrowControllerApplier<open_executor(fridge_289)>, CrowControllerAp
+plier<exp(food_chicken_2017, fridge_289)>, CrowControllerApplier<walk_executor(food_chicken_2017)>, 
+CrowControllerApplier<grab_executor(food_chicken_2017)>, CrowControllerApplier<walk_executor(cutting
+_board_2051)>, CrowControllerApplier<put_executor(food_chicken_2017, cutting_board_2051)>, CrowContr
+ollerApplier<walk_executor(kitchen_counter_230)>, CrowControllerApplier<exp(knife_2050, kitchen_coun
+ter_230)>, CrowControllerApplier<walk_executor(knife_2050)>, CrowControllerApplier<grab_executor(kni
+fe_2050)>, CrowControllerApplier<walk_executor(food_chicken_2017)>, CrowControllerApplier<cut_execut
+or(food_chicken_2017)>)"
+,,walk_executor(kitchen_counter_230),"Find remote_control_2052. Find napkin_2005. Find knife_2050. Find cutting_board_2051. Find cup_2063.
+ Find cup_2064. Find pot_2069. Find oil_2079. Find fryingpan_2083. Find tray_296. Find drawing_239. 
+Find drawing_238. Find drawing_240. Find drawing_241. Find drawing_242. Find drawing_243. Robot is i
+nside dining_room_201. Robot is close remote_control_2052. Robot is close kitchen_counter_230. Grabb
+ing remote_control_2052 by right hand. Robot is on couch_352. Grabbing remote_control_2052 by left h
+and. ",,
+Checking k1,Evaluator failed to find a plan,,,,
+,,"exp(cutting_board_2051, kitchen_counter_230)",Find cutting_board_2051. ,,
+Checking k1,Evaluator failed to find a plan,,,,
+"Reset goals: The sub-goals are: 
+['1. Slice the chicken.  ', '2. Give the sliced chicken to the cat.']",,,,,
+" 
+def has_cutting_board_on_counter(counter:item):
+    # Function to check if there is a cutting board on a specified counter
+    symbol has_cutting_board=exists o: item : is_cutting_board(o) and on(o, counter)
+    return has_cutting_board
+
+def has_knife_on_counter(counter:item):
+    # Function to check if there is a knife on a specified counter
+    symbol has_knife=exists o: item : is_knife(o) and on(o, counter)
+    return has_knife
+
+behavior slice_chicken(chicken:item, cutting_board:item, knife:item):
+    body:
+        achieve cut(chicken)
+
+behavior __goal__():
+    body:
+        bind chicken: item where:
+            is_food_chicken(chicken)
+
+        bind counter: item where:
+            is_kitchen_counter(counter) and has_cutting_board_on_counter(counter) and has_knife_on_c
+ounter(counter)
+        # Select the counter with both a cutting board and a knife
+
+        bind cutting_board: item where:
+            is_cutting_board(cutting_board) and on(cutting_board, counter)
+        # Select the cutting board on the counter
+
+        bind knife: item where:
+            is_knife(knife) and on(knife, counter)
+        # Select the knife on the counter
+
+        achieve inside(chicken, counter)
+        # Ensure the chicken is placed on the counter
+
+        achieve on(chicken, cutting_board)
+        # Ensure the chicken is placed on the cutting board
+
+        slice_chicken(chicken, cutting_board, knife)
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Slice the chicken.  ', '2. Give the sliced chicken to the cat.']",,,,,
+" 
+behavior cut_food(food:item, cutting_board:item, knife:item):
+    body:
+        achieve close_char(char, cutting_board)
+        achieve on(food, cutting_board)
+        achieve_once inhand(knife)
+        achieve cut(food)
+
+behavior __goal__():
+    body:
+        bind cutting_board: item where:
+            is_cutting_board(cutting_board)
+        # Select the available cutting board
+
+        bind kitchen_counter: item where:
+            is_kitchen_counter(kitchen_counter)
+        # Select the kitchen counter
+
+        bind knife: item where:
+            is_knife(knife) and close(knife, kitchen_counter)
+        # Select a knife close to the kitchen counter
+
+        bind food_chicken: item where:
+            is_food_chicken(food_chicken)
+        # Select the chicken
+        
+        cut_food(food_chicken, cutting_board, knife)
+        # Cut the chicken on the cutting board
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Slice the chicken.', '2. Give the sliced chicken to the cat.']",,,,,
+" 
+behavior slice_chicken(chicken:item, cutting_board:item, knife:item):
+    body:
+        achieve on(chicken, cutting_board)
+        # Place the chicken on the cutting board for slicing
+
+        achieve cut(chicken)
+        # Slice the chicken using the knife
+
+behavior __goal__():
+    body:
+        bind chicken: item where:
+            is_food_chicken(chicken)
+        # Select the chicken
+        
+        bind cutting_board: item where:
+            is_cutting_board(cutting_board)
+        # Select the cutting board
+
+        bind knife: item where:
+            is_knife(knife)
+        # Select the knife
+
+        achieve close_char(char, cutting_board)
+        # Position character close to cutting board for slicing
+
+        slice_chicken(chicken, cutting_board, knife)
+        # Proceed to slice the chicken
+",From function reset_goal,,,,
+,,,,"Record from func query_human in agent.py
+Question: Can you teach me how to ""1. slice the chicken."" ?
+Answer: I don't know.
+",
+"
+behavior __goal__():
+    body:
+        bind kitchen_counter_230: item where:
+            is_kitchen_counter(kitchen_counter_230)
+        # Ensure the kitchen counter is defined
+
+        bind cutting_board: item where:
+            is_cutting_board(cutting_board)
+        # Select the cutting board
+
+        bind knife: item where:
+            is_knife(knife) and close(knife, kitchen_counter_230)
+        # Select the knife that is close to the kitchen counter
+
+        bind chicken: item where:
+            is_food_chicken(chicken) and close(chicken, kitchen_counter_230)
+        # Select the chicken that is close to the kitchen counter
+
+        achieve_once inhand(knife)
+        # Temporarily hold the knife to cut the chicken
+
+        achieve cut(chicken)
+        # Cut the chicken
+",From function reset_sub_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Slice the chicken.', '2. Give the sliced chicken to the cat.']",,,,,
+" 
+def is_cutting_board_close_to_chicken(chicken:item, cutting_board:item):
+    # Check if the cutting board is close to the chicken
+    return close(cutting_board, chicken)
+
+def is_knife_close_to_cutting_board(cutting_board:item, knife:item):
+    # Check if the knife is close to the cutting board
+    return close(knife, cutting_board)
+
+behavior cut_chicken(chicken:item, cutting_board:item, knife:item):
+    # Define the behavior to cut the chicken
+    body:
+        achieve_once inhand(knife) 
+        # Hold the knife to cut the chicken
+        achieve cut(chicken) 
+        # Cut the chicken
+
+behavior __goal__():
+    body:
+        bind chicken: item where:
+            is_food_chicken(chicken)
+        bind cutting_board: item where:
+            is_cutting_board(cutting_board)
+        bind knife: item where:
+            is_knife(knife)
+        
+        if not is_cutting_board_close_to_chicken(chicken, cutting_board):
+            # Ensure the cutting board is close to the chicken before cutting
+            move(cutting_board)
+        
+        if not is_knife_close_to_cutting_board(cutting_board, knife):
+            # Ensure the knife is close to the cutting board before cutting
+            move(knife)
+        
+        cut_chicken(chicken, cutting_board, knife)
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Slice the chicken.', '2. Give the sliced chicken to the cat.']",,,,,
+" 
+def has_cutting_board_near_knife(knife: item):
+    # Check if there is a cutting board near the knife to slice the chicken on
+    symbol has_cutting_board=exists board: item : is_cutting_board(board) and close(knife, board)
+    return has_cutting_board
+
+def is_chicken_on_cutting_board(board: item):
+    # Check if the chicken is currently on the cutting board
+    symbol chicken_on_board=exists chicken: item : is_food_chicken(chicken) and on(chicken, board)
+    return chicken_on_board
+
+behavior place_chicken_on_cutting_board(chicken: item, board: item):
+    body:
+        achieve on(chicken, board) # Place the chicken on the cutting board
+
+behavior __goal__():
+    body:
+        bind chicken: item where:
+            is_food_chicken(chicken)
+        # Select an item classified as chicken
+
+        bind knife: item where:
+            is_knife(knife)
+        # Select an item classified as a knife
+
+        if has_cutting_board_near_knife(knife):
+            bind board: item where:
+                is_cutting_board(board) and close(knife, board)
+            # Select a cutting board near the knife
+
+            if not is_chicken_on_cutting_board(board):
+                place_chicken_on_cutting_board(chicken, board)
+            # Ensure the chicken is on the cutting board before slicing
+
+            achieve cut(chicken) # Slice the chicken once its on the board
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Slice the chicken into pieces suitable for your cat.', '2. Serve the sliced chicken to your cat
+.']",,,,,
+" 
+behavior cut_chicken(chicken:item, cutting_board:item, knife:item):
+    body:
+        assert cuttable(chicken)
+        achieve close(chicken, cutting_board)
+        achieve_once inhand(knife)
+        achieve cut(chicken)
+
+behavior __goal__():
+    body:
+        bind chicken: item where:
+            is_food_chicken(chicken)
+        bind cutting_board: item where:
+            is_cutting_board(cutting_board)
+        bind knife: item where:
+            is_knife(knife)
+        cut_chicken(chicken, cutting_board, knife)
+",From function reset_goal,,,,
+Checking k1,Evaluator failed to find a plan,,,,
+Checking k1,Evaluator failed to find a plan,,,,
+Checking k2,Evaluator failed to find a plan,,,,

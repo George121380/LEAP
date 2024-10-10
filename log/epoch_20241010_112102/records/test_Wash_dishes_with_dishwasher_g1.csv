@@ -1,0 +1,279 @@
+Goal Representation,Debug Result,Action,Add Info,LLM Answer,Plan
+k1,"missed actions: walk_executor(dishwasher_1001);open_executor(dishwasher_1001);walk_executor(bowl_207
+1);grab_executor(bowl_2071);walk_executor(dishwasher_1001);putin_executor(bowl_2071, dishwasher_1001
+);walk_executor(bowl_2072);grab_executor(bowl_2072);walk_executor(dishwasher_1001);putin_executor(bo
+wl_2072, dishwasher_1001);walk_executor(plate_1000);grab_executor(plate_1000);walk_executor(dishwash
+er_1001);putin_executor(plate_1000, dishwasher_1001);",,,,
+k2,missed actions: walk_executor(dishwasher_1001);switchon_executor(dishwasher_1001);,,,,
+"Reset goals: The sub-goals are: 
+['1. Find the bowls and plates that need washing.', '2. Load the bowls and plates into the dishwashe
+r.', '3. Run the dishwasher.']",,,,,
+" 
+def has_bowls_or_plates_to_wash():
+    # Function to check if there are bowls or plates that need washing
+    symbol has_bowls_or_plates=exists o: item : (is_bowl(o) or is_plate(o)) and dirty(o)
+    return has_bowls_or_plates
+
+behavior __goal__():
+    body:
+        if exists o: item : (is_bowl(o) or is_plate(o)) and dirty(o):
+            # If we have already found bowls or plates that need washing, we can directly approach t
+hem
+            bind dirty_item: item where:
+                (is_bowl(dirty_item) or is_plate(dirty_item)) and dirty(dirty_item)
+            achieve close_char(char, dirty_item)
+
+        else:
+            # Check all bowls and plates in the scene that have not been visited
+            foreach item: item:
+                if (is_bowl(item) or is_plate(item)) and not visited(item):
+                    observe(item, ""Check if this bowl or plate needs washing"")
+",From function reset_goal,,,,
+,,,,"Record from func query_human in agent.py
+Question: Can you tell me how to find the bowls and plates that need washing.
+Answer: I don't know.
+",
+,,,,"Record from func query_human in agent.py
+Question: Can you tell me how to load the bowls and plates into the dishwasher.
+Answer: I don't know.
+",
+,,,,"Record from func query_human in agent.py
+Question: Can you tell me how to run the dishwasher.
+Answer: Make sure the dishwasher is off, open it, put in the dishes, close it, turn it on, and turn 
+it off after washing.
+",
+,,,,,"(CrowControllerApplier<walk_executor(sink_231)>, CrowControllerApplier<exp(bowl_2071, sink_231)>, Cr
+owControllerApplier<walk_executor(bowl_2071)>, CrowControllerApplier<obs(bowl_2071, Check if this bo
+wl or plate needs washing)>, CrowControllerApplier<walk_executor(sink_231)>, CrowControllerApplier<e
+xp(bowl_2072, sink_231)>, CrowControllerApplier<walk_executor(bowl_2072)>, CrowControllerApplier<obs
+(bowl_2072, Check if this bowl or plate needs washing)>, CrowControllerApplier<walk_executor(dishwas
+her_1001)>, CrowControllerApplier<open_executor(dishwasher_1001)>, CrowControllerApplier<exp(plate_1
+000, dishwasher_1001)>, CrowControllerApplier<walk_executor(plate_1000)>, CrowControllerApplier<obs(
+plate_1000, Check if this bowl or plate needs washing)>)"
+,,walk_executor(sink_231),"Find soap_2054. Find napkin_2005. Find fork_2081. Find knife_2050. Find cutting_board_2051. Find cup
+_2063. Find cup_2064. Find pot_2069. Find oil_2079. Find fryingpan_2083. Find tray_296. Find drawing
+_239. Find drawing_238. Find drawing_240. Find drawing_241. Find drawing_242. Find drawing_243. Find
+ plate_1000. Find fork_2080. Robot is inside dining_room_201. Robot is close sink_231. Robot is clos
+e kitchen_counter_230. ",,
+k1,"missed actions: walk_executor(bowl_2071);grab_executor(bowl_2071);walk_executor(dishwasher_1001);put
+in_executor(bowl_2071, dishwasher_1001);walk_executor(bowl_2072);grab_executor(bowl_2072);walk_execu
+tor(dishwasher_1001);putin_executor(bowl_2072, dishwasher_1001);walk_executor(plate_1000);grab_execu
+tor(plate_1000);walk_executor(dishwasher_1001);putin_executor(plate_1000, dishwasher_1001);",,,,
+,,"exp(bowl_2071, sink_231)",Failed to find bowl_2071 around sink_231. ,,
+k1,"missed actions: walk_executor(bowl_2071);grab_executor(bowl_2071);walk_executor(dishwasher_1001);put
+in_executor(bowl_2071, dishwasher_1001);walk_executor(bowl_2072);grab_executor(bowl_2072);walk_execu
+tor(dishwasher_1001);putin_executor(bowl_2072, dishwasher_1001);walk_executor(plate_1000);grab_execu
+tor(plate_1000);walk_executor(dishwasher_1001);putin_executor(plate_1000, dishwasher_1001);",,,,
+,,,,,"(CrowControllerApplier<walk_executor(plate_1000)>,)"
+,,walk_executor(plate_1000),"Find bowl_2071. Find bowl_2072. Robot is inside dining_room_201. Robot is close plate_1000. Robot is
+ close dishwasher_1001. Robot is no longer close kitchen_counter_230.Robot is no longer close sink_2
+31.",,
+k1,missed actions: ,,,,
+k2,missed actions: close_executor(dishwasher_1001);switchon_executor(dishwasher_1001);,,,,
+" 
+behavior load_items_into_dishwasher(o:item, dishwasher:item):
+    body:
+        achieve inside(o, dishwasher)
+
+behavior __goal__():
+    body:
+        bind dishwasher: item where:
+            is_dishwasher(dishwasher) and close_char(char, dishwasher)
+        
+        foreach o: item:
+            if (is_plate(o) or is_bowl(o)) and close_char(char, o):
+                load_items_into_dishwasher(o, dishwasher)
+",From function reset_sub_goal,,,,
+" 
+behavior load_dishwasher(o:item, dishwasher:item):
+    body:
+        achieve inside(o, dishwasher)
+        # Place the item inside the dishwasher
+
+behavior __goal__():
+    body:
+        bind dishwasher: item where:
+            is_dishwasher(dishwasher) and close_char(char,dishwasher)
+        # Select the dishwasher close to the character
+
+        foreach o: item:
+        # Load all bowls and plates close to the character into the dishwasher
+            if is_bowl(o) or is_plate(o) and close_char(char, o):
+                load_dishwasher(o, dishwasher)
+",From function reset_sub_goal,,,,
+" 
+behavior load_dishwasher(o:item, dishwasher:item):
+    body:
+        achieve inside(o, dishwasher)
+        # Place the item inside the dishwasher
+
+behavior __goal__():
+    body:
+        bind dishwasher: item where:
+            is_dishwasher(dishwasher) and close_char(char, dishwasher)
+        # Select a dishwasher and ensure it is nearby
+        foreach o: item:
+        # Load all bowls and plates that need washing into the dishwasher
+            if is_bowl(o) or is_plate(o) and dirty(o):
+                load_dishwasher(o, dishwasher)
+",From function reset_sub_goal,,,,
+" 
+behavior load_dishwasher(o:item, dishwasher:item):
+    body:
+        achieve inside(o, dishwasher)
+        # Place the bowl or plate inside the dishwasher
+
+behavior __goal__():
+    body:
+        bind dishwasher: item where:
+            is_dishwasher(dishwasher)
+        # Select a dishwasher
+        foreach o: item:
+        # Load all bowls and plates found into the dishwasher
+            if is_plate(o) or is_bowl(o) and dirty(o):
+                load_dishwasher(o, dishwasher)
+",From function reset_sub_goal,,,,
+,,,,"Record from func query_human in agent.py
+Question: Can you teach me how to ""2. load the bowls and plates into the dishwasher."" ?
+Answer: I don't know.
+",
+" 
+behavior load_dishwasher(o:item, dishwasher:item):
+    body:
+        achieve inside(o, dishwasher)
+
+behavior __goal__():
+    body:
+        bind dishwasher: item where:
+            is_dishwasher(dishwasher) and close_char(char, dishwasher)
+        foreach o: item:
+            if (is_plate(o) or is_bowl(o)) and close(o, dishwasher):
+                load_dishwasher(o, dishwasher)
+",From function reset_sub_goal,,,,
+" 
+behavior load_bowls_and_plates_into_dishwasher(bowl:item, plate:item, dishwasher:item):
+    body:
+        achieve inside(bowl, dishwasher)
+        achieve inside(plate, dishwasher)
+
+behavior __goal__():
+    body:
+        bind dishwasher: item where:
+            is_dishwasher(dishwasher)
+        # Find a dishwasher
+        
+        foreach bowl: item:
+            if is_bowl(bowl) and close_char(char, bowl):
+                bind plate: item where:
+                    is_plate(plate) and close_char(char, plate)
+                # Once a bowl is found, locate a close plate
+                
+                load_bowls_and_plates_into_dishwasher(bowl, plate, dishwasher)
+                # Load both the bowl and the plate into the dishwasher
+
+",From function reset_sub_goal,,,,
+" 
+behavior load_dishwasher(o:item, dishwasher:item):
+    body:
+        achieve inside(o, dishwasher)
+        # Place the item inside the dishwasher
+
+behavior close_the_dishwasher(dishwasher:item):
+    body:
+        achieve closed(dishwasher)
+
+behavior __goal__():
+    body:
+        bind plate1: item where:
+            is_plate(plate1) and id[plate1]==1000
+        # Select plate with ID 1000
+        
+        bind bowl1: item where:
+            is_bowl(bowl1) and id[bowl1]==2071
+        # Select bowl with ID 2071
+        
+        bind bowl2: item where:
+            is_bowl(bowl2) and id[bowl2]==2072
+        # Select bowl with ID 2072
+        
+        bind dishwasher: item where:
+            is_dishwasher(dishwasher) and close_char(char, dishwasher)
+        # Select a dishwasher
+        
+        load_dishwasher(plate1, dishwasher)
+        load_dishwasher(bowl1, dishwasher)
+        load_dishwasher(bowl2, dishwasher)
+        close_the_dishwasher(dishwasher)
+",From function reset_sub_goal,,,,
+,,,,,"(CrowControllerApplier<close_executor(dishwasher_1001)>,)"
+,,close_executor(dishwasher_1001),Robot is inside dining_room_201. Robot is close plate_1000. Robot is close dishwasher_1001. ,,
+k2,missed actions: switchon_executor(dishwasher_1001);,,,,
+,,,"Human Instruction: You need to load the bowls (bowl_2071 and bowl_2072) and plate (plate_1000) into 
+the dishwasher_1001 before closing it.
+
+Human Guidance: I don't know.
+The actions you have taken:
+Action 1: Walk to sink_231. -> effect: Find soap_2054. Find napkin_2005. Find fork_2081. Find knife_
+2050. Find cutting_board_2051. Find cup_2063. Find cup_2064. Find pot_2069. Find oil_2079. Find fryi
+ngpan_2083. Find tray_296. Find drawing_239. Find drawing_238. Find drawing_240. Find drawing_241. F
+ind drawing_242. Find drawing_243. Find plate_1000. Find fork_2080. Robot is inside dining_room_201.
+ Robot is close sink_231. Robot is close kitchen_counter_230. 
+Action 2: look for bowl_2071 around sink_231. -> effect: Failed to find bowl_2071 around sink_231. 
+Action 3: Walk to plate_1000. -> effect: Find bowl_2071. Find bowl_2072. Robot is inside dining_room
+_201. Robot is close plate_1000. Robot is close dishwasher_1001. Robot is no longer close kitchen_co
+unter_230.Robot is no longer close sink_231.
+Action 4: Close dishwasher_1001. -> effect: Robot is inside dining_room_201. Robot is close plate_10
+00. Robot is close dishwasher_1001. 
+",,
+" 
+behavior load_dishwasher(o:item, dishwasher:item):
+    body:
+        achieve inside(o, dishwasher)
+
+behavior __goal__():
+    body:
+        bind dishwasher: item where:
+            is_dishwasher(dishwasher) and id[dishwasher]==1001
+        bind bowl1: item where:
+            is_bowl(bowl1) and id[bowl1]==2071
+        bind bowl2: item where:
+            is_bowl(bowl2) and id[bowl2]==2072
+        bind plate: item where:
+            is_plate(plate) and id[plate]==1000
+        load_dishwasher(bowl1, dishwasher)
+        load_dishwasher(bowl2, dishwasher)
+        load_dishwasher(plate, dishwasher)
+
+",From function reset_sub_goal,,,,
+" 
+behavior load_bowls_and_plates_into_dishwasher(bowl:item, plate:item, dishwasher:item):
+    body:
+        achieve inside(bowl, dishwasher)
+        achieve inside(plate, dishwasher)
+
+behavior close_dishwasher(dishwasher:item):
+    body:
+        achieve closed(dishwasher)
+
+behavior __goal__():
+    body:
+        bind bowl1: item where:
+            id[bowl1] == 2071
+        # Select bowl with ID 2071
+        bind bowl2: item where:
+            id[bowl2] == 2072
+        # Select bowl with ID 2072
+        bind plate1: item where:
+            id[plate1] == 1000
+        # Select plate with ID 1000
+        bind dishwasher: item where:
+            id[dishwasher] == 1001
+        # Select dishwasher with ID 1001
+
+        load_bowls_and_plates_into_dishwasher(bowl1, plate1, dishwasher)
+        load_bowls_and_plates_into_dishwasher(bowl2, plate1, dishwasher)
+        close_dishwasher(dishwasher)
+",From function reset_sub_goal,,,,
+k2,missed actions: switchon_executor(dishwasher_1001);,,,,
+k1,missed actions: ,,,,
+k2,missed actions: switchon_executor(dishwasher_1001);,,,,

@@ -1,0 +1,361 @@
+Goal Representation,Debug Result,Action,Add Info,LLM Answer,Plan
+k1,"missed actions: walk_executor(pot_2069);grab_executor(pot_2069);walk_executor(faucet_43);switchon_ex
+ecutor(faucet_43);switchoff_executor(faucet_43);walk_executor(pot_2069);open_executor(pot_2069);walk
+_executor(fridge_289);switchoff_executor(fridge_289);open_executor(fridge_289);walk_executor(dry_pas
+ta_2042);grab_executor(dry_pasta_2042);walk_executor(pot_2069);putin_executor(dry_pasta_2042, pot_20
+69);walk_executor(stove_2065);put_executor(pot_2069, stove_2065);switchon_executor(stove_2065);",,,,
+k2,"missed actions: walk_executor(oil_2079);grab_executor(oil_2079);walk_executor(fryingpan_2083);putin_
+executor(oil_2079, fryingpan_2083);walk_executor(fridge_289);switchoff_executor(fridge_289);open_exe
+cutor(fridge_289);walk_executor(food_chicken_2017);grab_executor(food_chicken_2017);walk_executor(fr
+yingpan_2083);putin_executor(food_chicken_2017, fryingpan_2083);grab_executor(fryingpan_2083);walk_e
+xecutor(stove_2065);put_executor(fryingpan_2083, stove_2065);switchon_executor(stove_2065);",,,,
+k3,"missed actions: walk_executor(fridge_289);switchoff_executor(fridge_289);open_executor(fridge_289);w
+alk_executor(dry_pasta_2042);grab_executor(dry_pasta_2042);walk_executor(plate_1000);putin_executor(
+dry_pasta_2042, plate_1000);walk_executor(food_chicken_2017);grab_executor(food_chicken_2017);walk_e
+xecutor(plate_1000);putin_executor(food_chicken_2017, plate_1000);",,,,
+"Reset goals: The sub-goals are: 
+['1. Cook chicken and pasta together in a pot.', '2. Serve the chicken pasta onto a plate.']",,,,,
+"
+behavior cook_chicken_and_pasta_in_pot(chicken:item, pasta:item, pot:item):
+    body:
+        achieve inside(chicken, pot) # Place chicken inside the pot
+        achieve inside(pasta, pot) # Place pasta inside the pot
+        achieve has_water(pot) # Ensure the pot has water for cooking
+
+behavior __goal__():
+    body:
+        bind chicken: item where:
+            is_food_chicken(chicken) # Identify the chicken as a food item
+        bind pasta: item where:
+            is_dry_pasta(pasta) # Identify the pasta as a dry pasta item
+        bind pot: item where:
+            is_pot(pot) # Identify a suitable pot for cooking
+        cook_chicken_and_pasta_in_pot(chicken, pasta, pot) # Execute the cooking behavior
+",From function reset_goal,,,,
+,,,,"Record from func query_human in agent.py
+Question: Can you tell me how to cook chicken and pasta together in a pot.
+Answer: I don't know.
+",
+,,,,"Record from func query_human in agent.py
+Question: Can you tell me how to serve the chicken pasta onto a plate.
+Answer: I don't know.
+",
+"Reset goals: The sub-goals are: 
+['1. Cook the chicken and pasta together.', '2. Put the cooked chicken pasta on a plate.']",,,,,
+" 
+behavior cook_chicken_pasta(chicken:item, pasta:item, pot:item, stove:item):
+    body:
+        achieve inside(chicken, pot)
+        achieve inside(pasta, pot)
+        assert_hold plugged(stove)
+        achieve is_on(stove) 
+
+behavior turn_off_stove(stove:item):
+    body:
+        achieve is_off(stove)
+
+behavior __goal__():
+    body:
+        bind chicken: item where:
+            is_food_chicken(chicken)
+        bind pasta: item where:
+            is_dry_pasta(pasta)
+        bind pot: item where:
+            is_pot(pot)
+        bind stove: item where:
+            is_stove(stove)
+
+        cook_chicken_pasta(chicken, pasta, pot, stove)
+        turn_off_stove(stove)
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Cook the chicken and pasta.', '2. Combine the cooked chicken and pasta with any desired sauces 
+or seasonings.', '3. Put the chicken pasta on a plate.']",,,,,
+" 
+def is_in_kitchen_counter(obj: item):
+    symbol is_on_kitchen_counter=exists counter: item : is_kitchen_counter(counter) and on(obj, coun
+ter)
+    return is_on_kitchen_counter
+
+behavior cook_chicken(chicken: item, pot:item, stove:item):
+    body:
+        achieve inside(chicken, pot)
+        # Place the chicken inside the pot
+        achieve is_on(stove)
+        # Turn the stove on to cook the chicken
+
+behavior cook_pasta(pasta: item, pot:item, stove:item):
+    body:
+        achieve inside(pasta, pot)
+        # Place the pasta inside the pot
+        achieve is_on(stove)
+        # Turn the stove on to cook the pasta
+
+behavior __goal__():
+    body:
+        bind chicken: item where:
+            is_food_chicken(chicken) and not is_in_kitchen_counter(chicken)
+        # Bind to an uncooked chicken on the kitchen counter
+
+        bind pasta: item where:
+            is_food_noodles(pasta) and is_dry_pasta(pasta) and not is_in_kitchen_counter(pasta)
+        # Bind to dry pasta
+
+        bind pot: item where:
+            is_pot(pot)
+        # Bind to a pot available in the kitchen
+
+        bind stove: item where:
+            is_stove(stove)
+        # Bind to a stove in the kitchen
+
+        cook_chicken(chicken, pot, stove)
+        # Cook the chicken using the stove
+
+        cook_pasta(pasta, pot, stove)
+        # Cook the pasta using the stove
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Cook the chicken pasta.', '2. Put the chicken pasta on a plate.']",,,,,
+" 
+def has_ingredient_in_pot(pot:item):
+    # Function to check if there is food_ingredient in the specified pot
+    symbol has_ingredient=exists o: item : (is_food_chicken(o) or is_dry_pasta(o) or is_sauce(o)) an
+d inside(o, pot)
+    return has_ingredient
+
+behavior cook_in_pot(pot:item, stove:item):
+    body:
+        achieve inside(pot, stove)
+        # Ensure the pot is placed on the stove
+        achieve is_on(stove)
+        # Turn the stove on
+
+behavior turn_off_stove(stove:item):
+    body:
+        achieve is_off(stove)
+        # Turn the stove off
+
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot)
+        # Select a pot to cook in
+
+        bind stove: item where:
+            is_stove(stove)
+        # Select a stove
+
+        if has_ingredient_in_pot(pot):
+            cook_in_pot(pot, stove)
+            # Cook the ingredients inside the pot
+
+            turn_off_stove(stove)
+            # Turn the stove off after cooking
+",From function reset_goal,,,,
+,,,,"Record from func query_human in agent.py
+Question: Can you teach me how to ""1. cook the chicken pasta."" ?
+Answer: I don't know.
+",
+"behavior prepare_frying_pan(stove:item, frying_pan:item):
+    body:
+        achieve plugged(stove)
+        # Ensure the stove is plugged in for use
+        achieve is_on(stove)
+        # Turn on the stove for cooking
+        achieve on(frying_pan, stove)
+        # Place the frying pan on the stove
+
+behavior cook_chicken_pasta(chicken:item, dry_pasta:item, sauce:item, frying_pan:item):
+    body:
+        achieve inside(chicken, frying_pan)
+        # Place chicken in the frying pan
+        achieve inside(dry_pasta, frying_pan)
+        # Place dry pasta in the frying pan
+        achieve inside(sauce, frying_pan)
+        # Add sauce to the frying pan
+
+behavior __goal__():
+    body:
+        bind stove: item where:
+            is_stove(stove)
+        # Select the stove
+        bind frying_pan: item where:
+            is_fryingpan(frying_pan)
+        # Select a frying pan
+        prepare_frying_pan(stove, frying_pan)
+
+        bind chicken: item where:
+            is_food_chicken(chicken)
+        # Select chicken item
+        bind dry_pasta: item where:
+            is_dry_pasta(dry_pasta)
+        # Select dry pasta item
+        bind sauce: item where:
+            is_sauce(sauce)
+        # Select sauce item
+        cook_chicken_pasta(chicken, dry_pasta, sauce, frying_pan)",From function reset_sub_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Cook the chicken and pasta together.', '2. Put the chicken pasta on a plate.']",,,,,
+"
+behavior cook_chicken_pasta(chicken:item, pasta:item, pot:item, stove:item):
+    body:
+        achieve clean(pot)
+        # Ensure pot is clean before use
+        
+        achieve inside(chicken, pot)
+        # Place chicken inside the pot
+
+        achieve inside(pasta, pot)
+        # Place pasta inside the pot
+
+        bind water_source: item where:
+            is_sink(water_source)
+            # Select a water source (sink) to fill the pot
+
+        achieve has_water(pot)
+        # Ensure pot is filled with water
+
+        achieve is_on(stove)
+        # Turn on the stove
+
+        achieve on(pot, stove)
+        # Place the pot on the stove
+
+behavior __goal__():
+    body:
+        bind chicken: item where:
+            is_food_chicken(chicken)
+        # Select chicken item
+        
+        bind pasta: item where:
+            is_dry_pasta(pasta)
+        # Select pasta item
+        
+        bind pot: item where:
+            is_pot(pot)
+        # Select a pot item
+        
+        bind stove: item where:
+            is_stove(stove)
+        # Select a stove item
+        
+        cook_chicken_pasta(chicken, pasta, pot, stove)
+        # Cook chicken and pasta together
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Cook the chicken and pasta.', '2. Combine the cooked chicken and pasta.', '3. Put the chicken p
+asta on a plate.']",,,,,
+" 
+behavior cook_chicken_and_pasta(chicken:item, pasta:item, stove:item, pot:item):
+    body:
+        achieve inside(chicken, pot)
+        achieve inside(pasta, pot)
+        achieve on(pot, stove) # Place the pot on the stove
+
+behavior is_cooked(chicken:item, pasta:item, stove:item):
+    body:
+        achieve plugged(stove)
+        achieve is_on(stove)
+        # Ensure the stove is on to cook the chicken and pasta
+
+behavior __goal__():
+    body:
+        bind chicken: item where:
+            is_food_chicken(chicken)
+        # Bind a chicken item
+        
+        bind pasta: item where:
+            is_dry_pasta(pasta)
+        # Bind dry pasta item
+        
+        bind stove: item where:
+            is_stove(stove)
+        # Bind a stove
+        
+        bind pot: item where:
+            is_pot(pot)
+        # Bind a pot
+        
+        cook_chicken_and_pasta(chicken, pasta, stove, pot)
+        is_cooked(chicken, pasta, stove)
+
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Cook the chicken and pasta.', '2. Mix the prepared chicken with the pasta and any additional in
+gredients.', '3. Put the chicken pasta onto a plate.']",,,,,
+" 
+def has_faucet(sink:item):
+    # Determine whether this pool has a faucet
+    symbol has_faucet=exists faucet:item: is_faucet(faucet) and close(faucet,sink)
+    return has_faucet
+
+behavior clean_food(food:item, sink:item):
+    # Define the behavior to clean food in the sink
+    body:
+        achieve_once inside(food, sink)
+        # Ensure the food is placed inside the sink
+
+        if has_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet,sink)
+            achieve_once is_on(faucet)
+            # If the pool has a faucet, turn it on to clean
+
+        wash(food) # This is the key step of the behavior, used for cleaning food
+
+        if has_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet,sink)
+            achieve_once is_off(faucet)
+            # If the pool has a faucet, turn it off after cleaning
+
+behavior cook_food_with_stove(food:item, stove:item):
+    # Define the behavior to cook food using the stove
+    body:
+        achieve close_char(char, stove)
+        achieve is_on(stove)
+        # Make sure the stove is on to start cooking
+        rinse(food)
+        # Ensure the food is cooked properly
+        
+behavior __goal__():
+    body:
+        bind chicken: item where:
+            is_food_chicken(chicken)
+        bind dry_pasta: item where:
+            is_dry_pasta(dry_pasta)
+        bind sink: item where:
+            is_sink(sink)
+        bind stove: item where:
+            is_stove(stove)
+        
+        clean_food(chicken, sink)
+        clean_food(dry_pasta, sink)
+        cook_food_with_stove(chicken, stove)
+        cook_food_with_stove(dry_pasta, stove)
+",From function reset_goal,,,,
+k1,"missed actions: walk_executor(pot_2069);grab_executor(pot_2069);walk_executor(faucet_43);switchon_ex
+ecutor(faucet_43);switchoff_executor(faucet_43);walk_executor(pot_2069);open_executor(pot_2069);walk
+_executor(fridge_289);switchoff_executor(fridge_289);open_executor(fridge_289);walk_executor(dry_pas
+ta_2042);grab_executor(dry_pasta_2042);walk_executor(pot_2069);putin_executor(dry_pasta_2042, pot_20
+69);walk_executor(stove_2065);put_executor(pot_2069, stove_2065);switchon_executor(stove_2065);",,,,
+k2,"missed actions: walk_executor(oil_2079);grab_executor(oil_2079);walk_executor(fryingpan_2083);putin_
+executor(oil_2079, fryingpan_2083);walk_executor(fridge_289);switchoff_executor(fridge_289);open_exe
+cutor(fridge_289);walk_executor(food_chicken_2017);grab_executor(food_chicken_2017);walk_executor(fr
+yingpan_2083);putin_executor(food_chicken_2017, fryingpan_2083);grab_executor(fryingpan_2083);walk_e
+xecutor(stove_2065);put_executor(fryingpan_2083, stove_2065);switchon_executor(stove_2065);",,,,
+k1,"missed actions: walk_executor(pot_2069);grab_executor(pot_2069);walk_executor(faucet_43);switchon_ex
+ecutor(faucet_43);switchoff_executor(faucet_43);walk_executor(pot_2069);open_executor(pot_2069);walk
+_executor(fridge_289);switchoff_executor(fridge_289);open_executor(fridge_289);walk_executor(dry_pas
+ta_2042);grab_executor(dry_pasta_2042);walk_executor(pot_2069);putin_executor(dry_pasta_2042, pot_20
+69);walk_executor(stove_2065);put_executor(pot_2069, stove_2065);switchon_executor(stove_2065);",,,,
+k2,"missed actions: walk_executor(oil_2079);grab_executor(oil_2079);walk_executor(fryingpan_2083);putin_
+executor(oil_2079, fryingpan_2083);walk_executor(fridge_289);switchoff_executor(fridge_289);open_exe
+cutor(fridge_289);walk_executor(food_chicken_2017);grab_executor(food_chicken_2017);walk_executor(fr
+yingpan_2083);putin_executor(food_chicken_2017, fryingpan_2083);grab_executor(fryingpan_2083);walk_e
+xecutor(stove_2065);put_executor(fryingpan_2083, stove_2065);switchon_executor(stove_2065);",,,,
+k3,"missed actions: walk_executor(fridge_289);switchoff_executor(fridge_289);open_executor(fridge_289);w
+alk_executor(dry_pasta_2042);grab_executor(dry_pasta_2042);walk_executor(plate_1000);putin_executor(
+dry_pasta_2042, plate_1000);walk_executor(food_chicken_2017);grab_executor(food_chicken_2017);walk_e
+xecutor(plate_1000);putin_executor(food_chicken_2017, plate_1000);",,,,

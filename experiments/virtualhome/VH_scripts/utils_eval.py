@@ -226,20 +226,20 @@ def get_nodes_information(graph,PO=True):
 
             black_list=['pot','fryingpan']
 
-            if op_classname in equal_dict:
-                if op_classname in black_list:
-                    continue
+            if op_classname in equal_dict and not op_classname in black_list:
+                # if op_classname in black_list:
+                #     continue
 
                 for equal_name in equal_dict[op_classname]:
-                    if equal_name in black_list:
-                        continue
-                    if equal_name!=op_classname:
+                    # if equal_name in black_list:
+                    #     continue
+                    if equal_name!=op_classname and not equal_name in black_list:
                         cat_statement.append(f"is_{equal_name}[{executable_objname}]=True")
 
             for equal_name in equal_dict:
-                if equal_name in black_list:
-                    continue
-                if op_classname in equal_dict[equal_name] and op_classname!=equal_name:
+                # if equal_name in black_list:
+                #     continue
+                if op_classname in equal_dict[equal_name] and op_classname!=equal_name and not op_classname in black_list:
                     cat_statement.append(f"is_{equal_name}[{executable_objname}]=True")
                     for equal_name_ in equal_dict[equal_name]:
                         if equal_name!=op_classname:
