@@ -18,9 +18,9 @@ parser.add_argument('--domain', default='experiments/virtualhome/CDLs/virtualhom
 parser.add_argument('--verbose', action='store_true')
 args = parser.parse_args()
 
-def goal_solver(goal):
+def goal_solver(cdl_path):
     domain = crow.load_domain_file(args.domain)
-    problem = crow.load_problem_file('experiments/virtualhome/CDLs/internal_executable.cdl', domain=domain)
+    problem = crow.load_problem_file(cdl_path, domain=domain)
     # problem = crow.load_problem_file('agent_internal_state.cdl', domain=domain)
 
     # behavior= crow.load_domain_file('explore_test.cdl')

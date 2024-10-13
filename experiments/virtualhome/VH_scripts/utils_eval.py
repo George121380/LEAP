@@ -342,7 +342,7 @@ def transform_action(action,scripts_index):
     action = action.replace('(', ' ')
     action = action.split()
     action_name = action[0].upper()
-    if action_name=='PUT' or action_name=='PUTIN':
+    if action_name=='PUT' or action_name=='PUTIN' or action_name=='POUR':
         if action_name=='PUT':
             action_name="PUTBACK"
         from_obj=action[1].replace(',','')
@@ -364,6 +364,7 @@ def transform_action(action,scripts_index):
         target = action[1]
         if '_' in target:
             item, number = target.rsplit('_', 1)
+            number = number.replace(',', '')
             formatted_target = f'<{item}>({number})'
         else:
             formatted_target = target

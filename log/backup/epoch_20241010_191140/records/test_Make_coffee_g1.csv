@@ -1,0 +1,658 @@
+Goal Representation,Debug Result,Action,Add Info,LLM Answer,Plan
+k1,"missed actions: walk_executor(coffe_maker_290);open_executor(coffe_maker_290);walk_executor(cup_2063
+);grab_executor(cup_2063);walk_executor(coffe_maker_290);putin_executor(cup_2063, coffe_maker_290);c
+lose_executor(coffe_maker_290);switchon_executor(coffe_maker_290);",,,,
+"Reset goals: The sub-goals are: 
+['1. Add coffee grounds and water to the coffee maker.', '2. Start the coffee maker and wait for it 
+to brew.', '3. Pour the brewed coffee into a cup.']",,,,,
+" 
+behavior add_coffee_grounds(coffee_grounds:item, coffee_maker:item):
+    body:
+        achieve inside(coffee_grounds, coffee_maker)
+
+behavior add_water_to_coffee_maker(water:item, coffee_maker:item):
+    body:
+        achieve has_water(coffee_maker)
+
+behavior __goal__():
+    body:
+        bind coffee_maker: item where:
+            is_coffe_maker(coffee_maker)
+        # Select the coffee maker
+
+        bind coffee_grounds: item where:
+            is_coffee_table(coffee_grounds) and grabbable(coffee_grounds)
+        # Select coffee grounds
+
+        bind water: item where:
+            is_bowl(water) or is_faucet(water)
+        # Select water source, can be a container with water or faucet
+
+        add_coffee_grounds(coffee_grounds, coffee_maker)
+        add_water_to_coffee_maker(water, coffee_maker)
+",From function reset_goal,,,,
+,,,,"Record from func query_human in agent.py
+Question: Can you tell me how to add coffee grounds and water to the coffee maker.
+Answer: I don't know.
+",
+,,,,"Record from func query_human in agent.py
+Question: Can you tell me how to start the coffee maker and wait for it to brew.
+Answer: I don't know.
+",
+,,,,"Record from func query_human in agent.py
+Question: Can you tell me how to pour the brewed coffee into a cup.
+Answer: I don't know.
+",
+"Reset goals: The sub-goals are: 
+['1. Add water and coffee grounds to the coffee maker.', '2. Start the brewing process and wait for 
+the coffee to be made.', '3. Pour the brewed coffee into a cup.']",,,,,
+"
+def has_water_and_coffee_grounds(coffee_maker:item, coffee_grounds:item):
+    # Function to check if the coffee maker has water and coffee grounds added
+    symbol has_wc=has_water(coffee_maker) and is_food(coffee_grounds) and inside(coffee_grounds, cof
+fee_maker)
+    return has_wc
+
+behavior add_water_and_coffee_grounds(coffee_maker:item, water_source:item, coffee_grounds:item):
+    body:
+        achieve inside(coffee_grounds, coffee_maker)
+        achieve has_water(coffee_maker)
+        # Ensure water and coffee grounds are in the coffee maker
+
+behavior __goal__():
+    body:
+        bind coffee_maker: item where:
+            is_coffe_maker(coffee_maker)
+        # Select a coffee maker
+
+        bind water_source: item where:
+            is_faucet(water_source) or is_sink(water_source)
+        # Select a water source
+
+        bind coffee_grounds: item where:
+            is_food(coffee_grounds)
+        # Select coffee grounds
+
+        if not has_water_and_coffee_grounds(coffee_maker, coffee_grounds):
+            # If the coffee maker does not have both water and coffee grounds, add them
+            add_water_and_coffee_grounds(coffee_maker, water_source, coffee_grounds)
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Ensure the coffee maker is set up and ready to use.', ""2. Add water to the coffee maker's reser
+voir."", '3. Place a coffee filter and add coffee grounds to the filter.', '4. Start the coffee maker
+ to brew the coffee.']",,,,,
+" 
+def has_power_source(coffee_maker:item):
+    symbol plugged_is_on=is_on(coffee_maker) or plugged(coffee_maker)
+    return plugged_is_on
+
+behavior ensure_clean(coffee_maker:item):
+    body:
+        if dirty(coffee_maker):
+            scrub(coffee_maker)
+            rinse(coffee_maker)
+            achieve clean(coffee_maker)
+
+behavior ensure_closed(coffee_maker:item):
+    body:
+        achieve closed(coffee_maker)
+
+behavior ensure_ready(coffee_maker:item):
+    body:
+        if not has_power_source(coffee_maker):
+            if has_plug(coffee_maker):
+                achieve plugged(coffee_maker)
+            else:
+                observe(coffee_maker, ""Find a nearby outlet to plug the coffee maker"")
+
+behavior __goal__():
+    body:
+        bind coffee_maker: item where:
+            is_coffe_maker(coffee_maker)
+
+        ensure_clean(coffee_maker)
+        ensure_closed(coffee_maker)
+        ensure_ready(coffee_maker)
+        achieve is_on(coffee_maker)
+",From function reset_goal,,,,
+,,,,,"(CrowControllerApplier<walk_executor(coffe_maker_290)>, CrowControllerApplier<switchon_executor(coff
+e_maker_290)>)"
+,,walk_executor(coffe_maker_290),"Find napkin_2005. Find knife_2050. Find cutting_board_2051. Find cup_2063. Find cup_2064. Find pot_2
+069. Find oil_2079. Find fryingpan_2083. Find tray_296. Find drawing_239. Find drawing_238. Find dra
+wing_240. Find drawing_241. Find drawing_242. Find drawing_243. Robot is inside dining_room_201. Rob
+ot is close coffe_maker_290. Robot is close kitchen_counter_230. Robot is no longer inside bathroom_
+1.",,
+k1,"missed actions: open_executor(coffe_maker_290);walk_executor(cup_2063);grab_executor(cup_2063);walk_
+executor(coffe_maker_290);putin_executor(cup_2063, coffe_maker_290);close_executor(coffe_maker_290);
+switchon_executor(coffe_maker_290);",,,,
+,,switchon_executor(coffe_maker_290),"Find drawing_174. Robot is inside dining_room_201. Robot is close coffe_maker_290. Robot is close ki
+tchen_counter_230. ",,
+k1,"missed actions: switchoff_executor(coffe_maker_290);open_executor(coffe_maker_290);walk_executor(cup
+_2063);grab_executor(cup_2063);walk_executor(coffe_maker_290);putin_executor(cup_2063, coffe_maker_2
+90);close_executor(coffe_maker_290);switchon_executor(coffe_maker_290);",,,,
+" 
+def has_water_source_nearby(coffee_maker:item):
+    # Function to check if there is a water source near the coffee maker
+    symbol has_water_source=exists faucet:item: is_faucet(faucet) and close(coffee_maker, faucet)
+    return has_water_source
+
+behavior add_water_to_reservoir(coffee_maker:item, water_source:item):
+    body:
+        if has_water_source_nearby(coffee_maker):
+            bind faucet: item where:
+                is_faucet(faucet) and close(coffee_maker, faucet)
+            achieve_once is_on(faucet)
+            # Assuming this behavior involves activating a nearby water source
+            observe(coffee_maker, ""Checking if water is filling in the reservoir"")
+            achieve_once is_off(faucet)
+            # Turn off the water source after adding water
+        else:
+            observe(coffee_maker, ""Looking for alternative water sources to fill the reservoir"")
+
+behavior __goal__():
+    body:
+        bind coffee_maker: item where:
+            is_coffe_maker(coffee_maker) and close_char(char, coffee_maker)
+        # Locate the coffee maker
+        if not has_water(coffee_maker):
+            if has_water_source_nearby(coffee_maker):
+                bind faucet: item where:
+                    is_faucet(faucet) and close(coffee_maker, faucet)
+                add_water_to_reservoir(coffee_maker, faucet)
+            else:
+                observe(coffee_maker, ""Determine a way to add water to the reservoir"")
+
+",From function reset_sub_goal,,,,
+,,,,,"(CrowControllerApplier<walk_executor(faucet_232)>, CrowControllerApplier<switchon_executor(faucet_23
+2)>, CrowControllerApplier<walk_executor(coffe_maker_290)>, CrowControllerApplier<switchoff_executor
+(coffe_maker_290)>, CrowControllerApplier<open_executor(coffe_maker_290)>, CrowControllerApplier<obs
+(coffe_maker_290, Checking if water is filling in the reservoir)>, CrowControllerApplier<walk_execut
+or(faucet_232)>, CrowControllerApplier<switchoff_executor(faucet_232)>)"
+,,walk_executor(faucet_232),"Robot is inside dining_room_201. Robot is close kitchen_counter_230. Robot is close faucet_232. Robo
+t is no longer close coffe_maker_290.",,
+k1,"missed actions: walk_executor(coffe_maker_290);switchoff_executor(coffe_maker_290);open_executor(cof
+fe_maker_290);walk_executor(cup_2063);grab_executor(cup_2063);walk_executor(coffe_maker_290);putin_e
+xecutor(cup_2063, coffe_maker_290);close_executor(coffe_maker_290);switchon_executor(coffe_maker_290
+);",,,,
+,,switchon_executor(faucet_232),Robot is inside dining_room_201. Robot is close kitchen_counter_230. Robot is close faucet_232. ,,
+k1,"missed actions: walk_executor(coffe_maker_290);switchoff_executor(coffe_maker_290);open_executor(cof
+fe_maker_290);walk_executor(cup_2063);grab_executor(cup_2063);walk_executor(coffe_maker_290);putin_e
+xecutor(cup_2063, coffe_maker_290);close_executor(coffe_maker_290);switchon_executor(coffe_maker_290
+);",,,,
+,,walk_executor(coffe_maker_290),"Robot is inside dining_room_201. Robot is close kitchen_counter_230. Robot is close coffe_maker_290.
+ Robot is no longer close faucet_232.",,
+k1,"missed actions: switchoff_executor(coffe_maker_290);open_executor(coffe_maker_290);walk_executor(cup
+_2063);grab_executor(cup_2063);walk_executor(coffe_maker_290);putin_executor(cup_2063, coffe_maker_2
+90);close_executor(coffe_maker_290);switchon_executor(coffe_maker_290);",,,,
+,,switchoff_executor(coffe_maker_290),"Robot is inside dining_room_201. Robot is close kitchen_counter_230. Robot is close coffe_maker_290.
+ ",,
+k1,"missed actions: open_executor(coffe_maker_290);walk_executor(cup_2063);grab_executor(cup_2063);walk_
+executor(coffe_maker_290);putin_executor(cup_2063, coffe_maker_290);close_executor(coffe_maker_290);
+switchon_executor(coffe_maker_290);",,,,
+,,open_executor(coffe_maker_290),"Robot is inside dining_room_201. Robot is close kitchen_counter_230. Robot is close coffe_maker_290.
+ ",,
+k1,"missed actions: walk_executor(cup_2063);grab_executor(cup_2063);walk_executor(coffe_maker_290);putin
+_executor(cup_2063, coffe_maker_290);close_executor(coffe_maker_290);switchon_executor(coffe_maker_2
+90);",,,,
+,,"obs(coffe_maker_290, Checking if water is filling in the reservoir)","Get this information:  coffe_maker_290 is close to stovefan_288. coffe_maker_290 is close to toaster
+_292. coffe_maker_290 is close to cupboard_229. coffe_maker_290 is close to kitchen_counter_230. cof
+fe_maker_290 is close to oven_295. coffe_maker_290 is close to tray_296. coffe_maker_290 is close to
+ faucet_232. coffe_maker_290 is close to sink_231. coffe_maker_290 is close to shower_36. coffe_make
+r_290 is close to floor_204. coffe_maker_290 is close to wall_11. coffe_maker_290 is close to wall_1
+5. coffe_maker_290 is close to wall_211. coffe_maker_290 is close to wall_212. coffe_maker_290 is cl
+ose to wall_215. coffe_maker_290 is close to ceiling_221. coffe_maker_290 is close to character_65. 
+coffe_maker_290 is on kitchen_counter_230. coffe_maker_290 is facing drawing_238. coffe_maker_290 is
+ facing drawing_239. coffe_maker_290 is facing drawing_240. coffe_maker_290 is facing drawing_241. c
+offe_maker_290 is facing drawing_242. coffe_maker_290 is facing drawing_243. coffe_maker_290 is insi
+de dining_room_201. coffe_maker_290 is OPEN. coffe_maker_290 is OFF. coffe_maker_290 is PLUGGED_IN. 
+coffe_maker_290 is CLEAN.",,
+k1,"missed actions: walk_executor(cup_2063);grab_executor(cup_2063);walk_executor(coffe_maker_290);putin
+_executor(cup_2063, coffe_maker_290);close_executor(coffe_maker_290);switchon_executor(coffe_maker_2
+90);",,,,
+,,walk_executor(faucet_232),"Robot is inside dining_room_201. Robot is close kitchen_counter_230. Robot is close faucet_232. Robo
+t is no longer close coffe_maker_290.",,
+k1,"missed actions: walk_executor(cup_2063);grab_executor(cup_2063);walk_executor(coffe_maker_290);putin
+_executor(cup_2063, coffe_maker_290);close_executor(coffe_maker_290);switchon_executor(coffe_maker_2
+90);",,,,
+,,switchoff_executor(faucet_232),Robot is inside dining_room_201. Robot is close kitchen_counter_230. Robot is close faucet_232. ,,
+k1,"missed actions: walk_executor(cup_2063);grab_executor(cup_2063);walk_executor(coffe_maker_290);putin
+_executor(cup_2063, coffe_maker_290);close_executor(coffe_maker_290);switchon_executor(coffe_maker_2
+90);",,,,
+,,,"Human Instruction: The robot needs to ensure that water has been successfully added to the coffee ma
+ker's reservoir. The actions did not confirm that the reservoir was filled, only that the faucet was
+ turned on and off. Observing the area around the coffee maker without a confirmation does not compl
+ete the task.
+
+The actions you have taken:
+Action 1: Walk to coffe_maker_290. -> effect: Find napkin_2005. Find knife_2050. Find cutting_board_
+2051. Find cup_2063. Find cup_2064. Find pot_2069. Find oil_2079. Find fryingpan_2083. Find tray_296
+. Find drawing_239. Find drawing_238. Find drawing_240. Find drawing_241. Find drawing_242. Find dra
+wing_243. Robot is inside dining_room_201. Robot is close coffe_maker_290. Robot is close kitchen_co
+unter_230. Robot is no longer inside bathroom_1.
+Action 2: Switch on coffe_maker_290. -> effect: Find drawing_174. Robot is inside dining_room_201. R
+obot is close coffe_maker_290. Robot is close kitchen_counter_230. 
+Action 3: Walk to faucet_232. -> effect: Robot is inside dining_room_201. Robot is close kitchen_cou
+nter_230. Robot is close faucet_232. Robot is no longer close coffe_maker_290.
+Action 4: Switch on faucet_232. -> effect: Robot is inside dining_room_201. Robot is close kitchen_c
+ounter_230. Robot is close faucet_232. 
+Action 5: Walk to coffe_maker_290. -> effect: Robot is inside dining_room_201. Robot is close kitche
+n_counter_230. Robot is close coffe_maker_290. Robot is no longer close faucet_232.
+Action 6: Switch off coffe_maker_290. -> effect: Robot is inside dining_room_201. Robot is close kit
+chen_counter_230. Robot is close coffe_maker_290. 
+Action 7: Open coffe_maker_290. -> effect: Robot is inside dining_room_201. Robot is close kitchen_c
+ounter_230. Robot is close coffe_maker_290. 
+Action 8: Observe around coffe_maker_290 with the question of Checking if water is filling in the re
+servoir. -> effect: Get this information:  coffe_maker_290 is close to stovefan_288. coffe_maker_290
+ is close to toaster_292. coffe_maker_290 is close to cupboard_229. coffe_maker_290 is close to kitc
+hen_counter_230. coffe_maker_290 is close to oven_295. coffe_maker_290 is close to tray_296. coffe_m
+aker_290 is close to faucet_232. coffe_maker_290 is close to sink_231. coffe_maker_290 is close to s
+hower_36. coffe_maker_290 is close to floor_204. coffe_maker_290 is close to wall_11. coffe_maker_29
+0 is close to wall_15. coffe_maker_290 is close to wall_211. coffe_maker_290 is close to wall_212. c
+offe_maker_290 is close to wall_215. coffe_maker_290 is close to ceiling_221. coffe_maker_290 is clo
+se to character_65. coffe_maker_290 is on kitchen_counter_230. coffe_maker_290 is facing drawing_238
+. coffe_maker_290 is facing drawing_239. coffe_maker_290 is facing drawing_240. coffe_maker_290 is f
+acing drawing_241. coffe_maker_290 is facing drawing_242. coffe_maker_290 is facing drawing_243. cof
+fe_maker_290 is inside dining_room_201. coffe_maker_290 is OPEN. coffe_maker_290 is OFF. coffe_maker
+_290 is PLUGGED_IN. coffe_maker_290 is CLEAN.
+Action 9: Walk to faucet_232. -> effect: Robot is inside dining_room_201. Robot is close kitchen_cou
+nter_230. Robot is close faucet_232. Robot is no longer close coffe_maker_290.
+Action 10: Switch off faucet_232. -> effect: Robot is inside dining_room_201. Robot is close kitchen
+_counter_230. Robot is close faucet_232. 
+",,
+" 
+behavior add_water_to_coffee_maker(coffee_maker:item):
+    body:
+        achieve open(coffee_maker)
+        # Ensure the coffee makers reservoir is open
+
+        bind faucet: item where:
+            is_faucet(faucet) and close(faucet, coffee_maker) 
+        # Select a faucet close to the coffee maker
+        
+        achieve_once is_on(faucet)
+        # Turn on the faucet to add water
+
+        achieve has_water(coffee_maker) 
+        # Confirm water is added to the coffee makers reservoir
+
+        achieve_once is_off(faucet)
+        # Turn off the faucet after adding water
+
+behavior __goal__():
+    body:
+        bind coffee_maker: item where:
+            is_coffe_maker(coffee_maker)
+        # Select the coffee maker
+
+        add_water_to_coffee_maker(coffee_maker)
+        # Invoke the behavior to add water to the coffee maker
+",From function reset_sub_goal,,,,
+,,,,,"(CrowControllerApplier<switchon_executor(faucet_232)>, CrowControllerApplier<switchoff_executor(fauc
+et_232)>)"
+,,switchon_executor(faucet_232),Robot is inside dining_room_201. Robot is close kitchen_counter_230. Robot is close faucet_232. ,,
+k1,"missed actions: walk_executor(cup_2063);grab_executor(cup_2063);walk_executor(coffe_maker_290);putin
+_executor(cup_2063, coffe_maker_290);close_executor(coffe_maker_290);switchon_executor(coffe_maker_2
+90);",,,,
+,,switchoff_executor(faucet_232),Robot is inside dining_room_201. Robot is close kitchen_counter_230. Robot is close faucet_232. ,,
+k1,"missed actions: walk_executor(cup_2063);grab_executor(cup_2063);walk_executor(coffe_maker_290);putin
+_executor(cup_2063, coffe_maker_290);close_executor(coffe_maker_290);switchon_executor(coffe_maker_2
+90);",,,,
+,,,"Human Instruction: You need to confirm that water has been successfully added to the coffee maker's 
+reservoir. Observing the surroundings is not sufficient evidence that water has been added. Make sur
+e the reservoir has water before proceeding to the next sub-task.
+
+The actions you have taken:
+Action 1: Walk to coffe_maker_290. -> effect: Find napkin_2005. Find knife_2050. Find cutting_board_
+2051. Find cup_2063. Find cup_2064. Find pot_2069. Find oil_2079. Find fryingpan_2083. Find tray_296
+. Find drawing_239. Find drawing_238. Find drawing_240. Find drawing_241. Find drawing_242. Find dra
+wing_243. Robot is inside dining_room_201. Robot is close coffe_maker_290. Robot is close kitchen_co
+unter_230. Robot is no longer inside bathroom_1.
+Action 2: Switch on coffe_maker_290. -> effect: Find drawing_174. Robot is inside dining_room_201. R
+obot is close coffe_maker_290. Robot is close kitchen_counter_230. 
+Action 3: Walk to faucet_232. -> effect: Robot is inside dining_room_201. Robot is close kitchen_cou
+nter_230. Robot is close faucet_232. Robot is no longer close coffe_maker_290.
+Action 4: Switch on faucet_232. -> effect: Robot is inside dining_room_201. Robot is close kitchen_c
+ounter_230. Robot is close faucet_232. 
+Action 5: Walk to coffe_maker_290. -> effect: Robot is inside dining_room_201. Robot is close kitche
+n_counter_230. Robot is close coffe_maker_290. Robot is no longer close faucet_232.
+Action 6: Switch off coffe_maker_290. -> effect: Robot is inside dining_room_201. Robot is close kit
+chen_counter_230. Robot is close coffe_maker_290. 
+Action 7: Open coffe_maker_290. -> effect: Robot is inside dining_room_201. Robot is close kitchen_c
+ounter_230. Robot is close coffe_maker_290. 
+Action 8: Observe around coffe_maker_290 with the question of Checking if water is filling in the re
+servoir. -> effect: Get this information:  coffe_maker_290 is close to stovefan_288. coffe_maker_290
+ is close to toaster_292. coffe_maker_290 is close to cupboard_229. coffe_maker_290 is close to kitc
+hen_counter_230. coffe_maker_290 is close to oven_295. coffe_maker_290 is close to tray_296. coffe_m
+aker_290 is close to faucet_232. coffe_maker_290 is close to sink_231. coffe_maker_290 is close to s
+hower_36. coffe_maker_290 is close to floor_204. coffe_maker_290 is close to wall_11. coffe_maker_29
+0 is close to wall_15. coffe_maker_290 is close to wall_211. coffe_maker_290 is close to wall_212. c
+offe_maker_290 is close to wall_215. coffe_maker_290 is close to ceiling_221. coffe_maker_290 is clo
+se to character_65. coffe_maker_290 is on kitchen_counter_230. coffe_maker_290 is facing drawing_238
+. coffe_maker_290 is facing drawing_239. coffe_maker_290 is facing drawing_240. coffe_maker_290 is f
+acing drawing_241. coffe_maker_290 is facing drawing_242. coffe_maker_290 is facing drawing_243. cof
+fe_maker_290 is inside dining_room_201. coffe_maker_290 is OPEN. coffe_maker_290 is OFF. coffe_maker
+_290 is PLUGGED_IN. coffe_maker_290 is CLEAN.
+Action 9: Walk to faucet_232. -> effect: Robot is inside dining_room_201. Robot is close kitchen_cou
+nter_230. Robot is close faucet_232. Robot is no longer close coffe_maker_290.
+Action 10: Switch off faucet_232. -> effect: Robot is inside dining_room_201. Robot is close kitchen
+_counter_230. Robot is close faucet_232. 
+Action 11: Switch on faucet_232. -> effect: Robot is inside dining_room_201. Robot is close kitchen_
+counter_230. Robot is close faucet_232. 
+Action 12: Switch off faucet_232. -> effect: Robot is inside dining_room_201. Robot is close kitchen
+_counter_230. Robot is close faucet_232. 
+",,
+" 
+def reservoir_has_water(coffee_maker: item):
+    # Function to check if the coffee makers reservoir has water
+    symbol water_in_reservoir = has_water(coffee_maker)
+    return water_in_reservoir
+
+behavior add_water_to_reservoir(coffee_maker: item, faucet: item):
+    body:
+        achieve open(coffee_maker) # Open the coffee maker
+        achieve close_char(char, faucet) # Ensure close proximity to the faucet
+        achieve_once is_on(faucet) # Briefly turn the faucet on
+        achieve has_water(coffee_maker) # Fill the coffee makers reservoir with water
+        achieve_once is_off(faucet) # Turn the faucet off after filling
+
+behavior check_water_and_add_if_necessary(coffee_maker: item):
+    body:
+        if not reservoir_has_water(coffee_maker):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, coffee_maker)
+            add_water_to_reservoir(coffee_maker, faucet)
+        assert has_water(coffee_maker) # Confirm the presence of water in the reservoir
+
+behavior __goal__():
+    body:
+        bind coffee_maker: item where:
+            is_coffe_maker(coffee_maker) and id[coffee_maker] == 290
+        # Ensure the coffee maker has water by either validating or filling it
+        check_water_and_add_if_necessary(coffee_maker)
+",From function reset_sub_goal,,,,
+" 
+behavior verify_water(coffee_maker:item):
+    body:
+        achieve open(coffee_maker)
+        observe(coffee_maker, ""Is there water in the reservoir"")
+        achieve closed(coffee_maker)
+
+behavior achieve_water_in_reservoir(coffee_maker:item, faucet:item):
+    body:
+        achieve close_char(char, faucet) 
+        # Walk close to the faucet
+        achieve_once is_on(faucet)
+        # Turn on the faucet
+        achieve close_char(char, coffee_maker) 
+        # Walk back close to the coffee maker
+        achieve has_water(coffee_maker)
+        verify_water(coffee_maker)
+        # Verify water has been added
+
+behavior __goal__():
+    body:
+        bind coffee_maker: item where:
+            is_coffe_maker(coffee_maker)
+        # Selecting the coffee maker
+        bind faucet: item where:
+            is_faucet(faucet)
+        # Selecting a faucet
+        achieve_water_in_reservoir(coffee_maker, faucet)
+",From function reset_sub_goal,,,,
+,,,,"Record from func query_human in agent.py
+Question: Can you teach me how to ""2. add water to the coffee maker's reservoir."" ?
+Answer: I don't know.
+",
+" 
+behavior __goal__():
+    body:
+        bind coffee_maker: item where:
+            is_coffe_maker(coffee_maker) and id[coffee_maker]==290
+        # Identify the coffee maker
+
+        if not has_water(coffee_maker):
+            # If the coffee maker does not have water
+
+            bind faucet: item where:
+                is_faucet(faucet) and close_char(char, faucet)
+            # Select the faucet thats close to the character
+
+            achieve_once is_on(faucet)
+            # Turn on the faucet to get water
+
+            achieve has_water(coffee_maker)
+            # Ensure the coffee maker has water
+
+            achieve_once is_off(faucet)
+            # Turn off the faucet once water has been added
+",From function reset_sub_goal,,,,
+" 
+behavior add_water_to_coffee_maker(coffee_maker:item, sink:item):
+    body:
+        # Step to fill water into the coffee makers reservoir
+
+        if is_coffe_maker(coffee_maker) and is_off(coffee_maker) and has_plug(coffee_maker):
+            # Condition that the coffee maker is open, turned off, and plugged in
+            achieve has_water(coffee_maker)
+        else:
+            # If coffee maker is not already open, turn off, and plugged in
+            if not plugged(coffee_maker):
+                achieve plugged(coffee_maker)
+            if not is_off(coffee_maker):
+                achieve is_off(coffee_maker)
+            if not is_coffe_maker(coffee_maker):
+                achieve is_coffe_maker(coffee_maker)
+
+            achieve has_water(coffee_maker)
+
+behavior __goal__():
+    body:
+        bind coffee_maker: item where:
+            is_coffe_maker(coffee_maker)
+        # Select the coffee maker
+
+        bind sink: item where:
+            is_sink(sink)
+        # Select any sink
+
+        add_water_to_coffee_maker(coffee_maker, sink)
+",From function reset_sub_goal,,,,
+" 
+behavior add_water_to_reservoir(coffee_maker:item, faucet:item):
+    body:
+        if is_coffe_maker(coffee_maker):
+            achieve close_char(char, coffee_maker)
+            # Ensure the robot is close to the coffee maker
+
+        achieve has_water(coffee_maker) 
+        # Ensure the coffee makers reservoir has water
+
+behavior __goal__():
+    body:
+        bind coffee_maker: item where:
+            is_coffe_maker(coffee_maker)
+        bind faucet: item where:
+            is_faucet(faucet)
+        add_water_to_reservoir(coffee_maker, faucet)
+",From function reset_sub_goal,,,,
+,,,,,"(CrowControllerApplier<walk_executor(coffe_maker_290)>,)"
+,,walk_executor(coffe_maker_290),"Robot is inside dining_room_201. Robot is close kitchen_counter_230. Robot is close coffe_maker_290.
+ Robot is no longer close faucet_232.",,
+k1,"missed actions: walk_executor(cup_2063);grab_executor(cup_2063);walk_executor(coffe_maker_290);putin
+_executor(cup_2063, coffe_maker_290);close_executor(coffe_maker_290);switchon_executor(coffe_maker_2
+90);",,,,
+" 
+def has_filter_and_coffee_grounds(coffee_maker:item):
+    # Function to check if the coffee maker has a filter and coffee grounds
+    symbol has_content=exists o: item : (is_coffee_filter(o) or is_food_food(o)) and inside(o, coffe
+e_maker)
+    return has_content
+
+behavior insert_filter(coffee_maker:item, coffee_filter:item):
+    body:
+        achieve inside(coffee_filter, coffee_maker)
+        # Insert the coffee filter into the coffee maker
+
+behavior add_grounds(coffee_maker:item, coffee_grounds:item):
+    body:
+        achieve inside(coffee_grounds, coffee_maker)
+        # Add coffee grounds into the coffee maker
+
+behavior __goal__():
+    body:
+        bind coffee_maker: item where:
+            is_coffe_maker(coffee_maker) and has_water(coffee_maker)
+        # Select the coffee maker that has water
+
+        if not has_filter_and_coffee_grounds(coffee_maker):
+            # If the coffee maker does not contain a filter and coffee grounds, proceed to add them
+            bind coffee_filter: item where:
+                is_coffee_filter(coffee_filter)
+            # Bind a coffee filter
+            bind coffee_grounds: item where:
+                is_food_food(coffee_grounds)
+            # Bind coffee grounds
+            insert_filter(coffee_maker, coffee_filter)
+            add_grounds(coffee_maker, coffee_grounds)
+",From function reset_sub_goal,,,,
+" 
+behavior place_filter_and_add_grounds(filter:item, coffee_maker:item, grounds:item):
+    body:
+        achieve inside(filter, coffee_maker) # Place the filter inside the coffee maker
+        achieve inside(grounds, filter) # Add coffee grounds to the filter
+
+behavior __goal__():
+    body:
+        bind coffee_maker: item where:
+            is_coffe_maker(coffee_maker) and id[coffee_maker]==290
+        # Select the coffee maker with ID 290
+
+        bind filter: item where:
+            is_coffee_filter(filter)
+        # Select a coffee filter
+
+        bind grounds: item where:
+            is_food(grounds) and is_food_food(grounds) and grabbable(grounds)
+        # Select the coffee grounds
+        
+        place_filter_and_add_grounds(filter, coffee_maker, grounds)
+",From function reset_sub_goal,,,,
+,,,,"Record from func query_human in agent.py
+Question: Can you teach me how to ""3. place a coffee filter and add coffee grounds to the filter."" ?
+Answer: I don't know.
+",
+" 
+def can_proceed_to_next_step(coffee_maker: item):
+    # Check if water is present in the coffee makers reservoir
+    symbol water_present = has_water(coffee_maker)
+    return water_present
+
+behavior add_filter_and_grounds(coffee_maker: item, filter: item, coffee_grounds: item):
+    body:
+        achieve inside(filter, coffee_maker)
+        # Place the coffee filter inside the coffee maker
+
+        achieve inside(coffee_grounds, filter)
+        # Add coffee grounds into the coffee filter
+
+behavior __goal__():
+    body:
+        bind coffee_maker: item where:
+            is_coffe_maker(coffee_maker)
+        # Select a coffee maker
+
+        bind coffee_filter: item where:
+            is_coffee_filter(coffee_filter)
+        # Select a coffee filter
+
+        bind coffee_grounds: item where:
+            is_food_food(coffee_grounds)
+        # Select coffee grounds
+
+        assert can_proceed_to_next_step(coffee_maker)
+        # Verify that the coffee maker has water
+
+        add_filter_and_grounds(coffee_maker, coffee_filter, coffee_grounds)
+        # Add the coffee filter and grounds to the coffee maker
+",From function reset_sub_goal,,,,
+" 
+behavior add_filter_and_grounds(coffee_maker:item, coffee_filter:item, coffee_grounds:item):
+    body:
+        achieve open(coffee_maker)
+        # Ensure the coffee maker is open to add the filter and coffee grounds
+
+        achieve on(coffee_filter, coffee_maker)
+        # Place the coffee filter inside the coffee maker
+
+        achieve on(coffee_grounds, coffee_filter)
+        # Add coffee grounds to the filter inside the coffee maker
+
+behavior __goal__():
+    body:
+        bind coffee_maker: item where:
+            is_coffe_maker(coffee_maker) and plugged(coffee_maker)
+        # Select the pluggedin coffee maker
+        
+        bind coffee_filter: item where:
+            is_coffee_filter(coffee_filter)
+        # Select the coffee filter
+
+        bind coffee_grounds: item where:
+            is_food_food(coffee_grounds)
+        # Select the coffee grounds
+
+        add_filter_and_grounds(coffee_maker, coffee_filter, coffee_grounds)
+        # Add the coffee filter and grounds to the coffee maker
+",From function reset_sub_goal,,,,
+" 
+behavior __goal__():
+    body:
+        bind coffee_maker: item where:
+            is_coffe_maker(coffee_maker)
+        
+        bind coffee_filter: item where:
+            is_coffee_filter(coffee_filter)
+        
+        bind coffee_grounds: item where:
+            is_food_food(coffee_grounds) and grabbable(coffee_grounds)
+        
+        achieve open(coffee_maker)
+        # Open the coffee maker
+        achieve_once inhand(coffee_filter)
+        # Pick up the coffee filter
+        achieve inside(coffee_filter, coffee_maker)
+        # Place the coffee filter inside the coffee maker
+        
+        achieve_once inhand(coffee_grounds)
+        # Pick up the coffee grounds
+        achieve inside(coffee_grounds, coffee_filter)
+        # Place the coffee grounds inside the coffee filter within the coffee maker
+
+        achieve closed(coffee_maker)
+        # Ensure the coffee maker is closed after adding filter and grounds
+",From function reset_sub_goal,,,,
+" 
+def has_coffee_filter_and_grounds(x:item):
+    # Function to check if there is a coffee filter with grounds
+    symbol has_filter_and_grounds=exists filter: item, grounds: item : is_coffee_filter(filter) and 
+on(filter, x) and is_food_food(grounds) and on(grounds, filter)
+    return has_filter_and_grounds
+
+behavior __goal__():
+    body:
+        bind coffe_maker: item where:
+            is_coffe_maker(coffe_maker) and has_water(coffe_maker) 
+        # Bind coffee maker that has water in it
+
+        if has_coffee_filter_and_grounds(coffe_maker):
+            achieve close_char(char, coffe_maker)
+        else:
+            # If the coffee filter and grounds are not set up, observe the coffee maker
+            observe(coffe_maker,""Check if the coffee filter and grounds are set"")
+",From function reset_sub_goal,,,,
+k1,"missed actions: walk_executor(cup_2063);grab_executor(cup_2063);walk_executor(coffe_maker_290);putin
+_executor(cup_2063, coffe_maker_290);close_executor(coffe_maker_290);switchon_executor(coffe_maker_2
+90);",,,,
+k1,"missed actions: walk_executor(cup_2063);grab_executor(cup_2063);walk_executor(coffe_maker_290);putin
+_executor(cup_2063, coffe_maker_290);close_executor(coffe_maker_290);switchon_executor(coffe_maker_2
+90);",,,,

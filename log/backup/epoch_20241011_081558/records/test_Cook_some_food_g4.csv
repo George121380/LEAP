@@ -1,0 +1,810 @@
+Goal Representation,Debug Result,Action,Add Info,LLM Answer,Plan
+k1,"missed actions: walk_executor(pot_2069);open_executor(pot_2069);walk_executor(fridge_289);switchoff_
+executor(fridge_289);open_executor(fridge_289);walk_executor(food_vegetable_2041);grab_executor(food
+_vegetable_2041);walk_executor(pot_2069);putin_executor(food_vegetable_2041, pot_2069);grab_executor
+(pot_2069);walk_executor(stove_2065);put_executor(pot_2069, stove_2065);switchon_executor(stove_2065
+);",,,,
+k2,"missed actions: walk_executor(pot_2069);open_executor(pot_2069);walk_executor(fridge_289);switchoff_
+executor(fridge_289);open_executor(fridge_289);walk_executor(food_vegetable_2041);grab_executor(food
+_vegetable_2041);walk_executor(pot_2069);putin_executor(food_vegetable_2041, pot_2069);walk_executor
+(stove_2065);open_executor(stove_2065);walk_executor(pot_2069);grab_executor(pot_2069);walk_executor
+(stove_2065);putin_executor(pot_2069, stove_2065);close_executor(stove_2065);switchon_executor(stove
+_2065);",,,,
+k3,"missed actions: walk_executor(fridge_289);switchoff_executor(fridge_289);open_executor(fridge_289);w
+alk_executor(pot_2069);grab_executor(pot_2069);walk_executor(fridge_289);putin_executor(pot_2069, fr
+idge_289);",,,,
+"Reset goals: The sub-goals are: 
+['1. Wash all the vegetables.', '2. Put the vegetables in a pot and boil them on the stove.', '3. St
+ore the pot in the fridge.']",,,,,
+"
+behavior wash_vegetable(vegetable:item):
+    body:
+        achieve clean(vegetable)
+        # Achieve the state of the vegetable being clean after washing it
+
+behavior __goal__():
+    body:
+        foreach vegetable: item:
+            if is_food_vegetable(vegetable) and dirty(vegetable):
+                wash_vegetable(vegetable)
+        # Ensure all dirty vegetables are washed and clean
+",From function reset_goal,,,,
+,,,,"Record from func query_human in agent.py
+Question: Can you tell me how to wash all the vegetables.
+Answer: Put the vegetables in the sink, turn on the faucet, wash the vegetables, turn off the faucet
+, and then take out the vegetables.
+",
+,,,,"Record from func query_human in agent.py
+Question: Can you tell me how to put the vegetables in a pot and boil them on the stove.
+Answer: I don't know.
+",
+,,,,"Record from func query_human in agent.py
+Question: Can you tell me how to store the pot in the fridge.
+Answer: I don't know.
+",
+"Reset goals: The sub-goals are: 
+['1. Wash all the vegetables.', '2. Put the washed vegetables in a pot and boil them on the stove.',
+ '3. Store the whole pot in the fridge.']",,,,,
+" 
+behavior wash_vegetable(vegetable:item):
+    body:
+        achieve clean(vegetable)
+        # Ensure the vegetable is clean
+
+behavior __goal__():
+    body:
+        foreach vegetable: item:
+            if is_food_vegetable(vegetable) and dirty(vegetable):
+                wash_vegetable(vegetable)
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Wash the vegetables.', '2. Put the vegetables in a pot and boil them on the stove.', '3. Store 
+the whole pot in the fridge.']",,,,,
+" 
+behavior wash_vegetables(vegetable:item):
+    body:
+        bind sink: item where:
+            is_sink(sink)
+        # Select a sink to wash vegetables
+        achieve inside(vegetable, sink)
+        # Ensure the vegetable is placed inside the sink
+
+        if exists faucet:item: is_faucet(faucet) and close(faucet,sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet,sink)
+            achieve_once is_on(faucet)
+            # If the sink has a faucet, turn it on to wash the vegetables
+
+        wash(vegetable)
+        # Wash the vegetable
+        
+        if exists faucet:item: is_faucet(faucet) and close(faucet,sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet,sink)
+            achieve_once is_off(faucet)
+            # If the sink has a faucet, turn it off after washing
+
+behavior __goal__():
+    body:
+        foreach vegetable: item:
+            if is_food_vegetable(vegetable) and dirty(vegetable):
+                wash_vegetables(vegetable)
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Wash all the vegetables.', '2. Put the vegetables in a pot and boil them on the stove.', '3. St
+ore the whole pot in the fridge.']",,,,,
+" 
+behavior clean_vegetable(vegetable: item, sink: item):
+    body:
+        achieve inside(vegetable, sink)
+        # Ensure the vegetable is inside the sink
+
+        if exists faucet: item : is_faucet(faucet) and close(faucet, sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_on(faucet)
+            # Turn on faucet to clean the vegetable
+
+        wash(vegetable)
+        # Wash the vegetable
+
+        if exists faucet: item : is_faucet(faucet) and close(faucet, sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_off(faucet)
+            # Turn off faucet after washing
+
+behavior __goal__():
+    body:
+        foreach vegetable: item:
+            if is_food_vegetable(vegetable) and dirty(vegetable):
+                # Iterate through each vegetable that is dirty
+                bind sink: item where:
+                    is_sink(sink)
+                clean_vegetable(vegetable, sink)
+",From function reset_goal,,,,
+,,,,"Record from func query_human in agent.py
+Question: Can you teach me how to ""1. wash all the vegetables."" ?
+Answer: To wash all the vegetables, put them in the sink, turn on the faucet, wash the vegetables, t
+urn off the faucet, and take them out.
+",
+" 
+def has_faucet(sink:item):
+    # Determine whether this sink has a faucet
+    symbol has_faucet=exists faucet:item: is_faucet(faucet) and close(faucet,sink)
+    return has_faucet
+
+behavior wash_vegetable(obj:item, sink:item):
+    # Define the behavior to wash vegetables in the sink
+    body:
+        achieve_once inside(obj, sink)
+        # Place vegetables inside the sink
+
+        if has_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_on(faucet)
+            # If the sink has a faucet, turn it on to wash vegetables
+
+        wash(obj) # This is the key step of the behavior, used for washing vegetables
+        
+        if has_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet,sink)
+            achieve_once is_off(faucet)
+            # If the sink has a faucet, turn it off after washing
+
+behavior __goal__():
+    body:
+        bind vegetables: item where:
+            is_food_vegetable(vegetables)
+        # Select vegetables
+
+        bind sink: item where:
+            is_sink(sink)
+        # Select a sink
+
+        wash_vegetable(vegetables, sink)
+",From function reset_sub_goal,,,,
+,,,,,"(CrowControllerApplier<walk_executor(sink_231)>, CrowControllerApplier<exp(food_vegetable_2041, sink
+_231)>, CrowControllerApplier<walk_executor(food_vegetable_2041)>, CrowControllerApplier<grab_execut
+or(food_vegetable_2041)>, CrowControllerApplier<walk_executor(sink_42)>, CrowControllerApplier<putin
+_executor(food_vegetable_2041, sink_42)>, CrowControllerApplier<walk_executor(food_vegetable_2041)>,
+ CrowControllerApplier<wash_executor(food_vegetable_2041)>)"
+,,walk_executor(sink_231),"Find soap_2054. Find napkin_2005. Find knife_2050. Find cutting_board_2051. Find cup_2063. Find cup_
+2064. Find pot_2069. Find oil_2079. Find fryingpan_2083. Find tray_296. Find drawing_239. Find drawi
+ng_238. Find drawing_240. Find drawing_241. Find drawing_242. Find drawing_243. Find plate_1000. Rob
+ot is inside dining_room_201. Robot is close kitchen_counter_230. Robot is close sink_231. ",,
+k1,"missed actions: walk_executor(food_vegetable_2041);grab_executor(food_vegetable_2041);walk_executor(
+pot_2069);putin_executor(food_vegetable_2041, pot_2069);grab_executor(pot_2069);walk_executor(stove_
+2065);put_executor(pot_2069, stove_2065);",,,,
+k2,"missed actions: walk_executor(food_vegetable_2041);grab_executor(food_vegetable_2041);walk_executor(
+pot_2069);putin_executor(food_vegetable_2041, pot_2069);walk_executor(stove_2065);switchoff_executor
+(stove_2065);open_executor(stove_2065);walk_executor(pot_2069);grab_executor(pot_2069);walk_executor
+(stove_2065);putin_executor(pot_2069, stove_2065);close_executor(stove_2065);switchon_executor(stove
+_2065);",,,,
+,,"exp(food_vegetable_2041, sink_231)",Failed to find food_vegetable_2041 around sink_231. ,,
+k1,"missed actions: walk_executor(food_vegetable_2041);grab_executor(food_vegetable_2041);walk_executor(
+pot_2069);putin_executor(food_vegetable_2041, pot_2069);grab_executor(pot_2069);walk_executor(stove_
+2065);put_executor(pot_2069, stove_2065);",,,,
+k2,"missed actions: walk_executor(food_vegetable_2041);grab_executor(food_vegetable_2041);walk_executor(
+pot_2069);putin_executor(food_vegetable_2041, pot_2069);walk_executor(stove_2065);switchoff_executor
+(stove_2065);open_executor(stove_2065);walk_executor(pot_2069);grab_executor(pot_2069);walk_executor
+(stove_2065);putin_executor(pot_2069, stove_2065);close_executor(stove_2065);switchon_executor(stove
+_2065);",,,,
+,,,,,"(CrowControllerApplier<walk_executor(cupboard_229)>, CrowControllerApplier<exp(food_vegetable_2041, 
+cupboard_229)>, CrowControllerApplier<walk_executor(food_vegetable_2041)>, CrowControllerApplier<gra
+b_executor(food_vegetable_2041)>, CrowControllerApplier<walk_executor(sink_42)>, CrowControllerAppli
+er<putin_executor(food_vegetable_2041, sink_42)>, CrowControllerApplier<walk_executor(food_vegetable
+_2041)>, CrowControllerApplier<wash_executor(food_vegetable_2041)>)"
+,,walk_executor(cupboard_229),"Robot is inside dining_room_201. Robot is close wall_211. Robot is close cupboard_229. Robot is no l
+onger close kitchen_counter_230.Robot is no longer close sink_231.",,
+k1,"missed actions: walk_executor(food_vegetable_2041);grab_executor(food_vegetable_2041);walk_executor(
+pot_2069);putin_executor(food_vegetable_2041, pot_2069);grab_executor(pot_2069);walk_executor(stove_
+2065);put_executor(pot_2069, stove_2065);",,,,
+k2,"missed actions: walk_executor(food_vegetable_2041);grab_executor(food_vegetable_2041);walk_executor(
+pot_2069);putin_executor(food_vegetable_2041, pot_2069);walk_executor(stove_2065);switchoff_executor
+(stove_2065);open_executor(stove_2065);walk_executor(pot_2069);grab_executor(pot_2069);walk_executor
+(stove_2065);putin_executor(pot_2069, stove_2065);close_executor(stove_2065);switchon_executor(stove
+_2065);",,,,
+,,"exp(food_vegetable_2041, cupboard_229)",Failed to find food_vegetable_2041 around cupboard_229. ,,
+k1,"missed actions: walk_executor(food_vegetable_2041);grab_executor(food_vegetable_2041);walk_executor(
+pot_2069);putin_executor(food_vegetable_2041, pot_2069);grab_executor(pot_2069);walk_executor(stove_
+2065);put_executor(pot_2069, stove_2065);",,,,
+k2,"missed actions: walk_executor(food_vegetable_2041);grab_executor(food_vegetable_2041);walk_executor(
+pot_2069);putin_executor(food_vegetable_2041, pot_2069);walk_executor(stove_2065);switchoff_executor
+(stove_2065);open_executor(stove_2065);walk_executor(pot_2069);grab_executor(pot_2069);walk_executor
+(stove_2065);putin_executor(pot_2069, stove_2065);close_executor(stove_2065);switchon_executor(stove
+_2065);",,,,
+,,,,,"(CrowControllerApplier<walk_executor(oven_295)>, CrowControllerApplier<exp(food_vegetable_2041, oven
+_295)>, CrowControllerApplier<walk_executor(food_vegetable_2041)>, CrowControllerApplier<grab_execut
+or(food_vegetable_2041)>, CrowControllerApplier<walk_executor(sink_42)>, CrowControllerApplier<putin
+_executor(food_vegetable_2041, sink_42)>, CrowControllerApplier<walk_executor(food_vegetable_2041)>,
+ CrowControllerApplier<wash_executor(food_vegetable_2041)>)"
+,,walk_executor(oven_295),"Robot is inside dining_room_201. Robot is close tray_296. Robot is close oven_295. Robot is no longe
+r close wall_211.Robot is no longer close cupboard_229.",,
+k1,"missed actions: walk_executor(food_vegetable_2041);grab_executor(food_vegetable_2041);walk_executor(
+pot_2069);putin_executor(food_vegetable_2041, pot_2069);grab_executor(pot_2069);walk_executor(stove_
+2065);put_executor(pot_2069, stove_2065);",,,,
+k2,"missed actions: walk_executor(food_vegetable_2041);grab_executor(food_vegetable_2041);walk_executor(
+pot_2069);putin_executor(food_vegetable_2041, pot_2069);walk_executor(stove_2065);switchoff_executor
+(stove_2065);open_executor(stove_2065);walk_executor(pot_2069);grab_executor(pot_2069);walk_executor
+(stove_2065);putin_executor(pot_2069, stove_2065);close_executor(stove_2065);switchon_executor(stove
+_2065);",,,,
+,,"exp(food_vegetable_2041, oven_295)",Failed to find food_vegetable_2041 around oven_295. ,,
+k1,"missed actions: walk_executor(food_vegetable_2041);grab_executor(food_vegetable_2041);walk_executor(
+pot_2069);putin_executor(food_vegetable_2041, pot_2069);grab_executor(pot_2069);walk_executor(stove_
+2065);put_executor(pot_2069, stove_2065);",,,,
+k2,"missed actions: walk_executor(food_vegetable_2041);grab_executor(food_vegetable_2041);walk_executor(
+pot_2069);putin_executor(food_vegetable_2041, pot_2069);walk_executor(stove_2065);switchoff_executor
+(stove_2065);open_executor(stove_2065);walk_executor(pot_2069);grab_executor(pot_2069);walk_executor
+(stove_2065);putin_executor(pot_2069, stove_2065);close_executor(stove_2065);switchon_executor(stove
+_2065);",,,,
+,,,,,"(CrowControllerApplier<walk_executor(fridge_289)>, CrowControllerApplier<exp(food_vegetable_2041, fr
+idge_289)>, CrowControllerApplier<walk_executor(food_vegetable_2041)>, CrowControllerApplier<grab_ex
+ecutor(food_vegetable_2041)>, CrowControllerApplier<walk_executor(sink_42)>, CrowControllerApplier<p
+utin_executor(food_vegetable_2041, sink_42)>, CrowControllerApplier<walk_executor(food_vegetable_204
+1)>, CrowControllerApplier<wash_executor(food_vegetable_2041)>)"
+,,walk_executor(fridge_289),"Find sauce_2078. Find food_steak_2008. Find food_apple_2009. Find food_bacon_2010. Find food_banana_
+2011. Find food_bread_2012. Find food_cake_2013. Find food_carrot_2014. Find food_cereal_2015. Find 
+food_cheese_2016. Find food_chicken_2017. Find food_dessert_2018. Find food_donut_2019. Find food_eg
+g_2020. Find food_fish_2021. Find food_food_2022. Find food_fruit_2023. Find food_hamburger_2024. Fi
+nd food_ice_cream_2025. Find food_jam_2026. Find food_kiwi_2027. Find food_lemon_2028. Find food_noo
+dles_2029. Find food_oatmeal_2030. Find food_orange_2031. Find food_onion_2032. Find food_peanut_but
+ter_2033. Find food_pizza_2034. Find food_potato_2035. Find food_rice_2036. Find food_salt_2037. Fin
+d food_snack_2038. Find food_sugar_2039. Find food_turkey_2040. Find dry_pasta_2042. Find milk_2043.
+ Find food_vegetable_2041. Robot is inside dining_room_201. Robot is close sauce_2078. Robot is clos
+e fridge_289. Robot is close floor_202. Robot is close floor_203. Robot is close food_steak_2008. Ro
+bot is close food_apple_2009. Robot is close food_bacon_2010. Robot is close food_banana_2011. Robot
+ is close food_bread_2012. Robot is close food_cake_2013. Robot is close food_carrot_2014. Robot is 
+close food_cereal_2015. Robot is close food_cheese_2016. Robot is close food_chicken_2017. Robot is 
+close food_dessert_2018. Robot is close food_donut_2019. Robot is close food_egg_2020. Robot is clos
+e food_fish_2021. Robot is close food_food_2022. Robot is close food_fruit_2023. Robot is close food
+_hamburger_2024. Robot is close food_ice_cream_2025. Robot is close food_jam_2026. Robot is close fo
+od_kiwi_2027. Robot is close food_lemon_2028. Robot is close food_noodles_2029. Robot is close food_
+oatmeal_2030. Robot is close food_orange_2031. Robot is close food_onion_2032. Robot is close food_p
+eanut_butter_2033. Robot is close food_pizza_2034. Robot is close food_potato_2035. Robot is close f
+ood_rice_2036. Robot is close food_salt_2037. Robot is close food_snack_2038. Robot is close food_su
+gar_2039. Robot is close food_turkey_2040. Robot is close dry_pasta_2042. Robot is close milk_2043. 
+Robot is no longer close tray_296.Robot is no longer close oven_295.",,
+k1,"missed actions: walk_executor(food_vegetable_2041);grab_executor(food_vegetable_2041);walk_executor(
+pot_2069);putin_executor(food_vegetable_2041, pot_2069);grab_executor(pot_2069);walk_executor(stove_
+2065);put_executor(pot_2069, stove_2065);",,,,
+k2,"missed actions: walk_executor(food_vegetable_2041);grab_executor(food_vegetable_2041);walk_executor(
+pot_2069);putin_executor(food_vegetable_2041, pot_2069);walk_executor(stove_2065);switchoff_executor
+(stove_2065);open_executor(stove_2065);walk_executor(pot_2069);grab_executor(pot_2069);walk_executor
+(stove_2065);putin_executor(pot_2069, stove_2065);close_executor(stove_2065);switchon_executor(stove
+_2065);",,,,
+,,"exp(food_vegetable_2041, fridge_289)",Find food_vegetable_2041. ,,
+k1,"missed actions: walk_executor(food_vegetable_2041);grab_executor(food_vegetable_2041);walk_executor(
+pot_2069);putin_executor(food_vegetable_2041, pot_2069);grab_executor(pot_2069);walk_executor(stove_
+2065);put_executor(pot_2069, stove_2065);",,,,
+k2,"missed actions: walk_executor(food_vegetable_2041);grab_executor(food_vegetable_2041);walk_executor(
+pot_2069);putin_executor(food_vegetable_2041, pot_2069);walk_executor(stove_2065);switchoff_executor
+(stove_2065);open_executor(stove_2065);walk_executor(pot_2069);grab_executor(pot_2069);walk_executor
+(stove_2065);putin_executor(pot_2069, stove_2065);close_executor(stove_2065);switchon_executor(stove
+_2065);",,,,
+,,,,,"(CrowControllerApplier<walk_executor(food_vegetable_2041)>, CrowControllerApplier<grab_executor(food
+_vegetable_2041)>, CrowControllerApplier<walk_executor(sink_42)>, CrowControllerApplier<putin_execut
+or(food_vegetable_2041, sink_42)>, CrowControllerApplier<walk_executor(food_vegetable_2041)>, CrowCo
+ntrollerApplier<wash_executor(food_vegetable_2041)>)"
+,,walk_executor(food_vegetable_2041),"Robot is inside dining_room_201. Robot is close food_vegetable_2041. Robot is close pot_2069. Robot 
+is no longer close sauce_2078.Robot is no longer close fridge_289.Robot is no longer close floor_202
+.Robot is no longer close floor_203.Robot is no longer close food_steak_2008.Robot is no longer clos
+e food_apple_2009.Robot is no longer close food_bacon_2010.Robot is no longer close food_banana_2011
+.Robot is no longer close food_bread_2012.Robot is no longer close food_cake_2013.Robot is no longer
+ close food_carrot_2014.Robot is no longer close food_cereal_2015.Robot is no longer close food_chee
+se_2016.Robot is no longer close food_chicken_2017.Robot is no longer close food_dessert_2018.Robot 
+is no longer close food_donut_2019.Robot is no longer close food_egg_2020.Robot is no longer close f
+ood_fish_2021.Robot is no longer close food_food_2022.Robot is no longer close food_fruit_2023.Robot
+ is no longer close food_hamburger_2024.Robot is no longer close food_ice_cream_2025.Robot is no lon
+ger close food_jam_2026.Robot is no longer close food_kiwi_2027.Robot is no longer close food_lemon_
+2028.Robot is no longer close food_noodles_2029.Robot is no longer close food_oatmeal_2030.Robot is 
+no longer close food_orange_2031.Robot is no longer close food_onion_2032.Robot is no longer close f
+ood_peanut_butter_2033.Robot is no longer close food_pizza_2034.Robot is no longer close food_potato
+_2035.Robot is no longer close food_rice_2036.Robot is no longer close food_salt_2037.Robot is no lo
+nger close food_snack_2038.Robot is no longer close food_sugar_2039.Robot is no longer close food_tu
+rkey_2040.Robot is no longer close dry_pasta_2042.Robot is no longer close milk_2043.",,
+k1,missed actions: ,,,,
+k3,"missed actions: walk_executor(stove_2065);switchoff_executor(stove_2065);grab_executor(pot_2069);wal
+k_executor(fridge_289);putin_executor(pot_2069, fridge_289);",,,,
+,,grab_executor(food_vegetable_2041),"Robot is inside dining_room_201. Robot is close food_vegetable_2041. Robot is close pot_2069. Grabbi
+ng food_vegetable_2041 by right hand. ",,
+k3,"missed actions: walk_executor(stove_2065);switchoff_executor(stove_2065);grab_executor(pot_2069);wal
+k_executor(fridge_289);putin_executor(pot_2069, fridge_289);",,,,
+,,walk_executor(sink_42),"Find cleaning_solution_2073. Find detergent_2084. Find towel_rack_31. Find soap_2053. Find basket_fo
+r_clothes_2006. Find towel_rack_34. Find towel_rack_32. Robot is inside bathroom_1. Robot is close f
+ood_vegetable_2041. Robot is close bathroom_counter_41. Robot is close sink_42. Robot is no longer i
+nside dining_room_201.Robot is no longer close pot_2069.",,
+k3,"missed actions: walk_executor(stove_2065);switchoff_executor(stove_2065);grab_executor(pot_2069);wal
+k_executor(fridge_289);putin_executor(pot_2069, fridge_289);",,,,
+,,"putin_executor(food_vegetable_2041, sink_42)","Find drawing_176. Robot is inside bathroom_1. Robot is close food_vegetable_2041. Robot is close bat
+hroom_counter_41. Robot is close sink_42. food_vegetable_2041 released by right hand. ",,
+k3,"missed actions: walk_executor(stove_2065);switchoff_executor(stove_2065);grab_executor(pot_2069);wal
+k_executor(fridge_289);putin_executor(pot_2069, fridge_289);",,,,
+,,walk_executor(food_vegetable_2041),"Robot is inside dining_room_201. Robot is close food_vegetable_2041. Robot is close sink_42. Robot i
+s no longer inside bathroom_1.Robot is no longer close bathroom_counter_41.",,
+k3,"missed actions: walk_executor(stove_2065);switchoff_executor(stove_2065);grab_executor(pot_2069);wal
+k_executor(fridge_289);putin_executor(pot_2069, fridge_289);",,,,
+,,wash_executor(food_vegetable_2041),Robot is inside dining_room_201. Robot is close food_vegetable_2041. Robot is close sink_42. ,,
+k3,"missed actions: walk_executor(stove_2065);switchoff_executor(stove_2065);grab_executor(pot_2069);wal
+k_executor(fridge_289);putin_executor(pot_2069, fridge_289);",,,,
+,,,"Human Instruction: You need to ensure that the faucet is turned on to wash the vegetables, and then 
+turn off the faucet after washing them.
+
+Human Guidance: To wash all the vegetables, put them in the sink, turn on the faucet, wash the veget
+ables, turn off the faucet, and take them out.
+The actions you have taken:
+Action 1: Walk to sink_231. -> effect: Find soap_2054. Find napkin_2005. Find knife_2050. Find cutti
+ng_board_2051. Find cup_2063. Find cup_2064. Find pot_2069. Find oil_2079. Find fryingpan_2083. Find
+ tray_296. Find drawing_239. Find drawing_238. Find drawing_240. Find drawing_241. Find drawing_242.
+ Find drawing_243. Find plate_1000. Robot is inside dining_room_201. Robot is close kitchen_counter_
+230. Robot is close sink_231. 
+Action 2: look for food_vegetable_2041 around sink_231. -> effect: Failed to find food_vegetable_204
+1 around sink_231. 
+Action 3: Walk to cupboard_229. -> effect: Robot is inside dining_room_201. Robot is close wall_211.
+ Robot is close cupboard_229. Robot is no longer close kitchen_counter_230.Robot is no longer close 
+sink_231.
+Action 4: look for food_vegetable_2041 around cupboard_229. -> effect: Failed to find food_vegetable
+_2041 around cupboard_229. 
+Action 5: Walk to oven_295. -> effect: Robot is inside dining_room_201. Robot is close tray_296. Rob
+ot is close oven_295. Robot is no longer close wall_211.Robot is no longer close cupboard_229.
+Action 6: look for food_vegetable_2041 around oven_295. -> effect: Failed to find food_vegetable_204
+1 around oven_295. 
+Action 7: Walk to fridge_289. -> effect: Find sauce_2078. Find food_steak_2008. Find food_apple_2009
+. Find food_bacon_2010. Find food_banana_2011. Find food_bread_2012. Find food_cake_2013. Find food_
+carrot_2014. Find food_cereal_2015. Find food_cheese_2016. Find food_chicken_2017. Find food_dessert
+_2018. Find food_donut_2019. Find food_egg_2020. Find food_fish_2021. Find food_food_2022. Find food
+_fruit_2023. Find food_hamburger_2024. Find food_ice_cream_2025. Find food_jam_2026. Find food_kiwi_
+2027. Find food_lemon_2028. Find food_noodles_2029. Find food_oatmeal_2030. Find food_orange_2031. F
+ind food_onion_2032. Find food_peanut_butter_2033. Find food_pizza_2034. Find food_potato_2035. Find
+ food_rice_2036. Find food_salt_2037. Find food_snack_2038. Find food_sugar_2039. Find food_turkey_2
+040. Find dry_pasta_2042. Find milk_2043. Find food_vegetable_2041. Robot is inside dining_room_201.
+ Robot is close sauce_2078. Robot is close fridge_289. Robot is close floor_202. Robot is close floo
+r_203. Robot is close food_steak_2008. Robot is close food_apple_2009. Robot is close food_bacon_201
+0. Robot is close food_banana_2011. Robot is close food_bread_2012. Robot is close food_cake_2013. R
+obot is close food_carrot_2014. Robot is close food_cereal_2015. Robot is close food_cheese_2016. Ro
+bot is close food_chicken_2017. Robot is close food_dessert_2018. Robot is close food_donut_2019. Ro
+bot is close food_egg_2020. Robot is close food_fish_2021. Robot is close food_food_2022. Robot is c
+lose food_fruit_2023. Robot is close food_hamburger_2024. Robot is close food_ice_cream_2025. Robot 
+is close food_jam_2026. Robot is close food_kiwi_2027. Robot is close food_lemon_2028. Robot is clos
+e food_noodles_2029. Robot is close food_oatmeal_2030. Robot is close food_orange_2031. Robot is clo
+se food_onion_2032. Robot is close food_peanut_butter_2033. Robot is close food_pizza_2034. Robot is
+ close food_potato_2035. Robot is close food_rice_2036. Robot is close food_salt_2037. Robot is clos
+e food_snack_2038. Robot is close food_sugar_2039. Robot is close food_turkey_2040. Robot is close d
+ry_pasta_2042. Robot is close milk_2043. Robot is no longer close tray_296.Robot is no longer close 
+oven_295.
+Action 8: look for food_vegetable_2041 around fridge_289. -> effect: Find food_vegetable_2041. 
+Action 9: Walk to food_vegetable_2041. -> effect: Robot is inside dining_room_201. Robot is close fo
+od_vegetable_2041. Robot is close pot_2069. Robot is no longer close sauce_2078.Robot is no longer c
+lose fridge_289.Robot is no longer close floor_202.Robot is no longer close floor_203.Robot is no lo
+nger close food_steak_2008.Robot is no longer close food_apple_2009.Robot is no longer close food_ba
+con_2010.Robot is no longer close food_banana_2011.Robot is no longer close food_bread_2012.Robot is
+ no longer close food_cake_2013.Robot is no longer close food_carrot_2014.Robot is no longer close f
+ood_cereal_2015.Robot is no longer close food_cheese_2016.Robot is no longer close food_chicken_2017
+.Robot is no longer close food_dessert_2018.Robot is no longer close food_donut_2019.Robot is no lon
+ger close food_egg_2020.Robot is no longer close food_fish_2021.Robot is no longer close food_food_2
+022.Robot is no longer close food_fruit_2023.Robot is no longer close food_hamburger_2024.Robot is n
+o longer close food_ice_cream_2025.Robot is no longer close food_jam_2026.Robot is no longer close f
+ood_kiwi_2027.Robot is no longer close food_lemon_2028.Robot is no longer close food_noodles_2029.Ro
+bot is no longer close food_oatmeal_2030.Robot is no longer close food_orange_2031.Robot is no longe
+r close food_onion_2032.Robot is no longer close food_peanut_butter_2033.Robot is no longer close fo
+od_pizza_2034.Robot is no longer close food_potato_2035.Robot is no longer close food_rice_2036.Robo
+t is no longer close food_salt_2037.Robot is no longer close food_snack_2038.Robot is no longer clos
+e food_sugar_2039.Robot is no longer close food_turkey_2040.Robot is no longer close dry_pasta_2042.
+Robot is no longer close milk_2043.
+Action 10: Grab food_vegetable_2041. -> effect: Robot is inside dining_room_201. Robot is close food
+_vegetable_2041. Robot is close pot_2069. Grabbing food_vegetable_2041 by right hand. 
+Action 11: Walk to sink_42. -> effect: Find cleaning_solution_2073. Find detergent_2084. Find towel_
+rack_31. Find soap_2053. Find basket_for_clothes_2006. Find towel_rack_34. Find towel_rack_32. Robot
+ is inside bathroom_1. Robot is close food_vegetable_2041. Robot is close bathroom_counter_41. Robot
+ is close sink_42. Robot is no longer inside dining_room_201.Robot is no longer close pot_2069.
+Action 12: Put food_vegetable_2041 into sink_42. -> effect: Find drawing_176. Robot is inside bathro
+om_1. Robot is close food_vegetable_2041. Robot is close bathroom_counter_41. Robot is close sink_42
+. food_vegetable_2041 released by right hand. 
+Action 13: Walk to food_vegetable_2041. -> effect: Robot is inside dining_room_201. Robot is close f
+ood_vegetable_2041. Robot is close sink_42. Robot is no longer inside bathroom_1.Robot is no longer 
+close bathroom_counter_41.
+Action 14: Wash food_vegetable_2041. -> effect: Robot is inside dining_room_201. Robot is close food
+_vegetable_2041. Robot is close sink_42. 
+",,
+"behavior clean_food(vegetables:item, sink:item, faucet:item):
+    body:
+        achieve inside(vegetables, sink)
+        if is_faucet(faucet) and close(faucet, sink):
+            achieve_once is_on(faucet)
+            wash(vegetables)
+            achieve_once is_off(faucet)
+        else:
+            wash(vegetables)
+
+behavior __goal__():
+    body:
+        bind vegetables: item where:
+            is_food_vegetable(vegetables) and close_char(char, vegetables)
+        bind sink: item where:
+            is_sink(sink)
+        bind faucet: item where:
+            is_faucet(faucet) and close(faucet, sink)
+        clean_food(vegetables, sink, faucet)",From function reset_sub_goal,,,,
+,,,,,"(CrowControllerApplier<walk_executor(faucet_43)>, CrowControllerApplier<switchon_executor(faucet_43)
+>, CrowControllerApplier<walk_executor(food_vegetable_2041)>, CrowControllerApplier<wash_executor(fo
+od_vegetable_2041)>, CrowControllerApplier<walk_executor(faucet_43)>, CrowControllerApplier<switchof
+f_executor(faucet_43)>)"
+,,walk_executor(faucet_43),"Robot is inside bathroom_1. Robot is close bathroom_counter_41. Robot is close faucet_43. Robot is n
+o longer inside dining_room_201.Robot is no longer close food_vegetable_2041.Robot is no longer clos
+e sink_42.",,
+k3,"missed actions: walk_executor(stove_2065);switchoff_executor(stove_2065);grab_executor(pot_2069);wal
+k_executor(fridge_289);putin_executor(pot_2069, fridge_289);",,,,
+,,switchon_executor(faucet_43),Robot is inside bathroom_1. Robot is close bathroom_counter_41. Robot is close faucet_43. ,,
+k3,"missed actions: walk_executor(stove_2065);switchoff_executor(stove_2065);grab_executor(pot_2069);wal
+k_executor(fridge_289);putin_executor(pot_2069, fridge_289);",,,,
+,,walk_executor(food_vegetable_2041),"Robot is inside dining_room_201. Robot is close food_vegetable_2041. Robot is close sink_42. Robot i
+s no longer inside bathroom_1.Robot is no longer close bathroom_counter_41.Robot is no longer close 
+faucet_43.",,
+k3,"missed actions: walk_executor(stove_2065);switchoff_executor(stove_2065);grab_executor(pot_2069);wal
+k_executor(fridge_289);putin_executor(pot_2069, fridge_289);",,,,
+,,wash_executor(food_vegetable_2041),Robot is inside dining_room_201. Robot is close food_vegetable_2041. Robot is close sink_42. ,,
+k3,"missed actions: walk_executor(stove_2065);switchoff_executor(stove_2065);grab_executor(pot_2069);wal
+k_executor(fridge_289);putin_executor(pot_2069, fridge_289);",,,,
+,,walk_executor(faucet_43),"Robot is inside bathroom_1. Robot is close bathroom_counter_41. Robot is close faucet_43. Robot is n
+o longer inside dining_room_201.Robot is no longer close food_vegetable_2041.Robot is no longer clos
+e sink_42.",,
+k3,"missed actions: walk_executor(stove_2065);switchoff_executor(stove_2065);grab_executor(pot_2069);wal
+k_executor(fridge_289);putin_executor(pot_2069, fridge_289);",,,,
+,,switchoff_executor(faucet_43),Robot is inside bathroom_1. Robot is close bathroom_counter_41. Robot is close faucet_43. ,,
+k3,"missed actions: walk_executor(stove_2065);switchoff_executor(stove_2065);grab_executor(pot_2069);wal
+k_executor(fridge_289);putin_executor(pot_2069, fridge_289);",,,,
+" 
+behavior put_vegetables_in_pot(vegetables:item, pot:item):
+    body:
+        achieve inside(vegetables, pot)
+
+behavior boil_vegetables_on_stove(pot:item, stove:item):
+    body:
+        achieve inside(pot, stove)
+        achieve is_on(stove)
+
+behavior __goal__():
+    body:
+        bind vegetables: item where:
+            is_food_vegetable(vegetables) and clean(vegetables)
+        # Identify vegetables that have been washed
+
+        bind pot: item where:
+            is_pot(pot) and visited(pot)
+        # Select a known pot in the scene
+
+        bind stove: item where:
+            is_stove(stove) and has_switch(stove)
+        # Select a stove in the scene
+
+        put_vegetables_in_pot(vegetables, pot)
+        boil_vegetables_on_stove(pot, stove)
+",From function reset_sub_goal,,,,
+" 
+behavior boil_vegetables(pot:item, stove:item):
+    body:
+        achieve on(pot, stove)
+        achieve is_on(stove) # Turn on the stove to cook
+
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot)
+        # Select the pot
+        
+        bind vegetable: item where:
+            is_food_vegetable(vegetable) and not inside(vegetable, pot)
+        # Select a vegetable
+        
+        bind stove: item where:
+            is_stove(stove)
+        # Select a stove
+
+        put_vegetables_in_pot(vegetable, pot)
+        boil_vegetables(pot, stove)
+",From function reset_sub_goal,,,,
+,,,,,"(CrowControllerApplier<walk_executor(food_vegetable_2041)>, CrowControllerApplier<grab_executor(food
+_vegetable_2041)>, CrowControllerApplier<walk_executor(pot_2069)>, CrowControllerApplier<putin_execu
+tor(food_vegetable_2041, pot_2069)>)"
+,,walk_executor(food_vegetable_2041),"Robot is inside dining_room_201. Robot is close food_vegetable_2041. Robot is close sink_42. Robot i
+s no longer inside bathroom_1.Robot is no longer close bathroom_counter_41.Robot is no longer close 
+faucet_43.",,
+k3,"missed actions: walk_executor(stove_2065);switchoff_executor(stove_2065);grab_executor(pot_2069);wal
+k_executor(fridge_289);putin_executor(pot_2069, fridge_289);",,,,
+,,grab_executor(food_vegetable_2041),"Robot is inside dining_room_201. Robot is close food_vegetable_2041. Robot is close sink_42. Grabbin
+g food_vegetable_2041 by right hand. ",,
+k3,"missed actions: walk_executor(stove_2065);switchoff_executor(stove_2065);grab_executor(pot_2069);wal
+k_executor(fridge_289);putin_executor(pot_2069, fridge_289);",,,,
+,,walk_executor(pot_2069),"Robot is inside dining_room_201. Robot is close food_vegetable_2041. Robot is close stove_2065. Robo
+t is close pot_2069. Robot is no longer close sink_42.",,
+k3,"missed actions: switchoff_executor(stove_2065);grab_executor(pot_2069);walk_executor(fridge_289);put
+in_executor(pot_2069, fridge_289);",,,,
+,,"putin_executor(food_vegetable_2041, pot_2069)","Robot is inside dining_room_201. Robot is close food_vegetable_2041. Robot is close stove_2065. Robo
+t is close pot_2069. food_vegetable_2041 released by right hand. ",,
+k3,"missed actions: switchoff_executor(stove_2065);grab_executor(pot_2069);walk_executor(fridge_289);put
+in_executor(pot_2069, fridge_289);",,,,
+,,,"Human Instruction: The robot needs to turn on the stove to start boiling the vegetables.
+
+The actions you have taken:
+Action 1: Walk to sink_231. -> effect: Find soap_2054. Find napkin_2005. Find knife_2050. Find cutti
+ng_board_2051. Find cup_2063. Find cup_2064. Find pot_2069. Find oil_2079. Find fryingpan_2083. Find
+ tray_296. Find drawing_239. Find drawing_238. Find drawing_240. Find drawing_241. Find drawing_242.
+ Find drawing_243. Find plate_1000. Robot is inside dining_room_201. Robot is close kitchen_counter_
+230. Robot is close sink_231. 
+Action 2: look for food_vegetable_2041 around sink_231. -> effect: Failed to find food_vegetable_204
+1 around sink_231. 
+Action 3: Walk to cupboard_229. -> effect: Robot is inside dining_room_201. Robot is close wall_211.
+ Robot is close cupboard_229. Robot is no longer close kitchen_counter_230.Robot is no longer close 
+sink_231.
+Action 4: look for food_vegetable_2041 around cupboard_229. -> effect: Failed to find food_vegetable
+_2041 around cupboard_229. 
+Action 5: Walk to oven_295. -> effect: Robot is inside dining_room_201. Robot is close tray_296. Rob
+ot is close oven_295. Robot is no longer close wall_211.Robot is no longer close cupboard_229.
+Action 6: look for food_vegetable_2041 around oven_295. -> effect: Failed to find food_vegetable_204
+1 around oven_295. 
+Action 7: Walk to fridge_289. -> effect: Find sauce_2078. Find food_steak_2008. Find food_apple_2009
+. Find food_bacon_2010. Find food_banana_2011. Find food_bread_2012. Find food_cake_2013. Find food_
+carrot_2014. Find food_cereal_2015. Find food_cheese_2016. Find food_chicken_2017. Find food_dessert
+_2018. Find food_donut_2019. Find food_egg_2020. Find food_fish_2021. Find food_food_2022. Find food
+_fruit_2023. Find food_hamburger_2024. Find food_ice_cream_2025. Find food_jam_2026. Find food_kiwi_
+2027. Find food_lemon_2028. Find food_noodles_2029. Find food_oatmeal_2030. Find food_orange_2031. F
+ind food_onion_2032. Find food_peanut_butter_2033. Find food_pizza_2034. Find food_potato_2035. Find
+ food_rice_2036. Find food_salt_2037. Find food_snack_2038. Find food_sugar_2039. Find food_turkey_2
+040. Find dry_pasta_2042. Find milk_2043. Find food_vegetable_2041. Robot is inside dining_room_201.
+ Robot is close sauce_2078. Robot is close fridge_289. Robot is close floor_202. Robot is close floo
+r_203. Robot is close food_steak_2008. Robot is close food_apple_2009. Robot is close food_bacon_201
+0. Robot is close food_banana_2011. Robot is close food_bread_2012. Robot is close food_cake_2013. R
+obot is close food_carrot_2014. Robot is close food_cereal_2015. Robot is close food_cheese_2016. Ro
+bot is close food_chicken_2017. Robot is close food_dessert_2018. Robot is close food_donut_2019. Ro
+bot is close food_egg_2020. Robot is close food_fish_2021. Robot is close food_food_2022. Robot is c
+lose food_fruit_2023. Robot is close food_hamburger_2024. Robot is close food_ice_cream_2025. Robot 
+is close food_jam_2026. Robot is close food_kiwi_2027. Robot is close food_lemon_2028. Robot is clos
+e food_noodles_2029. Robot is close food_oatmeal_2030. Robot is close food_orange_2031. Robot is clo
+se food_onion_2032. Robot is close food_peanut_butter_2033. Robot is close food_pizza_2034. Robot is
+ close food_potato_2035. Robot is close food_rice_2036. Robot is close food_salt_2037. Robot is clos
+e food_snack_2038. Robot is close food_sugar_2039. Robot is close food_turkey_2040. Robot is close d
+ry_pasta_2042. Robot is close milk_2043. Robot is no longer close tray_296.Robot is no longer close 
+oven_295.
+Action 8: look for food_vegetable_2041 around fridge_289. -> effect: Find food_vegetable_2041. 
+Action 9: Walk to food_vegetable_2041. -> effect: Robot is inside dining_room_201. Robot is close fo
+od_vegetable_2041. Robot is close pot_2069. Robot is no longer close sauce_2078.Robot is no longer c
+lose fridge_289.Robot is no longer close floor_202.Robot is no longer close floor_203.Robot is no lo
+nger close food_steak_2008.Robot is no longer close food_apple_2009.Robot is no longer close food_ba
+con_2010.Robot is no longer close food_banana_2011.Robot is no longer close food_bread_2012.Robot is
+ no longer close food_cake_2013.Robot is no longer close food_carrot_2014.Robot is no longer close f
+ood_cereal_2015.Robot is no longer close food_cheese_2016.Robot is no longer close food_chicken_2017
+.Robot is no longer close food_dessert_2018.Robot is no longer close food_donut_2019.Robot is no lon
+ger close food_egg_2020.Robot is no longer close food_fish_2021.Robot is no longer close food_food_2
+022.Robot is no longer close food_fruit_2023.Robot is no longer close food_hamburger_2024.Robot is n
+o longer close food_ice_cream_2025.Robot is no longer close food_jam_2026.Robot is no longer close f
+ood_kiwi_2027.Robot is no longer close food_lemon_2028.Robot is no longer close food_noodles_2029.Ro
+bot is no longer close food_oatmeal_2030.Robot is no longer close food_orange_2031.Robot is no longe
+r close food_onion_2032.Robot is no longer close food_peanut_butter_2033.Robot is no longer close fo
+od_pizza_2034.Robot is no longer close food_potato_2035.Robot is no longer close food_rice_2036.Robo
+t is no longer close food_salt_2037.Robot is no longer close food_snack_2038.Robot is no longer clos
+e food_sugar_2039.Robot is no longer close food_turkey_2040.Robot is no longer close dry_pasta_2042.
+Robot is no longer close milk_2043.
+Action 10: Grab food_vegetable_2041. -> effect: Robot is inside dining_room_201. Robot is close food
+_vegetable_2041. Robot is close pot_2069. Grabbing food_vegetable_2041 by right hand. 
+Action 11: Walk to sink_42. -> effect: Find cleaning_solution_2073. Find detergent_2084. Find towel_
+rack_31. Find soap_2053. Find basket_for_clothes_2006. Find towel_rack_34. Find towel_rack_32. Robot
+ is inside bathroom_1. Robot is close food_vegetable_2041. Robot is close bathroom_counter_41. Robot
+ is close sink_42. Robot is no longer inside dining_room_201.Robot is no longer close pot_2069.
+Action 12: Put food_vegetable_2041 into sink_42. -> effect: Find drawing_176. Robot is inside bathro
+om_1. Robot is close food_vegetable_2041. Robot is close bathroom_counter_41. Robot is close sink_42
+. food_vegetable_2041 released by right hand. 
+Action 13: Walk to food_vegetable_2041. -> effect: Robot is inside dining_room_201. Robot is close f
+ood_vegetable_2041. Robot is close sink_42. Robot is no longer inside bathroom_1.Robot is no longer 
+close bathroom_counter_41.
+Action 14: Wash food_vegetable_2041. -> effect: Robot is inside dining_room_201. Robot is close food
+_vegetable_2041. Robot is close sink_42. 
+Action 15: Walk to faucet_43. -> effect: Robot is inside bathroom_1. Robot is close bathroom_counter
+_41. Robot is close faucet_43. Robot is no longer inside dining_room_201.Robot is no longer close fo
+od_vegetable_2041.Robot is no longer close sink_42.
+Action 16: Switch on faucet_43. -> effect: Robot is inside bathroom_1. Robot is close bathroom_count
+er_41. Robot is close faucet_43. 
+Action 17: Walk to food_vegetable_2041. -> effect: Robot is inside dining_room_201. Robot is close f
+ood_vegetable_2041. Robot is close sink_42. Robot is no longer inside bathroom_1.Robot is no longer 
+close bathroom_counter_41.Robot is no longer close faucet_43.
+Action 18: Wash food_vegetable_2041. -> effect: Robot is inside dining_room_201. Robot is close food
+_vegetable_2041. Robot is close sink_42. 
+Action 19: Walk to faucet_43. -> effect: Robot is inside bathroom_1. Robot is close bathroom_counter
+_41. Robot is close faucet_43. Robot is no longer inside dining_room_201.Robot is no longer close fo
+od_vegetable_2041.Robot is no longer close sink_42.
+Action 20: Switch off faucet_43. -> effect: Robot is inside bathroom_1. Robot is close bathroom_coun
+ter_41. Robot is close faucet_43. 
+Action 21: Walk to food_vegetable_2041. -> effect: Robot is inside dining_room_201. Robot is close f
+ood_vegetable_2041. Robot is close sink_42. Robot is no longer inside bathroom_1.Robot is no longer 
+close bathroom_counter_41.Robot is no longer close faucet_43.
+Action 22: Grab food_vegetable_2041. -> effect: Robot is inside dining_room_201. Robot is close food
+_vegetable_2041. Robot is close sink_42. Grabbing food_vegetable_2041 by right hand. 
+Action 23: Walk to pot_2069. -> effect: Robot is inside dining_room_201. Robot is close food_vegetab
+le_2041. Robot is close stove_2065. Robot is close pot_2069. Robot is no longer close sink_42.
+Action 24: Put food_vegetable_2041 into pot_2069. -> effect: Robot is inside dining_room_201. Robot 
+is close food_vegetable_2041. Robot is close stove_2065. Robot is close pot_2069. food_vegetable_204
+1 released by right hand. 
+",,
+"behavior boil_vegetables_on_stove(vegetables:item, pot:item, stove:item):
+    body:
+        put_vegetables_in_pot(vegetables, pot)
+        achieve inside(vegetables, pot)
+        achieve close_char(char, stove)
+        achieve is_on(stove)
+
+behavior __goal__():
+    body:
+        bind vegetables: item where:
+            is_food_vegetable(vegetables)
+        bind pot: item where:
+            is_pot(pot)
+        bind stove: item where:
+            is_stove(stove) and close(pot, stove)
+        boil_vegetables_on_stove(vegetables, pot, stove)",From function reset_sub_goal,,,,
+" 
+behavior put_vegetables_in_pot(vegetable:item, pot:item):
+    body:
+        achieve inside(vegetable, pot)
+        # Place vegetables inside the pot
+
+behavior boil_vegetables_on_stove(pot:item, stove:item):
+    body:
+        achieve on(pot, stove)
+        # Place the pot on the stove
+        achieve is_on(stove)
+        # Turn on the stove to begin boiling
+
+behavior __goal__():
+    body:
+        bind vegetable: item where:
+            is_food_vegetable(vegetable)
+        # Select the food_vegetable_2041
+        
+        bind pot: item where:
+            is_pot(pot)
+        # Select the pot_2069
+        
+        bind stove: item where:
+            is_stove(stove)
+        # Select the stove_2065
+        
+        put_vegetables_in_pot(vegetable, pot)
+        boil_vegetables_on_stove(pot, stove)
+",From function reset_sub_goal,,,,
+" 
+def is_stove_plugged_and_facing_pot(stove: item, pot: item):
+    symbol plugged_and_facing = plugged(stove) and facing(pot, stove)
+    return plugged_and_facing
+
+behavior boil_vegetables(vegetables: item, pot: item, stove: item):
+    body:
+        achieve inside(vegetables, pot)
+        if is_stove_plugged_and_facing_pot(stove, pot):
+            achieve is_on(stove)
+
+behavior __goal__():
+    body:
+        bind vegetables: item where:
+            is_food_vegetable(vegetables)
+        bind pot: item where:
+            is_pot(pot)
+        bind stove: item where:
+            is_stove(stove)
+        boil_vegetables(vegetables, pot, stove)
+",From function reset_sub_goal,,,,
+,,,,"Record from func query_human in agent.py
+Question: Can you teach me how to ""2. put the vegetables in a pot and boil them on the stove."" ?
+Answer: I don't know.
+",
+" 
+behavior turn_on_stove(stove:item):
+    body:
+        achieve is_on(stove)
+
+behavior boil_vegetables(pot:item, stove:item):
+    body:
+        achieve on(pot, stove)
+        # Place the pot on the stove
+        turn_on_stove(stove) 
+        # Turn on the stove to boil the vegetables
+
+behavior __goal__():
+    body:
+        bind food_vegetable: item where:
+            is_food_vegetable(food_vegetable)
+        # Select the vegetables
+        
+        bind pot: item where:
+            is_pot(pot)
+        # Select the pot
+        
+        bind stove: item where:
+            is_stove(stove)
+        # Select the stove
+        
+        put_vegetables_in_pot(food_vegetable, pot)
+        # Put the vegetables in the pot
+        
+        boil_vegetables(pot, stove)
+        # Boil the vegetables on the stove
+",From function reset_sub_goal,,,,
+" 
+behavior boil_vegetables_on_stove(vegetable:item, pot:item, stove:item):
+    body:
+        achieve inside(vegetable, pot)
+        # Ensure the vegetables are inside the pot
+
+        achieve plugged(stove)
+        # Ensure the stove is plugged in
+
+        achieve is_on(stove)
+        # Ensure the stove is turned on to start boiling
+
+behavior __goal__():
+    body:
+        bind vegetable: item where:
+            is_food_vegetable(vegetable)
+        # Select the vegetable to boil
+
+        bind pot: item where:
+            is_pot(pot)
+        # Select the pot to use for boiling
+
+        bind stove: item where:
+            is_stove(stove)
+        # Select the stove to boil the vegetables
+
+        boil_vegetables_on_stove(vegetable, pot, stove)
+",From function reset_sub_goal,,,,
+" 
+behavior boil_vegetables_on_stove(pot:item, stove:item):
+    body:
+        achieve on(pot, stove)
+        # Place the pot on the stove
+
+        achieve is_on(stove)
+        # Turn on the stove to start boiling
+
+behavior __goal__():
+    body:
+        bind vegetables: item where:
+            is_food_vegetable(vegetables)
+        bind pot: item where:
+            is_pot(pot)
+        put_vegetables_in_pot(vegetables, pot)
+        bind stove: item where:
+            is_stove(stove)
+        boil_vegetables_on_stove(pot, stove)
+",From function reset_sub_goal,,,,
+"
+behavior boil_vegetables_on_stove(pot:item, stove:item):
+    # Behavior to boil vegetables on the stove
+    body:
+        achieve inside(pot, stove) # Place the pot with vegetables on the stove
+        achieve is_on(stove) # Turn on the stove to start boiling
+
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot) and close_char(char, pot)
+        # Select the pot close to the character
+        
+        bind stove: item where:
+            is_stove(stove) and close_char(char, stove)
+        # Select the stove close to the character
+        
+        bind food_vegetable_2041: item where:
+            is_food_vegetable(food_vegetable_2041)
+        # Select the vegetable
+        
+        put_vegetables_in_pot(food_vegetable_2041, pot)
+        boil_vegetables_on_stove(pot, stove)
+",From function reset_sub_goal,,,,
+k3,"missed actions: switchoff_executor(stove_2065);grab_executor(pot_2069);walk_executor(fridge_289);put
+in_executor(pot_2069, fridge_289);",,,,
+k1,missed actions: ,,,,
+k2,"missed actions: switchoff_executor(stove_2065);open_executor(stove_2065);grab_executor(pot_2069);put
+in_executor(pot_2069, stove_2065);close_executor(stove_2065);switchon_executor(stove_2065);",,,,
+k3,"missed actions: switchoff_executor(stove_2065);grab_executor(pot_2069);walk_executor(fridge_289);put
+in_executor(pot_2069, fridge_289);",,,,

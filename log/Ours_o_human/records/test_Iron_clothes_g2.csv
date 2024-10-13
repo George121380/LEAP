@@ -1,0 +1,133 @@
+Goal Representation,Debug Result,Action,Add Info,LLM Answer,Plan
+cdl_dataset/dataset/Iron_clothes/g2.txt,k1,missed actions: walk_executor(clothes_pants_2085);wash_executor(clothes_pants_2085);,missed action num: 68,,
+cdl_dataset/dataset/Iron_clothes/g2.txt,k2,"missed actions: walk_executor(clothes_pants_2085);grab_executor(clothes_pants_2085);walk_executor(ir
+oning_board_2074);put_executor(clothes_pants_2085, ironing_board_2074);plugin_executor(iron_2089);sw
+itchon_executor(iron_2089);",missed action num: 211,,
+"Reset goals: The sub-goals are: 
+['1. Set up the ironing board and iron, then plug in the iron to heat it.', '2. Lay the pants flat o
+n the ironing board, aligning them properly.', '3. Iron the pants, focusing on the waistband, pocket
+s, and legs to remove wrinkles.', '4. Hang or fold the pants after ironing to prevent new wrinkles.'
+]",,,,,
+" 
+def is_ironing_setup(ironing_board:item, iron:item, powersocket:item):
+    # Function to check if the iron is set up correctly on the ironing board and plugged in
+    return is_ironing_board(ironing_board) and is_iron(iron) and is_powersocket(powersocket) and plu
+gged(iron)
+
+behavior setup_ironing_area(ironing_board:item, iron:item, powersocket:item):
+    # Define the behavior to set up the ironing board and iron
+    body:
+        achieve open(ironing_board)
+        achieve close_char(char, powersocket)
+        achieve plugged(iron)
+
+behavior __goal__():
+    body:
+        bind ironing_board: item where:
+            is_ironing_board(ironing_board)
+        bind iron: item where:
+            is_iron(iron)
+        bind powersocket: item where:
+            is_powersocket(powersocket)
+
+        if not is_ironing_setup(ironing_board, iron, powersocket):
+            setup_ironing_area(ironing_board, iron, powersocket)
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Set up the ironing board and prepare the iron.', '2. Place the pants on the ironing board.', '3
+. Iron the pants methodically, ensuring all areas are smooth and wrinkle-free.']",,,,,
+" 
+def is_power_socket_close(item:item):
+    # Function to check if an item has a nearby power socket
+    symbol close_power_socket=exists powersocket_item: item : is_powersocket(powersocket_item) and c
+lose(powersocket_item, item)
+    return close_power_socket
+
+behavior set_up_ironing_board_and_prepare_iron(ironing_board:item, iron:item):
+    body:
+        achieve open(ironing_board)
+        # Set up the ironing board by opening it
+        
+        bind powersocket: item where:
+            is_powersocket(powersocket) and close(powersocket, iron)
+        # Bind a close power socket to the iron
+
+        achieve plugged(iron)
+        # Ensure the iron is plugged in
+
+        achieve_once close_char(char, iron)
+        # Move close to the iron
+
+        if is_power_socket_close(ironing_board):
+            bind powersocket: item where:
+                is_powersocket(powersocket) and close(powersocket, ironing_board)
+            achieve plugged(ironing_board)
+            # Plug the ironing board if it has functionality requiring power (such as a heater or st
+eamer surface)
+
+behavior __goal__():
+    body:
+        bind ironing_board: item where:
+            is_ironing_board(ironing_board)
+        # Select an ironing board
+        
+        bind iron: item where:
+            is_iron(iron)
+        # Select an iron
+
+        set_up_ironing_board_and_prepare_iron(ironing_board, iron)
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Prepare the ironing board and iron.', '2. Place the pants on the ironing board.', '3. Iron the 
+pants, focusing on areas prone to wrinkles.', '4. Hang or fold the pants neatly.']",,,,,
+" 
+def has_switchable_plugged_in(item:item):
+    # Determine whether the iron has a switch and is plugged in
+    symbol has_switch_plugged=has_switch(item) and plugged(item)
+    return has_switch_plugged
+
+behavior prepare_ironing_area(ironing_board:item, iron:item):
+    body:
+        achieve is_closetdrawer(ironing_board) # Ensure ironing board is unfolded
+        if not has_switchable_plugged_in(iron):
+            achieve plugged(iron) # Plug in the iron if not already
+        achieve is_on(iron) # Turn on the iron
+
+behavior __goal__():
+    body:
+        bind ironing_board: item where:
+            is_ironing_board(ironing_board)
+        # Select an ironing board
+
+        bind iron: item where:
+            is_iron(iron)
+        # Select an iron
+
+        prepare_ironing_area(ironing_board, iron)
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Identify the pair of pants that need ironing.', '2. Iron the pair of pants.']",,,,,
+" 
+def is_clothes_pants(item:item):
+    # Determine whether the item is a pair of pants
+    return is_clothes(item) and is_clothes_pants(item)
+
+behavior identify_pants(pants:item):
+    body:
+        achieve visited(pants)
+        # Mark the identified pair of pants as observed
+
+behavior __goal__():
+    body:
+        # Check all items in the scene that have not been visited
+        foreach item: item:
+            if is_clothes(item) and not visited(item):
+                if is_clothes_pants(item):
+                    # If a pair of pants is identified
+                    identify_pants(item)
+",From function reset_goal,,,,
+cdl_dataset/dataset/Iron_clothes/g2.txt,k1,missed actions: walk_executor(clothes_pants_2085);wash_executor(clothes_pants_2085);,missed action num: 68,,
+cdl_dataset/dataset/Iron_clothes/g2.txt,k1,missed actions: walk_executor(clothes_pants_2085);wash_executor(clothes_pants_2085);,missed action num: 68,,
+cdl_dataset/dataset/Iron_clothes/g2.txt,k2,"missed actions: walk_executor(clothes_pants_2085);grab_executor(clothes_pants_2085);walk_executor(ir
+oning_board_2074);put_executor(clothes_pants_2085, ironing_board_2074);plugin_executor(iron_2089);sw
+itchon_executor(iron_2089);",missed action num: 211,,

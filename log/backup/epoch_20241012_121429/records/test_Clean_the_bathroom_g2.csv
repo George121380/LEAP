@@ -1,0 +1,66 @@
+Goal Representation,Debug Result,Action,Add Info,LLM Answer,Plan
+cdl_dataset/dataset/Clean_the_bathroom/g2.txt,k1,"missed actions: walk_executor(sink_42);putin_executor(soap_2053, sink_42);",missed action num: 58,,
+"Reset goals: The sub-goals are: 
+['1. Locate the bathroom sink.', '2. Fill the sink with water.', '3. Add soap to the water and mix u
+ntil bubbles form.']",,,,,
+" 
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and is_bathroom(sink)
+        # Select the bathroom sink
+        achieve visited(sink)
+        # Mark the sink as visited
+",From function reset_goal,,,,
+,,,"Human Instruction: You need to locate the bathroom sink to complete this sub-task.
+
+",,
+" 
+def find_bathroom_sink(bathroom:item):
+    # Function to check if a sink is in the bathroom
+    symbol find_sink=exists sink: item : is_sink(sink) and inside(sink, bathroom)
+    return find_sink
+
+behavior __goal__():
+    body:
+        if exists bathroom: item : is_bathroom(bathroom) and find_bathroom_sink(bathroom):
+            # If we have already found the bathroom with a sink, we can directly approach it
+            bind bathroom: item where:
+                is_bathroom(bathroom) and find_bathroom_sink(bathroom)
+            bind sink: item where:
+                is_sink(sink) and inside(sink, bathroom)
+            achieve close_char(char, sink)
+
+        else:
+            # Check all unvisited sinks in the scene
+            foreach sink: item:
+                if is_sink(sink) and not visited(sink):
+                    observe(sink,""Locate the bathroom sink"")
+",From function reset_sub_goal,,,,
+,,,"Human Instruction: You need to ensure that the bathroom sink has been located before proceeding to t
+he next sub-task of filling it with water.
+
+",,
+" 
+def is_bathroom_sink(sink:item):
+    # Determine if the given sink is inside a bathroom
+    symbol is_bathroom_sink=exists room: item : is_bathroom(room) and inside(sink, room)
+    return is_bathroom_sink
+
+behavior __goal__():
+    body:
+        if exists sink: item : is_sink(sink) and is_bathroom_sink(sink):
+            # Check if theres any known bathroom sink
+            bind sink: item where:
+                is_sink(sink) and is_bathroom_sink(sink)
+            # Find the bathroom sink that meets the condition
+            achieve close_char(char, sink)
+            # Approach the bathroom sink
+
+        else:
+            # If the bathroom sink is not identified, check all unvisited sinks to locate one
+            foreach sink: item:
+                if is_sink(sink) and not visited(sink):
+                    observe(sink, ""Check if this sink is inside a bathroom"")
+                    # Observe to check if the sink is inside a bathroom
+",From function reset_sub_goal,,,,

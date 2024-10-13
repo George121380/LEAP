@@ -1,0 +1,136 @@
+Goal Representation,Debug Result,Action,Add Info,LLM Answer,Plan
+cdl_dataset/dataset/Clean_the_bathroom/g2.txt,k1,"missed actions: walk_executor(sink_42);putin_executor(soap_2053, sink_42);",missed action num: 58,,
+"Reset goals: The sub-goals are: 
+['1. Identify the bathroom sink where the soapy water needs to be prepared.', '2. Fill the sink with
+ water to an appropriate level.', '3. Add soap to the water and mix until it becomes soapy.']",,,,,
+" 
+behavior __goal__():
+    body:
+        foreach sink: item:
+            if is_sink(sink) and not visited(sink):
+                # Check all sinks that have not been visited in search of the bathroom sink
+                observe(sink, ""Determine if this is the bathroom sink for preparing soapy water"")
+",From function reset_goal,,,,
+,,,"Human Instruction: You need to identify the bathroom sink by checking all sinks that have not been v
+isited and determine which one is the bathroom sink for preparing soapy water.
+
+",,
+" 
+def is_bathroom_sink(sink: item):
+    # Function to determine if a sink is located in the bathroom
+    symbol is_bathroom_sink=exists room: item : is_bathroom(room) and inside(sink, room)
+    return is_bathroom_sink
+
+behavior __goal__():
+    body:
+        if exists sink: item : is_sink(sink) and not visited(sink):
+            # Check if there is a sink that has not been visited yet
+            foreach sink: item:
+                if is_sink(sink) and not visited(sink):
+                    observe(sink, ""Determine if this is the bathroom sink"")
+                    if is_bathroom_sink(sink):
+                        achieve close_char(char, sink)
+
+",From function reset_sub_goal,,,,
+,,,"Human Instruction: You need to visit the sinks that have not yet been checked to identify which one 
+is the bathroom sink for preparing soapy water.
+
+",,
+" 
+def is_bathroom_sink(sink:item):
+    # Function to verify if a sink is located in the bathroom
+    symbol in_bathroom=exists room: item : is_bathroom(room) and inside(sink, room)
+    return in_bathroom
+
+behavior __goal__():
+    body:
+        if exists sink: item : is_sink(sink) and not visited(sink):
+            # Check if there is any unvisited sink
+            foreach sink: item:
+                if is_sink(sink) and not visited(sink):
+                    if is_bathroom_sink(sink):
+                        observe(sink,""Is this the bathroom sink for preparing soapy water"")
+                        # Observe the sink to confirm if it is the bathroom sink
+
+        else:
+            # If no unvisited sinks are found, iterate over all unvisited sinks
+            foreach sink: item:
+                if is_sink(sink) and not visited(sink):
+                    observe(sink,""Visit sink to identify if its the bathroom sink"")
+",From function reset_sub_goal,,,,
+" 
+behavior fill_sink_with_water(sink:item):
+    body:
+        achieve has_water(sink)
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and visited(sink)
+        fill_sink_with_water(sink)
+",From function reset_sub_goal,,,,
+,,,"Human Instruction: You need to visit the sinks that have not been checked yet to identify the bathro
+om sink and then ensure it is filled with water to an appropriate level.
+
+",,
+"
+behavior fill_sink_with_water(sink:item, faucet:item):
+    body:
+        achieve plugged(sink)
+        # Ensure the sink is plugged to retain water
+        achieve open(faucet)
+        # Turn on the faucet to fill the sink with water
+        achieve has_water(sink)
+        # Wait until the sink is filled to an appropriate level
+
+behavior __goal__():
+    body:
+        if exists sink: item : is_sink(sink):
+            # If the sink is already identified and visited, fill it with water
+            bind sink: item where:
+                is_sink(sink) and visited(sink)
+            bind faucet: item where:
+                is_faucet(faucet) and close(sink, faucet)
+            check_sink_condition(sink) 
+            fill_sink_with_water(sink, faucet)
+
+        else:
+            # If the sink is not identified or visited, check all unvisited sinks
+            foreach sink: item:
+                if is_sink(sink) and not visited(sink):
+                    observe(sink, ""Is this the bathroom sink where the soapy water needs to be prepa
+red"")
+",From function reset_sub_goal,,,,
+,,,"Human Instruction: You need to ensure the sink in the bathroom is filled with water to an appropriat
+e level. First, confirm that the sink is plugged, then open the corresponding faucet to fill it with
+ water. Make sure the sink has reached the desired water level before moving to the next sub-task.
+
+",,
+" 
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) 
+        # Select a known sink in the bathroom The specific sink is identified with the prior complet
+ed subtasks information
+        
+        # Check if the selected sink is plugged
+        if not plugged(sink):
+            # If the sink is not plugged, you should ensure it is plugged before filling it with wat
+er
+            observe(sink, ""Is the sink plugged"")
+            
+        bind faucet: item where:
+            is_faucet(faucet) and close(faucet, sink)
+        # Select the faucet corresponding to the sink
+        
+        if not has_water(sink):
+            achieve_once is_on(faucet)
+            # Turn on the faucet to start filling the sink with water
+            
+            achieve has_water(sink)
+            # Ensure the sink is filled with water to an appropriate level
+
+            achieve_once is_off(faucet)
+            # Turn off the faucet once the sink is filled
+",From function reset_sub_goal,,,,

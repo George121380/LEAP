@@ -1,0 +1,244 @@
+Goal Representation,Debug Result,Action,Add Info,LLM Answer,Plan
+k1,"missed actions: walk_executor(coffe_maker_290);open_executor(coffe_maker_290);walk_executor(cup_2063
+);grab_executor(cup_2063);walk_executor(coffe_maker_290);putin_executor(cup_2063, coffe_maker_290);c
+lose_executor(coffe_maker_290);switchon_executor(coffe_maker_290);",,,,
+"Reset goals: The sub-goals are: 
+['1. Add water and coffee grounds to the coffee maker.  ', '2. Start the coffee maker.  ', '3. Pour 
+the brewed coffee into a cup.']",,,,,
+"behavior add_water_and_coffee_to_maker(water:item, coffee_grounds:item, coffee_maker:item):
+    body:
+        achieve inside(water, coffee_maker)
+        achieve inside(coffee_grounds, coffee_maker)
+
+behavior __goal__():
+    body:
+        bind coffee_maker: item where:
+            is_coffe_maker(coffee_maker)
+        # Select a coffee maker
+        bind water: item where:
+            has_water(water) # Consider if there is a container with water
+        # Identify a container with water
+        bind coffee_grounds: item where:
+            is_food(coffee_grounds) and grabbable(coffee_grounds)
+        # Identify grabbable coffee grounds
+        add_water_and_coffee_to_maker(water, coffee_grounds, coffee_maker)",From function reset_goal,,,,
+,,,,"Record from func query_human in agent.py
+Question: Can you tell me how to add water and coffee grounds to the coffee maker.  
+Answer: I don't know.
+",
+,,,,"Record from func query_human in agent.py
+Question: Can you tell me how to start the coffee maker.  
+Answer: I don't know.
+",
+,,,,"Record from func query_human in agent.py
+Question: Can you tell me how to pour the brewed coffee into a cup.
+Answer: Pour the coffee into a cup.
+",
+"Reset goals: The sub-goals are: 
+['1. Add water and coffee grounds to the coffee maker.', '2. Start the coffee maker to brew the coff
+ee.', '3. Pour the brewed coffee into a cup.']",,,,,
+" 
+def ensure_ready(coffee_maker:item):
+    # Ensure the coffee maker is ready for brewing
+    achieve plugged(coffee_maker)
+    achieve clean(coffee_maker)
+    achieve closed(coffee_maker)
+
+behavior add_water(coffee_maker:item):
+    body:
+        achieve has_water(coffee_maker)
+        # Ensure water is added to the coffee maker
+
+behavior add_coffee_grounds(coffee_maker:item):
+    body:
+        achieve is_coffee_filter(coffee_maker)
+        # Add coffee grounds to the filter in the coffee maker
+
+behavior __goal__():
+    body:
+        bind coffee_maker: item where:
+            is_coffe_maker(coffee_maker)
+        # Select the coffee maker
+
+        ensure_clean(coffee_maker)
+        ensure_closed(coffee_maker)
+        ensure_ready(coffee_maker)
+        add_water(coffee_maker)
+        add_coffee_grounds(coffee_maker)
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Place the coffee filter and coffee grounds into the coffee maker.', ""2. Fill the coffee maker's
+ reservoir with water."", '3. Start the coffee maker to brew the coffee.', '4. Pour the brewed coffee
+ into a cup.']",,,,,
+" 
+behavior place_filter_in_coffee_maker(filter:item, coffee_maker:item):
+    body:
+        achieve inside(filter, coffee_maker)
+        # Place the coffee filter inside the coffee maker
+
+behavior place_grounds_in_coffee_maker(grounds:item, coffee_maker:item):
+    body:
+        achieve inside(grounds, coffee_maker)
+        # Place the coffee grounds inside the coffee maker
+
+behavior __goal__():
+    body:
+        bind filter: item where:
+            is_coffee_filter(filter)
+        # Find a coffee filter
+
+        bind coffee_maker: item where:
+            is_coffe_maker(coffee_maker)
+        # Find the coffee maker
+
+        bind grounds: item where:
+            is_food_snack(grounds)
+        # Find coffee grounds
+
+        place_filter_in_coffee_maker(filter, coffee_maker)
+        place_grounds_in_coffee_maker(grounds, coffee_maker)
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Fill the coffee maker with water and the appropriate amount of coffee grounds.', '2. Turn on th
+e coffee maker to start brewing.', '3. Wait for the brewing process to complete.', '4. Pour the brew
+ed coffee into a cup.']",,,,,
+" 
+behavior fill_coffee_maker_with_water(coffee_maker:item):
+    body:
+        achieve has_water(coffee_maker)
+        # Ensure the coffee maker is filled with water
+
+behavior add_coffee_grounds_to_maker(coffee_grounds:item, coffee_maker:item):
+    body:
+        achieve inside(coffee_grounds, coffee_maker)
+        # Ensure the coffee grounds are added inside the coffee maker
+
+behavior __goal__():
+    body:
+        bind coffee_maker: item where:
+            is_coffe_maker(coffee_maker)
+        # Bind the coffee maker
+        
+        bind coffee_grounds: item where:
+            is_coffee_filter(coffee_grounds)
+        # Bind the coffee grounds
+
+        fill_coffee_maker_with_water(coffee_maker)
+        # Fill the coffee maker with water 
+
+        add_coffee_grounds_to_maker(coffee_grounds, coffee_maker)
+        # Add coffee grounds to the coffee maker
+",From function reset_goal,,,,
+,,,,"Record from func query_human in agent.py
+Question: Can you teach me how to ""1. fill the coffee maker with water and the appropriate amount of
+ coffee grounds."" ?
+Answer: I don't know.
+",
+" 
+def is_coffee_maker_ready(coffee_maker:item):
+    # Function to check if the coffee maker is ready to be used (not dirty, closed, and plugged in)
+    symbol ready = not dirty(coffee_maker) and closed(coffee_maker) and plugged(coffee_maker)
+    return ready
+
+behavior fill_with_water(coffee_maker:item):
+    body:
+        achieve open(coffee_maker) # Open the coffee maker to add water
+        achieve has_water(coffee_maker) # Ensure the coffee maker has water
+        achieve closed(coffee_maker) # Close the coffee maker after filling with water
+
+behavior add_coffee_grounds(coffee_maker:item, coffee_grounds:item):
+    body:
+        achieve_once inhand(coffee_grounds) # Hold coffee grounds before adding to the coffee maker
+        achieve open(coffee_maker) # Open the coffee maker to add coffee grounds
+        achieve inside(coffee_grounds, coffee_maker) # Place coffee grounds inside the coffee maker
+        achieve closed(coffee_maker) # Close the coffee maker after adding coffee grounds
+
+behavior __goal__():
+    body:
+        bind coffee_maker: item where:
+            is_coffe_maker(coffee_maker) and is_coffee_maker_ready(coffee_maker)
+        bind coffee_grounds: item where:
+            is_food(coffee_grounds) and grabbable(coffee_grounds)
+        
+        fill_with_water(coffee_maker) # Fill the coffee maker with water
+        add_coffee_grounds(coffee_maker, coffee_grounds) # Add coffee grounds to the coffee maker
+",From function reset_sub_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Add the coffee grounds and water to the coffee maker.', '2. Start the coffee maker.']",,,,,
+" 
+behavior add_coffee_grounds_to_maker(coffee_grounds:item, coffee_maker:item):
+    body:
+        achieve inside(coffee_grounds, coffee_maker)
+
+behavior add_water_to_maker(water_source:item, coffee_maker:item):
+    body:
+        achieve has_water(coffee_maker)
+
+behavior __goal__():
+    body:
+        bind coffee_maker: item where:
+            is_coffe_maker(coffee_maker)
+
+        bind coffee_grounds: item where:
+            is_food(coffee_grounds) and grabbable(coffee_grounds)
+        
+        bind water_source: item where:
+            is_sink(water_source) or is_faucet(water_source)
+
+        add_coffee_grounds_to_maker(coffee_grounds, coffee_maker)
+        add_water_to_maker(water_source, coffee_maker)
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Fill the coffee maker with water and coffee grounds.', '2. Start the coffee maker to brew the c
+offee.', '3. Pour the brewed coffee into a cup.']",,,,,
+"
+behavior fill_water_in_coffee_maker(coffee_maker:item):
+    body:
+        achieve has_water(coffee_maker)
+
+behavior fill_coffee_grounds_in_coffee_maker(coffee_maker:item, coffee_grounds:item):
+    body:
+        achieve inside(coffee_grounds, coffee_maker)
+
+behavior __goal__():
+    body:
+        bind coffee_maker: item where:
+            is_coffe_maker(coffee_maker)
+        # Select a coffee maker
+
+        bind coffee_grounds: item where:
+            is_food(coffee_grounds)
+        # Select coffee grounds from the items
+
+        fill_water_in_coffee_maker(coffee_maker)
+        fill_coffee_grounds_in_coffee_maker(coffee_maker, coffee_grounds)
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Add water to the coffee maker.', '2. Add coffee grounds to the coffee maker.', '3. Start the co
+ffee maker to brew the coffee.', '4. Pour the brewed coffee into a cup.']",,,,,
+" 
+behavior __goal__():
+    body:
+        bind coffee_maker: item where:
+            is_coffe_maker(coffee_maker)
+        bind faucet: item where:
+            is_faucet(faucet)
+
+        achieve close_char(char, coffee_maker)
+        achieve visited(coffee_maker)
+        observe(coffee_maker, ""Check if the coffee maker is a recipient and does it need water"")
+        
+        achieve close_char(char, faucet)
+        observe(faucet, ""Check if the faucet is functioning for water access"")
+        achieve_once is_on(faucet)
+        
+        achieve has_water(coffee_maker)
+
+        achieve_once is_off(faucet)
+",From function reset_goal,,,,
+k1,"missed actions: walk_executor(coffe_maker_290);open_executor(coffe_maker_290);walk_executor(cup_2063
+);grab_executor(cup_2063);walk_executor(coffe_maker_290);putin_executor(cup_2063, coffe_maker_290);c
+lose_executor(coffe_maker_290);switchon_executor(coffe_maker_290);",,,,
+k1,"missed actions: walk_executor(coffe_maker_290);open_executor(coffe_maker_290);walk_executor(cup_2063
+);grab_executor(cup_2063);walk_executor(coffe_maker_290);putin_executor(cup_2063, coffe_maker_290);c
+lose_executor(coffe_maker_290);switchon_executor(coffe_maker_290);",,,,

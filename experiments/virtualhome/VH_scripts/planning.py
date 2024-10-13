@@ -224,7 +224,7 @@ def VH_pipeline(state_file:str,execute_file:str,current_subgoal:str,add_info:str
                 try:
                     # pdb.set_trace()
                     solver_start_time=time.time()
-                    plan=goal_solver(combined_content + "\n" + goal_int)
+                    plan=goal_solver(new_file_path)
                     solver_end_time=time.time()
                     # print(f"Time for solving:{solver_end_time-solver_start_time:.4f}s")
                     # logger.info(goal_int,"","","","",plan)

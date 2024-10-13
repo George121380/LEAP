@@ -90,7 +90,10 @@ class VH_Env:
                 print('Script is not executable.')
                 self.action_record.append(str(action)+' (Failed)')
                 # raise Exception('Script is not executable.')
-                return f"You can not {action.name} {action.arguments[0].name}"
+                if len(action.arguments)==1:
+                    return f"You can not {action.name.replace('_executor','')} {action.arguments[0].name}"
+                if len(action.arguments)==2:
+                    return f"You can not {action.name.replace('_executor','')} {action.arguments[0].name} to {action.arguments[1].name}"
             else:
                 print('Script is executable')
                 self.action_record.append(str(action))

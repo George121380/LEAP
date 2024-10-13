@@ -22,6 +22,7 @@ feature cut(x:item)
 feature inhand(x: item)
 feature visited(x: item)
 feature has_water(x: item)
+feature has_a_free_hand(x: character)
 
 #relationship
 feature on(x: item, y: item)
@@ -532,11 +533,7 @@ controller push_executor(x: item)
 controller pull_executor(x: item)
 controller exp(x:item, y:item)
 controller obs(x:item,q:string)
-
-def has_a_free_hand():
-  symbol l=exists item1: item : holds_lh(char, item1)
-  symbol r=exists item2: item : holds_rh(char, item2)
-  return not l or not r
+controller fail()
 
 behavior put(inhand_obj: item, obj: item):
   body:
@@ -558,6 +555,7 @@ behavior put(inhand_obj: item, obj: item):
     foreach inter in (findall x: item: close(x, obj) and not unknown(x)):
       close[inter, inhand_obj] = True
       close[inhand_obj, inter] = True
+    has_a_free_hand[char] = True
 
 behavior putin(inhand_obj: item, obj: item):
   body:
@@ -568,7 +566,7 @@ behavior putin(inhand_obj: item, obj: item):
     if can_open(obj):
       achieve open(obj)
     achieve_once inhand(inhand_obj)
-    achieve close_char(char, obj)
+    achieve_once close_char(char, obj)
     putin_executor(inhand_obj, obj)
 
   eff:
@@ -583,6 +581,7 @@ behavior putin(inhand_obj: item, obj: item):
       close[inhand_obj, inter] = True
     foreach inside_obj in (findall x: item: inside(x, inhand_obj)):
       inside[inside_obj, obj] = True
+    has_a_free_hand[char] = True
 
 behavior put_close(inhand_obj: item, obj: item):
   goal: close(inhand_obj, obj)
@@ -601,9 +600,9 @@ behavior put_inside(inhand_obj: item, obj: item):
     putin(inhand_obj, obj)
 
 behavior empty_a_hand():
-  goal: has_a_free_hand()
+  goal: has_a_free_hand(char)
   body:
-    assert not has_a_free_hand()
+    assert not has_a_free_hand(char)
     bind surf:item where:
       not unknown(surf)
     bind give_up_obj:item where:
@@ -623,7 +622,7 @@ behavior sit_somewhere(location:item):
   body:
     assert sittable(location)
     achieve not unknown(location)
-    achieve close_char(char, location)
+    achieve_once close_char(char, location)
     sit_executor(location)
   eff:
     sitting[char] = True
@@ -635,7 +634,7 @@ behavior lie_somewhere(location:item):
   body:
     assert lieable(location)
     achieve not unknown(location)
-    achieve close_char(char, location)
+    achieve_once close_char(char, location)
     lie_executor(location)
   eff:
     lying[char] = True
@@ -682,7 +681,7 @@ behavior find(obj:item):
     if on_body(obj, char):
       find_executor(obj)
     else:
-      achieve close_char(char, obj)
+      achieve_once close_char(char, obj)
       find_executor(obj)
   eff:
     foreach o in (findall t:item: facing_char(char, t)):
@@ -704,8 +703,8 @@ behavior switch_off(obj: item):
   body:
     assert has_switch(obj)
     achieve not unknown(obj)
-    achieve has_a_free_hand()
-    achieve close_char(char, obj)
+    achieve_once has_a_free_hand(char)
+    achieve_once close_char(char, obj)
     switchoff_executor(obj)
   eff:
     is_off[obj] = True
@@ -715,13 +714,13 @@ behavior switch_on(obj: item):
   goal: is_on(obj)
   body:
     assert has_switch(obj)
-    achieve has_a_free_hand()
+    achieve_once has_a_free_hand(char)
     achieve not unknown(obj)
     if has_plug(obj):
       achieve plugged(obj)
     if can_open(obj):
       achieve closed(obj)
-    achieve close_char(char, obj)
+    achieve_once close_char(char, obj)
     switchon_executor(obj)
   eff:
     is_off[obj] = False
@@ -732,11 +731,11 @@ behavior grab(obj: item):
   body:
     assert grabbable(obj) or is_water(obj)
     achieve not unknown(obj)
-    achieve has_a_free_hand()
+    achieve_once has_a_free_hand(char)
     foreach obj2:item:
       if inside(obj,obj2) and can_open(obj2):
-          achieve open(obj2)
-    achieve close_char(char, obj)
+          achieve_once open(obj2)
+    achieve_once close_char(char, obj)
     grab_executor(obj)
   eff:
     inhand[obj] = True
@@ -746,6 +745,7 @@ behavior grab(obj: item):
     close[:, obj] = False
     if exists item1: item : holds_lh(char, item1):
       holds_rh[char, obj] = True
+      has_a_free_hand[char] = False
     else:
       holds_lh[char, obj] = True
     close_char[char,obj]=True
@@ -754,8 +754,8 @@ behavior wash(obj: item):
   goal: clean(obj)
   body:
     achieve not unknown(obj)
-    achieve has_a_free_hand()
-    achieve close_char(char, obj)
+    achieve_once has_a_free_hand(char)
+    achieve_once close_char(char, obj)
     wash_executor(obj)
   eff:
     dirty[obj] = False
@@ -764,8 +764,8 @@ behavior wash(obj: item):
 behavior scrub(obj: item):
   body:
     achieve not unknown(obj)
-    achieve has_a_free_hand()
-    achieve close_char(char, obj)
+    achieve_once has_a_free_hand(char)
+    achieve_once close_char(char, obj)
     scrub_executor(obj)
   eff:
     dirty[obj] = False
@@ -773,9 +773,9 @@ behavior scrub(obj: item):
 
 behavior rinse(obj: item):
   body:
-    achieve not unknown(obj)
-    achieve has_a_free_hand()
-    achieve close_char(char, obj)
+    achieve_once not unknown(obj)
+    achieve_once has_a_free_hand(char)
+    achieve_once close_char(char, obj)
     rinse_executor(obj)
   eff:
     dirty[obj] = False
@@ -786,10 +786,10 @@ behavior opens(obj: item):
   body:
     assert can_open(obj)
     achieve not unknown(obj)
-    achieve has_a_free_hand()
+    achieve_once has_a_free_hand(char)
     if has_switch(obj) and is_on(obj):
       achieve is_off(obj)
-    achieve close_char(char, obj)
+    achieve_once close_char(char, obj)
     open_executor(obj)
   eff:
     open[obj] = True
@@ -800,9 +800,10 @@ behavior opens(obj: item):
 behavior closes(obj: item):
   goal: closed(obj)
   body:
+    assert can_open(obj)
     achieve not unknown(obj)
-    achieve has_a_free_hand()
-    achieve close_char(char, obj)
+    achieve_once has_a_free_hand(char)
+    achieve_once close_char(char, obj)
     close_executor(obj)
   eff:
     open[obj] = False
@@ -847,8 +848,8 @@ behavior plugin(object:item):
   body:
     assert has_plug(object)
     achieve not unknown(object)
-    achieve has_a_free_hand()
-    achieve close_char(char, object)
+    achieve_once has_a_free_hand(char)
+    achieve_once close_char(char, object)
     plugin_executor(object)
   eff:
     plugged[object] = True
@@ -859,10 +860,10 @@ behavior plugout(object:item):
   body:
     assert has_plug(object)
     achieve not unknown(object)
-    achieve has_a_free_hand()
+    achieve_once has_a_free_hand(char)
     if has_switch(object):
       achieve is_off(object)
-    achieve close_char(char, object)
+    achieve_once close_char(char, object)
     plugout_executor(object)
   eff:
     plugged[object] = False
@@ -877,13 +878,13 @@ behavior cuts(object:item):
     if has_cutting_board:
       bind cutting_board:item where:
         is_cutting_board(cutting_board)
-      achieve on(object, cutting_board)
+      achieve_once on(object, cutting_board)
     symbol has_knife=exists knife:item: is_knife(knife) and inhand(knife)
     if not has_knife:
       bind new_knife:item where:
         is_knife(new_knife)
       achieve_once inhand(new_knife)
-    achieve close_char(char, object)
+    achieve_once close_char(char, object)
     cut_executor(object)
   eff:
     cut[object] = True
@@ -923,7 +924,7 @@ behavior wipe(obj:item):
       bind cleaning_tool:item where:
         is_towel(cleaning_tool) or is_rag(cleaning_tool) or is_sponge(cleaning_tool) or is_paper_towel(cleaning_tool) or is_cloth_napkin(cleaning_tool) or is_duster(cleaning_tool) or is_cleaning_solution(cleaning_tool)
       achieve not unknown(cleaning_tool)
-      achieve inhand(cleaning_tool)
+      achieve_once inhand(cleaning_tool)
     achieve close_char(char, obj)
     wipe_executor(obj)
   eff:
@@ -935,7 +936,7 @@ behavior put_on_body(inhand_obj: item):
   body:
     assert is_clothes(inhand_obj)
     achieve not unknown(inhand_obj)
-    achieve inhand(inhand_obj)
+    achieve_once inhand(inhand_obj)
     puton_executor(inhand_obj)
   eff:
     on_body[inhand_obj, char] = True
@@ -956,7 +957,7 @@ behavior get_water(obj:item):
       bind faucet:item where:
         is_faucet(faucet)
       achieve inhand(obj)
-      achieve close_char(char, faucet)
+      achieve_once close_char(char, faucet)
       achieve_once is_on(faucet)
       achieve_once is_off(faucet)
     else:
@@ -972,7 +973,7 @@ behavior read(material:item):
   body:
     #assert readable(material)
     achieve not unknown(material)
-    achieve inhand(material)
+    achieve_once inhand(material)
     read_executor(material)
 
 behavior touch(obj:item):
@@ -984,7 +985,7 @@ behavior touch(obj:item):
           assert can_open(obj2) or recipient(obj2) or eatable(obj2)
           if can_open(obj2):
             achieve open(obj2)
-    achieve close_char(char, obj)
+    achieve_once close_char(char, obj)
     touch_executor(obj)
 
 behavior type(obj:item):
@@ -992,26 +993,26 @@ behavior type(obj:item):
     assert is_keyboard(obj) or has_switch(obj)
     achieve not unknown(obj)
 
-    achieve close_char(char, obj)
+    achieve_once close_char(char, obj)
     type_executor(obj)
 
 behavior watch(obj:item):
   body:
     assert lookable(obj)
     achieve not unknown(obj)
-    achieve facing_char(char, obj)
+    achieve_once facing_char(char, obj)
 
 behavior drink(obj: item):
   body:
     assert drinkable(obj) or recipient(obj)
     achieve not unknown(obj)
-    achieve inhand(obj)
+    achieve_once inhand(obj)
     drink_executor(obj)
 
 behavior look_at(obj:item):
   body:
     achieve not unknown(obj)
-    achieve facing_char(char, obj)
+    achieve_once facing_char(char, obj)
     lookat_executor(obj)
 
 behavior greet(person:item):
@@ -1024,37 +1025,37 @@ behavior move(obj:item):
   body:
     assert movable(obj) or is_button(obj) or is_chair(obj) or is_curtain(obj)
     achieve not unknown(obj)
-    achieve has_a_free_hand()
-    achieve close_char(char, obj)
+    achieve_once has_a_free_hand(char)
+    achieve_once close_char(char, obj)
     move_executor(obj)
 
 behavior push(obj:item):
   body:
     assert movable(obj) or is_button(obj) or is_chair(obj) or is_curtain(obj)
     achieve not unknown(obj)
-    achieve has_a_free_hand()
-    achieve close_char(char, obj)
+    achieve_once has_a_free_hand(char)
+    achieve_once close_char(char, obj)
     push_executor(obj)
 
 behavior pull(obj:item):
   body:
     assert movable(obj) or is_button(obj) or is_chair(obj) or is_curtain(obj)
     achieve not unknown(obj)
-    achieve has_a_free_hand()
-    achieve close_char(char, obj)
+    achieve_once has_a_free_hand(char)
+    achieve_once close_char(char, obj)
     pull_executor(obj)
 
 behavior squeeze(obj:item):
   body:
     assert is_cleaning_solution(obj) or is_tooth_paste(obj) or is_shampoo(obj) or is_dish_soap(obj) or is_soap(obj) or is_towel(obj) or is_rag(obj) or has_paper(obj) or is_sponge(obj) or is_food_lemon(obj) or is_clothes(obj) or is_check(obj)
     achieve not unknown(obj)
-    achieve has_a_free_hand()
-    achieve close_char(char, obj)
+    achieve_once has_a_free_hand(char)
+    achieve_once close_char(char, obj)
 
 behavior observe(obj:item, q:string):
   body:
     achieve not unknown(obj)
-    achieve close_char(char, obj)
+    achieve_once close_char(char, obj)
     if can_open(obj):
       achieve_once open(obj)
     obs(obj,q)

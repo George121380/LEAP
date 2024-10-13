@@ -1,0 +1,166 @@
+Goal Representation,Debug Result,Action,Add Info,LLM Answer,Plan
+cdl_dataset/dataset/make_up_bed/g3.txt,k1,"missed actions: walk_executor(cup_2063);grab_executor(cup_2063);walk_executor(faucet_43);switchon_ex
+ecutor(faucet_43);switchoff_executor(faucet_43);walk_executor(nightstand_100);put_executor(cup_2063,
+ nightstand_100);",missed action num: 201,,
+"Reset goals: The sub-goals are: 
+['1. Find a cup.', '2. Fill the cup with water.', '3. Place the cup on the nightstand.']",,,,,
+"
+behavior __goal__():
+    body:
+        foreach c: item:
+            if is_cup(c):
+                achieve close_char(char, c) # Close to the cup
+                observe(c, ""Check if it is grabbable"") # Observe if the cup is grabbable
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Fill a cup with water.', '2. Place the cup of water on the nightstand.']",,,,,
+" 
+def fillable(cup:item):
+    # Determine if the cup is a recipient that can have water
+    symbol is_fillable=recipient(cup)
+    return is_fillable
+
+behavior __goal__():
+    body:
+        bind cup: item where:
+            is_cup(cup) and fillable(cup)
+        # Select a cup that can be filled with water
+
+        bind faucet: item where:
+            is_faucet(faucet) and close_char(char, faucet)
+        # Select a faucet that is close to the character
+
+        achieve close_char(char, cup)
+        # Ensure the character is close to the cup
+
+        is_sink(cup)
+        # Fill the cup with water from the faucet
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Find a nightstand suitable for placing a cup.', '2. Obtain a cup and fill it with water.', '3. 
+Place the filled cup on the nightstand.']",,,,,
+" 
+def has_surface_for_cup(nightstand:item):
+    # Check if the nightstand has a surface suitable for placing a cup
+    symbol has_surface=surfaces(nightstand)
+    return has_surface
+
+behavior __goal__():
+    body:
+        if exists nightstand: item : is_nightstand(nightstand) and has_surface_for_cup(nightstand):
+            # If there is a suitable nightstand for placing a cup, approach it
+            bind nightstand: item where:
+                is_nightstand(nightstand) and has_surface_for_cup(nightstand)
+            achieve close_char(char, nightstand)
+        
+        else:
+            # If no suitable nightstand is found, explore the scene for them
+            foreach nightstand: item:
+                if is_nightstand(nightstand) and not visited(nightstand):
+                    observe(nightstand,""Check if it has a surface for placing a cup"")
+",From function reset_goal,,,,
+,,,,,"(CrowControllerApplier<walk_executor(nightstand_100)>,)"
+,,walk_executor(nightstand_100),"Find mat_173. Find pillow_182. Find pillow_183. Find chair_106. Find drawing_176. Robot is inside be
+droom_67. Robot is close nightstand_100. Robot is close floor_69. Robot is close mat_173. Robot is n
+o longer inside bathroom_1.",,
+cdl_dataset/dataset/make_up_bed/g3.txt,k1,"missed actions: walk_executor(cup_2063);grab_executor(cup_2063);walk_executor(faucet_43);switchon_ex
+ecutor(faucet_43);switchoff_executor(faucet_43);walk_executor(nightstand_100);put_executor(cup_2063,
+ nightstand_100);",missed action num: 201,,
+,,,"Human Instruction: You need to verify whether nightstand_100 has a suitable surface for placing a cu
+p.
+
+The actions you have taken:
+Action 1: Walk to nightstand_100. -> effect: Find mat_173. Find pillow_182. Find pillow_183. Find ch
+air_106. Find drawing_176. Robot is inside bedroom_67. Robot is close nightstand_100. Robot is close
+ floor_69. Robot is close mat_173. Robot is no longer inside bathroom_1.
+",,
+" 
+def has_surface(nightstand:item):
+    # Function to check if a nightstand has a surface suitable for placing a cup
+    symbol has_surf=surfaces(nightstand)
+    return has_surf
+
+behavior __goal__():
+    body:
+        bind nightstand: item where:
+            is_nightstand(nightstand) and id[nightstand]==100
+        # Select nightstand with ID 100
+
+        if not visited(nightstand):
+            observe(nightstand,""Verify if nightstand_100 has a suitable surface for placing a cup"")
+            # Observe to verify if it has a suitable surface
+
+        achieve has_surface(nightstand)
+",From function reset_sub_goal,,,,
+,,,,,"(CrowControllerApplier<open_executor(nightstand_100)>, CrowControllerApplier<obs(nightstand_100, Ver
+ify if nightstand_100 has a suitable surface for placing a cup)>)"
+,,open_executor(nightstand_100),"Robot is inside bedroom_67. Robot is close nightstand_100. Robot is close floor_69. Robot is close m
+at_173. ",,
+cdl_dataset/dataset/make_up_bed/g3.txt,k1,"missed actions: walk_executor(cup_2063);grab_executor(cup_2063);walk_executor(faucet_43);switchon_ex
+ecutor(faucet_43);switchoff_executor(faucet_43);walk_executor(nightstand_100);put_executor(cup_2063,
+ nightstand_100);",missed action num: 201,,
+,,"obs(nightstand_100, Verify if nightstand_100 has a suitable surface for placing a cup)","Get this information:  tablelamp_97 is on nightstand_100. nightstand_100 is close to tablelamp_97. n
+ightstand_100 is close to floor_68. nightstand_100 is close to floor_69. nightstand_100 is close to 
+floor_70. nightstand_100 is close to bed_105. nightstand_100 is close to mat_173. nightstand_100 is 
+close to wall_80. nightstand_100 is close to wall_81. nightstand_100 is close to curtain_179. nights
+tand_100 is close to curtain_180. nightstand_100 is close to pillow_182. nightstand_100 is close to 
+pillow_183. nightstand_100 is close to window_86. nightstand_100 is close to character_65. nightstan
+d_100 is on floor_69. nightstand_100 is on mat_173. nightstand_100 is inside bedroom_67. nightstand_
+100 is CLEAN. nightstand_100 is OPEN.",,
+cdl_dataset/dataset/make_up_bed/g3.txt,k1,"missed actions: walk_executor(cup_2063);grab_executor(cup_2063);walk_executor(faucet_43);switchon_ex
+ecutor(faucet_43);switchoff_executor(faucet_43);walk_executor(nightstand_100);put_executor(cup_2063,
+ nightstand_100);",missed action num: 201,,
+" 
+def is_water_source(obj:item):
+    # Checks if an item is a water source by its category
+    symbol is_faucet_category = is_faucet(obj) or is_sink(obj)
+    return is_faucet_category
+
+behavior fill_cup_with_water(cup:item, water_source:item):
+    body:
+        achieve_once inhand(cup)
+        # Temporarily hold the cup to fill it with water
+        if is_faucet(water_source):
+            achieve_once is_on(water_source)
+            # Turn on the water source if its a faucet to fill the cup
+        achieve has_water(cup)
+        # Ensure the cup is filled with water
+        if is_faucet(water_source):
+            achieve_once is_off(water_source)
+            # Turn off the water source after filling the cup
+
+behavior __goal__():
+    body:
+        bind cup: item where:
+            is_cup(cup) and grabbable(cup)
+        # Select a cup that can be grabbed
+        bind water_source: item where:
+            is_water_source(water_source) and close_char(char, water_source)
+        # Select a close water source available for filling the cup
+        fill_cup_with_water(cup, water_source)
+        # Fill the selected cup with water from the water source
+",From function reset_sub_goal,,,,
+" 
+behavior obtain_and_fill_cup():
+    body:
+        bind cup: item where:
+            is_cup(cup)
+        # Select a cup based on its category
+
+        bind faucet: item where:
+            is_faucet(faucet)
+        # Select a faucet or any other source of water
+        
+        achieve has_water(cup)
+        # Fill the cup with water
+
+behavior __goal__():
+    body:
+        obtain_and_fill_cup()
+",From function reset_sub_goal,,,,
+cdl_dataset/dataset/make_up_bed/g3.txt,k1,"missed actions: walk_executor(cup_2063);grab_executor(cup_2063);walk_executor(faucet_43);switchon_ex
+ecutor(faucet_43);switchoff_executor(faucet_43);walk_executor(nightstand_100);put_executor(cup_2063,
+ nightstand_100);",missed action num: 201,,
+cdl_dataset/dataset/make_up_bed/g3.txt,k1,"missed actions: walk_executor(cup_2063);grab_executor(cup_2063);walk_executor(faucet_43);switchon_ex
+ecutor(faucet_43);switchoff_executor(faucet_43);walk_executor(nightstand_100);put_executor(cup_2063,
+ nightstand_100);",missed action num: 201,,

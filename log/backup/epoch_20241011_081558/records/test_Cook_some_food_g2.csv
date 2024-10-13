@@ -1,0 +1,377 @@
+Goal Representation,Debug Result,Action,Add Info,LLM Answer,Plan
+k1,"missed actions: walk_executor(fridge_289);switchoff_executor(fridge_289);open_executor(fridge_289);w
+alk_executor(food_chicken_2017);grab_executor(food_chicken_2017);walk_executor(cutting_board_2051);p
+ut_executor(food_chicken_2017, cutting_board_2051);walk_executor(knife_2050);grab_executor(knife_205
+0);walk_executor(food_chicken_2017);cut_executor(food_chicken_2017);",,,,
+"Reset goals: The sub-goals are: 
+['1. Identify and locate the chicken that needs to be sliced.', '2. Slice the chicken according to d
+esired thickness or shape.']",,,,,
+" 
+def has_chicken(chicken:item):
+    # Function to determine if an item is chicken
+    return is_food_chicken(chicken)
+
+behavior __goal__():
+    body:
+        if exists chicken: item : is_food_chicken(chicken):
+            # If we already know where the chicken is, move close to it
+            bind chicken: item where:
+                is_food_chicken(chicken)
+            achieve close_char(char, chicken)
+        
+        else:
+            # Check all unvisited items to locate the chicken
+            foreach item: item:
+                if not visited(item):
+                    observe(item, ""Check if it is chicken to be sliced"")
+",From function reset_goal,,,,
+,,,,"Record from func query_human in agent.py
+Question: Can you tell me how to identify and locate the chicken that needs to be sliced.
+Answer: I don't know.
+",
+,,,,"Record from func query_human in agent.py
+Question: Can you tell me how to slice the chicken according to desired thickness or shape.
+Answer: I don't know.
+",
+,,,,,"(CrowControllerApplier<walk_executor(oven_295)>, CrowControllerApplier<switchoff_executor(oven_295)>
+, CrowControllerApplier<open_executor(oven_295)>, CrowControllerApplier<exp(food_chicken_2017, oven_
+295)>, CrowControllerApplier<walk_executor(food_chicken_2017)>)"
+,,walk_executor(oven_295),"Find tray_296. Find drawing_240. Find drawing_238. Find drawing_239. Robot is inside dining_room_201
+. Robot is close tray_296. Robot is close oven_295. ",,
+k1,"missed actions: walk_executor(fridge_289);switchoff_executor(fridge_289);open_executor(fridge_289);w
+alk_executor(food_chicken_2017);grab_executor(food_chicken_2017);walk_executor(cutting_board_2051);p
+ut_executor(food_chicken_2017, cutting_board_2051);walk_executor(knife_2050);grab_executor(knife_205
+0);walk_executor(food_chicken_2017);cut_executor(food_chicken_2017);",,,,
+" 
+def identify_chicken(tray: item):
+    # Function to check if the chicken is on the tray
+    symbol has_chicken=exists o: item : is_food_chicken(o) and on(o, tray)
+    return has_chicken
+
+behavior __goal__():
+    body:
+        if exists tray: item : is_tray(tray) and identify_chicken(tray):
+            # If a tray with chicken is already known, move closer to it
+            bind tray: item where:
+                is_tray(tray) and identify_chicken(tray)
+            achieve close_char(char, tray)
+
+        else:
+            # If the chicken is not found, explore the trays
+            foreach tray: item:
+                if is_tray(tray) and not visited(tray):
+                    observe(tray, ""Check if the chicken is on the tray"")
+",From function reset_sub_goal,,,,
+k1,"missed actions: walk_executor(fridge_289);switchoff_executor(fridge_289);open_executor(fridge_289);w
+alk_executor(food_chicken_2017);grab_executor(food_chicken_2017);walk_executor(cutting_board_2051);p
+ut_executor(food_chicken_2017, cutting_board_2051);walk_executor(knife_2050);grab_executor(knife_205
+0);walk_executor(food_chicken_2017);cut_executor(food_chicken_2017);",,,,
+,,,,,"(CrowControllerApplier<obs(tray_296, Check if the chicken is on the tray)>,)"
+,,"obs(tray_296, Check if the chicken is on the tray)","Get this information:  tray_296 is close to stovefan_288. tray_296 is close to coffe_maker_290. tray
+_296 is close to toaster_292. tray_296 is close to cupboard_229. tray_296 is close to kitchen_counte
+r_230. tray_296 is close to oven_295. tray_296 is close to floor_204. tray_296 is close to wall_15. 
+tray_296 is close to wall_212. tray_296 is close to wall_215. tray_296 is close to character_65. tra
+y_296 is inside dining_room_201. tray_296 is inside oven_295. tray_296 is CLEAN.",,
+k1,"missed actions: walk_executor(fridge_289);switchoff_executor(fridge_289);open_executor(fridge_289);w
+alk_executor(food_chicken_2017);grab_executor(food_chicken_2017);walk_executor(cutting_board_2051);p
+ut_executor(food_chicken_2017, cutting_board_2051);walk_executor(knife_2050);grab_executor(knife_205
+0);walk_executor(food_chicken_2017);cut_executor(food_chicken_2017);",,,,
+,,,"Human Instruction: You need to confirm whether the chicken is present on tray_296. The information s
+o far confirms the tray is clean and close to various kitchen items but does not verify the presence
+ of chicken. Observe or check tray_296 specifically for the presence of chicken to complete the sub-
+task.
+
+Trial and Error: You can not switchoff_executor oven_295
+The actions you have taken:
+Action 1: Walk to oven_295. -> effect: Find tray_296. Find drawing_240. Find drawing_238. Find drawi
+ng_239. Robot is inside dining_room_201. Robot is close tray_296. Robot is close oven_295. 
+Action 2: Observe around tray_296 with the question of Check if the chicken is on the tray. -> effec
+t: Get this information:  tray_296 is close to stovefan_288. tray_296 is close to coffe_maker_290. t
+ray_296 is close to toaster_292. tray_296 is close to cupboard_229. tray_296 is close to kitchen_cou
+nter_230. tray_296 is close to oven_295. tray_296 is close to floor_204. tray_296 is close to wall_1
+5. tray_296 is close to wall_212. tray_296 is close to wall_215. tray_296 is close to character_65. 
+tray_296 is inside dining_room_201. tray_296 is inside oven_295. tray_296 is CLEAN.
+",,
+" 
+def is_chicken_on_tray(tray:item):
+    # Function to check if there is chicken on a specified tray
+    symbol has_chicken=exists o: item : is_food_chicken(o) and on(o, tray)
+    return has_chicken
+
+behavior __goal__():
+    body:
+        if exists tray: item : is_tray(tray) and id[tray]==296:
+            # Check if the tray has chicken based on the available information
+            bind tray: item where:
+                is_tray(tray) and id[tray]==296
+            if is_chicken_on_tray(tray):
+                achieve close_char(char, tray)
+            else:
+                observe(tray, ""Check if there is chicken on the tray"")
+                # Observe whether the tray has the chicken
+
+        else: 
+           # If tray_296 is not found, initiate a search process
+            foreach tray: item:
+                if is_tray(tray) and not visited(tray):
+                    observe(tray, ""Check if there is chicken on the tray"")
+                    # Observe whether each tray has chicken
+",From function reset_sub_goal,,,,
+,,,,,"(CrowControllerApplier<obs(tray_296, Check if there is chicken on the tray)>,)"
+,,"obs(tray_296, Check if there is chicken on the tray)","Get this information:  tray_296 is close to stovefan_288. tray_296 is close to coffe_maker_290. tray
+_296 is close to toaster_292. tray_296 is close to cupboard_229. tray_296 is close to kitchen_counte
+r_230. tray_296 is close to oven_295. tray_296 is close to floor_204. tray_296 is close to wall_15. 
+tray_296 is close to wall_212. tray_296 is close to wall_215. tray_296 is close to character_65. tra
+y_296 is inside dining_room_201. tray_296 is inside oven_295. tray_296 is CLEAN.",,
+k1,"missed actions: walk_executor(fridge_289);switchoff_executor(fridge_289);open_executor(fridge_289);w
+alk_executor(food_chicken_2017);grab_executor(food_chicken_2017);walk_executor(cutting_board_2051);p
+ut_executor(food_chicken_2017, cutting_board_2051);walk_executor(knife_2050);grab_executor(knife_205
+0);walk_executor(food_chicken_2017);cut_executor(food_chicken_2017);",,,,
+,,,"Human Instruction: You need to verify the presence of chicken on tray_296. You've observed that the 
+tray is clean, but you haven't confirmed whether there is chicken on it. Observe specifically for ch
+icken on the tray to complete this sub-task.
+
+Trial and Error: You can not switchoff_executor oven_295
+The actions you have taken:
+Action 1: Walk to oven_295. -> effect: Find tray_296. Find drawing_240. Find drawing_238. Find drawi
+ng_239. Robot is inside dining_room_201. Robot is close tray_296. Robot is close oven_295. 
+Action 2: Observe around tray_296 with the question of Check if the chicken is on the tray. -> effec
+t: Get this information:  tray_296 is close to stovefan_288. tray_296 is close to coffe_maker_290. t
+ray_296 is close to toaster_292. tray_296 is close to cupboard_229. tray_296 is close to kitchen_cou
+nter_230. tray_296 is close to oven_295. tray_296 is close to floor_204. tray_296 is close to wall_1
+5. tray_296 is close to wall_212. tray_296 is close to wall_215. tray_296 is close to character_65. 
+tray_296 is inside dining_room_201. tray_296 is inside oven_295. tray_296 is CLEAN.
+Action 3: Observe around tray_296 with the question of Check if there is chicken on the tray. -> eff
+ect: Get this information:  tray_296 is close to stovefan_288. tray_296 is close to coffe_maker_290.
+ tray_296 is close to toaster_292. tray_296 is close to cupboard_229. tray_296 is close to kitchen_c
+ounter_230. tray_296 is close to oven_295. tray_296 is close to floor_204. tray_296 is close to wall
+_15. tray_296 is close to wall_212. tray_296 is close to wall_215. tray_296 is close to character_65
+. tray_296 is inside dining_room_201. tray_296 is inside oven_295. tray_296 is CLEAN.
+",,
+" 
+def has_chicken_on_tray(tray:item):
+    # Function to check if there is chicken on a specified tray
+    symbol has_chicken=exists o: item : is_food_chicken(o) and on(o, tray)
+    return has_chicken
+
+behavior __goal__():
+    body:
+        bind tray: item where:
+            is_tray(tray) and id[tray]==296
+        # Select tray with ID 296
+
+        if has_chicken_on_tray(tray):
+            # If the tray already has chicken, move the character closer to the tray
+            achieve close_char(char, tray) 
+            
+        else:
+            # If no chicken is confirmed on the tray, initiate exploration to locate one
+            observe(tray, ""Check if there is chicken on the tray"")
+",From function reset_sub_goal,,,,
+,,,,,"(CrowControllerApplier<obs(tray_296, Check if there is chicken on the tray)>,)"
+,,"obs(tray_296, Check if there is chicken on the tray)","Get this information:  tray_296 is close to stovefan_288. tray_296 is close to coffe_maker_290. tray
+_296 is close to toaster_292. tray_296 is close to cupboard_229. tray_296 is close to kitchen_counte
+r_230. tray_296 is close to oven_295. tray_296 is close to floor_204. tray_296 is close to wall_15. 
+tray_296 is close to wall_212. tray_296 is close to wall_215. tray_296 is close to character_65. tra
+y_296 is inside dining_room_201. tray_296 is inside oven_295. tray_296 is CLEAN.",,
+k1,"missed actions: walk_executor(fridge_289);switchoff_executor(fridge_289);open_executor(fridge_289);w
+alk_executor(food_chicken_2017);grab_executor(food_chicken_2017);walk_executor(cutting_board_2051);p
+ut_executor(food_chicken_2017, cutting_board_2051);walk_executor(knife_2050);grab_executor(knife_205
+0);walk_executor(food_chicken_2017);cut_executor(food_chicken_2017);",,,,
+" 
+def has_food_chicken_on_tray(tray:item):
+    # Function to check if there is chicken on a specified tray
+    symbol has_chicken=exists o: item : is_food_chicken(o) and on(o, tray)
+    return has_chicken
+
+behavior slice_chicken(chicken:item):
+    body:
+        achieve cut(chicken)
+
+behavior __goal__():
+    body:
+        if exists tray: item : is_tray(tray) and has_food_chicken_on_tray(tray):
+            # Check if there is a tray with chicken based on the available information
+            bind tray: item where:
+                is_tray(tray) and has_food_chicken_on_tray(tray)
+            # Select a tray that has chicken on it
+            bind chicken: item where:
+                is_food_chicken(chicken) and on(chicken, tray)
+            # Select the chicken on the tray
+            slice_chicken(chicken)
+            # Slice the chicken according to desired thickness or shape
+        else:
+            # If no known tray with chicken is found, initiate exploration to locate one
+            foreach tray: item:
+                if is_tray(tray) and not visited(tray):
+                    observe(tray,""Check if there is chicken on the tray"")
+",From function reset_sub_goal,,,,
+,,,,,"(CrowControllerApplier<obs(tray_296, Check if there is chicken on the tray)>,)"
+,,"obs(tray_296, Check if there is chicken on the tray)","Get this information:  tray_296 is close to stovefan_288. tray_296 is close to coffe_maker_290. tray
+_296 is close to toaster_292. tray_296 is close to cupboard_229. tray_296 is close to kitchen_counte
+r_230. tray_296 is close to oven_295. tray_296 is close to floor_204. tray_296 is close to wall_15. 
+tray_296 is close to wall_212. tray_296 is close to wall_215. tray_296 is close to character_65. tra
+y_296 is inside dining_room_201. tray_296 is inside oven_295. tray_296 is CLEAN.",,
+k1,"missed actions: walk_executor(fridge_289);switchoff_executor(fridge_289);open_executor(fridge_289);w
+alk_executor(food_chicken_2017);grab_executor(food_chicken_2017);walk_executor(cutting_board_2051);p
+ut_executor(food_chicken_2017, cutting_board_2051);walk_executor(knife_2050);grab_executor(knife_205
+0);walk_executor(food_chicken_2017);cut_executor(food_chicken_2017);",,,,
+,,,"Human Instruction: You need to verify the presence of chicken on tray_296 and then proceed to slice 
+it according to the desired thickness or shape. Observations so far indicate the tray is clean, but 
+the presence of chicken has not been confirmed.
+
+Trial and Error: You can not switchoff_executor oven_295
+The actions you have taken:
+Action 1: Walk to oven_295. -> effect: Find tray_296. Find drawing_240. Find drawing_238. Find drawi
+ng_239. Robot is inside dining_room_201. Robot is close tray_296. Robot is close oven_295. 
+Action 2: Observe around tray_296 with the question of Check if the chicken is on the tray. -> effec
+t: Get this information:  tray_296 is close to stovefan_288. tray_296 is close to coffe_maker_290. t
+ray_296 is close to toaster_292. tray_296 is close to cupboard_229. tray_296 is close to kitchen_cou
+nter_230. tray_296 is close to oven_295. tray_296 is close to floor_204. tray_296 is close to wall_1
+5. tray_296 is close to wall_212. tray_296 is close to wall_215. tray_296 is close to character_65. 
+tray_296 is inside dining_room_201. tray_296 is inside oven_295. tray_296 is CLEAN.
+Action 3: Observe around tray_296 with the question of Check if there is chicken on the tray. -> eff
+ect: Get this information:  tray_296 is close to stovefan_288. tray_296 is close to coffe_maker_290.
+ tray_296 is close to toaster_292. tray_296 is close to cupboard_229. tray_296 is close to kitchen_c
+ounter_230. tray_296 is close to oven_295. tray_296 is close to floor_204. tray_296 is close to wall
+_15. tray_296 is close to wall_212. tray_296 is close to wall_215. tray_296 is close to character_65
+. tray_296 is inside dining_room_201. tray_296 is inside oven_295. tray_296 is CLEAN.
+Action 4: Observe around tray_296 with the question of Check if there is chicken on the tray. -> eff
+ect: Get this information:  tray_296 is close to stovefan_288. tray_296 is close to coffe_maker_290.
+ tray_296 is close to toaster_292. tray_296 is close to cupboard_229. tray_296 is close to kitchen_c
+ounter_230. tray_296 is close to oven_295. tray_296 is close to floor_204. tray_296 is close to wall
+_15. tray_296 is close to wall_212. tray_296 is close to wall_215. tray_296 is close to character_65
+. tray_296 is inside dining_room_201. tray_296 is inside oven_295. tray_296 is CLEAN.
+Action 5: Observe around tray_296 with the question of Check if there is chicken on the tray. -> eff
+ect: Get this information:  tray_296 is close to stovefan_288. tray_296 is close to coffe_maker_290.
+ tray_296 is close to toaster_292. tray_296 is close to cupboard_229. tray_296 is close to kitchen_c
+ounter_230. tray_296 is close to oven_295. tray_296 is close to floor_204. tray_296 is close to wall
+_15. tray_296 is close to wall_212. tray_296 is close to wall_215. tray_296 is close to character_65
+. tray_296 is inside dining_room_201. tray_296 is inside oven_295. tray_296 is CLEAN.
+",,
+" 
+def has_chicken_on_tray(tray:item):
+    # Function to check if there is chicken on a specified tray
+    symbol has_chicken=exists o: item : is_food_chicken(o) and on(o, tray)
+    return has_chicken
+
+behavior slice_chicken(chicken:item):
+    body:
+        achieve cut(chicken)
+
+behavior __goal__():
+    body:
+        if exists tray: item : is_tray(tray) and has_chicken_on_tray(tray):
+            # Check if there is a tray with chicken based on the available information
+            bind tray: item where:
+                is_tray(tray) and has_chicken_on_tray(tray)
+            # Select a tray that has chicken on it
+
+            bind chicken: item where:
+                is_food_chicken(chicken) and on(chicken, tray)
+            # Select chicken on the tray
+
+            slice_chicken(chicken)
+            # Slice the chicken
+       
+        else:
+            # If no tray with chicken is found, initiate exploration to locate one
+            foreach tray: item:
+                if is_tray(tray) and not visited(tray):
+                    observe(tray, ""Check if there is chicken on the tray"")
+                    # Observe whether each tray has chicken on it
+",From function reset_sub_goal,,,,
+,,,,,"(CrowControllerApplier<obs(tray_296, Check if there is chicken on the tray)>,)"
+,,"obs(tray_296, Check if there is chicken on the tray)","Get this information:  tray_296 is close to stovefan_288. tray_296 is close to coffe_maker_290. tray
+_296 is close to toaster_292. tray_296 is close to cupboard_229. tray_296 is close to kitchen_counte
+r_230. tray_296 is close to oven_295. tray_296 is close to floor_204. tray_296 is close to wall_15. 
+tray_296 is close to wall_212. tray_296 is close to wall_215. tray_296 is close to character_65. tra
+y_296 is inside dining_room_201. tray_296 is inside oven_295. tray_296 is CLEAN.",,
+k1,"missed actions: walk_executor(fridge_289);switchoff_executor(fridge_289);open_executor(fridge_289);w
+alk_executor(food_chicken_2017);grab_executor(food_chicken_2017);walk_executor(cutting_board_2051);p
+ut_executor(food_chicken_2017, cutting_board_2051);walk_executor(knife_2050);grab_executor(knife_205
+0);walk_executor(food_chicken_2017);cut_executor(food_chicken_2017);",,,,
+,,,"Human Instruction: You need to confirm the presence of chicken on tray_296 before proceeding to slic
+e it. The observations suggest the tray is clean and does not have chicken on it, so you may need to
+ explore other trays to find the chicken. Ensure you identify a tray that actually has chicken befor
+e performing the slicing.
+
+Trial and Error: You can not switchoff_executor oven_295
+The actions you have taken:
+Action 1: Walk to oven_295. -> effect: Find tray_296. Find drawing_240. Find drawing_238. Find drawi
+ng_239. Robot is inside dining_room_201. Robot is close tray_296. Robot is close oven_295. 
+Action 2: Observe around tray_296 with the question of Check if the chicken is on the tray. -> effec
+t: Get this information:  tray_296 is close to stovefan_288. tray_296 is close to coffe_maker_290. t
+ray_296 is close to toaster_292. tray_296 is close to cupboard_229. tray_296 is close to kitchen_cou
+nter_230. tray_296 is close to oven_295. tray_296 is close to floor_204. tray_296 is close to wall_1
+5. tray_296 is close to wall_212. tray_296 is close to wall_215. tray_296 is close to character_65. 
+tray_296 is inside dining_room_201. tray_296 is inside oven_295. tray_296 is CLEAN.
+Action 3: Observe around tray_296 with the question of Check if there is chicken on the tray. -> eff
+ect: Get this information:  tray_296 is close to stovefan_288. tray_296 is close to coffe_maker_290.
+ tray_296 is close to toaster_292. tray_296 is close to cupboard_229. tray_296 is close to kitchen_c
+ounter_230. tray_296 is close to oven_295. tray_296 is close to floor_204. tray_296 is close to wall
+_15. tray_296 is close to wall_212. tray_296 is close to wall_215. tray_296 is close to character_65
+. tray_296 is inside dining_room_201. tray_296 is inside oven_295. tray_296 is CLEAN.
+Action 4: Observe around tray_296 with the question of Check if there is chicken on the tray. -> eff
+ect: Get this information:  tray_296 is close to stovefan_288. tray_296 is close to coffe_maker_290.
+ tray_296 is close to toaster_292. tray_296 is close to cupboard_229. tray_296 is close to kitchen_c
+ounter_230. tray_296 is close to oven_295. tray_296 is close to floor_204. tray_296 is close to wall
+_15. tray_296 is close to wall_212. tray_296 is close to wall_215. tray_296 is close to character_65
+. tray_296 is inside dining_room_201. tray_296 is inside oven_295. tray_296 is CLEAN.
+Action 5: Observe around tray_296 with the question of Check if there is chicken on the tray. -> eff
+ect: Get this information:  tray_296 is close to stovefan_288. tray_296 is close to coffe_maker_290.
+ tray_296 is close to toaster_292. tray_296 is close to cupboard_229. tray_296 is close to kitchen_c
+ounter_230. tray_296 is close to oven_295. tray_296 is close to floor_204. tray_296 is close to wall
+_15. tray_296 is close to wall_212. tray_296 is close to wall_215. tray_296 is close to character_65
+. tray_296 is inside dining_room_201. tray_296 is inside oven_295. tray_296 is CLEAN.
+Action 6: Observe around tray_296 with the question of Check if there is chicken on the tray. -> eff
+ect: Get this information:  tray_296 is close to stovefan_288. tray_296 is close to coffe_maker_290.
+ tray_296 is close to toaster_292. tray_296 is close to cupboard_229. tray_296 is close to kitchen_c
+ounter_230. tray_296 is close to oven_295. tray_296 is close to floor_204. tray_296 is close to wall
+_15. tray_296 is close to wall_212. tray_296 is close to wall_215. tray_296 is close to character_65
+. tray_296 is inside dining_room_201. tray_296 is inside oven_295. tray_296 is CLEAN.
+",,
+" 
+def has_chicken(tray:item):
+    # Function to check if the specified tray has chicken
+    symbol has_chicken=exists chicken: item : is_food_chicken(chicken) and on(chicken, tray)
+    return has_chicken
+
+behavior check_all_trays_for_chicken():
+    body:
+        foreach tray: item:
+            if is_tray(tray) and not visited(tray):
+                observe(tray, ""Check if there is chicken on the tray"")
+
+behavior __goal__():
+    body:
+        if exists tray: item : is_tray(tray) and has_chicken(tray):
+            # Check if there is a tray with chicken based on the available information
+            bind tray: item where:
+                is_tray(tray) and has_chicken(tray)
+            # Select the tray that has chicken
+            achieve close_char(char, tray)
+            # Move the character closer to the tray with chicken
+
+        else:
+            # If no tray with chicken is found, explore to locate one
+            check_all_trays_for_chicken()
+",From function reset_sub_goal,,,,
+,,,,,"(CrowControllerApplier<obs(tray_296, Check if there is chicken on the tray)>,)"
+,,"obs(tray_296, Check if there is chicken on the tray)","Get this information:  tray_296 is close to stovefan_288. tray_296 is close to coffe_maker_290. tray
+_296 is close to toaster_292. tray_296 is close to cupboard_229. tray_296 is close to kitchen_counte
+r_230. tray_296 is close to oven_295. tray_296 is close to floor_204. tray_296 is close to wall_15. 
+tray_296 is close to wall_212. tray_296 is close to wall_215. tray_296 is close to character_65. tra
+y_296 is inside dining_room_201. tray_296 is inside oven_295. tray_296 is CLEAN.",,
+k1,"missed actions: walk_executor(fridge_289);switchoff_executor(fridge_289);open_executor(fridge_289);w
+alk_executor(food_chicken_2017);grab_executor(food_chicken_2017);walk_executor(cutting_board_2051);p
+ut_executor(food_chicken_2017, cutting_board_2051);walk_executor(knife_2050);grab_executor(knife_205
+0);walk_executor(food_chicken_2017);cut_executor(food_chicken_2017);",,,,
+k1,"missed actions: walk_executor(fridge_289);switchoff_executor(fridge_289);open_executor(fridge_289);w
+alk_executor(food_chicken_2017);grab_executor(food_chicken_2017);walk_executor(cutting_board_2051);p
+ut_executor(food_chicken_2017, cutting_board_2051);walk_executor(knife_2050);grab_executor(knife_205
+0);walk_executor(food_chicken_2017);cut_executor(food_chicken_2017);",,,,
+k1,"missed actions: walk_executor(fridge_289);switchoff_executor(fridge_289);open_executor(fridge_289);w
+alk_executor(food_chicken_2017);grab_executor(food_chicken_2017);walk_executor(cutting_board_2051);p
+ut_executor(food_chicken_2017, cutting_board_2051);walk_executor(knife_2050);grab_executor(knife_205
+0);walk_executor(food_chicken_2017);cut_executor(food_chicken_2017);",,,,

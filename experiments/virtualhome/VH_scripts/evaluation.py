@@ -5,6 +5,7 @@ import numpy as np
 import re
 import concepts.dm.crow as crow
 import pdb
+import os
 
 sys.path.append('embodied-agent-eval/src/VIRTUALHOME/AgentEval-main/virtualhome_eval/simulation/evolving_graph')
 sys.path.append('cdl_dataset/scripts')
@@ -78,9 +79,9 @@ def logic_parse(tokens):
     return ast
 
 class Evaluator:
-    def __init__(self,task_file_path,logger) -> None:
+    def __init__(self,task_file_path,logger,epoch_path) -> None:
         self.logger=logger
-
+        self.task_file_path=task_file_path
         self.name2opid = {}
         self.name2id = {}
         self.num_items = 0 # Record how mani items in the scene
@@ -92,8 +93,10 @@ class Evaluator:
         self.character_state = {}
         self.exploration = {}
         self.init_path="experiments/virtualhome/CDLs/init_scene_NPO.cdl"
-        self.state_file_path = 'experiments/virtualhome/CDLs/evaluator_state.cdl'
-        self.internal_executable_file_path = 'experiments/virtualhome/CDLs/evaluator_execution.cdl'
+        # self.state_file_path = 'experiments/virtualhome/CDLs/evaluator_state.cdl'
+        self.state_file_path = os.path.join(epoch_path,'evaluator_state.cdl')
+        # self.internal_executable_file_path = 'experiments/virtualhome/CDLs/evaluator_execution.cdl'
+        self.internal_executable_file_path = os.path.join(epoch_path,'evaluator_execution.cdl')
         self.basic_domain_knowledge_file_path = 'experiments/virtualhome/CDLs/virtualhome_evaluator.cdl'
         self.init_scene_graph=None
         self.classes=None
@@ -141,7 +144,7 @@ class Evaluator:
     def _initialize_states(self):
         state_features = [
             "is_on", "is_off", "open", "closed", "dirty", 
-            "clean", "plugged", "unplugged", "facing_char","on_char", "on_body","close_char", "inside_char","holds_rh", "holds_lh",'has_water','cut','visited','used'
+            "clean", "plugged", "unplugged", "facing_char","on_char", "on_body","close_char", "inside_char","holds_rh", "holds_lh",'has_water','cut','visited','used','inhand'
         ]
         for feature in state_features:
             self.state[feature] = np.full(self.num_items , "uncertain", dtype=object)
@@ -151,6 +154,7 @@ class Evaluator:
         self.character_state['sitting']=False
         self.character_state['lying']=False
         self.character_state['sleeping']=False
+        self.character_state['has_a_free_hand']=True
 
     def _initialize_properties(self):
         property_features = [
@@ -207,13 +211,15 @@ class Evaluator:
         property_section = re.search(r'#properties\n(.+?)#properties_end', content, re.DOTALL).group(1)
         self._parse_properties_section(property_section)
 
+        # Read exploration
+        exploration_section = re.search(r'#exploration\n(.+?)#exploration_end', content, re.DOTALL).group(1)
+        self._parse_exploration_section(exploration_section)
+
         # Read relations
         relation_section = re.search(r'#relations\n(.+?)#relations_end', content, re.DOTALL).group(1)
         self._parse_relations_section(relation_section)
 
-        # Read exploration
-        exploration_section = re.search(r'#exploration\n(.+?)#exploration_end', content, re.DOTALL).group(1)
-        self._parse_exploration_section(exploration_section)
+
 
         # Read exploration behavior
         exploration_behavior = re.search(r'#exp_behavior\n(.+?)#exp_behavior_end', content, re.DOTALL)
@@ -604,6 +610,17 @@ class Evaluator:
                 self.character_state['lying']=False
                 self.character_state['sleeping']=True
 
+            if observation['action'].name=='grab_executor':
+                hold_rl=np.any(self.state['holds_lh']==True)
+                hold_rr=np.any(self.state['holds_rh']==True)
+                if hold_rl and hold_rr:
+                    self.character_state['has_a_free_hand']=False
+                self.state['inhand'][self.name2opid[observation['action'].arguments[0].name]]=True
+                
+            if observation['action'].name=='put_executor' or observation['action'].name=='putin_executor':
+                self.character_state['has_a_free_hand']=True
+                self.state['inhand'][self.name2opid[observation['action'].arguments[0].name]]=False
+
             record_action=['switchoff_executor','switchon_executor','put_executor','putin_executor','grab_executor','wash_executor','scrub_executor','rinse_executor','sit_executor','lie_executor','open_executor','close_executor','pour_executor','plugin_executor','plugout_executor','find_executor','turnto_executor','cut_executor','eat_executor','drink_executor','lookat_executor','wipe_executor','puton_executor','putoff_executor','read_executor','touch_executor','type_executor','watch_executor','move_executor','push_executor','pull_executor']
             # update used states
             action=observation['action']
@@ -661,7 +678,7 @@ class Evaluator:
     )
         if len(plans) == 0:
             print("Evaluator failed to find a plan")
-            self.logger.info(f'Checking {key_state}',"Evaluator failed to find a plan",'','','','')
+            self.logger.info(self.task_file_path,f'Checking {key_state}',"Evaluator failed to find a plan",'','','')
 
             return 1e9
         print("State:",len(plans[0]),"steps left")
@@ -669,7 +686,7 @@ class Evaluator:
         for action in plans[0]:
             left_actions+=str(action)+';'
         print(key_state," missed actions:",left_actions)
-        self.logger.info(key_state,f"missed actions: {left_actions}",'','','','')
+        self.logger.info(self.task_file_path,key_state,f"missed actions: {left_actions}",f'missed action num: {len(left_actions)}','','')
 
         # print("missed actions:",plans[0])
         return len(plans[0])
@@ -710,8 +727,11 @@ class Evaluator:
         for keystate in self.keystates:
             print(f"Checking keystate: {keystate}")
             try:
-                result = self.check_single_keystate(keystate,self.wrapped_keystates_func[keystate])
-                counting_dict[keystate]=result
+                if keystate in self.achieved_keystates:
+                    counting_dict[keystate]=0
+                else:
+                    result = self.check_single_keystate(keystate,self.wrapped_keystates_func[keystate])
+                    counting_dict[keystate]=result
             except Exception as e:
                 print(f"Error in checking keystate: {keystate}")
                 print(e)
@@ -801,7 +821,18 @@ class Evaluator:
         for key in self.start_counting:
             if self.start_counting[key]==1e9 or self.end_counting[key]==1e9:
                 complete_rate['Keystate'][key]="Keystate Evaluate Error"
+                return "Keystate Evaluate Error",None
+                # continue
+            if self.start_counting[key]==0 and self.end_counting[key]==0:
+                complete_rate['Keystate'][key]=1
+                print(f"Keystate: {key} - Completion Rate: 1")
                 continue
+        
+            if self.start_counting[key]==0:
+                complete_rate['Keystate'][key]=0
+                print(f"Keystate: {key} - Completion Rate: 0")
+                continue
+
             cr=1-(self.end_counting[key]/self.start_counting[key])
             complete_rate['Keystate'][key]=max(cr,0)
             print(f"Keystate: {key} - Completion Rate: {complete_rate['Keystate'][key]}")

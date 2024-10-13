@@ -1,0 +1,76 @@
+Goal Representation,Debug Result,Action,Add Info,LLM Answer,Plan
+cdl_dataset/dataset/Clean_the_bathroom/g2.txt,k1,"missed actions: walk_executor(soap_2053);grab_executor(soap_2053);walk_executor(sink_42);putin_execu
+tor(soap_2053, sink_42);",missed action num: 108,,
+"Reset goals: The sub-goals are: 
+['1. Fill the bathroom sink with water.', '2. Add soap to the water and mix gently to create a soapy
+ solution.']",,,,,
+" 
+behavior fill_bathroom_sink_with_water(sink:item):
+    body:
+        achieve has_water(sink) # Fill the sink with water
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and is_bathroom(sink)
+        # Select a sink in the bathroom
+        fill_bathroom_sink_with_water(sink)
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Fill the sink with water.', '2. Add soap to the water in the sink.']",,,,,
+"
+def has_faucet(sink:item):
+    # Determines whether this sink has a faucet
+    symbol has_faucet=exists faucet:item: is_faucet(faucet) and close(faucet,sink)
+    return has_faucet
+
+behavior fill_sink_with_water(sink:item):
+    body:
+        if has_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet,sink)
+            achieve_once is_on(faucet)
+            # Turn on the faucet to fill the sink with water
+            achieve has_water(sink)
+            # Verify sink has water
+            achieve_once is_off(faucet)
+            # Turn off the faucet after filling
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and not has_water(sink)
+        fill_sink_with_water(sink)
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Find the sink in the bathroom.', '2. Run water into the sink.', '3. Add soap to the water in th
+e sink.']",,,,,
+" 
+behavior __goal__():
+    body:
+        bind bathroom: item where:
+            is_bathroom(bathroom)
+        foreach sink: item:
+            if is_sink(sink) and inside(sink, bathroom) and not visited(sink):
+                observe(sink, ""Check if it is the bathroom sink"")
+
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Identify the sink in the bathroom.', '2. Fill the sink with water.', '3. Add soap to the water 
+and mix to create soapy water.']",,,,,
+" 
+behavior identify_sink(sink:item):
+    body:
+        observe(sink, ""Identify if it is a sink"")
+        achieve visited(sink)
+
+behavior __goal__():
+    body:
+        foreach sink: item:
+            if is_sink(sink) and not visited(sink):
+                identify_sink(sink)
+",From function reset_goal,,,,
+cdl_dataset/dataset/Clean_the_bathroom/g2.txt,k1,"missed actions: walk_executor(soap_2053);grab_executor(soap_2053);walk_executor(sink_42);putin_execu
+tor(soap_2053, sink_42);",missed action num: 108,,
+cdl_dataset/dataset/Clean_the_bathroom/g2.txt,k1,"missed actions: walk_executor(soap_2053);grab_executor(soap_2053);walk_executor(sink_42);putin_execu
+tor(soap_2053, sink_42);",missed action num: 108,,

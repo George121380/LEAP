@@ -1,0 +1,274 @@
+Goal Representation,Debug Result,Action,Add Info,LLM Answer,Plan
+"Reset goals: The sub-goals are: 
+['1. Locate the remote control.', '2. Use the remote control to turn on the TV.']",,,,,
+"
+behavior locate_remote(remote_control:item):
+    body:
+        achieve visited(remote_control)
+
+behavior __goal__():
+    body:
+        bind remote_control: item where:
+            is_remote_control(remote_control)
+        locate_remote(remote_control)
+",From function reset_goal,,,,
+,,,,,"(CrowControllerApplier<walk_executor(coffee_table_2068)>, CrowControllerApplier<exp(remote_control_2
+052, coffee_table_2068)>, CrowControllerApplier<walk_executor(remote_control_2052)>, CrowControllerA
+pplier<obs(remote_control_2052, look around this place)>)"
+,,walk_executor(coffee_table_2068),"Find detergent_2084. Robot is inside home_office_319. Robot is close detergent_2084. Robot is close 
+coffee_table_2068. Grabbing detergent_2084 by left hand. ",,
+,,"exp(remote_control_2052, coffee_table_2068)",Find remote_control_2052. ,,
+,,,,,"(CrowControllerApplier<walk_executor(remote_control_2052)>, CrowControllerApplier<obs(remote_control
+_2052, look around this place)>)"
+,,walk_executor(remote_control_2052),"Robot is inside home_office_319. Robot is close detergent_2084. Robot is close couch_352. Robot is c
+lose remote_control_2052. Robot is no longer close coffee_table_2068.",,
+,,"obs(remote_control_2052, look around this place)","Get this information:  remote_control_2052 is close to couch_352. remote_control_2052 is close to ch
+aracter_65. remote_control_2052 is on couch_352. remote_control_2052 is inside home_office_319. remo
+te_control_2052 is OFF.",,
+" 
+def has_television_nearby(remote_control:item):
+    # Function to check if there is a television close to the remote control
+    symbol nearby_tv=exists tv: item : is_television(tv) and close(tv, remote_control)
+    return nearby_tv
+
+behavior use_remote_control(remote_control:item, television:item):
+    body:
+        achieve_once inhand(remote_control) # Pick up the remote control
+        achieve is_on(television) # Turn on the television
+
+behavior __goal__():
+    body:
+        bind remote_control: item where:
+            is_remote_control(remote_control) and id[remote_control]==2052
+        # Bind to the specific remote control with known ID 2052
+        
+        if has_television_nearby(remote_control):
+            bind television: item where:
+                is_television(television) and close(television, remote_control)
+            use_remote_control(remote_control, television)
+            # Use the remote to turn on the television
+        else:
+            # Since the television is not confirmed to be close, observe the area around the remote
+            observe(remote_control, ""Check if there is a television nearby"")
+",From function reset_sub_goal,,,,
+,,,,,"(CrowControllerApplier<obs(remote_control_2052, Check if there is a television nearby)>,)"
+,,"obs(remote_control_2052, Check if there is a television nearby)","Get this information:  remote_control_2052 is close to couch_352. remote_control_2052 is close to ch
+aracter_65. remote_control_2052 is on couch_352. remote_control_2052 is inside home_office_319. remo
+te_control_2052 is OFF.",,
+,,,"Human Instruction: You need to pick up the remote control and use it to turn on the television. Make
+ sure the TV is nearby and ensure the remote control is in hand before trying to turn the TV on.
+
+The actions you have taken:
+Action 1: Walk to coffee_table_2068. -> effect: Find detergent_2084. Robot is inside home_office_319
+. Robot is close detergent_2084. Robot is close coffee_table_2068. Grabbing detergent_2084 by left h
+and. 
+Action 2: look for remote_control_2052 around coffee_table_2068. -> effect: Find remote_control_2052
+. 
+Action 3: Walk to remote_control_2052. -> effect: Robot is inside home_office_319. Robot is close de
+tergent_2084. Robot is close couch_352. Robot is close remote_control_2052. Robot is no longer close
+ coffee_table_2068.
+Action 4: Observe around remote_control_2052 with the question of look around this place. -> effect:
+ Get this information:  remote_control_2052 is close to couch_352. remote_control_2052 is close to c
+haracter_65. remote_control_2052 is on couch_352. remote_control_2052 is inside home_office_319. rem
+ote_control_2052 is OFF.
+Action 5: Observe around remote_control_2052 with the question of Check if there is a television nea
+rby. -> effect: Get this information:  remote_control_2052 is close to couch_352. remote_control_205
+2 is close to character_65. remote_control_2052 is on couch_352. remote_control_2052 is inside home_
+office_319. remote_control_2052 is OFF.
+",,
+" 
+behavior use_remote_on_tv(remote_control:item, tv:item):
+    body:
+        achieve close_char(char, remote_control)
+        # Ensure the character is close to the remote control
+        achieve_once inhand(remote_control)
+        achieve close_char(char, tv)
+        # Ensure the character is close to the TV
+        achieve is_on(tv)
+        # Turn the TV on using the remote control
+
+behavior __goal__():
+    body:
+        bind remote_control: item where:
+            is_remote_control(remote_control) and id[remote_control]==2052
+        # Select remote control with ID 2052
+        bind tv: item where:
+            is_television(tv) and close(remote_control, tv)
+        # Select a television that is close to the remote control
+        use_remote_on_tv(remote_control, tv)
+",From function reset_sub_goal,,,,
+" 
+def has_television_nearby(remote_control:item):
+    # Determine if there is a television close to the remote control
+    symbol tv_nearby=exists tv: item : is_television(tv) and close(remote_control, tv)
+    return tv_nearby
+
+behavior use_remote_to_turn_on_tv(remote_control:item, tv:item):
+    body:
+        achieve close_char(char, remote_control)
+        # Approach the remote control
+        achieve_once inhand(remote_control)
+        # Hold the remote control
+        achieve close_char(char, tv)
+        # Ensure the character is close to the television
+        achieve is_on(tv)
+        # Turn the television on
+
+behavior __goal__():
+    body:
+        bind remote_control: item where:
+            is_remote_control(remote_control)
+
+        if has_television_nearby(remote_control):
+            bind tv: item where:
+                is_television(tv) and close(remote_control, tv)
+            use_remote_to_turn_on_tv(remote_control, tv)
+        else:
+            observe(remote_control, ""Check if there is a television nearby"")
+            # Observe the remote_control for any nearby televisions
+",From function reset_sub_goal,,,,
+,,,,,"(CrowControllerApplier<obs(remote_control_2052, Check if there is a television nearby)>,)"
+,,"obs(remote_control_2052, Check if there is a television nearby)","Get this information:  remote_control_2052 is close to couch_352. remote_control_2052 is close to ch
+aracter_65. remote_control_2052 is on couch_352. remote_control_2052 is inside home_office_319. remo
+te_control_2052 is OFF.",,
+,,,"Human Instruction: You need to ensure that the remote control is picked up (in hand) and confirm the
+ presence of a nearby television before attempting to turn the TV on. So far, you have discovered an
+d located the remote control but have not picked it up or identified a television nearby.
+
+The actions you have taken:
+Action 1: Walk to coffee_table_2068. -> effect: Find detergent_2084. Robot is inside home_office_319
+. Robot is close detergent_2084. Robot is close coffee_table_2068. Grabbing detergent_2084 by left h
+and. 
+Action 2: look for remote_control_2052 around coffee_table_2068. -> effect: Find remote_control_2052
+. 
+Action 3: Walk to remote_control_2052. -> effect: Robot is inside home_office_319. Robot is close de
+tergent_2084. Robot is close couch_352. Robot is close remote_control_2052. Robot is no longer close
+ coffee_table_2068.
+Action 4: Observe around remote_control_2052 with the question of look around this place. -> effect:
+ Get this information:  remote_control_2052 is close to couch_352. remote_control_2052 is close to c
+haracter_65. remote_control_2052 is on couch_352. remote_control_2052 is inside home_office_319. rem
+ote_control_2052 is OFF.
+Action 5: Observe around remote_control_2052 with the question of Check if there is a television nea
+rby. -> effect: Get this information:  remote_control_2052 is close to couch_352. remote_control_205
+2 is close to character_65. remote_control_2052 is on couch_352. remote_control_2052 is inside home_
+office_319. remote_control_2052 is OFF.
+Action 6: Observe around remote_control_2052 with the question of Check if there is a television nea
+rby. -> effect: Get this information:  remote_control_2052 is close to couch_352. remote_control_205
+2 is close to character_65. remote_control_2052 is on couch_352. remote_control_2052 is inside home_
+office_319. remote_control_2052 is OFF.
+",,
+" 
+def is_television_nearby(remote:item):
+    # Function to check if a television is near the remote control
+    symbol television_near=exists tv: item : is_television(tv) and close(tv, remote)
+    return television_near
+
+behavior pick_up_remote(remote:item):
+    body:
+        achieve_once inhand(remote)
+        # Pick up the remote control
+
+behavior turn_on_television(remote:item, television:item):
+    body:
+        achieve is_on(television)
+        # Use the remote control to turn on the television
+
+behavior __goal__():
+    body:
+        bind remote_control: item where:
+            is_remote_control(remote_control) and on(remote_control, couch_352)
+        # Select the remote control which is on the couch
+        
+        if not is_television_nearby(remote_control):
+            observe(couch_352, ""Check if there is a television nearby"")
+            # If television is not nearby, inspect the surroundings of the remote control for a tele
+vision
+        
+        bind television: item where:
+            is_television(television) and close(television, remote_control) 
+        # Select the television which is close to the remote control
+        
+        pick_up_remote(remote_control)
+        turn_on_television(remote_control, television)
+",From function reset_sub_goal,,,,
+" 
+def has_tv_nearby(remote_control: item):
+    # Determine if there is a TV nearby the remote control
+    symbol tv_nearby=exists tv: item : is_television(tv) and close(tv, remote_control)
+    return tv_nearby
+
+behavior __goal__():
+    body:
+        bind remote_control: item where:
+            is_remote_control(remote_control)
+
+        if not inhand(remote_control):
+            achieve_once inhand(remote_control)
+        
+        if not has_tv_nearby(remote_control):
+            foreach tv: item:
+                if is_television(tv) and not visited(tv):
+                    observe(tv, ""Check proximity of the television"")
+
+        bind tv: item where:
+            is_television(tv) and close(tv, remote_control)
+        
+        achieve is_on(tv)
+",From function reset_sub_goal,,,,
+,,,,,"(CrowControllerApplier<grab_executor(remote_control_2052)>, CrowControllerApplier<walk_executor(tele
+vision_248)>, CrowControllerApplier<obs(television_248, Check proximity of the television)>, CrowCon
+trollerApplier<walk_executor(television_410)>, CrowControllerApplier<obs(television_410, Check proxi
+mity of the television)>, CrowControllerApplier<walk_executor(washing_machine_2007)>, CrowController
+Applier<put_executor(remote_control_2052, washing_machine_2007)>, CrowControllerApplier<walk_executo
+r(television_410)>, CrowControllerApplier<switchon_executor(television_410)>)"
+,,grab_executor(remote_control_2052),"Robot is inside home_office_319. Robot is close detergent_2084. Robot is close couch_352. Robot is c
+lose remote_control_2052. Grabbing remote_control_2052 by right hand. ",,
+,,walk_executor(television_248),"Find cd_player_2060. Find wall_clock_249. Find cd_2075. Find drawing_241. Find mat_236. Find drawing
+_242. Find drawing_243. Find phone_247. Robot is inside dining_room_201. Robot is close detergent_20
+84. Robot is close remote_control_2052. Robot is close television_248. Robot is close tvstand_225. R
+obot is no longer inside home_office_319.Robot is no longer close couch_352.",,
+,,"obs(television_248, Check proximity of the television)","Get this information:  wall_213 is facing television_248. ceilinglamp_224 is facing television_248. 
+wallshelf_235 is facing television_248. bench_227 is facing television_248. television_248 is inside
+ dining_room_201. ceiling_219 is facing television_248. wall_clock_249 is facing television_248. doo
+r_222 is facing television_248. drawing_241 is facing television_248. wall_214 is facing television_
+248. bookshelf_233 is facing television_248. orchid_244 is facing television_248. floor_206 is facin
+g television_248. mat_236 is facing television_248. ceiling_217 is facing television_248. phone_247 
+is facing television_248. ceiling_220 is facing television_248. wall_209 is facing television_248. c
+eilinglamp_223 is facing television_248. television_248 is close to tvstand_225. television_248 is c
+lose to floor_207. television_248 is close to floor_208. television_248 is close to wall_210. televi
+sion_248 is close to orchid_244. television_248 is close to wall_213. television_248 is close to pho
+toframe_285. television_248 is close to character_65. drawing_242 is facing television_248. televisi
+on_248 is on tvstand_225. light_245 is facing television_248. floor_207 is facing television_248. ce
+iling_218 is facing television_248. television_248 is facing drawing_241. television_248 is facing d
+rawing_242. television_248 is facing drawing_243. television_248 is facing wall_clock_249. table_226
+ is facing television_248. wall_210 is facing television_248. doorjamb_346 is facing television_248.
+ drawing_243 is facing television_248. television_248 is CLEAN. television_248 is OFF. television_24
+8 is PLUGGED_IN.",,
+,,walk_executor(television_410),"Robot is inside home_office_319. Robot is close detergent_2084. Robot is close remote_control_2052. 
+Robot is close tvstand_353. Robot is close television_410. Robot is no longer inside dining_room_201
+.Robot is no longer close television_248.Robot is no longer close tvstand_225.",,
+,,"obs(television_410, Check proximity of the television)","Get this information:  television_410 is on tvstand_353. ceilinglamp_349 is facing television_410. c
+eiling_341 is facing television_410. couch_352 is facing television_410. curtain_409 is facing telev
+ision_410. television_410 is facing drawing_400. television_410 is facing computer_417. wall_333 is 
+facing television_410. table_355 is facing television_410. ceiling_339 is facing television_410. flo
+or_320 is facing television_410. walllamp_350 is facing television_410. television_410 is inside hom
+e_office_319. tvstand_353 is facing television_410. wall_335 is facing television_410. pillow_405 is
+ facing television_410. pillow_406 is facing television_410. ceiling_340 is facing television_410. w
+all_332 is facing television_410. drawing_400 is facing television_410. floor_324 is facing televisi
+on_410. television_410 is close to couch_352. television_410 is close to tvstand_353. television_410
+ is close to floor_323. television_410 is close to floor_324. television_410 is close to table_355. 
+television_410 is close to floor_327. television_410 is close to floor_328. television_410 is close 
+to wall_334. television_410 is close to mat_401. television_410 is close to ceiling_340. television_
+410 is close to ceiling_341. television_410 is close to ceilinglamp_349. television_410 is close to 
+character_65. ceiling_338 is facing television_410. television_410 is CLEAN. television_410 is OFF. 
+television_410 is PLUGGED_IN.",,
+,,walk_executor(washing_machine_2007),"Robot is inside bathroom_1. Robot is close detergent_2084. Robot is close remote_control_2052. Robot
+ is close washing_machine_2007. Robot is no longer inside home_office_319.Robot is no longer close t
+vstand_353.Robot is no longer close television_410.",,
+,,"put_executor(remote_control_2052, washing_machine_2007)","Robot is inside bathroom_1. Robot is close detergent_2084. Robot is close remote_control_2052. Robot
+ is close washing_machine_2007. remote_control_2052 released by right hand. ",,
+,,walk_executor(television_410),"Robot is inside home_office_319. Robot is close detergent_2084. Robot is close tvstand_353. Robot is
+ close television_410. Robot is no longer inside bathroom_1.Robot is no longer close remote_control_
+2052.Robot is no longer close washing_machine_2007.",,
+,,switchon_executor(television_410),"Robot is inside home_office_319. Robot is close detergent_2084. Robot is close tvstand_353. Robot is
+ close television_410. ",,

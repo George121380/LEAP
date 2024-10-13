@@ -9,11 +9,12 @@ from experiments.virtualhome.VH_scripts.planning import VH_pipeline
 from Interpretation import exploration_VH,sub_goal_generater,obs_query,sub_goal_evaluate
 from action_explaination import controller_to_natural_language
 import pdb
+import os
 
 class VHAgent:
-    def __init__(self, filepath,logger,PO=True):
+    def __init__(self, args, filepath, logger, PO=True,epoch_path=None):
         # Initialize dictionaries
-
+        self.args=args
         self.logger=logger
 
         self.name2opid = {}
@@ -34,12 +35,15 @@ class VHAgent:
         self.current_subgoal_num=0
         self.self_evaluate_num=0
         self.current_sub_task_guided=False
+        if self.args.human_guidance==False:
+            self.current_sub_task_guided=True
         self.sub_goal_list=[]
         self.add_info_nl=''
         self.add_info_human_instruction=''
         self.add_info_trial_and_error_info=''
         self.current_subtask_guidance=''
         self.add_info_action_history=[]
+        self.add_info_action_history_for_evaluation=[]
         self.exploration_behavior = ""
         self.goal_representation = ""
         self.behaviors_from_library={} # all skills in library
@@ -51,11 +55,13 @@ class VHAgent:
         state_file_path: the file contains the current state: state (only)        
         """
         if PO:
-            self.internal_executable_file_path = 'experiments/virtualhome/CDLs/internal_executable.cdl'
+            # self.internal_executable_file_path = 'experiments/virtualhome/CDLs/internal_executable.cdl'
+            self.internal_executable_file_path = os.path.join(epoch_path,'internal_executable.cdl')
         else:
             self.internal_executable_file_path = 'experiments/virtualhome/CDLs/internal_executable_NPO.cdl'
         self.basic_domain_knowledge_file_path = 'experiments/virtualhome/CDLs/virtualhome_partial.cdl'
-        self.state_file_path = 'experiments/virtualhome/CDLs/current_agent_state.cdl'
+        # self.state_file_path = 'experiments/virtualhome/CDLs/current_agent_state.cdl'
+        self.state_file_path = os.path.join(epoch_path,'current_agent_state.cdl')
         self.reset_add_info_record()
         self.reset_goal_representation_record()
         # do not replan every step
@@ -65,7 +71,7 @@ class VHAgent:
         self.exp_fail_num=0
         self.error_times=0
         self.max_replan_num=3
-        self.library=behavior_library()
+        self.library=behavior_library(epoch_path)
         self._parse_file(filepath)
         self.save_to_file()
         self.save_to_file(self.state_file_path)
@@ -141,7 +147,7 @@ class VHAgent:
     def _initialize_states(self):
         state_features = [
             "is_on", "is_off", "open", "closed", "dirty", 
-            "clean", "plugged", "unplugged", "facing_char","on_char", "on_body","close_char", "inside_char","holds_rh", "holds_lh",'has_water','cut','visited'
+            "clean", "plugged", "unplugged", "facing_char","on_char", "on_body","close_char", "inside_char","holds_rh", "holds_lh",'has_water','cut','visited','inhand'
         ]
         for feature in state_features:
             self.state[feature] = np.full(self.num_items , "uncertain", dtype=object)
@@ -151,6 +157,7 @@ class VHAgent:
         self.character_state['sitting']=False
         self.character_state['lying']=False
         self.character_state['sleeping']=False
+        self.character_state['has_a_free_hand']=True
 
     def _initialize_properties(self):
         property_features = [
@@ -205,13 +212,13 @@ class VHAgent:
         property_section = re.search(r'#properties\n(.+?)#properties_end', content, re.DOTALL).group(1)
         self._parse_properties_section(property_section)
 
-        # Read relations
-        relation_section = re.search(r'#relations\n(.+?)#relations_end', content, re.DOTALL).group(1)
-        self._parse_relations_section(relation_section)
-
         # Read exploration
         exploration_section = re.search(r'#exploration\n(.+?)#exploration_end', content, re.DOTALL).group(1)
         self._parse_exploration_section(exploration_section)
+
+         # Read relations
+        relation_section = re.search(r'#relations\n(.+?)#relations_end', content, re.DOTALL).group(1)
+        self._parse_relations_section(relation_section)
 
         # Read exploration behavior
         exploration_behavior = re.search(r'#exp_behavior\n(.+?)#exp_behavior_end', content, re.DOTALL)
@@ -400,29 +407,29 @@ class VHAgent:
 
     def _set_uncertain_information(self:str):
         for obj_id in range(1, self.num_items ):
-            if not self.exploration["unknown"][obj_id]:
+            if self.exploration["unknown"][obj_id]:
                 # For objects that are not known, set properties and relations to "uncertain"
                 # for prop_name in self.properties:
                 #     self.properties[prop_name][obj_id] = "uncertain"
                 for relation_name in self.relations:
-                    for i in range(self.num_items ):
+                    for i in range(self.num_items):
                         self.relations[relation_name][obj_id][i] = "uncertain"
                         self.relations[relation_name][i][obj_id] = "uncertain"
-            else:
-                # For known objects, set missing properties/relations explicitly to False
-                # for prop_name, prop_values in self.properties.items():
-                #     if prop_values[obj_id] == "uncertain":
-                #         self.properties[prop_name][obj_id] = False
-                for state_name, state_values in self.state.items():
-                    if state_values[obj_id] == "uncertain":
-                        self.state[state_name][obj_id] = False
-                for relation_name, relation_matrix in self.relations.items():
-                    for i in range(self.num_items ):
-                        if self.exploration["unknown"][i]:
-                            if relation_matrix[obj_id][i] == "uncertain":
-                                self.relations[relation_name][obj_id][i] = False
-                            if relation_matrix[i][obj_id] == "uncertain":
-                                self.relations[relation_name][i][obj_id] = False
+            # else:
+            #     # For known objects, set missing properties/relations explicitly to False
+            #     # for prop_name, prop_values in self.properties.items():
+            #     #     if prop_values[obj_id] == "uncertain":
+            #     #         self.properties[prop_name][obj_id] = False
+            #     for state_name, state_values in self.state.items():
+            #         if state_values[obj_id] == "uncertain":
+            #             self.state[state_name][obj_id] = False
+            #     for relation_name, relation_matrix in self.relations.items():
+            #         for i in range(self.num_items ):
+            #             if self.exploration["unknown"][i]:
+            #                 if relation_matrix[obj_id][i] == "uncertain":
+            #                     self.relations[relation_name][obj_id][i] = False
+            #                 if relation_matrix[i][obj_id] == "uncertain":
+            #                     self.relations[relation_name][i][obj_id] = False
 
     def __str__(self):
         properties_str = "\n".join([f"{prop}: {values}" for prop, values in self.properties.items()])
@@ -685,7 +692,7 @@ class VHAgent:
                         continue
                     if self.exploration['unknown'][self.name2opid[new_known]]==True:
                         self.exploration['unknown'][self.name2opid[new_known]]=False
-                        self.newfind=True # find sth new
+                        # self.newfind=True # find sth new
                 
                 for check_place in observation['checked']:
                     if 'character' in check_place:
@@ -720,10 +727,21 @@ class VHAgent:
                 self.character_state['sitting']=False
                 self.character_state['lying']=False
                 self.character_state['sleeping']=True
-            
-            self.annotation(observation)
 
+            if observation['action'].name=='grab_executor':
+                hold_rl=np.any(self.state['holds_lh']==True)
+                hold_rr=np.any(self.state['holds_rh']==True)
+                if hold_rl and hold_rr:
+                    self.character_state['has_a_free_hand']=False
+                self.state['inhand'][self.name2opid[observation['action'].arguments[0].name]]=True
+                
+            if observation['action'].name=='put_executor' or observation['action'].name=='putin_executor':
+                self.character_state['has_a_free_hand']=True
+                self.state['inhand'][self.name2opid[observation['action'].arguments[0].name]]=False
+
+            self.annotation(observation)
             self.add_info_action_history.append({'action':str(observation['action']),'effects':action_effects})
+            self.add_info_action_history_for_evaluation.append({'action':str(observation['action']),'effects':action_effects})
             self.update_add_info()
             self.logger.info("","",str(observation['action']),action_effects,"","")
             self.record_add_info()
@@ -848,7 +866,8 @@ class VHAgent:
                             print('Sub-task is done')
                             self.lift_behaviors()
                             self.current_subgoal_num+=1
-                            self.current_sub_task_guided=False # reset the guided flag
+                            if self.args.human_guidance:
+                                self.current_sub_task_guided=False # reset the guided flag
                             self.current_subtask_guidance=''
                             break
                             
@@ -857,7 +876,8 @@ class VHAgent:
                             print('Try to evaluate the sub-task for 3 times, but still failed. Force to move to the next sub task')
                             result='yes'
                             self.current_subgoal_num+=1
-                            self.current_sub_task_guided=False # reset the guided flag
+                            if self.args.human_guidance:
+                                self.current_sub_task_guided=False # reset the guided flag
                             self.current_subtask_guidance=''
                             break
 
@@ -917,16 +937,21 @@ class VHAgent:
         self.sub_goal_list=sub_goal_generater(goal)
         print(self.sub_goal_list)
         record='Reset goals: The sub-goals are: \n'+str(self.sub_goal_list)
+
+        # block while test
         self.logger.info(record,"","","","","")
+
         self.current_subgoal_nl=self.sub_goal_list[0]
         # pdb.set_trace()
         _,self.goal_representation,self.exploration_behavior,self.behaviors_from_library_representation=VH_pipeline(self.state_file_path,self.internal_executable_file_path,self.current_subgoal_nl,self.add_info_nl,self.goal_nl,self.sub_goal_list[:self.current_subgoal_num],self.classes,self.behaviors_from_library)
         # pdb.set_trace()
+
+        # block while test
         self.logger.info(self.goal_representation,"From function reset_goal","","","","")
 
         if self.goal_representation==None:
             if self.current_sub_task_guided:
-                print("Failed to generate the goal representation after asking for human guidance")
+                print("Failed to generate the goal representation")
                 return
             else: # Try again after asking for human guidance
                 self.ask_for_human_task_guidance()
@@ -940,7 +965,7 @@ class VHAgent:
         _,self.goal_representation,self.exploration_behavior,self.behaviors_from_library_representation=VH_pipeline(self.state_file_path,self.internal_executable_file_path,self.current_subgoal_nl,self.add_info_nl,self.goal_nl,self.sub_goal_list[:self.current_subgoal_num],self.classes,self.behaviors_from_library)
         if self.goal_representation==None:
             if self.current_sub_task_guided:
-                print("Failed to generate the goal representation after asking for human guidance")
+                print("Failed to generate the goal representation")
                 return
             else: # Try again after asking for human guidance
                 self.ask_for_human_task_guidance()
@@ -948,6 +973,7 @@ class VHAgent:
                 if self.goal_representation==None:
                     print("Failed to generate the goal representation after asking for human guidance")
                     return
+        # block while test
         self.logger.info(self.goal_representation,"From function reset_sub_goal","","","","")
         self.reset_visited()
         self.record_goal_representation()

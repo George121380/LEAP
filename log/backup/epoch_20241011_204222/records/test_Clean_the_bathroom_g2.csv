@@ -1,0 +1,179 @@
+Goal Representation,Debug Result,Action,Add Info,LLM Answer,Plan
+cdl_dataset/dataset/Clean_the_bathroom/g2.txt,k1,"missed actions: walk_executor(soap_2053);grab_executor(soap_2053);walk_executor(sink_42);putin_execu
+tor(soap_2053, sink_42);",missed action num: 108,,
+"Reset goals: The sub-goals are: 
+['1. Fill the bathroom sink with water.', '2. Add soap to the water and mix it until it becomes soap
+y.']",,,,,
+"
+def has_faucet(sink:item):
+    # Determine whether the sink has a faucet
+    symbol has_faucet=exists faucet:item: is_faucet(faucet) and close(faucet,sink)
+    return has_faucet
+
+behavior fill_sink_with_water(sink:item):
+    body:
+        achieve plugged(sink)
+        # Ensure the sink is plugged to hold water
+        if has_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_on(faucet)
+            # If the sink has a nearby faucet, turn it on to fill the sink
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and is_bathroom(sink)
+        # Select a sink in the bathroom
+        fill_sink_with_water(sink)
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Ensure the sink is clear and ready for use.', '2. Fill the sink with water.', '3. Add soap to t
+he water and mix until bubbles form.']",,,,,
+" 
+def is_sink_ready(sink:item):
+    # Check if sink is clear and clean
+    symbol ready=exists o: item : is_sink(o) and clean(o) and not dirty(o) and not has_water(o)
+    return ready
+
+behavior clear_sink(sink:item):
+    body:
+        achieve clean(sink)
+        # Make sure the sink is clean
+        achieve closed(sink)
+        # Ensure the sink does not have any water
+ 
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink)
+        # Select a sink
+        if not is_sink_ready(sink):
+            clear_sink(sink)
+        # Clear the sink if its not already clear and ready
+",From function reset_goal,,,,
+,,,,,"(CrowControllerApplier<walk_executor(sink_42)>, CrowControllerApplier<wash_executor(sink_42)>, CrowC
+ontrollerApplier<close_executor(sink_42)>)"
+,,walk_executor(sink_42),"Find cleaning_solution_2073. Find detergent_2084. Find towel_rack_31. Find soap_2053. Find basket_fo
+r_clothes_2006. Find towel_rack_34. Find towel_rack_32. Robot is inside bathroom_1. Robot is close b
+athroom_counter_41. Robot is close sink_42. ",,
+cdl_dataset/dataset/Clean_the_bathroom/g2.txt,k1,"missed actions: walk_executor(soap_2053);grab_executor(soap_2053);walk_executor(sink_42);putin_execu
+tor(soap_2053, sink_42);",missed action num: 108,,
+,,wash_executor(sink_42),"Find drawing_176. Robot is inside bathroom_1. Robot is close bathroom_counter_41. Robot is close sin
+k_42. ",,
+cdl_dataset/dataset/Clean_the_bathroom/g2.txt,k1,"missed actions: walk_executor(soap_2053);grab_executor(soap_2053);walk_executor(sink_42);putin_execu
+tor(soap_2053, sink_42);",missed action num: 108,,
+" 
+behavior clear_sink(sink:item):
+    body:
+        if dirty(sink):
+            wash(sink)
+            achieve clean(sink)
+        else:
+            achieve clean(sink)
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and id[sink]==42
+        # Select sink with ID 42
+        clear_sink(sink)
+        # Ensure its clean
+",From function reset_sub_goal,,,,
+cdl_dataset/dataset/Clean_the_bathroom/g2.txt,k1,"missed actions: walk_executor(soap_2053);grab_executor(soap_2053);walk_executor(sink_42);putin_execu
+tor(soap_2053, sink_42);",missed action num: 108,,
+"Reset goals: The sub-goals are: 
+['1. Fill the bathroom sink with water.', '2. Add soap to the water and mix until sudsy.']",,,,,
+" 
+behavior fill_sink_with_water(sink:item):
+    body:
+        if is_sink(sink):
+            achieve has_water(sink)
+            # Ensure the sink is filled with water
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and id[sink] == 42
+        # Select the sink with ID 42
+        fill_sink_with_water(sink)
+        # Fill the selected sink with water
+",From function reset_goal,,,,
+,,,,,"(CrowControllerApplier<walk_executor(faucet_43)>, CrowControllerApplier<switchon_executor(faucet_43)
+>, CrowControllerApplier<switchoff_executor(faucet_43)>)"
+,,walk_executor(faucet_43),"Robot is inside bathroom_1. Robot is close bathroom_counter_41. Robot is close faucet_43. Robot is n
+o longer close sink_42.",,
+cdl_dataset/dataset/Clean_the_bathroom/g2.txt,k1,"missed actions: walk_executor(soap_2053);grab_executor(soap_2053);walk_executor(sink_42);putin_execu
+tor(soap_2053, sink_42);",missed action num: 108,,
+,,switchon_executor(faucet_43),Robot is inside bathroom_1. Robot is close bathroom_counter_41. Robot is close faucet_43. ,,
+cdl_dataset/dataset/Clean_the_bathroom/g2.txt,k1,"missed actions: walk_executor(soap_2053);grab_executor(soap_2053);walk_executor(sink_42);putin_execu
+tor(soap_2053, sink_42);",missed action num: 108,,
+,,switchoff_executor(faucet_43),Robot is inside bathroom_1. Robot is close bathroom_counter_41. Robot is close faucet_43. ,,
+cdl_dataset/dataset/Clean_the_bathroom/g2.txt,k1,"missed actions: walk_executor(soap_2053);grab_executor(soap_2053);walk_executor(sink_42);putin_execu
+tor(soap_2053, sink_42);",missed action num: 108,,
+" 
+def is_sudsy(sink:item):
+    # Function to check if the water in the sink is sudsy
+    symbol sudsy=exists soap: item : is_soap(soap) and inhand(soap) and inside(soap, sink)
+    return sudsy
+
+behavior add_soap_to_sink(sink:item, soap:item):
+    body:
+        achieve_once inhand(soap)
+        achieve inside(soap, sink)
+
+behavior mix_water_in_sink(sink:item):
+    body:
+        # Check if there is soapy water in the sink
+        if is_sudsy(sink):
+            assert has_water(sink)
+        # This is a placeholder assertion that represents mixing the water to make it sudsy
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and id[sink]==42
+        # Select sink with ID 42
+
+        bind soap: item where:
+            is_soap(soap) and close_char(char, soap)
+        # Select the closest soap to the character
+
+        add_soap_to_sink(sink, soap)
+        mix_water_in_sink(sink)
+",From function reset_sub_goal,,,,
+" 
+def is_soap_nearby(sink:item):
+    # Determine if soap is close to the sink
+    symbol soap_nearby=exists soap: item : is_soap(soap) and close(soap, sink)
+    return soap_nearby
+
+behavior add_and_mix_soap(sink:item):
+    body:
+        assert has_water(sink)  # Ensure that the sink is already filled with water
+
+        if is_soap_nearby(sink):
+            bind soap: item where:
+                is_soap(soap) and close(soap, sink)
+                
+            achieve_once inhand(soap)  # Temporarily take soap in hand for use
+            achieve inside(soap, sink)  # Add soap to the sink
+        
+behavior mix_until_sudsy(sink:item):
+    body:
+        # Since soap has been added, stir the water to mix the soap thoroughly
+        achieve clean(sink)  # This implies the water is sudsy and ready for cleaning
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and id[sink]==42
+        # Ensure the sink is the bathroom sink with ID 42
+        
+        add_and_mix_soap(sink)
+        mix_until_sudsy(sink)
+",From function reset_sub_goal,,,,
+cdl_dataset/dataset/Clean_the_bathroom/g2.txt,k1,"missed actions: walk_executor(soap_2053);grab_executor(soap_2053);walk_executor(sink_42);putin_execu
+tor(soap_2053, sink_42);",missed action num: 108,,
+cdl_dataset/dataset/Clean_the_bathroom/g2.txt,k1,"missed actions: walk_executor(soap_2053);grab_executor(soap_2053);walk_executor(sink_42);putin_execu
+tor(soap_2053, sink_42);",missed action num: 108,,

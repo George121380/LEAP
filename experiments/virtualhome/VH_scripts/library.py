@@ -3,10 +3,16 @@ import sys
 import re
 sys.path.append('prompt')
 from ask_GPT import ask_GPT
+import os
 
 class behavior_library:
-    def __init__(self):
-        self.source_path='experiments/virtualhome/resources/library_data.json'
+    def __init__(self,epoch_path):
+        # self.source_path='experiments/virtualhome/resources/library_data.json'
+        self.source_path=os.path.join(epoch_path,'library_data.json')
+        if not os.path.exists(self.source_path):
+            os.makedirs(os.path.dirname(self.source_path), exist_ok=True)
+            with open(self.source_path, "w") as f:
+                json.dump({}, f)
         metadata = json.load(open(self.source_path, "r"))
         if len(metadata)==0:
             self.behavior_data = {}
@@ -17,7 +23,8 @@ class behavior_library:
             self.function_name_mapping = metadata['function_name_mapping'] # record the mapping relationship of function names
             self.function_name_counts = metadata['function_name_counts'] # record the count of function names for generating suffix
         self.behavior_name_set=set()
-        self.visualization_path='experiments/virtualhome/resources/library_visualization.txt'
+        # self.visualization_path='experiments/virtualhome/resources/library_visualization.txt'
+        self.visualization_path=os.path.join(epoch_path,'library_visualization.txt')
 
 
     def extract_behavior_name(self,behavior:str):

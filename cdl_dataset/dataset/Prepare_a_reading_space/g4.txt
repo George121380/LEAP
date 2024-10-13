@@ -1,6 +1,6 @@
 Task name: Prepare a reading space
 Goal: Find the book and put it on the coffe table in home office. Then prepare a cup of hot milk, put it on the table.
-Logic: k1 then k2 then k3 then k4
+Logic: k1 then k2 then k3
 
 behavior k1():
     body:
@@ -23,19 +23,19 @@ behavior k2():
             bind cup: item where:
                 is_cup(cup)
             achieve inside(milk, cup)
+            bind microwave: item where:
+                is_microwave(microwave)
+            achieve inside(cup, microwave)
+            achieve is_on(microwave)
+        else:
+            bind cup: item where:
+                is_cup(cup) and inside(milk,cup)
+            bind microwave: item where:
+                is_microwave(microwave)
+            achieve inside(cup, microwave)
+            achieve is_on(microwave)
 
 behavior k3():
-    body:
-        bind milk: item where:
-            is_milk(milk)
-        bind cup_with_milk: item where:
-            is_cup(cup_with_milk) and inside(milk, cup_with_milk)
-        bind microwave: item where:
-            is_microwave(microwave)
-        achieve inside(cup_with_milk, microwave)
-        achieve is_on(microwave)
-
-behavior k4():
     body:
         bind milk: item where:
             is_milk(milk)
@@ -43,9 +43,16 @@ behavior k4():
             is_home_office(home_office)
         bind table: item where:
             is_table(table) and inside(table, home_office)
-        bind cup_with_milk: item where:
-            is_cup(cup_with_milk) and inside(milk, cup_with_milk)
-        achieve on(cup_with_milk, table)
+        symbol cup_with_milk=exists cup: item:is_cup(cup) and inside(milk,cup)
+        if not cup_with_milk:
+            bind cup: item where:
+                is_cup(cup)
+            achieve inside(milk, cup)
+            achieve on(cup, table)            
+        else:
+            bind cup: item where:
+                is_cup(cup) and inside(milk,cup)
+            achieve on(cup, table)
         
 
 

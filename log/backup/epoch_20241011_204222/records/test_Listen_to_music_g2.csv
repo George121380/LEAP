@@ -1,0 +1,133 @@
+Goal Representation,Debug Result,Action,Add Info,LLM Answer,Plan
+cdl_dataset/dataset/Listen_to_music/g2.txt,k1,missed actions: walk_executor(dvd_player_2061);,missed action num: 31,,
+"Reset goals: The sub-goals are: 
+['1. Locate the remote control for the DVD player.', '2. Use the remote control to turn on the DVD p
+layer.']",,,,,
+" 
+def is_remote_control_for_dvd(remote:item):
+    # Determine whether a specific remote is for the DVD player
+    symbol is_dvd_remote = exists dvd: item : is_dvd_player(dvd) and close(remote, dvd)
+    return is_dvd_remote
+
+def in_known_location(remote:item):
+    # Function to determine if the remote is in a known location
+    symbol in_known_location = exists room: item : (is_table(room) or is_couch(room) or is_tvstand(r
+oom)) and inside(remote, room)
+    return in_known_location
+
+behavior __goal__():
+    body:
+        if exists remote: item : is_remote_control(remote) and in_known_location(remote) and is_remo
+te_control_for_dvd(remote):
+            # Check if there is the DVD remote in a known location based on the available informatio
+n
+            bind remote: item where:
+                is_remote_control(remote) and in_known_location(remote) and is_remote_control_for_dv
+d(remote) 
+            # Select the remote that is in a known location and is for the DVD player
+            achieve close_char(char, remote) 
+            # Move the character closer to the DVD remote
+
+        else: 
+            # If no DVD remote in a known location is found, initiate exploration to locate one
+            foreach item: item:
+                if is_remote_control(item) and not visited(item):
+                    observe(item,""Check if it is the remote control for the DVD player"")
+",From function reset_goal,,,,
+,,,,,"(CrowControllerApplier<walk_executor(tvstand_353)>, CrowControllerApplier<exp(remote_control_2052, t
+vstand_353)>, CrowControllerApplier<walk_executor(remote_control_2052)>, CrowControllerApplier<obs(r
+emote_control_2052, Check if it is the remote control for the DVD player)>)"
+,,walk_executor(tvstand_353),"Find mat_401. Find dvd_player_2061. Find drawing_400. Robot is inside home_office_319. Robot is clos
+e tvstand_353. Robot is close floor_324. Robot is no longer inside bathroom_1.",,
+cdl_dataset/dataset/Listen_to_music/g2.txt,k1,missed actions: walk_executor(dvd_player_2061);,missed action num: 31,,
+,,"exp(remote_control_2052, tvstand_353)",Find remote_control_2052. ,,
+cdl_dataset/dataset/Listen_to_music/g2.txt,k1,missed actions: walk_executor(dvd_player_2061);,missed action num: 31,,
+,,,,,"(CrowControllerApplier<walk_executor(remote_control_2052)>, CrowControllerApplier<obs(remote_control
+_2052, Check if it is the remote control for the DVD player)>)"
+,,walk_executor(remote_control_2052),"Robot is inside home_office_319. Robot is close couch_352. Robot is close remote_control_2052. Robot
+ is no longer close tvstand_353.Robot is no longer close floor_324.",,
+cdl_dataset/dataset/Listen_to_music/g2.txt,k1,missed actions: walk_executor(dvd_player_2061);,missed action num: 31,,
+,,"obs(remote_control_2052, Check if it is the remote control for the DVD player)","Get this information:  remote_control_2052 is close to couch_352. remote_control_2052 is close to ch
+aracter_65. remote_control_2052 is on couch_352. remote_control_2052 is inside home_office_319. remo
+te_control_2052 is OFF.",,
+cdl_dataset/dataset/Listen_to_music/g2.txt,k1,missed actions: walk_executor(dvd_player_2061);,missed action num: 31,,
+" 
+behavior __goal__():
+    body:
+        bind dvd_player: item where:
+            is_dvd_player(dvd_player)
+        bind remote_control: item where:
+            is_remote_control(remote_control)
+
+        assert is_off(dvd_player) # Ensure the DVD player is currently off
+        assert has_switch(remote_control) # Ensure the remote control has a switch
+        
+        achieve close_char(char, remote_control) # Move closer to the remote control
+        achieve close(remote_control, dvd_player) # Ensure the DVD player and remote control are clo
+se to each other
+        
+        observe(remote_control, ""Check if its the correct remote control for the DVD player"") 
+        
+        achieve is_on(dvd_player) # Use the remote to turn the DVD player on
+",From function reset_sub_goal,,,,
+" 
+def has_switch_and_power_on(remote:item):
+    # Function to check if the remote control has a switch and if its turned on
+    symbol has_switch=exists switch: item : has_switch(switch) and close(switch, remote)
+    symbol is_power_on=is_on(remote)
+    return has_switch and is_power_on
+
+behavior use_remote_to_turn_on_dvd(remote:item, dvd:item):
+    body:
+        # Check if the remote control can be used to turn on the DVD player
+        if not has_switch_and_power_on(remote):
+            achieve_once inhand(remote) # Hold remote briefly to operate it
+            achieve is_on(remote)  # Turns on the remote control
+        
+        achieve is_on(dvd) # Ensure the DVD player is turned on
+
+behavior __goal__():
+    body:
+        bind remote: item where:
+            is_remote_control(remote) and close_char(char, remote)
+        # Bind to remote control
+        
+        bind dvd: item where:
+            is_dvd_player(dvd) and close(remote, dvd)
+        # Bind to DVD player
+
+        use_remote_to_turn_on_dvd(remote, dvd)
+
+",From function reset_sub_goal,,,,
+" 
+behavior use_remote_control(remote_control:item, dvd_player:item):
+    body:
+        achieve_once inhand(remote_control) # Temporarily hold the remote control in hand
+        achieve is_on(dvd_player) # Turn on the DVD player
+
+behavior __goal__():
+    body:
+        bind remote_control: item where:
+            is_remote_control(remote_control) and id[remote_control] == 2052
+        # Select the remote control with ID 2052
+
+        bind dvd_player: item where:
+            is_dvd_player(dvd_player) and id[dvd_player] == 2061
+        # Select the DVD player with ID 2061
+
+        use_remote_control(remote_control, dvd_player)
+",From function reset_sub_goal,,,,
+,,,,,"(CrowControllerApplier<grab_executor(remote_control_2052)>, CrowControllerApplier<walk_executor(dvd_
+player_2061)>, CrowControllerApplier<plugin_executor(dvd_player_2061)>, CrowControllerApplier<switch
+on_executor(dvd_player_2061)>)"
+,,grab_executor(remote_control_2052),"Robot is inside home_office_319. Robot is close couch_352. Robot is close remote_control_2052. Grabb
+ing remote_control_2052 by right hand. ",,
+cdl_dataset/dataset/Listen_to_music/g2.txt,k1,missed actions: walk_executor(dvd_player_2061);,missed action num: 31,,
+,,walk_executor(dvd_player_2061),"Robot is inside home_office_319. Robot is close remote_control_2052. Robot is close tvstand_353. Rob
+ot is close dvd_player_2061. Robot is no longer close couch_352.",,
+cdl_dataset/dataset/Listen_to_music/g2.txt,k1,missed actions: ,missed action num: 0,,
+,,plugin_executor(dvd_player_2061),"Robot is inside home_office_319. Robot is close remote_control_2052. Robot is close tvstand_353. Rob
+ot is close dvd_player_2061. ",,
+,,switchon_executor(dvd_player_2061),"Robot is inside home_office_319. Robot is close remote_control_2052. Robot is close tvstand_353. Rob
+ot is close dvd_player_2061. ",,
+cdl_dataset/dataset/Listen_to_music/g2.txt,k1,missed actions: ,missed action num: 0,,

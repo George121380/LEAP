@@ -1,0 +1,275 @@
+Goal Representation,Debug Result,Action,Add Info,LLM Answer,Plan
+cdl_dataset/dataset/Cook_some_food/g1.txt,k1,"missed actions: walk_executor(pot_2069);open_executor(pot_2069);walk_executor(fridge_289);switchoff_
+executor(fridge_289);open_executor(fridge_289);walk_executor(food_vegetable_2041);grab_executor(food
+_vegetable_2041);walk_executor(pot_2069);putin_executor(food_vegetable_2041, pot_2069);grab_executor
+(pot_2069);walk_executor(stove_2065);put_executor(pot_2069, stove_2065);switchon_executor(stove_2065
+);",missed action num: 386,,
+cdl_dataset/dataset/Cook_some_food/g1.txt,k2,"missed actions: walk_executor(pot_2069);open_executor(pot_2069);walk_executor(fridge_289);switchoff_
+executor(fridge_289);open_executor(fridge_289);walk_executor(food_vegetable_2041);grab_executor(food
+_vegetable_2041);walk_executor(pot_2069);putin_executor(food_vegetable_2041, pot_2069);walk_executor
+(stove_2065);open_executor(stove_2065);walk_executor(pot_2069);grab_executor(pot_2069);walk_executor
+(stove_2065);putin_executor(pot_2069, stove_2065);close_executor(stove_2065);switchon_executor(stove
+_2065);",missed action num: 491,,
+"Reset goals: The sub-goals are: 
+['1. Place vegetables in a pot.', '2. Boil the vegetables on the stove.']",,,,,
+"behavior place_vegetables_in_pot(vegetable:item, pot:item):
+    body:
+        achieve inside(vegetable, pot)
+
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot)
+        # Select the pot to place vegetables in
+        
+        foreach vegetable: item:
+            if is_food_vegetable(vegetable):
+                place_vegetables_in_pot(vegetable, pot)
+        # Place all vegetables into the pot",From function reset_goal,,,,
+,,,,,"(CrowControllerApplier<walk_executor(kitchen_counter_230)>, CrowControllerApplier<exp(pot_2069, kitc
+hen_counter_230)>, CrowControllerApplier<exp(food_vegetable_2041, kitchen_counter_230)>, CrowControl
+lerApplier<walk_executor(pot_2069)>, CrowControllerApplier<open_executor(pot_2069)>, CrowControllerA
+pplier<walk_executor(food_vegetable_2041)>, CrowControllerApplier<grab_executor(food_vegetable_2041)
+>, CrowControllerApplier<walk_executor(pot_2069)>, CrowControllerApplier<putin_executor(food_vegetab
+le_2041, pot_2069)>)"
+" 
+behavior __goal__():
+    body:
+        bind vegetables: item where:
+            is_food_vegetable(vegetables)
+        # Bind items classified as vegetables
+
+        bind pot: item where:
+            is_pot(pot)
+        # Bind the item identified as a pot
+
+        if not inside(vegetables, pot):
+            observe(vegetables, ""Check where the vegetables are"")
+        # Check the current location of the vegetables if they are not in the pot
+
+        achieve inside(vegetables, pot)
+        # Place the vegetables inside the pot
+",From function reset_sub_goal,,,,
+cdl_dataset/dataset/Cook_some_food/g1.txt,k1,"missed actions: walk_executor(pot_2069);open_executor(pot_2069);walk_executor(fridge_289);switchoff_
+executor(fridge_289);open_executor(fridge_289);walk_executor(food_vegetable_2041);grab_executor(food
+_vegetable_2041);walk_executor(pot_2069);putin_executor(food_vegetable_2041, pot_2069);grab_executor
+(pot_2069);walk_executor(stove_2065);put_executor(pot_2069, stove_2065);switchon_executor(stove_2065
+);",missed action num: 386,,
+cdl_dataset/dataset/Cook_some_food/g1.txt,k2,"missed actions: walk_executor(pot_2069);open_executor(pot_2069);walk_executor(fridge_289);switchoff_
+executor(fridge_289);open_executor(fridge_289);walk_executor(food_vegetable_2041);grab_executor(food
+_vegetable_2041);walk_executor(pot_2069);putin_executor(food_vegetable_2041, pot_2069);walk_executor
+(stove_2065);open_executor(stove_2065);walk_executor(pot_2069);grab_executor(pot_2069);walk_executor
+(stove_2065);putin_executor(pot_2069, stove_2065);close_executor(stove_2065);switchon_executor(stove
+_2065);",missed action num: 491,,
+"Reset goals: The sub-goals are: 
+['1. Put the vegetables in the pot.', '2. Boil the vegetables on the stove.']",,,,,
+" 
+def in_kitchen(pot:item):
+    # Determine whether this pot is in the kitchen
+    symbol in_kitchen=exists room: item : is_kitchen(room) and inside(pot, room)
+    return in_kitchen
+
+def has_pot_on_counter(counter:item):
+    # Function to check if there is a pot on a specified counter
+    symbol has_pot=exists o: item : is_pot(o) and on(o, counter)
+    return has_pot
+
+behavior __goal__():
+    body:
+        # Declare counter variable in foreach loop
+        foreach counter: item:
+            if is_kitchen_counter(counter):
+                if has_pot_on_counter(counter):
+                    # Check if there is a counter with a pot on it based on the available informatio
+n
+                    bind pot: item where:
+                        is_pot(pot) and on(pot, counter)
+                    # Select a pot that is on the counter
+                else:
+                    # If no pot is found on this counter, observe it
+                    if not visited(counter):
+                        observe(counter,""Check is there any pot on the counter"")
+                        # Observe whether each counter has any pot
+
+        bind vegetable: item where:
+            is_food_vegetable(vegetable)
+        # Bind a vegetable for processing
+        bind pot: item where:
+            is_pot(pot) and in_kitchen(pot)
+        # Bind a pot in the kitchen for further operations
+        
+        achieve inside(vegetable, pot)
+        # Place the vegetable into the pot
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Put vegetables in a pot.', '2. Boil the vegetables on the stove.']",,,,,
+"
+behavior put_vegetables_in_pot(vegetable:item, pot:item):
+    body:
+        achieve inside(vegetable, pot)
+
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot)
+        # Select a pot
+        
+        foreach vegetable: item:
+            if is_food_vegetable(vegetable) and not inside(vegetable, pot):
+                put_vegetables_in_pot(vegetable, pot)
+",From function reset_goal,,,,
+,,,,,"(CrowControllerApplier<walk_executor(cupboard_229)>, CrowControllerApplier<open_executor(cupboard_22
+9)>, CrowControllerApplier<exp(pot_2069, cupboard_229)>, CrowControllerApplier<walk_executor(fridge_
+289)>, CrowControllerApplier<switchoff_executor(fridge_289)>, CrowControllerApplier<open_executor(fr
+idge_289)>, CrowControllerApplier<exp(food_vegetable_2041, fridge_289)>, CrowControllerApplier<walk_
+executor(pot_2069)>, CrowControllerApplier<open_executor(pot_2069)>, CrowControllerApplier<walk_exec
+utor(food_vegetable_2041)>, CrowControllerApplier<grab_executor(food_vegetable_2041)>, CrowControlle
+rApplier<walk_executor(pot_2069)>, CrowControllerApplier<putin_executor(food_vegetable_2041, pot_206
+9)>)"
+" 
+def is_food_vegetables(item: item):
+    # Function to check if an item is classified as vegetables
+    symbol is_vegetables= is_food_vegetable(item)
+    return is_vegetables
+
+behavior put_vegetables_in_pot(vegetables: item, pot: item):
+    body:
+        achieve inside(vegetables, pot) # Place the vegetable inside the pot
+
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot)
+        # Select a pot
+        
+        foreach vegetables: item:
+            if is_food_vegetables(vegetables):
+                put_vegetables_in_pot(vegetables, pot)
+                # Put all vegetables in the pot
+",From function reset_sub_goal,,,,
+cdl_dataset/dataset/Cook_some_food/g1.txt,k1,"missed actions: walk_executor(pot_2069);open_executor(pot_2069);walk_executor(fridge_289);switchoff_
+executor(fridge_289);open_executor(fridge_289);walk_executor(food_vegetable_2041);grab_executor(food
+_vegetable_2041);walk_executor(pot_2069);putin_executor(food_vegetable_2041, pot_2069);grab_executor
+(pot_2069);walk_executor(stove_2065);put_executor(pot_2069, stove_2065);switchon_executor(stove_2065
+);",missed action num: 386,,
+cdl_dataset/dataset/Cook_some_food/g1.txt,k2,"missed actions: walk_executor(pot_2069);open_executor(pot_2069);walk_executor(fridge_289);switchoff_
+executor(fridge_289);open_executor(fridge_289);walk_executor(food_vegetable_2041);grab_executor(food
+_vegetable_2041);walk_executor(pot_2069);putin_executor(food_vegetable_2041, pot_2069);walk_executor
+(stove_2065);open_executor(stove_2065);walk_executor(pot_2069);grab_executor(pot_2069);walk_executor
+(stove_2065);putin_executor(pot_2069, stove_2065);close_executor(stove_2065);switchon_executor(stove
+_2065);",missed action num: 491,,
+,,,,,"(CrowControllerApplier<walk_executor(cupboard_229)>, CrowControllerApplier<open_executor(cupboard_22
+9)>, CrowControllerApplier<exp(pot_2069, cupboard_229)>, CrowControllerApplier<walk_executor(fridge_
+289)>, CrowControllerApplier<switchoff_executor(fridge_289)>, CrowControllerApplier<open_executor(fr
+idge_289)>, CrowControllerApplier<exp(food_vegetable_2041, fridge_289)>, CrowControllerApplier<walk_
+executor(pot_2069)>, CrowControllerApplier<open_executor(pot_2069)>, CrowControllerApplier<walk_exec
+utor(food_vegetable_2041)>, CrowControllerApplier<grab_executor(food_vegetable_2041)>, CrowControlle
+rApplier<walk_executor(pot_2069)>, CrowControllerApplier<putin_executor(food_vegetable_2041, pot_206
+9)>)"
+" 
+def is_food_vegetable_in_cupboard(cupboard:item):
+    # Check if there are vegetables in a specific cupboard
+    symbol has_vegetable=exists veg: item : is_food_vegetable(veg) and inside(veg, cupboard)
+    return has_vegetable
+
+behavior __goal__():
+    body:
+        if exists cupboard: item : is_cupboard(cupboard) and is_food_vegetable_in_cupboard(cupboard)
+:
+            # If there is a cupboard with vegetables, outfit its information
+            bind cupboard: item where:
+                is_cupboard(cupboard) and is_food_vegetable_in_cupboard(cupboard)
+            bind veg: item where:
+                is_food_vegetable(veg) and inside(veg, cupboard)
+            # Select a vegetable in the cupboard
+            bind pot: item where:
+                is_pot(pot)
+            # Select a pot
+            achieve inside(veg, pot)
+            # Put the vegetable in the pot
+            
+        else: 
+            # Check all cupboards in the scene that have not been visited
+            foreach cupboard: item:
+                if is_cupboard(cupboard) and not visited(cupboard):
+                    observe(cupboard, ""Check is there any vegetable inside"")
+",From function reset_sub_goal,,,,
+cdl_dataset/dataset/Cook_some_food/g1.txt,k1,"missed actions: walk_executor(pot_2069);open_executor(pot_2069);walk_executor(fridge_289);switchoff_
+executor(fridge_289);open_executor(fridge_289);walk_executor(food_vegetable_2041);grab_executor(food
+_vegetable_2041);walk_executor(pot_2069);putin_executor(food_vegetable_2041, pot_2069);grab_executor
+(pot_2069);walk_executor(stove_2065);put_executor(pot_2069, stove_2065);switchon_executor(stove_2065
+);",missed action num: 386,,
+cdl_dataset/dataset/Cook_some_food/g1.txt,k2,"missed actions: walk_executor(pot_2069);open_executor(pot_2069);walk_executor(fridge_289);switchoff_
+executor(fridge_289);open_executor(fridge_289);walk_executor(food_vegetable_2041);grab_executor(food
+_vegetable_2041);walk_executor(pot_2069);putin_executor(food_vegetable_2041, pot_2069);walk_executor
+(stove_2065);open_executor(stove_2065);walk_executor(pot_2069);grab_executor(pot_2069);walk_executor
+(stove_2065);putin_executor(pot_2069, stove_2065);close_executor(stove_2065);switchon_executor(stove
+_2065);",missed action num: 491,,
+,,,,,"(CrowControllerApplier<walk_executor(cupboard_229)>, CrowControllerApplier<open_executor(cupboard_22
+9)>, CrowControllerApplier<obs(cupboard_229, Check is there any vegetable inside)>)"
+" 
+behavior put_vegetables_in_pot(vegetables: item, pot: item):
+    body:
+        foreach vegetable: item:
+            if is_food_vegetable(vegetable) and close(vegetable, pot):
+                achieve inside(vegetable, pot)
+
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot)
+        foreach vegetable: item:
+            if is_food_vegetable(vegetable):
+                put_vegetables_in_pot(vegetable, pot)
+",From function reset_sub_goal,,,,
+cdl_dataset/dataset/Cook_some_food/g1.txt,k1,"missed actions: walk_executor(pot_2069);open_executor(pot_2069);walk_executor(fridge_289);switchoff_
+executor(fridge_289);open_executor(fridge_289);walk_executor(food_vegetable_2041);grab_executor(food
+_vegetable_2041);walk_executor(pot_2069);putin_executor(food_vegetable_2041, pot_2069);grab_executor
+(pot_2069);walk_executor(stove_2065);put_executor(pot_2069, stove_2065);switchon_executor(stove_2065
+);",missed action num: 386,,
+cdl_dataset/dataset/Cook_some_food/g1.txt,k2,"missed actions: walk_executor(pot_2069);open_executor(pot_2069);walk_executor(fridge_289);switchoff_
+executor(fridge_289);open_executor(fridge_289);walk_executor(food_vegetable_2041);grab_executor(food
+_vegetable_2041);walk_executor(pot_2069);putin_executor(food_vegetable_2041, pot_2069);walk_executor
+(stove_2065);open_executor(stove_2065);walk_executor(pot_2069);grab_executor(pot_2069);walk_executor
+(stove_2065);putin_executor(pot_2069, stove_2065);close_executor(stove_2065);switchon_executor(stove
+_2065);",missed action num: 491,,
+"Reset goals: The sub-goals are: 
+['1. Put the vegetables in the pot.', '2. Boil the vegetables on the stove.']",,,,,
+" 
+behavior put_vegetables_in_pot(vegetable:item, pot:item):
+    body:
+        achieve inside(vegetable, pot)
+
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot)
+        # Select a pot
+        
+        foreach vegetable: item:
+            if is_food_vegetable(vegetable) and not inside(vegetable, pot):
+                put_vegetables_in_pot(vegetable, pot)
+
+",From function reset_goal,,,,
+cdl_dataset/dataset/Cook_some_food/g1.txt,k1,"missed actions: walk_executor(pot_2069);open_executor(pot_2069);walk_executor(fridge_289);switchoff_
+executor(fridge_289);open_executor(fridge_289);walk_executor(food_vegetable_2041);grab_executor(food
+_vegetable_2041);walk_executor(pot_2069);putin_executor(food_vegetable_2041, pot_2069);grab_executor
+(pot_2069);walk_executor(stove_2065);put_executor(pot_2069, stove_2065);switchon_executor(stove_2065
+);",missed action num: 386,,
+cdl_dataset/dataset/Cook_some_food/g1.txt,k2,"missed actions: walk_executor(pot_2069);open_executor(pot_2069);walk_executor(fridge_289);switchoff_
+executor(fridge_289);open_executor(fridge_289);walk_executor(food_vegetable_2041);grab_executor(food
+_vegetable_2041);walk_executor(pot_2069);putin_executor(food_vegetable_2041, pot_2069);walk_executor
+(stove_2065);open_executor(stove_2065);walk_executor(pot_2069);grab_executor(pot_2069);walk_executor
+(stove_2065);putin_executor(pot_2069, stove_2065);close_executor(stove_2065);switchon_executor(stove
+_2065);",missed action num: 491,,
+cdl_dataset/dataset/Cook_some_food/g1.txt,k1,"missed actions: walk_executor(pot_2069);open_executor(pot_2069);walk_executor(fridge_289);switchoff_
+executor(fridge_289);open_executor(fridge_289);walk_executor(food_vegetable_2041);grab_executor(food
+_vegetable_2041);walk_executor(pot_2069);putin_executor(food_vegetable_2041, pot_2069);grab_executor
+(pot_2069);walk_executor(stove_2065);put_executor(pot_2069, stove_2065);switchon_executor(stove_2065
+);",missed action num: 386,,
+cdl_dataset/dataset/Cook_some_food/g1.txt,k2,"missed actions: walk_executor(pot_2069);open_executor(pot_2069);walk_executor(fridge_289);switchoff_
+executor(fridge_289);open_executor(fridge_289);walk_executor(food_vegetable_2041);grab_executor(food
+_vegetable_2041);walk_executor(pot_2069);putin_executor(food_vegetable_2041, pot_2069);walk_executor
+(stove_2065);open_executor(stove_2065);walk_executor(pot_2069);grab_executor(pot_2069);walk_executor
+(stove_2065);putin_executor(pot_2069, stove_2065);close_executor(stove_2065);switchon_executor(stove
+_2065);",missed action num: 491,,

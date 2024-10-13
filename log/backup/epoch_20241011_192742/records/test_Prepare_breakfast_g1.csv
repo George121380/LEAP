@@ -1,0 +1,256 @@
+Goal Representation,Debug Result,Action,Add Info,LLM Answer,Plan
+cdl_dataset/dataset/Prepare_breakfast/g1.txt,k1,"missed actions: walk_executor(fridge_289);switchoff_executor(fridge_289);open_executor(fridge_289);w
+alk_executor(food_bread_2012);grab_executor(food_bread_2012);walk_executor(cutting_board_2051);put_e
+xecutor(food_bread_2012, cutting_board_2051);walk_executor(knife_2050);grab_executor(knife_2050);wal
+k_executor(food_bread_2012);cut_executor(food_bread_2012);grab_executor(food_bread_2012);walk_execut
+or(toaster_292);putin_executor(food_bread_2012, toaster_292);switchon_executor(toaster_292);",missed action num: 476,,
+"Reset goals: The sub-goals are: 
+['1. Slice the bread.', '2. Toast the sliced bread.']",,,,,
+" 
+behavior slice_bread(bread:item, knife:item, cutting_board:item):
+    body:
+        achieve on(bread, cutting_board)
+        # Place the bread on the cutting board
+        achieve_once inhand(knife)
+        # Hold the knife to slice the bread
+        achieve cut(bread)
+        # Slice the bread
+
+behavior __goal__():
+    body:
+        bind knife: item where:
+            is_knife(knife)
+        # Select a knife to use for slicing
+        
+        bind cutting_board: item where:
+            is_cutting_board(cutting_board)
+        # Select a cutting board to place the bread on
+
+        bind bread: item where:
+            is_food_bread(bread)
+        # Select bread to slice
+
+        slice_bread(bread, knife, cutting_board)
+        # Slice the bread
+",From function reset_goal,,,,
+,,,,,"(CrowControllerApplier<walk_executor(kitchen_counter_230)>, CrowControllerApplier<exp(cutting_board_
+2051, kitchen_counter_230)>, CrowControllerApplier<exp(food_bread_2012, kitchen_counter_230)>, CrowC
+ontrollerApplier<walk_executor(food_bread_2012)>, CrowControllerApplier<grab_executor(food_bread_201
+2)>, CrowControllerApplier<walk_executor(cutting_board_2051)>, CrowControllerApplier<put_executor(fo
+od_bread_2012, cutting_board_2051)>, CrowControllerApplier<walk_executor(kitchen_counter_230)>, Crow
+ControllerApplier<exp(knife_2050, kitchen_counter_230)>, CrowControllerApplier<walk_executor(knife_2
+050)>, CrowControllerApplier<grab_executor(knife_2050)>, CrowControllerApplier<walk_executor(food_br
+ead_2012)>, CrowControllerApplier<cut_executor(food_bread_2012)>)"
+"
+def is_suitable_surface(item: item):
+    # Check if the given item is a suitable surface for slicing
+    symbol suitable_surface=surfaces(item) and is_kitchen_counter(item)
+    return suitable_surface
+
+behavior place_bread_on_suitable_surface(bread: item, surface: item):
+    body:
+        achieve on(bread, surface)
+        # Place the bread on a suitable surface
+
+behavior cut_bread(bread: item):
+    body:
+        achieve cut(bread)
+        # Cut the bread
+
+behavior __goal__():
+    body:
+        bind bread: item where:
+            is_food_bread(bread)
+        # Select the bread item
+
+        if exists surface: item : surfaces(surface) and is_suitable_surface(surface):
+            # Check if a suitable surface is available
+            bind surface: item where:
+                surfaces(surface) and is_suitable_surface(surface)
+            place_bread_on_suitable_surface(bread, surface)
+            # Place the bread on the suitable surface
+        else:
+            foreach surface: item:
+                if surfaces(surface) and not visited(surface):
+                    # Check all unvisited suitable surfaces
+                    observe(surface, ""Is this surface suitable for slicing bread"")
+                    # Observe if the surface is suitable
+
+        cut_bread(bread)
+        # Slice the bread
+",From function reset_sub_goal,,,,
+cdl_dataset/dataset/Prepare_breakfast/g1.txt,k1,"missed actions: walk_executor(fridge_289);switchoff_executor(fridge_289);open_executor(fridge_289);w
+alk_executor(food_bread_2012);grab_executor(food_bread_2012);walk_executor(cutting_board_2051);put_e
+xecutor(food_bread_2012, cutting_board_2051);walk_executor(knife_2050);grab_executor(knife_2050);wal
+k_executor(food_bread_2012);cut_executor(food_bread_2012);grab_executor(food_bread_2012);walk_execut
+or(toaster_292);putin_executor(food_bread_2012, toaster_292);switchon_executor(toaster_292);",missed action num: 476,,
+,,,,,"(CrowControllerApplier<walk_executor(kitchen_counter_230)>, CrowControllerApplier<exp(food_bread_201
+2, kitchen_counter_230)>, CrowControllerApplier<walk_executor(food_bread_2012)>, CrowControllerAppli
+er<grab_executor(food_bread_2012)>, CrowControllerApplier<walk_executor(kitchen_counter_230)>, CrowC
+ontrollerApplier<put_executor(food_bread_2012, kitchen_counter_230)>, CrowControllerApplier<exp(cutt
+ing_board_2051, kitchen_counter_230)>, CrowControllerApplier<walk_executor(food_bread_2012)>, CrowCo
+ntrollerApplier<grab_executor(food_bread_2012)>, CrowControllerApplier<walk_executor(cutting_board_2
+051)>, CrowControllerApplier<put_executor(food_bread_2012, cutting_board_2051)>, CrowControllerAppli
+er<walk_executor(kitchen_counter_230)>, CrowControllerApplier<exp(knife_2050, kitchen_counter_230)>,
+ CrowControllerApplier<walk_executor(knife_2050)>, CrowControllerApplier<grab_executor(knife_2050)>,
+ CrowControllerApplier<walk_executor(food_bread_2012)>, CrowControllerApplier<cut_executor(food_brea
+d_2012)>)"
+" 
+def is_on_kitchen_counter(obj: item):
+    symbol on_counter = exists counter: item : is_kitchen_counter(counter) and on(obj, counter)
+    return on_counter
+
+behavior slice_bread(bread: item, knife: item, counter: item):
+    body:
+        assert is_food_bread(bread) # Replaced is_cuttable with is_food_bread
+        achieve_once inhand(knife)
+        achieve cut(bread)
+
+behavior __goal__():
+    body:
+        bind bread: item where:
+            is_food_bread(bread) and not cut(bread)
+        bind knife: item where:
+            is_knife(knife)
+        if exists counter: item : is_kitchen_counter(counter) and surfaces(counter):
+            bind counter: item where:
+                is_kitchen_counter(counter) and surfaces(counter)
+            if not on(bread, counter):
+                achieve on(bread, counter)
+            if not on(knife, counter):
+                achieve on(knife, counter)
+            slice_bread(bread, knife, counter)
+        else:
+            foreach counter: item:
+                if is_kitchen_counter(counter) and not visited(counter):
+                    observe(counter, ""Check if it has a surface"")
+",From function reset_sub_goal,,,,
+cdl_dataset/dataset/Prepare_breakfast/g1.txt,k1,"missed actions: walk_executor(fridge_289);switchoff_executor(fridge_289);open_executor(fridge_289);w
+alk_executor(food_bread_2012);grab_executor(food_bread_2012);walk_executor(cutting_board_2051);put_e
+xecutor(food_bread_2012, cutting_board_2051);walk_executor(knife_2050);grab_executor(knife_2050);wal
+k_executor(food_bread_2012);cut_executor(food_bread_2012);grab_executor(food_bread_2012);walk_execut
+or(toaster_292);putin_executor(food_bread_2012, toaster_292);switchon_executor(toaster_292);",missed action num: 476,,
+"Reset goals: The sub-goals are: 
+['1. Slice the bread.', '2. Toast the sliced bread.']",,,,,
+"behavior __goal__():
+    body:
+        bind bread: item where:
+            is_food_bread(bread)
+        # Selecting the bread item
+
+        bind kitchen_counter: item where:
+            is_kitchen_counter(kitchen_counter)
+        # Binding to the kitchen counter
+
+        if exists knife: item : is_knife(knife) and close(knife, kitchen_counter):
+            bind knife: item where:
+                is_knife(knife) and close(knife, kitchen_counter)
+            achieve_once inhand(knife)
+            # Holding the knife to slice the bread
+
+        achieve cut(bread)
+        # Slicing the bread",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Slice the bread.', '2. Toast the sliced bread.']",,,,,
+" 
+def can_slice_on_kitchen_counter(cutting_board:item):
+    # Function to check if the cutting board is on the kitchen counter
+    symbol can_slice=exists kc: item : is_kitchen_counter(kc) and on(cutting_board, kc)
+    return can_slice
+
+behavior place_on_cutting_board(bread:item, cutting_board:item):
+    body:
+        achieve on(bread, cutting_board) # Place the bread on the cutting board
+
+behavior slice_bread(bread:item):
+    body:
+        achieve cut(bread) # Achieve the state of the bread being cut
+
+behavior __goal__():
+    body:
+        bind bread: item where:
+            is_food_bread(bread)
+        # Select the bread item
+        
+        bind cutting_board: item where:
+            is_cutting_board(cutting_board)
+        # Select the cutting board
+
+        if can_slice_on_kitchen_counter(cutting_board):
+            place_on_cutting_board(bread, cutting_board)
+            slice_bread(bread)
+        else:
+            observe(cutting_board,""Ensure the cutting board is on the kitchen counter to slice the b
+read"")
+",From function reset_goal,,,,
+,,,,,"(CrowControllerApplier<walk_executor(kitchen_counter_230)>, CrowControllerApplier<exp(cutting_board_
+2051, kitchen_counter_230)>, CrowControllerApplier<walk_executor(cutting_board_2051)>, CrowControlle
+rApplier<obs(cutting_board_2051, Ensure the cutting board is on the kitchen counter to slice the bre
+ad)>)"
+" 
+def is_cuttable(item:item):
+    # Determine if the item can be cut
+    symbol cuttable_item = cuttable(item)
+    return cuttable_item
+
+behavior place_on_cutting_board(bread:item, cutting_board:item):
+    body:
+        achieve on(bread, cutting_board)
+
+behavior slice_bread(bread:item):
+    body:
+        achieve cut(bread)
+
+behavior __goal__():
+    body:
+        bind bread: item where:
+            is_food_bread(bread)
+
+        bind cutting_board: item where:
+            is_cutting_board(cutting_board)
+
+        if is_cuttable(bread):
+            place_on_cutting_board(bread, cutting_board)
+            slice_bread(bread)
+",From function reset_sub_goal,,,,
+cdl_dataset/dataset/Prepare_breakfast/g1.txt,k1,"missed actions: walk_executor(fridge_289);switchoff_executor(fridge_289);open_executor(fridge_289);w
+alk_executor(food_bread_2012);grab_executor(food_bread_2012);walk_executor(cutting_board_2051);put_e
+xecutor(food_bread_2012, cutting_board_2051);walk_executor(knife_2050);grab_executor(knife_2050);wal
+k_executor(food_bread_2012);cut_executor(food_bread_2012);grab_executor(food_bread_2012);walk_execut
+or(toaster_292);putin_executor(food_bread_2012, toaster_292);switchon_executor(toaster_292);",missed action num: 476,,
+"Reset goals: The sub-goals are: 
+['1. Slice the bread.', '2. Toast the bread.']",,,,,
+"
+def is_kitchen_counter_surface(kitchen_counter:item):
+    symbol has_surface= surfaces(kitchen_counter)
+    return has_surface
+
+behavior slice_bread(bread:item, knife:item):
+    body:
+        achieve cut(bread)
+
+behavior place_bread_on_surface(bread:item, surface:item):
+    body:
+        achieve on(bread, surface)
+
+behavior __goal__():
+    body:
+        bind bread: item where:
+            is_food_bread(bread) and cuttable(bread)
+        bind knife: item where:
+            is_knife(knife)
+        bind kitchen_counter: item where:
+            is_kitchen_counter(kitchen_counter) and is_kitchen_counter_surface(kitchen_counter)
+        place_bread_on_surface(bread, kitchen_counter)
+        slice_bread(bread, knife)
+",From function reset_goal,,,,
+cdl_dataset/dataset/Prepare_breakfast/g1.txt,k1,"missed actions: walk_executor(fridge_289);switchoff_executor(fridge_289);open_executor(fridge_289);w
+alk_executor(food_bread_2012);grab_executor(food_bread_2012);walk_executor(cutting_board_2051);put_e
+xecutor(food_bread_2012, cutting_board_2051);walk_executor(knife_2050);grab_executor(knife_2050);wal
+k_executor(food_bread_2012);cut_executor(food_bread_2012);grab_executor(food_bread_2012);walk_execut
+or(toaster_292);putin_executor(food_bread_2012, toaster_292);switchon_executor(toaster_292);",missed action num: 476,,
+cdl_dataset/dataset/Prepare_breakfast/g1.txt,k1,"missed actions: walk_executor(fridge_289);switchoff_executor(fridge_289);open_executor(fridge_289);w
+alk_executor(food_bread_2012);grab_executor(food_bread_2012);walk_executor(cutting_board_2051);put_e
+xecutor(food_bread_2012, cutting_board_2051);walk_executor(knife_2050);grab_executor(knife_2050);wal
+k_executor(food_bread_2012);cut_executor(food_bread_2012);grab_executor(food_bread_2012);walk_execut
+or(toaster_292);putin_executor(food_bread_2012, toaster_292);switchon_executor(toaster_292);",missed action num: 476,,
