@@ -1,0 +1,205 @@
+Goal Representation,Debug Result,Action,Add Info,LLM Answer,Plan
+cdl_dataset/dataset/Wash_windows/g1.txt,k1,missed actions: walk_executor(window_63);open_executor(window_63);,missed action num: 50,,
+"Reset goals: The sub-goals are: 
+['1. Identify the bathroom in the house.', '2. Locate the windows in the bathroom.', '3. Open the wi
+ndows.']",,,,,
+" 
+def is_bathroom(x:item):
+    # Check if the item is a bathroom
+    symbol in_bathroom=exists room: item : is_bathroom(room) and inside(x, room)
+    return in_bathroom
+
+behavior __goal__():
+    body:
+        if exists room: item : is_bathroom(room):
+            # If we already know there is a bathroom, approach it directly
+            bind room: item where:
+                is_bathroom(room)
+            achieve close_char(char, room)
+
+        else:
+            # Check all rooms to identify the bathroom
+            foreach room: item:
+                if is_bathroom(room) and not visited(room):
+                    observe(room, ""Is this room a bathroom"")
+",From function reset_goal,,,,
+,,,,,"(CrowControllerApplier<walk_executor(bathroom_1)>,)"
+,,walk_executor(bathroom_1),Robot is inside bathroom_1. ,,
+cdl_dataset/dataset/Wash_windows/g1.txt,k1,missed actions: walk_executor(window_63);open_executor(window_63);,missed action num: 50,,
+" 
+def is_window_in_bathroom(window:item, bathroom:item):
+    # Determine whether the window is in the bathroom
+    symbol in_bathroom=exists room: item : is_bathroom(room) and inside(window, room)
+    return in_bathroom
+
+behavior __goal__():
+    body:
+        if exists window: item : is_window(window) and is_window_in_bathroom(window, bathroom_1):
+            # If we have already located the window in the bathroom
+            bind window: item where:
+                is_window(window) and is_window_in_bathroom(window, bathroom_1)
+            achieve close_char(char, window)
+        else:
+            # Observe all unvisited items classified as windows in the bathroom
+            foreach window: item:
+                if is_window(window) and not visited(window):
+                    observe(window, ""Check if this window is in the bathroom"")
+",From function reset_sub_goal,,,,
+,,,,,"(CrowControllerApplier<walk_executor(window_63)>,)"
+,,walk_executor(window_63),Find towel_rack_33. Robot is inside bathroom_1. Robot is close window_63. ,,
+cdl_dataset/dataset/Wash_windows/g1.txt,k1,missed actions: open_executor(window_63);,missed action num: 25,,
+"
+behavior open_windows(window:item):
+    body:
+        achieve open(window)
+
+behavior __goal__():
+    body:
+        bind bathroom: item where:
+            is_bathroom(bathroom) and id[bathroom]==1
+        bind window: item where:
+            is_window(window) and inside(window, bathroom) and id[window]==63
+        open_windows(window)
+",From function reset_sub_goal,,,,
+,,,,,"(CrowControllerApplier<open_executor(window_63)>,)"
+" 
+behavior open_window(window:item):
+    body:
+        achieve open(window)
+
+behavior __goal__():
+    body:
+        # Exclude window_63 as it cant be opened
+        foreach window: item:
+            if is_window(window) and not id[window] == 63:
+                achieve close_char(char, window)  
+                # Approach each window
+                open_window(window)  
+                # Open each window besides window_63
+",From function reset_sub_goal,,,,
+cdl_dataset/dataset/Wash_windows/g1.txt,k1,missed actions: open_executor(window_63);,missed action num: 25,,
+" 
+behavior open_windows(window:item):
+    body:
+        achieve open(window)
+
+behavior __goal__():
+    body:
+        bind bathroom: item where:
+            is_bathroom(bathroom) and inside_char(char, bathroom)
+        # Ensure we are in the bathroom
+        bind window: item where:
+            is_window(window) and can_open(window) and inside(window, bathroom)
+        # Bind to an openable window in the bathroom
+
+        open_windows(window)
+        # Call the behavior to open the window
+
+        assert open(window)
+        # Assert that the window is open
+",From function reset_sub_goal,,,,
+,,,,,"(CrowControllerApplier<open_executor(window_63)>,)"
+" 
+behavior open_window(window:item):
+    body:
+        achieve open(window)
+
+behavior __goal__():
+    body:
+        bind window: item where:
+            is_window(window) and id[window]==63
+        open_window(window)
+",From function reset_sub_goal,,,,
+cdl_dataset/dataset/Wash_windows/g1.txt,k1,missed actions: open_executor(window_63);,missed action num: 25,,
+,,,,,"(CrowControllerApplier<open_executor(window_63)>,)"
+" 
+behavior open_windows_in_bathroom(window:item):
+    body:
+        assert is_window(window) 
+        # Ensure that the item is indeed a window
+        achieve open(window) 
+        # Open the specified window
+
+behavior __goal__():
+    body:
+        bind bathroom: item where:
+            is_bathroom(bathroom) and inside_char(char, bathroom)
+        # Confirm the character is in the bathroom
+
+        foreach window: item:
+            if is_window(window) and close_char(char, window):
+                # Iterate over all windows in the bathroom
+                achieve visited(window)
+                # Mark the window as visited
+                if not open(window):
+                    # Check if the window is not open already
+                    open_windows_in_bathroom(window)
+",From function reset_sub_goal,,,,
+cdl_dataset/dataset/Wash_windows/g1.txt,k1,missed actions: open_executor(window_63);,missed action num: 25,,
+,,,,,"(CrowControllerApplier<open_executor(window_63)>, CrowControllerApplier<obs(window_63, look around t
+his place)>)"
+" 
+behavior open_window(window: item):
+    body:
+        achieve open(window) 
+
+behavior __goal__():
+    body:
+        bind window: item where:
+            is_window(window) and id[window] == 63
+        open_window(window)
+",From function reset_sub_goal,,,,
+cdl_dataset/dataset/Wash_windows/g1.txt,k1,missed actions: open_executor(window_63);,missed action num: 25,,
+,,,,,"(CrowControllerApplier<open_executor(window_63)>,)"
+" 
+behavior __goal__():
+    body:
+        # There is an error in the bind condition that causes the unexpected token error
+        # is_window(window) and close_char(char, window) and id[window] = 63
+        # should be replaced by proper syntax with and between conditions
+        bind window: item where:
+            is_window(window) and close_char(char, window) and id[window]==63
+        # We avoid attempting to open window_63 because it cannot be opened
+        # therefore, no need to achieve open(window) on window_63
+",From function reset_sub_goal,,,,
+cdl_dataset/dataset/Wash_windows/g1.txt,k1,missed actions: open_executor(window_63);,missed action num: 25,,
+" 
+behavior open_window(window:item):
+    body:
+        achieve open(window) # Open the specified window
+
+behavior __goal__():
+    body:
+        bind bathroom: item where:
+            is_bathroom(bathroom) and inside_char(char,bathroom)
+        # Select bathroom where character currently is
+        
+        foreach window: item:
+            if is_window(window) and close_char(char, window):
+                # Check all windows close to the character
+                if not open(window):
+                    if not (id[window] == 63):
+                        open_window(window)
+                        # If window is not open and is not window_63, then open the window
+",From function reset_sub_goal,,,,
+" 
+behavior attempt_to_open_window(window:item):
+    body:
+        achieve open(window)
+        # Try to open the window
+        
+behavior __goal__():
+    body:
+        bind bathroom: item where:
+            is_bathroom(bathroom) and inside_char(char, bathroom)
+        # Identify the bathroom where the character is located
+
+        bind window_63: item where:
+            is_window(window_63) and inside(window_63, bathroom)
+        # Identify window_63 in the bathroom
+
+        attempt_to_open_window(window_63)
+        # Attempt to open window_63
+",From function reset_sub_goal,,,,
+cdl_dataset/dataset/Wash_windows/g1.txt,k1,missed actions: open_executor(window_63);,missed action num: 25,,
+cdl_dataset/dataset/Wash_windows/g1.txt,k1,missed actions: open_executor(window_63);,missed action num: 25,,

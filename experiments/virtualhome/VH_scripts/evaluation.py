@@ -686,7 +686,7 @@ class Evaluator:
         for action in plans[0]:
             left_actions+=str(action)+';'
         print(key_state," missed actions:",left_actions)
-        self.logger.info(self.task_file_path,key_state,f"missed actions: {left_actions}",f'missed action num: {len(left_actions)}','','')
+        self.logger.info(self.task_file_path,key_state,f"missed actions: {left_actions}",f'missed action num: {len(plans[0])}','','')
 
         # print("missed actions:",plans[0])
         return len(plans[0])
@@ -741,6 +741,8 @@ class Evaluator:
             print("Some keystates are incorrect")
         else:
             print("All keystates are correct")
+        #test
+        # self.logger.info(counting_dict,'','','','','')
         return counting_dict
         
 

@@ -1,0 +1,182 @@
+Goal Representation,Debug Result,Action,Add Info,LLM Answer,Plan
+cdl_dataset/dataset/Prepare_breakfast/g4.txt,k1,"missed actions: walk_executor(pot_2069);grab_executor(pot_2069);walk_executor(faucet_43);switchon_ex
+ecutor(faucet_43);switchoff_executor(faucet_43);walk_executor(pot_2069);open_executor(pot_2069);walk
+_executor(fridge_289);switchoff_executor(fridge_289);open_executor(fridge_289);walk_executor(dry_pas
+ta_2042);grab_executor(dry_pasta_2042);walk_executor(pot_2069);putin_executor(dry_pasta_2042, pot_20
+69);walk_executor(stove_2065);put_executor(pot_2069, stove_2065);switchon_executor(stove_2065);",missed action num: 479,,
+cdl_dataset/dataset/Prepare_breakfast/g4.txt,k2,"missed actions: walk_executor(oil_2079);grab_executor(oil_2079);walk_executor(fryingpan_2083);putin_
+executor(oil_2079, fryingpan_2083);walk_executor(fridge_289);switchoff_executor(fridge_289);open_exe
+cutor(fridge_289);walk_executor(food_chicken_2017);grab_executor(food_chicken_2017);walk_executor(fr
+yingpan_2083);putin_executor(food_chicken_2017, fryingpan_2083);grab_executor(fryingpan_2083);walk_e
+xecutor(stove_2065);put_executor(fryingpan_2083, stove_2065);switchon_executor(stove_2065);",missed action num: 475,,
+cdl_dataset/dataset/Prepare_breakfast/g4.txt,k3,"missed actions: walk_executor(fridge_289);switchoff_executor(fridge_289);open_executor(fridge_289);w
+alk_executor(dry_pasta_2042);grab_executor(dry_pasta_2042);walk_executor(plate_1000);putin_executor(
+dry_pasta_2042, plate_1000);walk_executor(food_chicken_2017);grab_executor(food_chicken_2017);walk_e
+xecutor(plate_1000);putin_executor(food_chicken_2017, plate_1000);",missed action num: 350,,
+"Reset goals: The sub-goals are: 
+['1. Cook the chicken and pasta.', '2. Combine the chicken and pasta.', '3. Put the chicken pasta on
+ a plate.']",,,,,
+" 
+behavior cook_chicken(chicken:item, stove:item, pot:item):
+    body:
+        achieve plugged(stove)
+        achieve is_on(stove)
+        achieve inside(chicken, pot)
+        boil_vegetables_in_pot_on_stove(stove, pot)
+        # Assuming the chicken needs to be boiled for cooking
+
+behavior cook_pasta(dry_pasta:item, stove:item, pot:item):
+    body:
+        achieve inside(dry_pasta, pot)
+        boil_vegetables_in_pot_on_stove(stove, pot)
+        # Assuming the pasta also needs to be boiled, utilizing the same method
+
+behavior __goal__():
+    body:
+        bind chicken: item where:
+            is_food_chicken(chicken)
+        # Select chicken
+
+        bind dry_pasta: item where:
+            is_dry_pasta(dry_pasta)
+        # Select dry pasta
+
+        bind stove: item where:
+            is_stove(stove)
+        # Select stove
+
+        bind pot: item where:
+            is_pot(pot) and close(pot, stove)
+        # Select a pot close to the stove
+
+        cook_chicken(chicken, stove, pot)
+        cook_pasta(dry_pasta, stove, pot)
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Cook the chicken pasta.', '2. Put the chicken pasta on a plate.']",,,,,
+" 
+behavior cook_chicken_pasta(chicken:item, pasta:item, stove:item, pot:item, pan:item):
+    body:
+        # Ensure the pot has water, and it is on the stove
+        achieve has_water(pot)
+        achieve close(pot, stove)
+
+        # Ensure the stove is turned on to boil the pasta
+        achieve is_on(stove)
+
+        # Put the pasta into the boiling water in the pot
+        achieve inside(pasta, pot)
+
+        # Ensure the pan is close to the stove to cook the chicken
+        achieve close(pan, stove)
+
+        # Ensure the chicken is cooked in the pan on the stove
+        achieve inside(chicken, pan)
+
+behavior __goal__():
+    body:
+        bind chicken: item where:
+            is_food_chicken(chicken)
+        # Select a chicken item to be cooked
+
+        bind pasta: item where:
+            is_dry_pasta(pasta)
+        # Select dry pasta to be cooked
+
+        bind stove: item where:
+            is_stove(stove)
+        # Select the stove for cooking
+
+        bind pot: item where:
+            is_pot(pot)
+        # Select a pot to boil the pasta
+
+        bind pan: item where:
+            is_fryingpan(pan)
+        # Select a pan to cook the chicken
+
+        cook_chicken_pasta(chicken, pasta, stove, pot, pan)
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Cook the chicken and pasta together.', '2. Put the cooked chicken pasta on a plate.']",,,,,
+" 
+behavior cook_chicken_and_pasta(pot:item, stove:item, chicken:item, pasta:item):
+    body:
+        achieve inside(chicken, pot) 
+        achieve inside(pasta, pot) 
+        achieve on(pot, stove) 
+        achieve is_on(stove) 
+
+behavior __goal__():
+    body:
+        bind stove: item where:
+            is_stove(stove)
+        # Select stove
+  
+        bind pot: item where:
+            is_pot(pot)
+        # Select pot
+        
+        bind chicken: item where:
+            is_food_chicken(chicken)
+        # Select chicken
+        
+        bind pasta: item where:
+            is_dry_pasta(pasta)
+        # Select dry pasta
+        
+        cook_chicken_and_pasta(pot, stove, chicken, pasta)
+        # Cook chicken and pasta together
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Cook the chicken pasta.', '2. Put the chicken pasta on a plate.']",,,,,
+" 
+def has_chicken_pasta_ingredients(pot:item):
+    # Function to check if the pot has chicken and pasta inside it
+    symbol has_chicken_pasta=exists o: item : (is_food_chicken(o) or is_dry_pasta(o)) and inside(o, 
+pot)
+    return has_chicken_pasta
+
+behavior cook_chicken_pasta(stove:item, pot:item):
+    body:
+        achieve is_on(stove) # Turn the stove on
+        achieve inside(pot, stove) # Place the pot on the stove
+        # Boil the chicken and pasta in the pot on the stove
+        boil_vegetables_in_pot_on_stove(stove, pot)
+
+behavior __goal__():
+    body:
+        bind stove: item where:
+            is_stove(stove)
+        # Select a stove
+        
+        bind pot: item where:
+            is_pot(pot) and has_chicken_pasta_ingredients(pot)
+        # Select a pot that contains chicken and pasta
+        
+        cook_chicken_pasta(stove, pot) # Cook the chicken pasta
+",From function reset_goal,,,,
+cdl_dataset/dataset/Prepare_breakfast/g4.txt,k1,"missed actions: walk_executor(pot_2069);grab_executor(pot_2069);walk_executor(faucet_43);switchon_ex
+ecutor(faucet_43);switchoff_executor(faucet_43);walk_executor(pot_2069);open_executor(pot_2069);walk
+_executor(fridge_289);switchoff_executor(fridge_289);open_executor(fridge_289);walk_executor(dry_pas
+ta_2042);grab_executor(dry_pasta_2042);walk_executor(pot_2069);putin_executor(dry_pasta_2042, pot_20
+69);walk_executor(stove_2065);put_executor(pot_2069, stove_2065);switchon_executor(stove_2065);",missed action num: 479,,
+cdl_dataset/dataset/Prepare_breakfast/g4.txt,k2,"missed actions: walk_executor(oil_2079);grab_executor(oil_2079);walk_executor(fryingpan_2083);putin_
+executor(oil_2079, fryingpan_2083);walk_executor(fridge_289);switchoff_executor(fridge_289);open_exe
+cutor(fridge_289);walk_executor(food_chicken_2017);grab_executor(food_chicken_2017);walk_executor(fr
+yingpan_2083);putin_executor(food_chicken_2017, fryingpan_2083);grab_executor(fryingpan_2083);walk_e
+xecutor(stove_2065);put_executor(fryingpan_2083, stove_2065);switchon_executor(stove_2065);",missed action num: 475,,
+cdl_dataset/dataset/Prepare_breakfast/g4.txt,k1,"missed actions: walk_executor(pot_2069);grab_executor(pot_2069);walk_executor(faucet_43);switchon_ex
+ecutor(faucet_43);switchoff_executor(faucet_43);walk_executor(pot_2069);open_executor(pot_2069);walk
+_executor(fridge_289);switchoff_executor(fridge_289);open_executor(fridge_289);walk_executor(dry_pas
+ta_2042);grab_executor(dry_pasta_2042);walk_executor(pot_2069);putin_executor(dry_pasta_2042, pot_20
+69);walk_executor(stove_2065);put_executor(pot_2069, stove_2065);switchon_executor(stove_2065);",missed action num: 479,,
+cdl_dataset/dataset/Prepare_breakfast/g4.txt,k2,"missed actions: walk_executor(oil_2079);grab_executor(oil_2079);walk_executor(fryingpan_2083);putin_
+executor(oil_2079, fryingpan_2083);walk_executor(fridge_289);switchoff_executor(fridge_289);open_exe
+cutor(fridge_289);walk_executor(food_chicken_2017);grab_executor(food_chicken_2017);walk_executor(fr
+yingpan_2083);putin_executor(food_chicken_2017, fryingpan_2083);grab_executor(fryingpan_2083);walk_e
+xecutor(stove_2065);put_executor(fryingpan_2083, stove_2065);switchon_executor(stove_2065);",missed action num: 475,,
+cdl_dataset/dataset/Prepare_breakfast/g4.txt,k3,"missed actions: walk_executor(fridge_289);switchoff_executor(fridge_289);open_executor(fridge_289);w
+alk_executor(dry_pasta_2042);grab_executor(dry_pasta_2042);walk_executor(plate_1000);putin_executor(
+dry_pasta_2042, plate_1000);walk_executor(food_chicken_2017);grab_executor(food_chicken_2017);walk_e
+xecutor(plate_1000);putin_executor(food_chicken_2017, plate_1000);",missed action num: 350,,

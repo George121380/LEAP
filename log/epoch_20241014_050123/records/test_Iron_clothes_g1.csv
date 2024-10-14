@@ -1,0 +1,146 @@
+Goal Representation,Debug Result,Action,Add Info,LLM Answer,Plan
+cdl_dataset/dataset/Iron_clothes/g1.txt,k1,missed actions: walk_executor(clothes_shirt_2086);wash_executor(clothes_shirt_2086);,missed action num: 68,,
+cdl_dataset/dataset/Iron_clothes/g1.txt,k2,"missed actions: walk_executor(clothes_shirt_2086);grab_executor(clothes_shirt_2086);walk_executor(ir
+oning_board_2074);put_executor(clothes_shirt_2086, ironing_board_2074);plugin_executor(iron_2089);sw
+itchon_executor(iron_2089);",missed action num: 211,,
+"Reset goals: The sub-goals are: 
+['1. Wash the shirt thoroughly.', '2. Dry the shirt completely.', '3. Iron the shirt to remove wrink
+les.']",,,,,
+" 
+def has_faucet(sink:item):
+    # Determine whether this sink has a faucet
+    symbol has_faucet=exists faucet:item: is_faucet(faucet) and close(faucet,sink)
+    return has_faucet
+
+behavior clean_shirt(shirt:item, sink:item):
+    body:
+        achieve_once inside(shirt, sink)
+        # Ensure the shirt is placed inside the sink
+
+        if has_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet,sink)
+            achieve_once is_on(faucet)
+            # If the sink has a faucet, turn it on to clean
+
+        wash(shirt) # This is the key step of the behavior, used for cleaning the shirt
+        
+        if has_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet,sink)
+            achieve_once is_off(faucet)
+            # If the sink has a faucet, turn it off after cleaning
+
+behavior __goal__():
+    body:
+        bind shirt: item where:
+            is_clothes_shirt(shirt)
+        # Select a shirt to be cleaned
+        
+        bind sink: item where:
+            is_sink(sink)
+        # Select a sink for cleaning
+        
+        clean_shirt(shirt, sink)
+",From function reset_goal,,,,
+,,,,,"(CrowControllerApplier<walk_executor(closetdrawer_120)>, CrowControllerApplier<exp(clothes_shirt_208
+6, closetdrawer_120)>, CrowControllerApplier<walk_executor(clothes_shirt_2086)>, CrowControllerAppli
+er<grab_executor(clothes_shirt_2086)>, CrowControllerApplier<walk_executor(sink_42)>, CrowController
+Applier<putin_executor(clothes_shirt_2086, sink_42)>, CrowControllerApplier<walk_executor(faucet_43)
+>, CrowControllerApplier<switchon_executor(faucet_43)>, CrowControllerApplier<walk_executor(clothes_
+shirt_2086)>, CrowControllerApplier<wash_executor(clothes_shirt_2086)>, CrowControllerApplier<walk_e
+xecutor(faucet_43)>, CrowControllerApplier<switchoff_executor(faucet_43)>)"
+,,walk_executor(closetdrawer_120),"Find hanger_140. Find hanger_112. Find hanger_142. Find hanger_115. Find hanger_134. Find mat_173. F
+ind hanger_124. Find hanger_109. Find hanger_132. Find hanger_113. Find hanger_141. Find hanger_114.
+ Find hanger_110. Find hanger_128. Find hanger_130. Find hanger_136. Find hanger_138. Find hanger_11
+1. Find hanger_126. Robot is inside bedroom_67. Robot is close closetdrawer_120. Robot is close clos
+etdrawer_122. Robot is close dresser_108. Robot is no longer inside bathroom_1.",,
+cdl_dataset/dataset/Iron_clothes/g1.txt,k1,missed actions: walk_executor(clothes_shirt_2086);wash_executor(clothes_shirt_2086);,missed action num: 68,,
+,,"exp(clothes_shirt_2086, closetdrawer_120)",Failed to find clothes_shirt_2086 around closetdrawer_120. ,,
+cdl_dataset/dataset/Iron_clothes/g1.txt,k1,missed actions: walk_executor(clothes_shirt_2086);wash_executor(clothes_shirt_2086);,missed action num: 68,,
+,,,,,"(CrowControllerApplier<walk_executor(hanger_142)>, CrowControllerApplier<exp(clothes_shirt_2086, han
+ger_142)>, CrowControllerApplier<walk_executor(clothes_shirt_2086)>, CrowControllerApplier<grab_exec
+utor(clothes_shirt_2086)>, CrowControllerApplier<walk_executor(sink_42)>, CrowControllerApplier<puti
+n_executor(clothes_shirt_2086, sink_42)>, CrowControllerApplier<walk_executor(faucet_43)>, CrowContr
+ollerApplier<switchon_executor(faucet_43)>, CrowControllerApplier<walk_executor(clothes_shirt_2086)>
+, CrowControllerApplier<wash_executor(clothes_shirt_2086)>, CrowControllerApplier<walk_executor(fauc
+et_43)>, CrowControllerApplier<switchoff_executor(faucet_43)>)"
+,,walk_executor(hanger_142),"Robot is inside bedroom_67. Robot is close dresser_123. Robot is close hanger_142. Robot is no longe
+r close closetdrawer_120.Robot is no longer close closetdrawer_122.Robot is no longer close dresser_
+108.",,
+cdl_dataset/dataset/Iron_clothes/g1.txt,k1,missed actions: walk_executor(clothes_shirt_2086);wash_executor(clothes_shirt_2086);,missed action num: 68,,
+,,"exp(clothes_shirt_2086, hanger_142)",Failed to find clothes_shirt_2086 around hanger_142. ,,
+cdl_dataset/dataset/Iron_clothes/g1.txt,k1,missed actions: walk_executor(clothes_shirt_2086);wash_executor(clothes_shirt_2086);,missed action num: 68,,
+"Reset goals: The sub-goals are: 
+['1. Wash the shirt.', '2. Iron the shirt.']",,,,,
+" 
+def is_hanger_in_bedroom(hanger:item):
+    symbol in_bedroom=exists room: item : is_bedroom(room) and inside(hanger, room)
+    return in_bedroom
+
+behavior look_for_shirt():
+    body:
+        foreach hanger: item:
+            if is_hanger(hanger) and not visited(hanger) and is_hanger_in_bedroom(hanger):
+                observe(hanger, ""Check for clothes_shirt_2086 on the hanger"")
+                
+behavior __goal__():
+    body:
+        look_for_shirt()
+        bind clothes_shirt: item where:
+            is_clothes_shirt(clothes_shirt) and visited(clothes_shirt)
+        bind sink: item where:
+            is_sink(sink)
+        achieve inside(clothes_shirt, sink)
+        achieve clean(clothes_shirt)
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Clean the shirt.', '2. Iron the shirt.']",,,,,
+" 
+def locate_shirt(shirt:item):
+    # Function to determine if the shirt is located
+    symbol located=exists loc: item : is_clothes_shirt(shirt) and (inside(shirt, loc) or close(shirt
+, loc))
+    return located
+
+behavior __goal__():
+    body:
+        if exists shirt: item : is_clothes_shirt(shirt) and locate_shirt(shirt):
+            # If shirt is already located based on known information, proceed
+            bind shirt: item where:
+                is_clothes_shirt(shirt) and locate_shirt(shirt)
+            achieve close_char(char, shirt)
+
+        else:
+            # Otherwise, explore potential locations for the shirt
+            foreach loc: item:
+                if (is_closetdrawer(loc) or is_hanger(loc)) and not visited(loc):
+                    observe(loc, ""Check for shirt in the location"")
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Wash the shirt.', '2. Iron the shirt.']",,,,,
+" 
+def locate_shirt(hanger:item):
+    # Function to locate clothes_shirt_2086 on a specific hanger
+    symbol found_shirt=exists o: item : is_clothes_shirt(o) and close(o, hanger)
+    return found_shirt
+
+behavior __goal__():
+    body:
+        # Iterate over all hangers to find the clothes_shirt_2086
+        foreach hanger: item:
+            if is_hanger(hanger) and not visited(hanger):
+                # Check each hanger for presence of the shirt
+                observe(hanger, ""Check for clothes_shirt_2086"")
+
+        if exists hanger: item : is_hanger(hanger) and locate_shirt(hanger):
+            bind hanger: item where:
+                is_hanger(hanger) and locate_shirt(hanger)
+            # Have the robot close to the hanger with the shirt
+            achieve close_char(char, hanger)
+",From function reset_goal,,,,
+cdl_dataset/dataset/Iron_clothes/g1.txt,k1,missed actions: walk_executor(clothes_shirt_2086);wash_executor(clothes_shirt_2086);,missed action num: 68,,
+cdl_dataset/dataset/Iron_clothes/g1.txt,k1,missed actions: walk_executor(clothes_shirt_2086);wash_executor(clothes_shirt_2086);,missed action num: 68,,
+cdl_dataset/dataset/Iron_clothes/g1.txt,k2,"missed actions: walk_executor(clothes_shirt_2086);grab_executor(clothes_shirt_2086);walk_executor(ir
+oning_board_2074);put_executor(clothes_shirt_2086, ironing_board_2074);plugin_executor(iron_2089);sw
+itchon_executor(iron_2089);",missed action num: 211,,

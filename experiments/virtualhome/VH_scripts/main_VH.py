@@ -33,7 +33,7 @@ def parse_args():
                         help="Specify the LLM model to be used. gpt-4o, deepseek")
     parser.add_argument('--library_extraction', type=str,
                         help="Specify the library extraction method to be used.")
-    parser.add_argument('--model', type=str,default='LLM',
+    parser.add_argument('--model', type=str,default='ours',
                         help="ours, LLM, LLM+P, CAP")
     parser.add_argument('--human_guidance', type=str, default=False,
                     help="Whether to use human guidance (True or False).")
@@ -183,25 +183,27 @@ def evaluation(args):
     epoch_logger.info('Evaluation Finished',end_time,'','','','')
 
 def check_evaluation(args):
-    files=evaluation_task_loader(dataset_folder_path)
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    files=evaluation_task_loader(dataset_folder_path)
+    epoch_path=f'log/epoch_{timestamp}'
     epoch_logger = setup_logger(f'log/epoch_{timestamp}',timestamp=timestamp)
     for task_file in files:
         task_path=os.path.join(dataset_folder_path,task_file)
         print(task_path)
-        evaluator=Evaluator(task_path,epoch_logger)
+        evaluator=Evaluator(task_path,epoch_logger,epoch_path)
     
 
 def check_evaluation_single(args):
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    epoch_path=f'log/epoch_{timestamp}'
     epoch_logger = setup_logger(f'log/epoch_{timestamp}',timestamp=timestamp)
    
     task_path='/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/cdl_dataset/dataset/Pet_cat/g2.txt'
-    evaluator=Evaluator(task_path,epoch_logger)
+    evaluator=Evaluator(task_path,epoch_logger,epoch_path)
 
 if __name__ == '__main__':
     args = parse_args()
-    evaluation(args)
+    # evaluation(args)
     # test_evaluate(args)
-    # check_evaluation(args)
+    check_evaluation(args)
     # check_evaluation_single(args)

@@ -1,0 +1,601 @@
+Goal Representation,Debug Result,Action,Add Info,LLM Answer,Plan
+cdl_dataset/dataset/Wash_windows/g2.txt,k1,missed actions: walk_executor(towel_2056);grab_executor(towel_2056);,missed action num: 52,,
+"Reset goals: The sub-goals are: 
+['1. Identify all the windows in the house that need to be wiped.', '2. Wipe each window thoroughly 
+with a towel.']",,,,,
+" 
+def is_dirty_window(window:item):
+    # Function to check if a window is dirty
+    symbol is_dirty_win= dirty(window)
+    return is_dirty_win
+
+behavior __goal__():
+    body:
+        foreach window: item:
+            # Iterate through all windows
+            if is_window(window) and not visited(window):
+                # Check all unvisited windows
+                observe(window,""Check if the window is dirty"")
+                # Observe whether the window is dirty
+",From function reset_goal,,,,
+,,,,,"(CrowControllerApplier<walk_executor(window_63)>, CrowControllerApplier<open_executor(window_63)>, C
+rowControllerApplier<obs(window_63, Check if the window is dirty)>, CrowControllerApplier<walk_execu
+tor(window_86)>, CrowControllerApplier<obs(window_86, Check if the window is dirty)>, CrowController
+Applier<walk_executor(window_348)>, CrowControllerApplier<open_executor(window_348)>, CrowController
+Applier<obs(window_348, Check if the window is dirty)>)"
+,,walk_executor(window_63),Find towel_rack_33. Robot is inside bathroom_1. Robot is close window_63. ,,
+cdl_dataset/dataset/Wash_windows/g2.txt,k1,missed actions: walk_executor(towel_2056);grab_executor(towel_2056);,missed action num: 52,,
+" 
+def has_windows(window:item):
+    # Function to check if an item is a window and not already visited
+    return is_window(window) and not visited(window)
+
+behavior observe_windows(window:item):
+    body:
+        observe(window, ""Check if the window needs to be wiped"")
+
+behavior __goal__():
+    body:
+        foreach window: item:
+            if has_windows(window):
+                observe_windows(window)
+",From function reset_sub_goal,,,,
+cdl_dataset/dataset/Wash_windows/g2.txt,k1,missed actions: walk_executor(towel_2056);grab_executor(towel_2056);,missed action num: 52,,
+,,,,,"(CrowControllerApplier<open_executor(window_63)>, CrowControllerApplier<obs(window_63, Check if the 
+window needs to be wiped)>, CrowControllerApplier<walk_executor(window_86)>, CrowControllerApplier<o
+bs(window_86, Check if the window needs to be wiped)>, CrowControllerApplier<walk_executor(window_34
+8)>, CrowControllerApplier<open_executor(window_348)>, CrowControllerApplier<obs(window_348, Check i
+f the window needs to be wiped)>)"
+" 
+def is_window_needing_wiping(window: item):
+    # Function to determine if a window should be wiped
+    symbol needs_wiping=dirty(window)
+    return needs_wiping
+
+behavior approach_window_with_towel(window: item, towel: item):
+    body:
+        achieve close_char(char, window)
+        achieve_once inhand(towel)
+
+behavior clean_window(window: item, towel: item):
+    body:
+        approach_window_with_towel(window, towel)
+        scrub(window)
+
+behavior __goal__():
+    body:
+        foreach window: item:
+            if is_window(window) and not visited(window):
+                observe(window, ""Check if the window needs wiping"")
+        
+        foreach window: item:
+            if is_window(window) and is_window_needing_wiping(window):
+                bind towel: item where:
+                    is_towel(towel)
+                clean_window(window, towel)
+",From function reset_sub_goal,,,,
+cdl_dataset/dataset/Wash_windows/g2.txt,k1,missed actions: walk_executor(towel_2056);grab_executor(towel_2056);,missed action num: 52,,
+"Reset goals: The sub-goals are: 
+['1. Identify windows that need wiping.', '2. Wipe the identified windows with a towel.']",,,,,
+" 
+def is_unvisited_window(window:item):
+    # Check if the window has not been visited yet
+    symbol is_unvisited=not visited(window)
+    return is_unvisited
+
+behavior inspect_windows_for_wiping(window:item, towel_rack:item):
+    body:
+        observe(window, ""Check if the window needs wiping and identify any obstacles"")
+        # Observe the window to determine if it needs wiping and note any obstacles
+
+behavior __goal__():
+    body:
+        bind towel_rack: item where:
+            is_towel_rack(towel_rack)
+        # Select a towel rack
+
+        foreach window: item:
+            if is_window(window) and is_unvisited_window(window):
+                inspect_windows_for_wiping(window, towel_rack)
+                # Inspect each unvisited window to see if it needs wiping
+",From function reset_goal,,,,
+,,,,,"(CrowControllerApplier<open_executor(window_63)>, CrowControllerApplier<obs(window_63, Check if the 
+window needs wiping and identify any obstacles)>, CrowControllerApplier<walk_executor(window_86)>, C
+rowControllerApplier<obs(window_86, Check if the window needs wiping and identify any obstacles)>, C
+rowControllerApplier<walk_executor(window_348)>, CrowControllerApplier<open_executor(window_348)>, C
+rowControllerApplier<obs(window_348, Check if the window needs wiping and identify any obstacles)>)"
+" 
+def can_be_observed(window:item):
+    # Function to determine if the window can be observed
+    symbol can_be_observed=not visited(window) and not is_door(window)
+    return can_be_observed
+
+behavior observe_window(window:item):
+    body:
+        observe(window, ""Check if the window needs wiping"")  # Observing the window to check its con
+dition
+
+behavior __goal__():
+    body:
+        foreach window: item:
+            if is_window(window) and can_be_observed(window):
+                # Check all unvisited and closed windows
+                observe_window(window)
+",From function reset_sub_goal,,,,
+cdl_dataset/dataset/Wash_windows/g2.txt,k1,missed actions: walk_executor(towel_2056);grab_executor(towel_2056);,missed action num: 52,,
+,,,,,"(CrowControllerApplier<open_executor(window_63)>, CrowControllerApplier<obs(window_63, Check if the 
+window needs wiping)>, CrowControllerApplier<walk_executor(window_86)>, CrowControllerApplier<obs(wi
+ndow_86, Check if the window needs wiping)>, CrowControllerApplier<walk_executor(window_348)>, CrowC
+ontrollerApplier<open_executor(window_348)>, CrowControllerApplier<obs(window_348, Check if the wind
+ow needs wiping)>)"
+"behavior observe_windows_for_cleanliness(window:item):
+    body:
+        achieve visited(window)
+        observe(window, ""Check if the window is dirty"")
+
+behavior __goal__():
+    body:
+        foreach window: item:
+            if is_window(window) and not visited(window):
+                observe_windows_for_cleanliness(window)
+",From function reset_sub_goal,,,,
+cdl_dataset/dataset/Wash_windows/g2.txt,k1,missed actions: walk_executor(towel_2056);grab_executor(towel_2056);,missed action num: 52,,
+,,,,,"(CrowControllerApplier<open_executor(window_63)>, CrowControllerApplier<obs(window_63, look around t
+his place)>, CrowControllerApplier<obs(window_63, Check if the window is dirty)>, CrowControllerAppl
+ier<walk_executor(window_86)>, CrowControllerApplier<obs(window_86, look around this place)>, CrowCo
+ntrollerApplier<obs(window_86, Check if the window is dirty)>, CrowControllerApplier<walk_executor(w
+indow_348)>, CrowControllerApplier<open_executor(window_348)>, CrowControllerApplier<obs(window_348,
+ look around this place)>, CrowControllerApplier<obs(window_348, Check if the window is dirty)>)"
+" 
+def is_window_dirty(window:item):
+    # Function to check if a window is dirty
+    symbol is_dirty = dirty(window)
+    return is_dirty
+
+behavior __goal__():
+    body:
+        foreach window: item:
+            if is_window(window) and not visited(window):
+                observe(window, ""Check if the window is dirty"")
+
+        foreach window: item:
+            if is_window(window) and is_window_dirty(window):
+                achieve visited(window)
+",From function reset_sub_goal,,,,
+cdl_dataset/dataset/Wash_windows/g2.txt,k1,missed actions: walk_executor(towel_2056);grab_executor(towel_2056);,missed action num: 52,,
+,,,,,"(CrowControllerApplier<open_executor(window_63)>, CrowControllerApplier<obs(window_63, Check if the 
+window is dirty)>, CrowControllerApplier<walk_executor(window_86)>, CrowControllerApplier<obs(window
+_86, Check if the window is dirty)>, CrowControllerApplier<walk_executor(window_348)>, CrowControlle
+rApplier<open_executor(window_348)>, CrowControllerApplier<obs(window_348, Check if the window is di
+rty)>)"
+" 
+def is_window_needing_wipe(window:item):
+    # Function to check if a window needs wiping
+    symbol needs_wiping=dirty(window)
+    return needs_wiping
+
+behavior identify_dirty_windows():
+    body:
+        foreach window: item:
+            if is_window(window) and not visited(window):
+                observe(window,""Check if the window is dirty"")
+                # Observe the window to see if it is dirty
+
+behavior __goal__():
+    body:
+        if exists window: item : is_window(window) and is_window_needing_wipe(window):
+            # If a dirty window is already known, bind to it for further actions
+            bind window: item where:
+                is_window(window) and is_window_needing_wipe(window)
+            achieve close_char(char, window) 
+            # Approach the dirty window for potential cleaning actions
+        else:
+            # Identify windows that need to be wiped by inspecting all unvisited windows
+            identify_dirty_windows()
+",From function reset_sub_goal,,,,
+cdl_dataset/dataset/Wash_windows/g2.txt,k1,missed actions: walk_executor(towel_2056);grab_executor(towel_2056);,missed action num: 52,,
+"Reset goals: The sub-goals are: 
+['1. Identify all windows in the house that require wiping.', '2. Wipe each identified window with a
+ towel.']",,,,,
+" 
+def is_unopened_window(window: item):
+    # Determine if a window can be opened or not
+    symbol not_openable = not can_open(window)
+    return not_openable
+
+behavior observe_window(window: item):
+    body:
+        observe(window, ""Check if the window needs wiping"")
+
+behavior __goal__():
+    body:
+        foreach window: item:
+            if is_window(window) and not visited(window) and not is_unopened_window(window):
+                observe_window(window)
+",From function reset_goal,,,,
+,,,,,"(CrowControllerApplier<open_executor(window_63)>, CrowControllerApplier<obs(window_63, Check if the 
+window needs wiping)>, CrowControllerApplier<walk_executor(window_348)>, CrowControllerApplier<open_
+executor(window_348)>, CrowControllerApplier<obs(window_348, Check if the window needs wiping)>)"
+" 
+def is_window_interior(window: item):
+    # Determine if the window is inside the house
+    symbol interior=exists room: item : inside(window, room)
+    return interior
+
+behavior __goal__():
+    body:
+        foreach window: item:
+            if is_window(window) and is_window_interior(window):
+                observe(window, ""Check if the window requires wiping"")
+",From function reset_sub_goal,,,,
+cdl_dataset/dataset/Wash_windows/g2.txt,k1,missed actions: walk_executor(towel_2056);grab_executor(towel_2056);,missed action num: 52,,
+,,,,,"(CrowControllerApplier<open_executor(window_63)>, CrowControllerApplier<obs(window_63, Check if the 
+window requires wiping)>, CrowControllerApplier<walk_executor(window_86)>, CrowControllerApplier<obs
+(window_86, Check if the window requires wiping)>, CrowControllerApplier<walk_executor(window_348)>,
+ CrowControllerApplier<open_executor(window_348)>, CrowControllerApplier<obs(window_348, Check if th
+e window requires wiping)>)"
+" 
+behavior check_window_status(window:item):
+    body:
+        observe(window, ""Check if the window needs wiping"")
+        # Observe to gain information whether the window needs to be wiped
+
+behavior __goal__():
+    body:
+        foreach window: item:
+            if is_window(window) and not visited(window):
+                # Check all unvisited windows
+                check_window_status(window)
+                # Observe whether each window needs to be wiped
+",From function reset_sub_goal,,,,
+cdl_dataset/dataset/Wash_windows/g2.txt,k1,missed actions: walk_executor(towel_2056);grab_executor(towel_2056);,missed action num: 52,,
+,,,,,"(CrowControllerApplier<open_executor(window_63)>, CrowControllerApplier<obs(window_63, Check if the 
+window needs wiping)>, CrowControllerApplier<walk_executor(window_86)>, CrowControllerApplier<obs(wi
+ndow_86, Check if the window needs wiping)>, CrowControllerApplier<walk_executor(window_348)>, CrowC
+ontrollerApplier<open_executor(window_348)>, CrowControllerApplier<obs(window_348, Check if the wind
+ow needs wiping)>)"
+" 
+def is_window_in_the_scene(window:item):
+    # Function to check if a certain window is in the scene
+    symbol in_scene=exists loc: item : is_window(window) and inside(window, loc)
+    return in_scene
+
+behavior __goal__():
+    body:
+        foreach window: item:
+            if is_window(window) and not visited(window):
+                observe(window,""Check if the window requires wiping"")
+",From function reset_sub_goal,,,,
+cdl_dataset/dataset/Wash_windows/g2.txt,k1,missed actions: walk_executor(towel_2056);grab_executor(towel_2056);,missed action num: 52,,
+,,,,,"(CrowControllerApplier<open_executor(window_63)>, CrowControllerApplier<obs(window_63, Check if the 
+window requires wiping)>, CrowControllerApplier<walk_executor(window_86)>, CrowControllerApplier<obs
+(window_86, Check if the window requires wiping)>, CrowControllerApplier<walk_executor(window_348)>,
+ CrowControllerApplier<open_executor(window_348)>, CrowControllerApplier<obs(window_348, Check if th
+e window requires wiping)>)"
+" 
+def is_window_needing_wiping(window:item):
+    # Function to check if a window needs wiping
+    symbol needs_wiping=not closed(window)
+    return needs_wiping
+
+behavior inspect_window(window:item):
+    body:
+        observe(window,""Check if the window needs wiping"")
+
+behavior __goal__():
+    body:
+        foreach window: item:
+            if is_window(window) and not visited(window):
+                inspect_window(window)
+",From function reset_sub_goal,,,,
+cdl_dataset/dataset/Wash_windows/g2.txt,k1,missed actions: walk_executor(towel_2056);grab_executor(towel_2056);,missed action num: 52,,
+,,,,,"(CrowControllerApplier<open_executor(window_63)>, CrowControllerApplier<obs(window_63, Check if the 
+window needs wiping)>, CrowControllerApplier<walk_executor(window_86)>, CrowControllerApplier<obs(wi
+ndow_86, Check if the window needs wiping)>, CrowControllerApplier<walk_executor(window_348)>, CrowC
+ontrollerApplier<open_executor(window_348)>, CrowControllerApplier<obs(window_348, Check if the wind
+ow needs wiping)>)"
+" 
+def is_observable_window(window: item):
+    # Function to check if a window should be observed for wiping requirement
+    symbol observable = not visited(window) and is_window(window)
+    return observable
+
+behavior observe_unvisited_windows():
+    body:
+        foreach window: item:
+            if is_observable_window(window):
+                observe(window, ""Check if the window requires wiping"")
+
+behavior __goal__():
+    body:
+        observe_unvisited_windows()
+",From function reset_sub_goal,,,,
+cdl_dataset/dataset/Wash_windows/g2.txt,k1,missed actions: walk_executor(towel_2056);grab_executor(towel_2056);,missed action num: 52,,
+,,,,,"(CrowControllerApplier<open_executor(window_63)>, CrowControllerApplier<obs(window_63, Check if the 
+window requires wiping)>, CrowControllerApplier<walk_executor(window_86)>, CrowControllerApplier<obs
+(window_86, Check if the window requires wiping)>, CrowControllerApplier<walk_executor(window_348)>,
+ CrowControllerApplier<open_executor(window_348)>, CrowControllerApplier<obs(window_348, Check if th
+e window requires wiping)>)"
+" 
+def identify_dirty_window(window:item):
+    # Function to check if a window is dirty
+    symbol is_dirty_window = is_window(window) and dirty(window)
+    return is_dirty_window
+
+behavior __goal__():
+    body:
+        # Check all windows in the house and identify those that are dirty
+        foreach window: item:
+            if is_window(window) and not visited(window):
+                observe(window, ""Check if the window is dirty"")
+",From function reset_sub_goal,,,,
+cdl_dataset/dataset/Wash_windows/g2.txt,k1,missed actions: walk_executor(towel_2056);grab_executor(towel_2056);,missed action num: 52,,
+,,,,,"(CrowControllerApplier<open_executor(window_63)>, CrowControllerApplier<obs(window_63, Check if the 
+window is dirty)>, CrowControllerApplier<walk_executor(window_86)>, CrowControllerApplier<obs(window
+_86, Check if the window is dirty)>, CrowControllerApplier<walk_executor(window_348)>, CrowControlle
+rApplier<open_executor(window_348)>, CrowControllerApplier<obs(window_348, Check if the window is di
+rty)>)"
+" 
+behavior observe_window(window:item): 
+    body:
+        observe(window, ""Check if the window requires wiping"")
+
+behavior __goal__():
+    body:
+        foreach window: item:
+            if is_window(window) and not visited(window):
+                observe_window(window)
+",From function reset_sub_goal,,,,
+cdl_dataset/dataset/Wash_windows/g2.txt,k1,missed actions: walk_executor(towel_2056);grab_executor(towel_2056);,missed action num: 52,,
+,,,,,"(CrowControllerApplier<open_executor(window_63)>, CrowControllerApplier<obs(window_63, Check if the 
+window requires wiping)>, CrowControllerApplier<walk_executor(window_86)>, CrowControllerApplier<obs
+(window_86, Check if the window requires wiping)>, CrowControllerApplier<walk_executor(window_348)>,
+ CrowControllerApplier<open_executor(window_348)>, CrowControllerApplier<obs(window_348, Check if th
+e window requires wiping)>)"
+" 
+def is_unopened_window(window:item):
+    # Check if the window is unopened
+    symbol is_unopened=exists o: item : is_window(o) and not open(o) and id[o]==id[window]
+    return is_unopened
+
+behavior observe_window(window:item):
+    body:
+        observe(window, ""Check if the window requires wiping"")
+
+behavior __goal__():
+    body:
+        foreach window: item:
+            if is_window(window) and not visited(window):
+                if is_unopened_window(window):
+                    # Handle the situation for the specific window that cant be opened
+                    observe_window(window)
+                else:
+                    observe(window, ""Check if the window requires wiping"")
+",From function reset_sub_goal,,,,
+cdl_dataset/dataset/Wash_windows/g2.txt,k1,missed actions: walk_executor(towel_2056);grab_executor(towel_2056);,missed action num: 52,,
+,,,,,"(CrowControllerApplier<open_executor(window_63)>, CrowControllerApplier<obs(window_63, Check if the 
+window requires wiping)>, CrowControllerApplier<walk_executor(window_86)>, CrowControllerApplier<obs
+(window_86, Check if the window requires wiping)>, CrowControllerApplier<walk_executor(window_348)>,
+ CrowControllerApplier<open_executor(window_348)>, CrowControllerApplier<obs(window_348, Check if th
+e window requires wiping)>)"
+" 
+def identify_windows():
+    # Function to check if an item is a window and needs observation
+    symbol is_unvisited_window=exists w: item : is_window(w) and not visited(w)
+    return is_unvisited_window
+
+behavior __goal__():
+    body:
+        if exists w: item : is_window(w) and dirty(w):
+            # If we have already found a window that needs wiping based on the known information, ob
+serve it
+            bind window: item where:
+                is_window(window) and dirty(window)
+            observe(window, ""Inspect the window that requires wiping"")
+
+        else:
+            # Check all items in the scene that are unvisited windows
+            foreach window: item:
+                if is_window(window) and not visited(window):
+                    observe(window, ""Check if this window requires wiping"")
+",From function reset_sub_goal,,,,
+cdl_dataset/dataset/Wash_windows/g2.txt,k1,missed actions: walk_executor(towel_2056);grab_executor(towel_2056);,missed action num: 52,,
+,,,,,"(CrowControllerApplier<open_executor(window_63)>, CrowControllerApplier<obs(window_63, Inspect the w
+indow that requires wiping)>)"
+" 
+def find_windows_to_wipe(window: item):
+    # Determine if a window is dirty and requires wiping
+    symbol needs_wiping=exists dirt: item : (is_window(window) and dirty(dirt) and on(dirt, window))
+    return needs_wiping
+
+behavior observe_window(window: item):
+    body:
+        observe(window, ""Check if the window is dirty and needs wiping"")
+        # Observe the state of the window to determine if it requires wiping
+
+behavior __goal__():
+    body:
+        foreach window: item:
+            if is_window(window) and not visited(window):
+                # Check each unvisited window
+                observe_window(window)
+                # Observe whether each window is dirty and needs wiping
+",From function reset_sub_goal,,,,
+cdl_dataset/dataset/Wash_windows/g2.txt,k1,missed actions: walk_executor(towel_2056);grab_executor(towel_2056);,missed action num: 52,,
+,,,,,"(CrowControllerApplier<open_executor(window_63)>, CrowControllerApplier<obs(window_63, Check if the 
+window is dirty and needs wiping)>, CrowControllerApplier<walk_executor(window_86)>, CrowControllerA
+pplier<obs(window_86, Check if the window is dirty and needs wiping)>, CrowControllerApplier<walk_ex
+ecutor(window_348)>, CrowControllerApplier<open_executor(window_348)>, CrowControllerApplier<obs(win
+dow_348, Check if the window is dirty and needs wiping)>)"
+" 
+behavior observe_windows(window:item):
+    body:
+        observe(window, ""Check if the window requires wiping"")
+
+behavior __goal__():
+    body:
+        foreach window: item:
+            if is_window(window) and not visited(window):
+                observe_windows(window)
+",From function reset_sub_goal,,,,
+cdl_dataset/dataset/Wash_windows/g2.txt,k1,missed actions: walk_executor(towel_2056);grab_executor(towel_2056);,missed action num: 52,,
+,,,,,"(CrowControllerApplier<open_executor(window_63)>, CrowControllerApplier<obs(window_63, Check if the 
+window requires wiping)>, CrowControllerApplier<walk_executor(window_86)>, CrowControllerApplier<obs
+(window_86, Check if the window requires wiping)>, CrowControllerApplier<walk_executor(window_348)>,
+ CrowControllerApplier<open_executor(window_348)>, CrowControllerApplier<obs(window_348, Check if th
+e window requires wiping)>)"
+" 
+def is_window_unopenable(window:item):
+    # Check if the window is unopenable
+    return not can_open(window)
+
+behavior identify_windows():
+    body:
+        foreach window: item:
+            if is_window(window) and not visited(window):
+                observe(window, ""Check if the window needs wiping"")
+        
+behavior __goal__():
+    body:
+        identify_windows()
+",From function reset_sub_goal,,,,
+cdl_dataset/dataset/Wash_windows/g2.txt,k1,missed actions: walk_executor(towel_2056);grab_executor(towel_2056);,missed action num: 52,,
+,,,,,"(CrowControllerApplier<open_executor(window_63)>, CrowControllerApplier<obs(window_63, Check if the 
+window needs wiping)>, CrowControllerApplier<walk_executor(window_86)>, CrowControllerApplier<obs(wi
+ndow_86, Check if the window needs wiping)>, CrowControllerApplier<walk_executor(window_348)>, CrowC
+ontrollerApplier<open_executor(window_348)>, CrowControllerApplier<obs(window_348, Check if the wind
+ow needs wiping)>)"
+" 
+def is_window_clean_or_dirty(window:item):
+    # Determine whether this window is clean or dirty
+    symbol clean_or_dirty=(clean(window) or dirty(window))
+    return clean_or_dirty
+
+behavior __goal__():
+    body:
+        foreach window: item:
+            if is_window(window) and not visited(window):
+                observe(window, ""Check if the window is dirty or clean"")
+
+        foreach window: item:
+            if is_window(window) and not is_window_clean_or_dirty(window):
+                observe(window, ""Identify the condition of the window"")
+",From function reset_sub_goal,,,,
+cdl_dataset/dataset/Wash_windows/g2.txt,k1,missed actions: walk_executor(towel_2056);grab_executor(towel_2056);,missed action num: 52,,
+,,,,,"(CrowControllerApplier<open_executor(window_63)>, CrowControllerApplier<obs(window_63, Check if the 
+window is dirty or clean)>, CrowControllerApplier<walk_executor(window_86)>, CrowControllerApplier<o
+bs(window_86, Check if the window is dirty or clean)>, CrowControllerApplier<walk_executor(window_34
+8)>, CrowControllerApplier<open_executor(window_348)>, CrowControllerApplier<obs(window_348, Check i
+f the window is dirty or clean)>)"
+" 
+def has_windows_in_room(room:item):
+    # Check if there are windows inside a specified room
+    symbol window_exists=exists window:item : is_window(window) and inside(window, room) and dirty(w
+indow)
+    return window_exists
+
+behavior __goal__():
+    body:
+        if exists room: item : has_windows_in_room(room):
+            # Check if theres a room with windows that require wiping based on the available informa
+tion
+            bind room: item where:
+                has_windows_in_room(room)
+            # Select a room with windows needing to be cleaned
+            foreach window: item:
+                if is_window(window) and inside(window, room) and dirty(window):
+                    observe(window,""Check is there any windows that need to wipe"")
+                    # Determine which windows in the room need wiping
+                    
+        else:
+            # If no room with windows is found, initiate exploration to locate them
+            foreach room: item:
+                if not visited(room):
+                    observe(room,""Check is there any windows that need to wipe"")
+                    # Research all unvisited rooms for windows that require wiping
+",From function reset_sub_goal,,,,
+cdl_dataset/dataset/Wash_windows/g2.txt,k1,missed actions: walk_executor(towel_2056);grab_executor(towel_2056);,missed action num: 52,,
+,,,,,"(CrowControllerApplier<open_executor(window_63)>, CrowControllerApplier<obs(window_63, Check is ther
+e any windows that need to wipe)>)"
+" 
+def is_window_dirty(window: item):
+    # Check if the window is dirty and needs cleaning
+    symbol is_dirty=dirty(window)
+    return is_dirty
+
+behavior inspect_window(window: item):
+    body:
+        observe(window, ""Check is there any dirt on the window"")
+        # Observe to determine if the window is dirty
+
+behavior __goal__():
+    body:
+        foreach window: item:
+            if is_window(window) and not visited(window):
+                inspect_window(window)
+                # Inspect each unvisited window to see if it requires wiping
+",From function reset_sub_goal,,,,
+cdl_dataset/dataset/Wash_windows/g2.txt,k1,missed actions: walk_executor(towel_2056);grab_executor(towel_2056);,missed action num: 52,,
+,,,,,"(CrowControllerApplier<open_executor(window_63)>, CrowControllerApplier<obs(window_63, Check is ther
+e any dirt on the window)>, CrowControllerApplier<walk_executor(window_86)>, CrowControllerApplier<o
+bs(window_86, Check is there any dirt on the window)>, CrowControllerApplier<walk_executor(window_34
+8)>, CrowControllerApplier<open_executor(window_348)>, CrowControllerApplier<obs(window_348, Check i
+s there any dirt on the window)>)"
+" 
+def is_window_item_need_attention(window:item):
+    # Function to check if a window requires wiping
+    symbol need_attention=dirty(window) and is_window(window)
+    return need_attention
+
+behavior identify_windows():
+    body:
+        # Check if there are any windows that need wiping
+        if exists window: item : is_window_item_need_attention(window):
+            bind window: item where:
+                is_window_item_need_attention(window)
+            # Determine the window needing attention
+            achieve close_char(char, window) 
+            # Move the character close to the window that needs wiping
+
+        else:
+            # Look through all unvisited windows
+            foreach window: item:
+                if is_window(window) and not visited(window):
+                    observe(window, ""Check if the window needs wiping"") 
+                    # Examine whether each window requires wiping
+
+behavior __goal__():
+    body:
+        identify_windows()
+",From function reset_sub_goal,,,,
+cdl_dataset/dataset/Wash_windows/g2.txt,k1,missed actions: walk_executor(towel_2056);grab_executor(towel_2056);,missed action num: 52,,
+"Reset goals: The sub-goals are: 
+['1. Identify windows in the house that need wiping.', '2. Wipe the identified windows with a towel.
+']",,,,,
+" 
+def has_windows_to_wipe_in_room(room:item):
+    # Function to check if there are any dirty windows in a specified room
+    symbol has_dirty_windows=exists window: item : is_window(window) and dirty(window) and inside(wi
+ndow, room)
+    return has_dirty_windows
+
+behavior __goal__():
+    body:
+        if exists room: item : is_room(room) and has_windows_to_wipe_in_room(room):
+            # Check if there is a room with dirty windows based on available information
+            bind room: item where:
+                is_room(room) and has_windows_to_wipe_in_room(room)
+            # Select a room that has windows needing wiping
+            foreach window: item:
+                if is_window(window) and dirty(window) and inside(window, room):
+                    observe(window, ""Check the state of window and if it needs wiping"")
+                    # Observe whether the window is dirty and needs wiping
+        else:
+            # Initiate exploration to locate rooms with dirty windows
+            foreach room: item:
+                if is_room(room) and not visited(room):
+                    observe(room, ""Check if there are any windows that need wiping"")
+                    # Observe windows in the room to check if they need wiping
+",From function reset_goal,,,,
+cdl_dataset/dataset/Wash_windows/g2.txt,k1,missed actions: walk_executor(towel_2056);grab_executor(towel_2056);,missed action num: 52,,
+cdl_dataset/dataset/Wash_windows/g2.txt,k1,missed actions: walk_executor(towel_2056);grab_executor(towel_2056);,missed action num: 52,,

@@ -75,6 +75,8 @@ class VHAgent:
         self._parse_file(filepath)
         self.save_to_file()
         self.save_to_file(self.state_file_path)
+        self.exp_helper_query_times=0
+
 
     def lift_behaviors(self):
         # add executable behaviors to the library
@@ -668,6 +670,7 @@ class VHAgent:
                     action_effects+=f"Find {exp_target}. "
                 else:
                     if self.exp_fail_num==5:
+                        self.exp_helper_query_times+=1
                         human_answer=self.query_human(f'Can you help me to find {exp_target} ?')
                         print(f'Query human about the location of {exp_target}.')
                         self.exp_fail_num=0
