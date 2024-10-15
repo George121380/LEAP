@@ -1,5 +1,5 @@
 import sys
-sys.path.append('/media/george/Projects/Research/MIT')
+sys.path.append('/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home')
 sys.path.append('utils')
 import concepts.dm.crow as crow
 import numpy as np
