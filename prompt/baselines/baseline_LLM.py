@@ -163,7 +163,7 @@ The following is some information about items related to the task.
 Your output must contain only one of the primitive actions, using the correct parameters as defined. For example, if you want to walk to the area near sink_42, use walk_executor(sink_42). If you want to open fridge_289, output open_executor(fridge_289). Ensure that your output contains no explanations, as this may cause the output to be unrecognized.
 """
     
-    with open('prompt.txt','w') as f:
+    with open('visualization/prompt.txt','w') as f:
         f.write(prompt)
 
     return prompt

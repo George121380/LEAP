@@ -1,7 +1,7 @@
 import sys
 sys.path.append('prompt')
 from ask_GPT import ask_GPT
-from baseline_LLM import LLM_Agent_Prompt
+from baselines.baseline_LLM import LLM_Agent_Prompt
 import json
 import numpy as np
 import re
@@ -744,7 +744,7 @@ class LLM_Agent:
             
                 
             description += "\n"
-        with open('scene_graph_to_nl.txt','w') as f:
+        with open('visualization/scene_graph_to_nl.txt','w') as f:
             f.write(description)
         self.relavant_item_info=description
         return description
