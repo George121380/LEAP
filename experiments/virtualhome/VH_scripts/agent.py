@@ -1,6 +1,6 @@
 import sys
-sys.path.append('/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq')
-sys.path.append('/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/utils')
+sys.path.append('/media/george/Projects/Research/MIT')
+sys.path.append('utils')
 import concepts.dm.crow as crow
 import numpy as np
 import re
@@ -84,7 +84,13 @@ class VHAgent:
 
     def download_behaviors_from_library(self):
         # download behaviors from the library
-        self.behaviors_from_library['content'],self.behaviors_from_library['names'],self.behaviors_from_library['function_calls'],self.behaviors_from_library['behavior_calls']=self.library.download_behaviors(self.task_name,self.current_subgoal_nl,self.download_mode)
+        if self.args.use_library:
+            self.behaviors_from_library['content'],self.behaviors_from_library['names'],self.behaviors_from_library['function_calls'],self.behaviors_from_library['behavior_calls']=self.library.download_behaviors(self.task_name,self.current_subgoal_nl,self.download_mode)
+        else:
+            self.behaviors_from_library['content']=[]
+            self.behaviors_from_library['names']=[]
+            self.behaviors_from_library['function_calls']=[]
+            self.behaviors_from_library['behavior_calls']=[]
         return self.behaviors_from_library
 
     def reset_visited(self):

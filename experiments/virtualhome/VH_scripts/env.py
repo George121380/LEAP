@@ -1,5 +1,5 @@
 import sys
-sys.path.append('/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/embodied-agent-eval/src/VIRTUALHOME/AgentEval-main/virtualhome_eval/simulation/evolving_graph')
+sys.path.append('embodied-agent-eval/src/VIRTUALHOME/AgentEval-main/virtualhome_eval/simulation/evolving_graph')
 from execution import ScriptExecutor
 from utils import load_name_equivalence
 from utils_eval import transform_action,check_unexplorable

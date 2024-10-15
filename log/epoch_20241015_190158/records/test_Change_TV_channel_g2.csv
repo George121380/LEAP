@@ -1,0 +1,77 @@
+Goal Representation,Debug Result,Action,Add Info,LLM Answer,Plan
+"Reset goals: The sub-goals are: 
+['1. Find the remote control for the TV.', '2. Turn on the TV using the remote control.']",,,,,
+" 
+behavior __goal__():
+    body:
+        bind remote: item where:
+            is_remote_control(remote)
+        # Select a remote control in the scene
+
+        if not visited(remote):
+            # If the remote control has not been visited, observe it to verify its location
+            observe(remote, ""Check is this the TV remote control"")
+        
+        achieve close_char(char, remote)
+        # Get close to the remote control to facilitate interaction
+
+",From function reset_goal,,,,
+,,,,,"(CrowControllerApplier<walk_executor(tvstand_353)>, CrowControllerApplier<exp(remote_control_2052, t
+vstand_353)>, CrowControllerApplier<walk_executor(remote_control_2052)>, CrowControllerApplier<obs(r
+emote_control_2052, Check is this the TV remote control)>)"
+,,walk_executor(tvstand_353),"Find mat_401. Find dvd_player_2061. Find drawing_400. Robot is inside home_office_319. Robot is clos
+e tvstand_353. Robot is close floor_324. Robot is no longer inside bathroom_1.",,
+,,"exp(remote_control_2052, tvstand_353)",Find remote_control_2052. ,,
+,,,,,"(CrowControllerApplier<walk_executor(remote_control_2052)>, CrowControllerApplier<obs(remote_control
+_2052, Check is this the TV remote control)>)"
+,,walk_executor(remote_control_2052),"Robot is inside home_office_319. Robot is close couch_352. Robot is close remote_control_2052. Robot
+ is no longer close tvstand_353.Robot is no longer close floor_324.",,
+,,"obs(remote_control_2052, Check is this the TV remote control)","Get this information:  remote_control_2052 is close to couch_352. remote_control_2052 is close to ch
+aracter_65. remote_control_2052 is on couch_352. remote_control_2052 is inside home_office_319. remo
+te_control_2052 is OFF.",,
+" 
+def is_related_tv_remote(remote_control:item, tv:item):
+    # Check if a remote control is related to a television
+    symbol related= is_remote_control(remote_control) and is_television(tv) and close(tv, remote_con
+trol)
+    return related
+
+behavior turn_on_tv_with_remote(remote_control:item, tv:item):
+    body:
+        assert is_off(tv)
+        achieve is_on(tv)
+
+behavior __goal__():
+    body:
+        bind remote_control: item where:
+            is_remote_control(remote_control) and id[remote_control]==2052
+        # Select the remote control with the known ID 2052
+        bind tv: item where:
+            is_television(tv) and is_related_tv_remote(remote_control, tv)
+        # Select the TV close to the selected remote control
+        turn_on_tv_with_remote(remote_control, tv)
+",From function reset_sub_goal,,,,
+" 
+def has_switch_remote(remote:item):
+    # Determine whether this remote has a switch
+    symbol switch_exists=is_remote_control(remote) and has_switch(remote)
+    return switch_exists
+
+behavior activate_remote_control(remote: item):
+    body:
+        if has_switch_remote(remote):
+            # Check if the remote control has a switch, then activate it
+            bind switch: item where:
+                is_remote_control(switch) and switch==remote
+            achieve is_on(remote)
+            # Turn on the remote control
+
+behavior __goal__():
+    body:
+        bind remote: item where:
+            is_remote_control(remote) and id[remote]==2052
+        # Select the remote control with ID 2052
+        activate_remote_control(remote)
+",From function reset_sub_goal,,,,
+,,,,,"(CrowControllerApplier<switchon_executor(remote_control_2052)>,)"
+,,switchon_executor(remote_control_2052),Robot is inside home_office_319. Robot is close couch_352. Robot is close remote_control_2052. ,,

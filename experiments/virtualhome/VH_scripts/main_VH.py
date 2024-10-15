@@ -2,8 +2,9 @@
 import sys
 import json
 import re
-sys.path.append('embodied-agent-eval/src/VIRTUALHOME/AgentEval-main/virtualhome_eval/simulation/evolving_graph')
+# sys.path.append('embodied-agent-eval/src/VIRTUALHOME/AgentEval-main/virtualhome_eval/simulation/evolving_graph')
 sys.path.append('cdl_dataset/scripts')
+sys.path.append('')
 from datetime import datetime
 from experiments.virtualhome.VH_scripts.agent import VHAgent
 from experiments.virtualhome.VH_scripts.agent_LLM import LLM_Agent
@@ -170,15 +171,15 @@ def evaluation(args):
     epoch_logger = setup_logger(f'log/epoch_{timestamp}',timestamp=timestamp)
     files = tqdm(files, desc="Evaluating tasks")
     for task_file in files:
-        try:
+        # try:
             _,classes,init_scene_graph,guidance=load_scene()
             task_path=os.path.join(dataset_folder_path,task_file)
             Debug=run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph,guidance)
             
-        except Exception as e:
-            print(e)
-            epoch_logger.info(task_path,'Syntax Error',None,None,None,task_path)
-            continue
+        # except Exception as e:
+        #     print(e)
+        #     epoch_logger.info(task_path,'Syntax Error',None,None,None,task_path)
+        #     continue
     end_time = datetime.now().strftime('%Y%m%d_%H%M%S')
     epoch_logger.info('Evaluation Finished',end_time,'','','','')
 
@@ -203,7 +204,7 @@ def check_evaluation_single(args):
 
 if __name__ == '__main__':
     args = parse_args()
-    # evaluation(args)
+    evaluation(args)
     # test_evaluate(args)
-    check_evaluation(args)
+    # check_evaluation(args)
     # check_evaluation_single(args)

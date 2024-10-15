@@ -8,9 +8,9 @@ def ask_GPT(system,content):
     while True:
         try:
             if LLM_MODEL == "gpt-4o": # GPT-4o api
-                with open("/Users/liupeiqi/workshop/Research/api_key.txt","r") as f:
-                    api_key = f.read().strip()
-                client = OpenAI(api_key=api_key)
+                # with open("/Users/liupeiqi/workshop/Research/api_key.txt","r") as f:
+                #     api_key = f.read().strip()
+                client = OpenAI(api_key="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")
                 completion = client.chat.completions.create(
                     model="gpt-4o",
                     messages=[
@@ -19,7 +19,7 @@ def ask_GPT(system,content):
                     ]
                 )
             elif LLM_MODEL == "deepseek": # Deepseek api
-                client = OpenAI(api_key="sk-122b9c8681964b78883c3c45c9629865", base_url="https://api.deepseek.com")
+                client = OpenAI(api_key="sk-122b9c8681964b78883c3c45c9629865")
                 completion = client.chat.completions.create(
                     model="deepseek-chat",
                     messages=[
