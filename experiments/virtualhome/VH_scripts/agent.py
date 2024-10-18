@@ -666,14 +666,15 @@ class VHAgent:
                             continue
                         if self.exploration['unknown'][self.name2opid[new_known]]==True:
                             self.exploration['unknown'][self.name2opid[new_known]]=False
-                            self.newfind=True # find sth new
-                
+                            
                 for check_place in observation['checked']:
                     self.exploration['checked'][:,self.name2opid[check_place]]=True
 
                 if exp_target in observation['known'] or not self.exploration['unknown'][self.name2opid[exp_target]]:
                     print(f'{exp_target} is successfully explored around {exp_loc} or already known before')
                     action_effects+=f"Find {exp_target}. "
+                    self.newfind=True # find sth new
+
                 else:
                     if self.exp_fail_num==5:
                         self.exp_helper_query_times+=1
