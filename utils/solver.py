@@ -54,5 +54,5 @@ def plan(problem):
     return table
 
 if __name__ == '__main__':
-    goal=None
+    goal='/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/log/epoch_20241018_152938/internal_executable.cdl'
     goal_solver(goal)

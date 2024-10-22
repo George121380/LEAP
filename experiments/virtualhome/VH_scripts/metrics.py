@@ -98,58 +98,54 @@ def calculation(result_list):
     for entry in result_list:
         task_success_rate = 0
         task_path = entry['task_path']
-        if task_path == 'cdl_dataset/dataset/Put_groceries_in_Fridge/g4.txt':
+        if task_path=='cdl_dataset/dataset/Put_groceries_in_Fridge/g3.txt':
             print('debug')
         if entry['success'] == 'syntax error':
             task_success_rate = 0
         elif entry['success']:
             task_success_rate = 1
         else:
-            if entry['keystate_completion_rate'] == {}:
-                task_success_rate = 0
-                print('No keystate is recorded')
+            solution_combination = parse_logic_from_file_path(task_path)
+            if solution_combination == 'No keystate is needed':
+                task_success_rate = entry['action_completion_rate']
             else:
-                solution_combination = parse_logic_from_file_path(task_path)
-                if solution_combination == 'No keystate is needed':
-                    task_success_rate = entry['action_completion_rate']
+                max_keystate_completion_rate = 0
+                dict_flag = True
+
+                for solution in solution_combination:
+                    for keystate in solution:
+                        assert keystate in entry['keystate_completion_rate']
+                        if task_path not in difficulty_dict:
+                            dict_flag = False
+                            print(f'{task_path} not in difficulty_dict')
+                            break
+                        if keystate not in difficulty_dict[task_path]:
+                            dict_flag = False
+                            print(f'{task_path} {keystate} not in difficulty_dict')
+                            break
+
+                for solution in solution_combination:
+                    solution_steps_num = 0
+                    current_solution_keystate_completion_rate = 0
+
+                    for keystate in solution:
+                        if dict_flag:
+                            keystate_steps_num = difficulty_dict[task_path][keystate]
+                            solution_steps_num += keystate_steps_num
+                            current_solution_keystate_completion_rate += entry['keystate_completion_rate'][keystate] * keystate_steps_num
+                        else:
+                            current_solution_keystate_completion_rate += entry['keystate_completion_rate'][keystate]
+                            solution_steps_num += 1
+
+                    current_solution_keystate_completion_rate /= solution_steps_num
+                    max_keystate_completion_rate = max(max_keystate_completion_rate, current_solution_keystate_completion_rate)
+
+                if entry['action_completion_rate'] == 'No actions required':
+                    task_success_rate = max_keystate_completion_rate
                 else:
-                    max_keystate_completion_rate = 0
-                    dict_flag = True
-
-                    for solution in solution_combination:
-                        for keystate in solution:
-                            assert keystate in entry['keystate_completion_rate']
-                            if task_path not in difficulty_dict:
-                                dict_flag = False
-                                print(f'{task_path} not in difficulty_dict')
-                                break
-                            if keystate not in difficulty_dict[task_path]:
-                                dict_flag = False
-                                print(f'{keystate} not in difficulty_dict')
-                                break
-
-                    for solution in solution_combination:
-                        solution_steps_num = 0
-                        current_solution_keystate_completion_rate = 0
-
-                        for keystate in solution:
-                            if dict_flag:
-                                keystate_steps_num = difficulty_dict[task_path][keystate]
-                                solution_steps_num += keystate_steps_num
-                                current_solution_keystate_completion_rate += entry['keystate_completion_rate'][keystate] * keystate_steps_num
-                            else:
-                                current_solution_keystate_completion_rate += entry['keystate_completion_rate'][keystate]
-                                solution_steps_num += 1
-
-                        current_solution_keystate_completion_rate /= solution_steps_num
-                        max_keystate_completion_rate = max(max_keystate_completion_rate, current_solution_keystate_completion_rate)
-
-                    if entry['action_completion_rate'] == 'No actions required':
-                        task_success_rate = max_keystate_completion_rate
-                    else:
-                        keystate_weight = 2
-                        action_weight = 1
-                        task_success_rate = (max_keystate_completion_rate * keystate_weight + entry['action_completion_rate'] * action_weight) / (keystate_weight + action_weight)
+                    keystate_weight = 2
+                    action_weight = 1
+                    task_success_rate = (max_keystate_completion_rate * keystate_weight + entry['action_completion_rate'] * action_weight) / (keystate_weight + action_weight)
 
         success_rate_dict[task_path] = round(task_success_rate,3)
         sum_success_rate += task_success_rate
@@ -246,6 +242,7 @@ if __name__ == '__main__':
 
     for method_name, experiments in methods_experiments.items():
         method_results = []
+        print(f'正在处理 {method_name} 方法的实验结果...')
         for exp_name, csv_file_path in experiments:
             result_list = parse_completion_rates(csv_file_path)
             avg_success_rate, success_rate_dict = calculation(result_list)

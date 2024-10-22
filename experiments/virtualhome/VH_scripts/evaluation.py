@@ -16,7 +16,11 @@ from env import VH_Env
 from environment import EnvironmentState, EnvironmentGraph
 import random
 import time
-from dataset import parse_file_to_json, generate_sequences, is_subsequence, Parser,action_tokenize
+
+from dataset import parse_file_to_json
+from logic_parser import parse_logic_from_file_path
+from action_sequence_parser import parse_action_sequence_from_file_path
+
 random.seed(time.time())
 
 class ASTNode:
@@ -105,7 +109,7 @@ class Evaluator:
         self._parse_file(self.init_path)
         self.task_data=parse_file_to_json(task_file_path)
         if 'Logic' in self.task_data:
-            self.goal_lt=logic_parse(tokenize(self.task_data['Logic']))
+            self.goal_lt=logic_parse(tokenize(self.task_data['Logic'])) # A logic tree used for keystates evaluation
         else:
             self.goal_lt=None
         self.keystates=self.task_data['Keystates']
@@ -122,6 +126,8 @@ class Evaluator:
         self.start_counting=self.left_action_counting_for_each_keystate()
         self.end_counting=None
         self.action_completion_rate="No required actions"
+        self.Logic=parse_logic_from_file_path(task_file_path)
+        self.Action_sequences=parse_action_sequence_from_file_path(task_file_path)
 
     def load_scene(self)->None:
         scene_path='cdl_dataset/Scene.json'
@@ -689,7 +695,7 @@ class Evaluator:
         self.logger.info(self.task_file_path,key_state,f"missed actions: {left_actions}",f'missed action num: {len(plans[0])}','','')
 
         # print("missed actions:",plans[0])
-        return len(plans[0])
+        return plans[0]
     
     def wrap_keystates(self):
         for key in self.keystates:
@@ -730,7 +736,7 @@ class Evaluator:
                 if keystate in self.achieved_keystates:
                     counting_dict[keystate]=0
                 else:
-                    result = self.check_single_keystate(keystate,self.wrapped_keystates_func[keystate])
+                    result = len(self.check_single_keystate(keystate,self.wrapped_keystates_func[keystate]))
                     counting_dict[keystate]=result
             except Exception as e:
                 print(f"Error in checking keystate: {keystate}")
@@ -750,13 +756,13 @@ class Evaluator:
         """
         Calculate the completion percentage of the required actions.
         """
-        tokens = action_tokenize(self.task_data['Actions'])
-        parser = Parser(tokens)
-        expr = parser.parse()
-        sequences = generate_sequences(expr)
+        # tokens = action_tokenize(self.task_data['Actions'])
+        # parser = Parser(tokens)
+        # expr = parser.parse()
+        # sequences = generate_sequences(expr)
         
         max_completion = 0.0
-        for seq in sequences:
+        for seq in self.Action_sequences:
             completion = self.calculate_action_completion(seq, action_history)
             if completion > max_completion:
                 max_completion = completion
@@ -771,7 +777,7 @@ class Evaluator:
             print("Evaluator is checking",ast.name)
             if ast.name in self.achieved_keystates:
                 return True
-            result=(self.check_single_keystate(ast.name,self.wrapped_keystates_func[ast.name])==0)
+            result=(len(self.check_single_keystate(ast.name,self.wrapped_keystates_func[ast.name]))==0)
             if result:
                 self.achieved_keystates.add(ast.name)
             return result
@@ -848,6 +854,15 @@ class Evaluator:
         print(complete_rate_info)
 
         return evaluate_result,complete_rate_info
+    
+    def complete_single_keystate(self,keystate):
+        if keystate in self.achieved_keystates:
+            return []
+        result=self.check_single_keystate(keystate,self.wrapped_keystates_func[keystate])
+        actions=[]
+        for action in result:
+            actions.append(str(action))
+        return result
         
     
 if __name__=='__main__':

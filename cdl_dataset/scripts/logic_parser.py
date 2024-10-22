@@ -1,3 +1,8 @@
+"""
+This file is used to parse the logic in the CDL file and return the possible combinations of the keystates.
+"""
+
+
 import re
 from dataset import parse_file_to_json
 
@@ -110,6 +115,11 @@ def parse_logic(logic_str):
     return combinations
 
 def parse_logic_from_file_path(file_path):
+    """
+        This is the only function that should be called from outside
+        Inpuut: file_path: str
+        Output: keystates combinations: list[list[str]]
+    """
     with open(file_path, 'r') as f:
         logic_str = f.read()
     if 'Logic' not in parse_file_to_json(file_path):
@@ -120,7 +130,7 @@ def parse_logic_from_file_path(file_path):
 
 
 if __name__ == '__main__':
-    file_path = '/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/cdl_dataset/dataset/Change_TV_channel/g2.txt'
+    file_path = '/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/cdl_dataset/dataset/Cook_some_food/g1.txt'
     combination=parse_logic_from_file_path(file_path)
     for combo in combination:
         print('Combination:', combo)

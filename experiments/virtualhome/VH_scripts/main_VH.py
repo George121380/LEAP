@@ -161,7 +161,7 @@ def test_evaluate(args):
     _,classes,init_scene_graph,guidance=load_scene()
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     epoch_logger = setup_logger(f'log/epoch_{timestamp}',timestamp=timestamp)
-    task_path='/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/cdl_dataset/dataset/Cook_some_food/g2.txt'
+    task_path='/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/cdl_dataset/dataset/Wash_windows/g1.txt'
     run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph,guidance)
 
 
