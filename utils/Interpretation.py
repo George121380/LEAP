@@ -5,7 +5,8 @@ from prompt.goal_interpretation_prompt import get_goal_inter_prompt
 # from prompt.kitchen_loopfeedback import loop_refine
 from prompt.exploration_prompt import get_exp_behavior
 # from auto_debugger import exploration_auto_debug
-from prompt.sub_goal_split_prompt import sub_goal_prompt
+# from prompt.sub_goal_split_prompt import sub_goal_prompt
+from prompt.sub_goal_split_finer_prompt import sub_goal_prompt
 from prompt.sub_goal_evaluate_prompt import sub_goal_evaluate_prompt
 from prompt.obs_query_prompt import obs_query_prompt
 import sys
@@ -56,18 +57,19 @@ def exploration_VH(goal,additional_information,problem_cdl,checked=None):
     # print('=' * 60)
     return exp_behavior
 
-def sub_goal_generater(goal):
-    system="You are a assistant robot. Your work is to decompose the goal into sub-goals."
+def sub_goal_generater(goal,completed_sub_goal_list,human_guidance):
+    # system="You are a assistant robot. Your work is to decompose the goal into sub-goals."
+    system="You are an intelligent task planner with expert knowledge in task breakdown, goal evaluation, and human-robot collaboration. Your role is to evaluate whether a given task goal needs to be split into subgoals or if it can be directly pursued. You consider the overall goal of the task, previously completed subgoals, and any human guidance provided. Based on your evaluation, you either generate a set of subgoals that help the task progress more efficiently or output the next most appropriate goal. Your output should always be logically sound, concise, and relevant to the task at hand."
     print('=' * 60)
     print(f"Sub goal generation:")
     print('=' * 60)
-    content=sub_goal_prompt(goal)
+    content=sub_goal_prompt(goal,completed_sub_goal_list,human_guidance)
     sub_goals=ask_GPT(system,content)
     print('=' * 60)
-    if '\n' in sub_goals:
-        sub_goal_list=sub_goals.split("\n")
+    if 'No decomposition:' in sub_goals:
+        sub_goal_list=[sub_goals.replace('No decomposition:','').strip()]
     else:
-        sub_goal_list=[sub_goals]
+        sub_goal_list=sub_goals.split("\n")
     return sub_goal_list
 
 def obs_query(observation,target_obj,question):
@@ -113,6 +115,12 @@ def Guidance_helper(question,knowledge):
     return res
 
 if __name__=='__main__':
-    goal='Make chicken pasta.'
-    sub_goal_list=sub_goal_generater(goal)
+    goal='Wash my t-shirt by the washing machine'
+    sub_goal_list=sub_goal_generater(goal,['Find the t-shirt', 'place the t-shirt into the washing machine'],'')
+    print(sub_goal_list)
+    goal='Turn on the light in the bathroom'
+    sub_goal_list=sub_goal_generater(goal,[],'')
+    print(sub_goal_list)
+    goal='Make salad'
+    sub_goal_list=sub_goal_generater(goal,[],'')
     print(sub_goal_list)

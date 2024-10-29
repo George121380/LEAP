@@ -1,8 +1,6 @@
-# from env_kitchen import Agent,KitchenEnvironment
 import sys
 import json
 import re
-# sys.path.append('embodied-agent-eval/src/VIRTUALHOME/AgentEval-main/virtualhome_eval/simulation/evolving_graph')
 sys.path.append('cdl_dataset/scripts')
 sys.path.append('')
 from datetime import datetime
@@ -25,25 +23,10 @@ from dataset import parse_file_to_json
 init_path="experiments/virtualhome/CDLs/init_scene_PO.cdl"
 dataset_folder_path='cdl_dataset/dataset'
 
-import argparse
 from tqdm import tqdm
+from args import parse_args
 
-def parse_args():
-    parser = argparse.ArgumentParser(description="Run an embodied agent evaluation.")    
-    parser.add_argument('--llm_model', type=str, default='gpt-4o', 
-                        help="Specify the LLM model to be used. gpt-4o, deepseek")
-    parser.add_argument('--library_extraction', type=str,
-                        help="Specify the library extraction method to be used.")
-    parser.add_argument('--model', type=str,default='ours',
-                        help="ours, LLM, LLM+P, CAP")
-    parser.add_argument('--human_guidance', type=str, default=False,
-                    help="Whether to use human guidance (True or False).")
-    parser.add_argument('--use_library', type=bool, default=False,
-                    help="Whether to use library (True or False).")
-
-    return parser.parse_args()
-
-def load_scene():
+def load_scene(): # load the scene I designed, which is called by main_VH.py
     scene_path='cdl_dataset/Scene.json'
     with open(scene_path) as f:
         scene=json.load(f)
@@ -64,8 +47,6 @@ def evaluation_task_loader(dataset_folder_path):
         for file in files:
             if not 'bug' in file:
                 all_files.append(os.path.join(subdir,file))
-    # subdir_path = os.path.join(dataset_folder_path, selected_subdir)
-    # files = [f for f in os.listdir(subdir_path) if os.path.isfile(os.path.join(subdir_path, f))]
     return all_files
 
 def task_summary_record(epoch_logger,task_name,goal,action_history,start_time,complete_rate,task_path,exp_helper_query_times):
@@ -76,7 +57,6 @@ def task_summary_record(epoch_logger,task_name,goal,action_history,start_time,co
     time_info=f'Time consume: {int(time_elapsed)} seconds'
     time_info+=f'\nExp_helper query times: {str(exp_helper_query_times)}'
     epoch_logger.info(task_name,goal,action_history,time_info,complete_rate,task_path)
-    # pass
     
 def run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph,guidance):
     start_time = time.time()
@@ -93,6 +73,8 @@ def run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph,guidance)
     print("Task Goal is: ",task_data['Goal'])
     print('='*60)
     evaluator=Evaluator(task_path,logger,epoch_path)
+
+    can_ask_human_to_check_eventually=args.human_check_eventually
 
     if args.model=='ours':
         ##test
@@ -131,7 +113,7 @@ def run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph,guidance)
         action,plan = agent.act() #Planning   
         if action=="human guided":
             continue 
-        if action=="Failed" or action=='over':
+        if action=="Failed":
             print("Task Path is: ",task_path)
             print("Task Goal is: ",task_data['Goal'])
             executed_actions=env.report_actions()
@@ -139,17 +121,40 @@ def run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph,guidance)
             if evaluation_result=="Keystate Evaluate Error":
                 print("Keystate Evaluate Error")
                 return False
-            if action=='Failed':
-                print("Task failed")
+            print("Task failed")
             if epoch_logger:
                 task_summary_record(epoch_logger,task_data['Task name'],task_data['Goal'],executed_actions,start_time,complete_rate,task_path,agent.exp_helper_query_times)
+            return True
+        
+        if action=='over':
+            print("Task Path is: ",task_path)
+            print("Task Goal is: ",task_data['Goal'])
+            executed_actions=env.report_actions()
+            evaluation_result,complete_rate=evaluator.evaluate_final(ast=None,action_history=agent.add_info_action_history_for_evaluation,Root=True)
+            if evaluation_result=="Keystate Evaluate Error":
+                print("Keystate Evaluate Error")
+                return False
+            
+            if evaluation_result:
+                print("Task Success")
+                if epoch_logger:
+                    task_summary_record(epoch_logger,task_data['Task name'],task_data['Goal'],executed_actions,start_time,1,task_path,agent.exp_helper_query_times)
+                return True
+            else:
+                if can_ask_human_to_check_eventually:
+                    action="human guided"
+                    continue
+
+                if epoch_logger:
+                    task_summary_record(epoch_logger,task_data['Task name'],task_data['Goal'],executed_actions,start_time,complete_rate,task_path,agent.exp_helper_query_times)
             return True
         
         print('Action: ',str(action))
         observation = env.step(action) #Execute action
         agent.updates(observation) #Update agent's state
         evaluator.updates(observation) #Update evaluator's state
-        evaluation_result=evaluator.evaluate(ast=None,action_history=agent.add_info_action_history_for_evaluation,Root=True)
+        if not 'obs' in action.name and not 'exp' in action.name:
+            evaluation_result=evaluator.evaluate(ast=None,action_history=agent.add_info_action_history_for_evaluation,Root=True)
         if evaluation_result:
             executed_actions=env.report_actions()
             print("Task Success")
@@ -161,11 +166,11 @@ def test_evaluate(args):
     _,classes,init_scene_graph,guidance=load_scene()
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     epoch_logger = setup_logger(f'log/epoch_{timestamp}',timestamp=timestamp)
-    task_path='/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/cdl_dataset/dataset/Wash_windows/g1.txt'
+    task_path='/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/cdl_dataset/dataset/Prepare_dinner/g2.txt'
     run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph,guidance)
 
 
-def evaluation(args):
+def evaluation(args): # main function
     files=evaluation_task_loader(dataset_folder_path)
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     epoch_logger = setup_logger(f'log/epoch_{timestamp}',timestamp=timestamp)
@@ -182,6 +187,7 @@ def evaluation(args):
         #     continue
     end_time = datetime.now().strftime('%Y%m%d_%H%M%S')
     epoch_logger.info('Evaluation Finished',end_time,'','','','')
+
 
 def check_evaluation(args):
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -204,7 +210,7 @@ def check_evaluation_single(args):
 
 if __name__ == '__main__':
     args = parse_args()
-    evaluation(args)
-    # test_evaluate(args)
+    # evaluation(args)
+    test_evaluate(args)
     # check_evaluation(args)
     # check_evaluation_single(args)

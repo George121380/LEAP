@@ -1,0 +1,180 @@
+Goal Representation,Debug Result,Action,Add Info,LLM Answer,Plan
+"Reset goals: The sub-goals are: 
+['1. Wash the shirt.', '2. Dry the shirt.', '3. Iron the shirt.']",,,,,
+" 
+behavior clean_shirt(shirt:item, washing_machine:item, detergent:item):
+    body:
+        achieve dirty(shirt)
+        # Ensure the shirt is dirty as a starting state
+        
+        achieve inside(shirt, washing_machine)
+        # Place the shirt in the washing machine
+
+        achieve inside(detergent, washing_machine)
+        # Add detergent to the washing machine for cleaning
+
+        achieve closed(washing_machine)
+        # Close the washing machine door before starting the wash cycle
+
+        achieve is_on(washing_machine)
+        # Turn on the washing machine to start the washing cycle
+
+behavior __goal__():
+    body:
+        bind shirt: item where:
+            is_clothes_shirt(shirt)
+        # Identify the shirt to be washed
+
+        bind washing_machine: item where:
+            is_washing_machine(washing_machine)
+        # Identify the washing machine available
+
+        bind detergent: item where:
+            is_detergent(detergent)
+        # Identify detergent for washing clothes
+        
+        clean_shirt(shirt, washing_machine, detergent)
+        # Execute the behavior to clean the shirt using the washing machine
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Wash the shirt.', '2. Iron the shirt.']",,,,,
+" 
+def in_basket_for_clothes(shirt:item, basket:item):
+    # Function to check if a shirt is in the basket for clothes
+    return inside(shirt, basket) and is_basket_for_clothes(basket)
+
+behavior wash_the_shirt(shirt:item, washing_machine:item):
+    body:
+        achieve inside(shirt, washing_machine)
+        # Place the shirt inside the washing machine
+        achieve closed(washing_machine)
+        # Close the washing machine door
+        achieve is_on(washing_machine)
+        # Start the washing machine
+
+behavior __goal__():
+    body:
+        bind shirt: item where:
+            is_clothes_shirt(shirt) and dirty(shirt)
+        # Select a dirty shirt
+        
+        bind basket: item where:
+            is_basket_for_clothes(basket) and in_basket_for_clothes(shirt, basket)
+        # Locate the basket where the shirt is stored
+
+        bind washing_machine: item where:
+            is_washing_machine(washing_machine)
+        # Select the washing machine
+
+        wash_the_shirt(shirt, washing_machine)
+        # Wash the shirt in the washing machine
+
+        achieve clean(shirt) and inside(shirt, basket)
+        # Ensure the shirt is clean and placed back in the basket afterward
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Wash the shirt.', '2. Iron the shirt.']",,,,,
+"behavior wash_shirt(shirt:item, sink:item):
+    body:
+        achieve inside(shirt, sink)
+        # Place the shirt inside the sink for washing
+        if exists faucet: item: is_faucet(faucet) and close(faucet, sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_on(faucet)
+            # If there is a faucet near the sink, turn it on for washing
+        wash(shirt) 
+        # Wash the shirt in the sink
+        if exists faucet: item: is_faucet(faucet) and close(faucet, sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_off(faucet)
+            # Turn off the faucet after washing
+
+behavior __goal__():
+    body:
+        bind shirt: item where:
+            is_clothes_shirt(shirt) and dirty(shirt)
+        # Select the shirt that needs to be washed
+        bind sink: item where:
+            is_sink(sink)
+        # Select any available sink
+        wash_shirt(shirt, sink)",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Wash the shirt.', '2. Iron the shirt.']",,,,,
+"
+behavior wash_shirt(shirt:item):
+    body:
+        wash(shirt)
+
+behavior __goal__():
+    body:
+        bind shirt: item where:
+            is_clothes_shirt(shirt) and dirty(shirt)
+        wash_shirt(shirt)
+",From function reset_goal,,,,
+,,,,"Record from func query_real_human in agent.py
+Question: Can you teach me how to ""1. wash the shirt."" ?
+Answer: put the shirt in the sink and wash it
+",
+" 
+def is_clothes_shirt_dirty(shirt:item):
+    # Function to check if the shirt is dirty
+    symbol is_dirty=exists o: item : is_clothes_shirt(o) and dirty(o) and id[o]==id[shirt]
+    return is_dirty
+
+behavior clean_shirt(shirt:item, sink:item):
+    body:
+        achieve_once inside(shirt, sink)
+        # Ensure the shirt is placed inside the sink
+
+        if is_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_on(faucet)
+            # If the sink has a faucet, turn it on to wash the shirt
+
+        wash(shirt) # This is the key step of the behavior, used for washing the shirt
+
+        if is_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_off(faucet)
+            # Turn off the faucet after washing
+
+behavior __goal__():
+    body:
+        bind shirt: item where:
+            is_clothes_shirt(shirt) and is_clothes_shirt_dirty(shirt)
+        # Select a dirty shirt
+
+        bind sink: item where:
+            is_sink(sink)
+        # Select a sink
+
+        clean_shirt(shirt, sink)
+",From function reset_sub_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Wash the shirt.', '2. Iron the shirt.']",,,,,
+" 
+behavior wash_shirt(shirt:item, sink:item):
+    body:
+        achieve clean(shirt)
+
+behavior __goal__():
+    body:
+        bind shirt: item where:
+            is_clothes_shirt(shirt)
+        # Select the shirt to be washed
+        bind sink: item where:
+            is_sink(sink)
+        # Select a sink for washing
+        wash_shirt(shirt, sink)
+",From function reset_goal,,,,
+,,,,,"(CrowControllerApplier<walk_executor(closetdrawer_388)>, CrowControllerApplier<exp(clothes_shirt_208
+6, closetdrawer_388)>, CrowControllerApplier<walk_executor(clothes_shirt_2086)>, CrowControllerAppli
+er<wash_executor(clothes_shirt_2086)>)"
+,,walk_executor(closetdrawer_388),"Find hanger_361. Find hanger_372. Find hanger_363. Find hanger_374. Find hanger_375. Find hanger_367
+. Find hanger_359. Find hanger_369. Find hanger_365. Find hanger_376. Robot is inside home_office_31
+9. Robot is close closetdrawer_394. Robot is close closetdrawer_388. Robot is close dresser_358. Rob
+ot is no longer inside bathroom_1.",,

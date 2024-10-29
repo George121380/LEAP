@@ -101,18 +101,21 @@ def run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph,guidance)
     if keystates_combination=='No keystate is needed':
         return
     for combination in keystates_combination:
+        result_dict[task_path][str(combination)]={}
+
         evaluator=Evaluator(task_path,logger,epoch_path)
         env=VH_Env(init_scene_graph)
         for key in combination:
             plan=evaluator.complete_single_keystate(key)
-            result_dict[task_path][key]=len(plan)
+            result_dict[task_path][str(combination)][key]=len(plan)
             for action in plan:
                 print('Action: ',str(action))
                 observation = env.step(action) #Execute action
                 evaluator.updates(observation) #Update evaluator's state
+    json.dump(result_dict,open('result.json','w'),indent=4)
        
 
-def evaluation(args):
+def counting(args):
     files=evaluation_task_loader(dataset_folder_path)
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     epoch_logger = setup_logger(f'log/epoch_{timestamp}',timestamp=timestamp)
@@ -120,10 +123,14 @@ def evaluation(args):
     for task_file in files:
         _,classes,init_scene_graph,guidance=load_scene()
         task_path=os.path.join(dataset_folder_path,task_file)
+        if task_path in result_dict:
+            continue
         Debug=run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph,guidance)
     print(result_dict)
-    json.dump(result_dict,open('result.json','w'))
         
 if __name__ == '__main__':
     args = parse_args()
-    evaluation(args)
+    if os.path.exists('result.json'):
+        with open('result.json') as f:
+            result_dict=json.load(f)
+    counting(args)

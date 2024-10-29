@@ -43,6 +43,11 @@ class Human:
         self.name2id = name2id
 
     def QA(self,question):
+        """
+        Args:
+            input: question (str)
+            Returns: LLM_answer (str)
+        """
         if 'help me to find' in question: # exploration problem
             target=re.search(r'find (.*?) \?', question).group(1)
             target_id=self.name2id[target]

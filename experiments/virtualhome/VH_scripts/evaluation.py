@@ -11,7 +11,7 @@ sys.path.append('embodied-agent-eval/src/VIRTUALHOME/AgentEval-main/virtualhome_
 sys.path.append('cdl_dataset/scripts')
 
 from experiments.virtualhome.VH_scripts.agent import VHAgent
-from utils_eval import get_from_dataset,get_nodes_information,construct_cdl
+from utils_eval import get_nodes_information,construct_cdl
 from env import VH_Env
 from environment import EnvironmentState, EnvironmentGraph
 import random
@@ -123,7 +123,7 @@ class Evaluator:
         self.wrapped_keystates_func={}
         self.wrap_keystates()
         self.achieved_keystates=set()
-        self.start_counting=self.left_action_counting_for_each_keystate()
+        # self.start_counting=self.left_action_counting_for_each_keystate()
         self.end_counting=None
         self.action_completion_rate="No required actions"
         self.Logic=parse_logic_from_file_path(task_file_path)
@@ -678,7 +678,7 @@ class Evaluator:
         cdl_state = self.get_state()
         plans, stats = crow.crow_regression(
         cdl_state.domain, cdl_state, goal=cdl_state.goal, min_search_depth=12, max_search_depth=12,
-        is_goal_ordered=True, is_goal_serializable=False, always_commit_skeleton=True,
+        is_goal_ordered=True, is_goal_serializable=False, always_commit_skeleton=True, commit_skeleton_everything=False,
         enable_state_hash=False,
         verbose=False
     )
@@ -825,31 +825,32 @@ class Evaluator:
         # Calculate the completion rate of each keystate
         complete_rate={}
         complete_rate['Keystate']={}
-        complete_rate['Action']={}
-        for key in self.start_counting:
-            if self.start_counting[key]==1e9 or self.end_counting[key]==1e9:
-                complete_rate['Keystate'][key]="Keystate Evaluate Error"
-                return "Keystate Evaluate Error",None
-                # continue
-            if self.start_counting[key]==0 and self.end_counting[key]==0:
-                complete_rate['Keystate'][key]=1
-                print(f"Keystate: {key} - Completion Rate: 1")
-                continue
+        # complete_rate['Action']={}
+        # for key in self.start_counting:
+        #     if self.start_counting[key]==1e9 or self.end_counting[key]==1e9:
+        #         complete_rate['Keystate'][key]="Keystate Evaluate Error"
+        #         return "Keystate Evaluate Error",None
+        #         # continue
+        #     if self.start_counting[key]==0 and self.end_counting[key]==0:
+        #         complete_rate['Keystate'][key]=1
+        #         print(f"Keystate: {key} - Completion Rate: 1")
+        #         continue
         
-            if self.start_counting[key]==0:
-                complete_rate['Keystate'][key]=0
-                print(f"Keystate: {key} - Completion Rate: 0")
-                continue
+        #     if self.start_counting[key]==0:
+        #         complete_rate['Keystate'][key]=0
+        #         print(f"Keystate: {key} - Completion Rate: 0")
+        #         continue
 
-            cr=1-(self.end_counting[key]/self.start_counting[key])
-            complete_rate['Keystate'][key]=max(cr,0)
-            print(f"Keystate: {key} - Completion Rate: {complete_rate['Keystate'][key]}")
+        #     cr=1-(self.end_counting[key]/self.start_counting[key])
+        #     complete_rate['Keystate'][key]=max(cr,0)
+        #     print(f"Keystate: {key} - Completion Rate: {complete_rate['Keystate'][key]}")
+
 
         complete_rate['Action']=self.action_completion_rate
-        print(f"Action Completion Rate: {complete_rate['Action']}")
+        # print(f"Action Completion Rate: {complete_rate['Action']}")
         complete_rate_info=''
-        for key in complete_rate['Keystate']:
-            complete_rate_info+=f"Keystate: {key} - Completion Rate: {complete_rate['Keystate'][key]}\n"
+        for key in self.end_counting:
+            complete_rate_info+=f"Keystate: {key} - Requires: {self.end_counting[key]} steps\n"
         complete_rate_info+=f"Action Completion Rate: {complete_rate['Action']}"
         print(complete_rate_info)
 

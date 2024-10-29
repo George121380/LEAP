@@ -98,8 +98,8 @@ def calculation(result_list):
     for entry in result_list:
         task_success_rate = 0
         task_path = entry['task_path']
-        if task_path=='cdl_dataset/dataset/Put_groceries_in_Fridge/g3.txt':
-            print('debug')
+        # if task_path=='cdl_dataset/dataset/Put_groceries_in_Fridge/g3.txt':
+        #     print('debug')
         if entry['success'] == 'syntax error':
             task_success_rate = 0
         elif entry['success']:

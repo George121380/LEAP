@@ -66,38 +66,38 @@ def construct_cdl(init_path,objects,states,relationships,properties,cat_statemen
         file.write(problem_file_content)
     
 
-def extract_script(file_path):
-    with open(file_path, "r") as file:
-        lines = file.readlines()
-        task_name = lines[0]
-        task_description = lines[1]
-        actions = [line.strip() for line in lines if line.startswith("[")]
-    return task_name, task_description, actions
+# def extract_script(file_path):
+#     with open(file_path, "r") as file:
+#         lines = file.readlines()
+#         task_name = lines[0]
+#         task_description = lines[1]
+#         actions = [line.strip() for line in lines if line.startswith("[")]
+#     return task_name, task_description, actions
 
-def get_from_dataset(dataset_root, scenegraph_id, script_id):
-    dataset_root="/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/embodied-agent-eval/src/VIRTUALHOME/AgentEval-main/virtualhome_eval/dataset/programs_processed_precond_nograb_morepreconds"
-    scene_dir = os.path.join(
-        dataset_root,
-        "init_and_final_graphs",
-        f"TrimmedTestScene{scenegraph_id}_graph",
-        "results_intentions_march-13-18",
-        f"file{script_id}.json",
-    )
-    graph_dict = json.load(open(scene_dir, "r"))
-    init_scene_state = graph_dict["init_graph"]
-    init_scene_graph = EnvironmentGraph(init_scene_state)
-    final_state_dict = graph_dict["final_graph"]
+# def get_from_dataset(dataset_root, scenegraph_id, script_id):
+#     dataset_root="/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/embodied-agent-eval/src/VIRTUALHOME/AgentEval-main/virtualhome_eval/dataset/programs_processed_precond_nograb_morepreconds"
+#     scene_dir = os.path.join(
+#         dataset_root,
+#         "init_and_final_graphs",
+#         f"TrimmedTestScene{scenegraph_id}_graph",
+#         "results_intentions_march-13-18",
+#         f"file{script_id}.json",
+#     )
+#     graph_dict = json.load(open(scene_dir, "r"))
+#     init_scene_state = graph_dict["init_graph"]
+#     init_scene_graph = EnvironmentGraph(init_scene_state)
+#     final_state_dict = graph_dict["final_graph"]
 
-    script_dir = os.path.join(
-        dataset_root,
-        "executable_programs",
-        f"TrimmedTestScene{scenegraph_id}_graph",
-        "results_intentions_march-13-18",
-        f"file{script_id}.txt",
-    )
+#     script_dir = os.path.join(
+#         dataset_root,
+#         "executable_programs",
+#         f"TrimmedTestScene{scenegraph_id}_graph",
+#         "results_intentions_march-13-18",
+#         f"file{script_id}.txt",
+#     )
 
-    task_name, task_description, actions = extract_script(script_dir)
-    return init_scene_graph, actions, final_state_dict, task_name, task_description
+#     task_name, task_description, actions = extract_script(script_dir)
+#     return init_scene_graph, actions, final_state_dict, task_name, task_description
 
 def reformat_actions(commands):
     reformatted_commands = []
@@ -376,3 +376,5 @@ def check_unexplorable(location_name):
     location_category='_'.join(location_name.split('_')[:-1])
     unexplorable_list=['room','wall','ceiling','bathroom','bedroom','dining_room','floor']
     return location_category in unexplorable_list
+
+

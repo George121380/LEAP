@@ -1,0 +1,114 @@
+Goal Representation,Debug Result,Action,Add Info,LLM Answer,Plan
+"Reset goals: The sub-goals are: 
+['1. Wash the shirt.', '2. Iron the shirt.']",,,,,
+" 
+behavior wash_shirt(shirt:item, washing_machine:item):
+    body:
+        achieve inside(shirt, washing_machine)
+        # Place the shirt inside the washing machine
+
+behavior start_washing_machine(washing_machine:item):
+    body:
+        achieve closed(washing_machine) # Close the washing machine door
+        achieve is_on(washing_machine) # Start the washing machine
+
+behavior __goal__():
+    body:
+        bind shirt: item where:
+            is_clothes_shirt(shirt) and dirty(shirt)
+        # Select a dirty shirt
+        bind washing_machine: item where:
+            is_washing_machine(washing_machine)
+        # Select a washing machine
+        
+        wash_shirt(shirt, washing_machine)
+        start_washing_machine(washing_machine)
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Wash the shirt.', '2. Iron the shirt.']",,,,,
+" 
+def is_shirt_and_dirty(item:item):
+    # Check if the item is a shirt and is dirty
+    return is_clothes_shirt(item) and dirty(item)
+
+behavior wash_shirt(in_dirty_shirt:item):
+    body:
+        assert is_shirt_and_dirty(in_dirty_shirt)
+        wash(in_dirty_shirt)
+        achieve clean(in_dirty_shirt)
+
+behavior __goal__():
+    body:
+        bind dirty_shirt: item where:
+            is_clothes_shirt(dirty_shirt) and dirty(dirty_shirt)
+        wash_shirt(dirty_shirt)
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Wash the shirt.', '2. Dry the shirt.', '3. Iron the shirt.']",,,,,
+"
+behavior wash_shirt(shirt:item, washing_machine:item):
+    body:
+        achieve inside(shirt, washing_machine)
+        # Put the shirt inside the washing machine
+        achieve closed(washing_machine)
+        # Close the washing machine door
+        achieve is_on(washing_machine)
+        # Turn on the washing machine to start washing the shirt
+
+behavior __goal__():
+    body:
+        bind shirt: item where:
+            is_clothes_shirt(shirt) and dirty(shirt)
+        # Select the dirty shirt
+        bind washing_machine: item where:
+            is_washing_machine(washing_machine)
+        # Select a washing machine
+        wash_shirt(shirt, washing_machine)
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Wash the shirt.', '2. Dry the shirt.', '3. Iron the shirt.']",,,,,
+" 
+def is_dirt_on_shirt(shirt:item):
+    # Function to check if there is dirt on the shirt
+    symbol dirt_on_shirt=dirty(shirt)
+    return dirt_on_shirt
+
+behavior wash_shirt(shirt:item, sink:item):
+    body:
+        achieve inside(shirt, sink)
+        # Place the shirt inside the sink
+
+        if is_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet,sink)
+            achieve_once is_on(faucet)
+            # If the pool has a faucet, turn it on to wash
+
+        wash(shirt) 
+        # Wash the shirt
+
+        if is_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet,sink)
+            achieve_once is_off(faucet)
+            # If the pool has a faucet, turn it off after washing
+
+behavior check_cleaned_shirt(shirt:item):
+    body:
+        if is_dirt_on_shirt(shirt):
+            # The shirt is still dirty after washing
+            achieve clean(shirt) 
+        # If the shirt still has dirt, clean it again until it is clean
+
+behavior __goal__():
+    body:
+        bind shirt: item where:
+            is_clothes_shirt(shirt)
+
+        bind sink: item where:
+            is_sink(sink)
+        # Select a sink
+
+        wash_shirt(shirt, sink)
+        check_cleaned_shirt(shirt)
+",From function reset_goal,,,,

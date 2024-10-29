@@ -10,6 +10,7 @@ from Interpretation import exploration_VH,sub_goal_generater,obs_query,sub_goal_
 from action_explaination import controller_to_natural_language
 import pdb
 import os
+import time
 
 class VHAgent:
     def __init__(self, args, filepath, logger, PO=True,epoch_path=None):
@@ -28,16 +29,18 @@ class VHAgent:
         self.character_state = {}
         self.exploration = {}
         self.download_mode='ALL' # how to download behaviors from library
+
         # Task information
         self.task_name=''
         self.goal_nl=''
         self.current_subgoal_nl=''
         self.current_subgoal_num=0
-        self.self_evaluate_num=0
+        self.self_evaluate_times_for_current_subgoal=0
         self.current_sub_task_guided=False
-        if self.args.human_guidance==False:
+        if self.args.human_guidance=='None':
             self.current_sub_task_guided=True
         self.sub_goal_list=[]
+        self.completed_sub_goal_list=[]
         self.add_info_nl=''
         self.add_info_human_instruction=''
         self.add_info_trial_and_error_info=''
@@ -64,12 +67,11 @@ class VHAgent:
         self.state_file_path = os.path.join(epoch_path,'current_agent_state.cdl')
         self.reset_add_info_record()
         self.reset_goal_representation_record()
-        # do not replan every step
-        self.newfind=True
+        self.need_replan=True # need replan, when find something new or regenerate a goal representation
         self.plan=[]
         self.current_step=0
         self.exp_fail_num=0
-        self.error_times=0
+        self.empty_plan_times=0
         self.max_replan_num=3
         self.library=behavior_library(epoch_path)
         self._parse_file(filepath)
@@ -101,28 +103,51 @@ class VHAgent:
         self.human_helper=human_helper
         self.human_helper.set_name2id(self.name2id)
 
-    def query_human(self,question:str):
-        record='Record from func query_human in agent.py\n'
+    def query_LLM_human(self,question:str):
+        record='Record from func query_LLM_human in agent.py\n'
         record+=f'Question: {question}\n'
         answer=self.human_helper.QA(question)
         record+=f'Answer: {answer}\n'
         self.logger.info("","","","",record,"")
         return answer
     
+    def query_real_human(self,question:str):
+        record='Record from func query_real_human in agent.py\n'
+        record+=f'Question: {question}\n'
+        re_decompose= input("Do you think I should re-decompose the task? (y/n): ")
+        if re_decompose=='y' or re_decompose=='yes':
+            re_decompose=True
+        else:
+            re_decompose=False
+        answer = input(f"{question}\nYour answer: ")
+        record+=f'Answer: {answer}\n'
+        self.logger.info("","","","",record,"")
+
+        return answer,re_decompose
+    
     def ask_for_human_task_guidance(self):
         self.current_sub_task_guided=True
+        re_decompose=False
         question=f'Can you teach me how to "{self.current_subgoal_nl.lower()}" ?'
-        Human_Guidance=self.query_human(question)
+
+        if self.args.human_guidance=='LLM':
+            Human_Guidance=self.query_LLM_human(question)
+
+        if self.args.human_guidance=='Manual':
+            Human_Guidance,re_decompose=self.query_real_human(question)
+
         self.current_subtask_guidance=Human_Guidance
         self.update_add_info()
 
         self.record_add_info()
-        self.error_times=0
+        self.empty_plan_times=0
+
+        return re_decompose
     
     def set_initial_human_instruction(self,goal):
         # debug used
         self.goal_nl=goal
-        ini_human_instruction=self.query_human(f"Can you tell me how to {self.goal_nl.lower()}")
+        ini_human_instruction=self.query_LLM_human(f"Can you tell me how to {self.goal_nl.lower()}")
         if ini_human_instruction!="I don't know.":
             self.add_info_human_instruction=f"To {self.goal_nl.replace('.',',').lower()} you can {ini_human_instruction.lower()}"
         self.update_add_info()
@@ -142,7 +167,8 @@ class VHAgent:
         if self.add_info_action_history:
             self.add_info_nl+="The actions you have taken:\n"
             for id in range(len(self.add_info_action_history)):
-                self.add_info_nl+=f"Action {id+1}: {controller_to_natural_language(self.add_info_action_history[id]['action'])} -> effect: {self.add_info_action_history[id]['effects']}\n"
+                # self.add_info_nl+=f"Action {id+1}: {controller_to_natural_language(self.add_info_action_history[id]['action'])} -> effect: {self.add_info_action_history[id]['effects']}\n"
+                self.add_info_nl+=f"Action {id+1}: {controller_to_natural_language(self.add_info_action_history[id]['action'])}\n"
 
     def _initialize_relationships(self):
         relationship_features = [
@@ -554,7 +580,7 @@ class VHAgent:
                 file.write("\n#goal_representation_end\n")
     
     def updates(self,observation):
-        if "You can not" in observation: # if this action is not executable
+        if "You can not" in observation: # if this action is not executable, environment feedback
             self.add_info_trial_and_error_info+=observation
             self.update_add_info()
             self.record_add_info()
@@ -658,7 +684,7 @@ class VHAgent:
                         else:
                             print('error in state updates')
 
-            if observation['exp_flag']:# exploration
+            if observation['exp_flag']:# action==explore
                 exp_target=observation['exp_target']
                 exp_loc=observation['exp_loc']
                 for new_known in observation['known']:
@@ -673,12 +699,12 @@ class VHAgent:
                 if exp_target in observation['known'] or not self.exploration['unknown'][self.name2opid[exp_target]]:
                     print(f'{exp_target} is successfully explored around {exp_loc} or already known before')
                     action_effects+=f"Find {exp_target}. "
-                    self.newfind=True # find sth new
+                    self.need_replan=True # find sth new
 
                 else:
                     if self.exp_fail_num==5:
                         self.exp_helper_query_times+=1
-                        human_answer=self.query_human(f'Can you help me to find {exp_target} ?')
+                        human_answer=self.query_LLM_human(f'Can you help me to find {exp_target} ?')
                         print(f'Query human about the location of {exp_target}.')
                         self.exp_fail_num=0
                         self.add_info_human_instruction+=human_answer+'\n'
@@ -692,9 +718,9 @@ class VHAgent:
                     self.save_to_file()
                     self.save_to_file(self.state_file_path)
                     self.exploration_behavior=exploration_VH(self.goal_nl,self.add_info_nl,self.internal_executable_file_path,self.exploration['checked'])
-                    self.newfind=True
+                    self.need_replan=True
 
-            if observation['obs_flag']:
+            if observation['obs_flag']: # action==observe
                 obs_target=observation['obs_target']
                 self.state['visited'][self.name2opid[obs_target]]=True
                 for new_known in observation['known']:
@@ -702,7 +728,6 @@ class VHAgent:
                         continue
                     if self.exploration['unknown'][self.name2opid[new_known]]==True:
                         self.exploration['unknown'][self.name2opid[new_known]]=False
-                        # self.newfind=True # find sth new
                 
                 for check_place in observation['checked']:
                     if 'character' in check_place:
@@ -781,8 +806,6 @@ class VHAgent:
             if knife_id in union_indices:
                 self.state['cut'][target_id]=True
 
-
-
     def organize_obs_result(self,observation):
         discription=''
         for info in observation:
@@ -817,18 +840,23 @@ class VHAgent:
         return problem
 
     def act(self):
-        while self.error_times<self.max_replan_num:
-            if self.newfind:
+        while True:
+            if self.need_replan: # exp and know new items
                 # pdb.set_trace()
                 cdl_state = self.get_state()
+                #time
                 plans, stats = crow.crow_regression(
                 cdl_state.domain, cdl_state, goal=cdl_state.goal, min_search_depth=12, max_search_depth=12,
-                is_goal_ordered=True, is_goal_serializable=False, always_commit_skeleton=True,
+                is_goal_ordered=True, is_goal_serializable=False, always_commit_skeleton=True, commit_skeleton_everything=False,
                 enable_state_hash=False,
                 verbose=False
             )
-                if len(plans) == 0:
-                    self.error_times+=1
+
+                if len(plans) == 0: # No plan found -> usually bind is not satisfied
+                    self.empty_plan_times+=1
+                    if self.empty_plan_times==self.max_replan_num:
+                        print(f'Try to generate the plan for {self.max_replan_num} times, but failed.')
+                        break
                     if self.current_subgoal_num==0:
                         print('No plan found. Reset the whole goal')
                         self.reset_goal(self.goal_nl,self.classes,self.task_name,First_time=False,sub_goal=True)
@@ -837,9 +865,9 @@ class VHAgent:
                         self.reset_sub_goal()
                     continue
 
-                plan = plans[0]
+                plan = plans[0] # Get the first plan, when there are multiple plans found by the planner
                 if len(plan) == 0:# This can also be a situation that this sub-task is already finished before.
-                    self.error_times+=1
+                    self.empty_plan_times+=1
                     print('plan is a empty list')
                     if self.current_subgoal_num==0:
                             print('No plan found. Reset the whole goal')
@@ -859,34 +887,36 @@ class VHAgent:
                 action = plan[0]
                 self.current_step=1
                 self.plan=plan
-                self.newfind=False
+                self.need_replan=False
                 return action,plan #reset
             
-            else:
+            else: # stick to the current plan and execute the next step
                 if self.current_step==len(self.plan):
                     print('This is the last step for current sub-task')
-                    ########## evaluate subgoal start ###########
-                    while True:
+
+                    ########## evaluate current subgoal start ###########
+                    while True: # avoid the situation that the output does not contain both yes and no
                         result,insrtuctions=self.evaluate_current_subgoal()
-                        self.self_evaluate_num+=1
+                        self.self_evaluate_times_for_current_subgoal+=1
                         
                         if result.lower()=='yes':
-                            #move to next subgoal
-                            self.self_evaluate_num=0
-                            print('Sub-task is done')
+                            # The current subgoal is complete move to next subgoal
+                            self.completed_sub_goal_list.append(self.current_subgoal_nl)
+                            self.self_evaluate_times_for_current_subgoal=0
+                            print('current subgoal is done')
                             self.lift_behaviors()
                             self.current_subgoal_num+=1
-                            if self.args.human_guidance:
+                            if self.args.human_guidance!='None':
                                 self.current_sub_task_guided=False # reset the guided flag
                             self.current_subtask_guidance=''
                             break
                             
-                        if self.self_evaluate_num==3:
-                            self.self_evaluate_num=0
-                            print('Try to evaluate the sub-task for 3 times, but still failed. Force to move to the next sub task')
+                        if self.self_evaluate_times_for_current_subgoal==3:
+                            self.self_evaluate_times_for_current_subgoal=0
+                            print('Try to evaluate the sub-task for 3 times, but still failed. Force to move to the next sub task. Probably the current sub-task is unneccesary.')
                             result='yes'
                             self.current_subgoal_num+=1
-                            if self.args.human_guidance:
+                            if self.args.human_guidance!='None':
                                 self.current_sub_task_guided=False # reset the guided flag
                             self.current_subtask_guidance=''
                             break
@@ -897,7 +927,7 @@ class VHAgent:
                             self.update_add_info()
                             self.logger.info("","","",self.add_info_nl,"","")
                             self.reset_sub_goal()
-                            self.newfind=True
+                            self.need_replan=True
                             self.record_add_info()
                             break
                         
@@ -920,13 +950,31 @@ class VHAgent:
                 action=self.plan[self.current_step]
                 self.current_step+=1
                 return action,self.plan
+            
         # Beyond the max replan number
         if not self.current_sub_task_guided: # if not guided by human
-            self.ask_for_human_task_guidance()
+            print('Try to ask for human guidance in line 944')
+            print(self.current_subgoal_nl)
+            re_decompose=self.ask_for_human_task_guidance()
+            if re_decompose:
+                self.reset_goal_decomposition()
+            print('Got human guidance')
             self.reset_sub_goal()
             return "human guided",None
         else:
             return "Failed",None
+
+    def reset_goal_decomposition(self):
+        self.sub_goal_list=sub_goal_generater(self.goal_nl,self.completed_sub_goal_list,self.current_subtask_guidance) # Generate sub goals
+        print(self.sub_goal_list)
+        record='Reset goals: The sub-goals are: \n'+str(self.sub_goal_list)
+        # block while test
+        self.logger.info(record,"","","","","")
+        self.current_subgoal_nl=self.sub_goal_list[0]
+        self.current_subgoal_num=0
+        self.current_step=0
+        self.self_evaluate_times_for_current_subgoal=0
+
 
     def reset_goal(self,goal,classes,task_name,First_time=False,sub_goal=True):
         """
@@ -937,21 +985,23 @@ class VHAgent:
             First_time: whether it is the first time to set the goal
             sub_goal: whether we want to split the goal into sub-goals
         """
-        self.newfind=True
+        self.need_replan=True
         if First_time:
             self.goal_nl=goal
             self.task_name=task_name
             self.record_add_info()
             self.classes=classes
 
-        self.sub_goal_list=sub_goal_generater(goal)
-        print(self.sub_goal_list)
-        record='Reset goals: The sub-goals are: \n'+str(self.sub_goal_list)
+        # self.sub_goal_list=sub_goal_generater(self.goal_nl,self.completed_sub_goal_list,self.current_subtask_guidance) # Generate sub goals
 
-        # block while test
-        self.logger.info(record,"","","","","")
+        # print(self.sub_goal_list)
+        # record='Reset goals: The sub-goals are: \n'+str(self.sub_goal_list)
 
-        self.current_subgoal_nl=self.sub_goal_list[0]
+        # # block while test
+        # self.logger.info(record,"","","","","")
+
+        # self.current_subgoal_nl=self.sub_goal_list[0]
+        self.reset_goal_decomposition()
         # pdb.set_trace()
         _,self.goal_representation,self.exploration_behavior,self.behaviors_from_library_representation=VH_pipeline(self.state_file_path,self.internal_executable_file_path,self.current_subgoal_nl,self.add_info_nl,self.goal_nl,self.sub_goal_list[:self.current_subgoal_num],self.classes,self.behaviors_from_library)
         # pdb.set_trace()
@@ -961,24 +1011,33 @@ class VHAgent:
 
         if self.goal_representation==None:
             if self.current_sub_task_guided:
-                print("Failed to generate the goal representation")
+                print("Failed to generate a valid goal representation")
                 return
             else: # Try again after asking for human guidance
-                self.ask_for_human_task_guidance()
+                print('Ask human guidance because the agent fail to generate a valid goal representation')
+                print(self.current_subgoal_nl)
+
+                re_decompose=self.ask_for_human_task_guidance()
+                if re_decompose:
+                    self.reset_goal_decomposition()
                 _,self.goal_representation,self.exploration_behavior,self.behaviors_from_library_representation=VH_pipeline(self.state_file_path,self.internal_executable_file_path,self.current_subgoal_nl,self.add_info_nl,self.goal_nl,self.sub_goal_list[:self.current_subgoal_num],self.classes,self.behaviors_from_library)
                 if self.goal_representation==None:
                     print("Failed to generate the goal representation after asking for human guidance")
                     return
 
     def reset_sub_goal(self):
-        self.newfind=True
+        self.need_replan=True
         _,self.goal_representation,self.exploration_behavior,self.behaviors_from_library_representation=VH_pipeline(self.state_file_path,self.internal_executable_file_path,self.current_subgoal_nl,self.add_info_nl,self.goal_nl,self.sub_goal_list[:self.current_subgoal_num],self.classes,self.behaviors_from_library)
         if self.goal_representation==None:
             if self.current_sub_task_guided:
                 print("Failed to generate the goal representation")
                 return
             else: # Try again after asking for human guidance
-                self.ask_for_human_task_guidance()
+                print('Try to ask for human guidance in line 1002')
+                print(self.current_subgoal_nl)
+                re_decompose=self.ask_for_human_task_guidance()
+                if re_decompose:
+                    self.reset_goal_decomposition()
                 _,self.goal_representation,self.exploration_behavior,self.behaviors_from_library_representation=VH_pipeline(self.state_file_path,self.internal_executable_file_path,self.current_subgoal_nl,self.add_info_nl,self.goal_nl,self.sub_goal_list[:self.current_subgoal_num],self.classes,self.behaviors_from_library)
                 if self.goal_representation==None:
                     print("Failed to generate the goal representation after asking for human guidance")
@@ -997,6 +1056,9 @@ class VHAgent:
         else:
             result,insrtuctions=sub_goal_evaluate(self.goal_representation,self.add_info_action_history,self.current_subgoal_nl,self.goal_nl, self.sub_goal_list[self.current_subgoal_num+1],self.add_info_nl,self.name2opid.keys())
         return result,insrtuctions
+    
+    def final_human_check(self):
+        pass
     
     def reset_add_info_record(self):
         record_path='visualization/add_info_monitor.txt'

@@ -1,0 +1,1116 @@
+Goal Representation,Debug Result,Action,Add Info,LLM Answer,Plan
+"Reset goals: The sub-goals are: 
+['1. Wash the shirt thoroughly.', '2. Iron the shirt once it is dry.']",,,,,
+" 
+def in_bathroom(sink: item):
+    # Determine whether the sink is in the bathroom
+    symbol in_bathroom=exists room: item : is_bathroom(room) and inside(sink, room)
+    return in_bathroom
+
+behavior wash_shirt_in_sink(shirt: item, sink: item):
+    body:
+        # Place the shirt inside the sink
+        achieve inside(shirt, sink)
+
+        # If the sink has a faucet, turn it on and then wash the shirt
+        if is_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_on(faucet)
+            wash(shirt)
+            achieve_once is_off(faucet)
+        else:
+            wash(shirt)
+
+behavior __goal__():
+    body:
+        bind shirt: item where:
+            is_clothes_shirt(shirt)
+        # Select the shirt to be washed
+
+        if exists sink: item where: is_sink(sink) and in_bathroom(sink):
+            # If a bathroom sink is available, use it for washing
+            bind sink: item where:
+                is_sink(sink) and in_bathroom(sink)
+            wash_shirt_in_sink(shirt, sink)
+        else:
+            foreach sink: item:
+                if is_sink(sink) and not visited(sink):
+                    observe(sink, ""Check if the sink is in the bathroom and has a faucet"")
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Wash the shirt.', '2. Iron the shirt.']",,,,,
+" 
+def is_dirty_clothes(item:item):
+    # Check if the item is a dirty piece of clothing
+    symbol is_clothes=is_clothes(item) and dirty(item)
+    return is_clothes
+
+def is_washable(item:item):
+    # Check if the item can be washed
+    symbol washable_item=is_clothes(item)
+    return washable_item
+
+behavior wash_dirty_clothes(item:item, sink:item):
+    # Define the behavior to wash a piece of dirty clothing in the sink
+    body:
+        achieve inside(item, sink)
+        # Place the clothing item in the sink
+
+        if is_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet,sink)
+            achieve_once is_on(faucet)
+            # Turn on the faucet if its near the sink
+        
+        scrub(item)
+        rinse(item)
+        
+        if is_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet,sink)
+            achieve_once is_off(faucet)
+            # Turn off the faucet after washing
+        
+behavior __goal__():
+    body:
+        bind clothes: item where:
+            is_dirty_clothes(clothes)
+        # Bind the shirt to wash
+        bind sink: item where:
+            is_sink(sink)
+        # Bind a sink
+        wash_dirty_clothes(clothes, sink)
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Find the shirt that needs cleaning.', '2. Wash the shirt.', '3. Iron the shirt.']",,,,,
+" 
+def is_shirt_dirty(shirt: item):
+    # Function to check if a shirt is dirty
+    symbol shirt_is_dirty = dirty(shirt) and not visited(shirt)
+    return shirt_is_dirty
+
+behavior __goal__():
+    body:
+        if exists shirt: item : is_clothes_shirt(shirt) and is_shirt_dirty(shirt):
+            # Check if there is a shirt that needs cleaning
+            bind shirt: item where:
+                is_clothes_shirt(shirt) and is_shirt_dirty(shirt)
+            # Select the shirt that needs cleaning
+            achieve close_char(char, shirt) 
+            # Approach the shirt that needs cleaning
+
+        else: 
+            # Inspect other potential shirts in the scenario if no shirt is identified
+            foreach shirt: item:
+                if is_clothes_shirt(shirt) and not visited(shirt):
+                    observe(shirt, ""Check if the shirt is dirty and needs cleaning"")
+                    # Check each unvisited shirt to determine if it needs cleaning
+",From function reset_goal,,,,
+,,,,,"(CrowControllerApplier<walk_executor(washing_machine_2007)>, CrowControllerApplier<open_executor(was
+hing_machine_2007)>, CrowControllerApplier<exp(clothes_shirt_2086, washing_machine_2007)>, CrowContr
+ollerApplier<walk_executor(clothes_shirt_2086)>, CrowControllerApplier<obs(clothes_shirt_2086, Check
+ if the shirt is dirty and needs cleaning)>)"
+,,walk_executor(washing_machine_2007),Robot is inside bathroom_1. Robot is close washing_machine_2007. ,,
+"/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-
+virtual-home/cdl_dataset/dataset/Iron_clothes/g1.txt",k1,missed actions: walk_executor(clothes_shirt_2086);wash_executor(clothes_shirt_2086);,missed action num: 2,,
+,,open_executor(washing_machine_2007),Robot is inside bathroom_1. Robot is close washing_machine_2007. ,,
+"/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-
+virtual-home/cdl_dataset/dataset/Iron_clothes/g1.txt",k1,missed actions: walk_executor(clothes_shirt_2086);wash_executor(clothes_shirt_2086);,missed action num: 2,,
+,,"exp(clothes_shirt_2086, washing_machine_2007)",Failed to find clothes_shirt_2086 around washing_machine_2007. ,,
+,,,,,"(CrowControllerApplier<walk_executor(bathroom_cabinet_40)>, CrowControllerApplier<open_executor(bath
+room_cabinet_40)>, CrowControllerApplier<exp(clothes_shirt_2086, bathroom_cabinet_40)>, CrowControll
+erApplier<walk_executor(clothes_shirt_2086)>, CrowControllerApplier<obs(clothes_shirt_2086, Check if
+ the shirt is dirty and needs cleaning)>)"
+,,walk_executor(bathroom_cabinet_40),"Find towel_rack_31. Robot is inside bathroom_1. Robot is close bathroom_cabinet_40. Robot is close w
+all_12. Robot is no longer close washing_machine_2007.",,
+"/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-
+virtual-home/cdl_dataset/dataset/Iron_clothes/g1.txt",k1,missed actions: walk_executor(clothes_shirt_2086);wash_executor(clothes_shirt_2086);,missed action num: 2,,
+,,open_executor(bathroom_cabinet_40),"Find drawing_176. Robot is inside bathroom_1. Robot is close bathroom_cabinet_40. Robot is close wal
+l_12. ",,
+"/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-
+virtual-home/cdl_dataset/dataset/Iron_clothes/g1.txt",k1,missed actions: walk_executor(clothes_shirt_2086);wash_executor(clothes_shirt_2086);,missed action num: 2,,
+,,"exp(clothes_shirt_2086, bathroom_cabinet_40)",Failed to find clothes_shirt_2086 around bathroom_cabinet_40. ,,
+,,,,,"(CrowControllerApplier<walk_executor(doorjamb_347)>, CrowControllerApplier<exp(clothes_shirt_2086, d
+oorjamb_347)>, CrowControllerApplier<walk_executor(clothes_shirt_2086)>, CrowControllerApplier<obs(c
+lothes_shirt_2086, Check if the shirt is dirty and needs cleaning)>)"
+,,walk_executor(doorjamb_347),"Find hanger_375. Find hanger_359. Find hanger_376. Find hanger_374. Robot is inside home_office_319.
+ Robot is close doorjamb_347. Robot is no longer inside bathroom_1.Robot is no longer close bathroom
+_cabinet_40.Robot is no longer close wall_12.",,
+"/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-
+virtual-home/cdl_dataset/dataset/Iron_clothes/g1.txt",k1,missed actions: walk_executor(clothes_shirt_2086);wash_executor(clothes_shirt_2086);,missed action num: 2,,
+,,"exp(clothes_shirt_2086, doorjamb_347)",Failed to find clothes_shirt_2086 around doorjamb_347. ,,
+,,,,,"(CrowControllerApplier<walk_executor(hanger_376)>, CrowControllerApplier<exp(clothes_shirt_2086, han
+ger_376)>, CrowControllerApplier<walk_executor(clothes_shirt_2086)>, CrowControllerApplier<obs(cloth
+es_shirt_2086, Check if the shirt is dirty and needs cleaning)>)"
+,,walk_executor(hanger_376),"Robot is inside home_office_319. Robot is close hanger_376. Robot is close dresser_358. Robot is no 
+longer close doorjamb_347.",,
+"/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-
+virtual-home/cdl_dataset/dataset/Iron_clothes/g1.txt",k1,missed actions: walk_executor(clothes_shirt_2086);wash_executor(clothes_shirt_2086);,missed action num: 2,,
+,,"exp(clothes_shirt_2086, hanger_376)",Failed to find clothes_shirt_2086 around hanger_376. ,,
+,,,,,"(CrowControllerApplier<walk_executor(hanger_374)>, CrowControllerApplier<exp(clothes_shirt_2086, han
+ger_374)>, CrowControllerApplier<walk_executor(clothes_shirt_2086)>, CrowControllerApplier<obs(cloth
+es_shirt_2086, Check if the shirt is dirty and needs cleaning)>)"
+,,walk_executor(hanger_374),"Robot is inside home_office_319. Robot is close dresser_358. Robot is close hanger_374. Robot is no 
+longer close hanger_376.",,
+"/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-
+virtual-home/cdl_dataset/dataset/Iron_clothes/g1.txt",k1,missed actions: walk_executor(clothes_shirt_2086);wash_executor(clothes_shirt_2086);,missed action num: 2,,
+,,"exp(clothes_shirt_2086, hanger_374)",Failed to find clothes_shirt_2086 around hanger_374. ,,
+,,,,,"(CrowControllerApplier<walk_executor(hanger_372)>, CrowControllerApplier<exp(clothes_shirt_2086, han
+ger_372)>, CrowControllerApplier<walk_executor(clothes_shirt_2086)>, CrowControllerApplier<obs(cloth
+es_shirt_2086, Check if the shirt is dirty and needs cleaning)>)"
+,,walk_executor(hanger_372),"Robot is inside home_office_319. Robot is close dresser_358. Robot is close hanger_372. Robot is no 
+longer close hanger_374.",,
+"/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-
+virtual-home/cdl_dataset/dataset/Iron_clothes/g1.txt",k1,missed actions: walk_executor(clothes_shirt_2086);wash_executor(clothes_shirt_2086);,missed action num: 2,,
+,,,,"Record from func query_LLM_human in agent.py
+Question: Can you help me to find clothes_shirt_2086 ?
+Answer: The target item, clothes_shirt_2086, can be found inside basket_for_clothes_2006 in bathroom
+_1.
+",
+,,,"Human Instruction: The target item, clothes_shirt_2086, can be found inside basket_for_clothes_2006 
+in bathroom_1.
+
+The actions you have taken:
+Action 1: Walk to washing_machine_2007. -> effect: Robot is inside bathroom_1. Robot is close washin
+g_machine_2007. 
+Action 2: Open washing_machine_2007. -> effect: Robot is inside bathroom_1. Robot is close washing_m
+achine_2007. 
+Action 3: look for clothes_shirt_2086 around washing_machine_2007. -> effect: Failed to find clothes
+_shirt_2086 around washing_machine_2007. 
+Action 4: Walk to bathroom_cabinet_40. -> effect: Find towel_rack_31. Robot is inside bathroom_1. Ro
+bot is close bathroom_cabinet_40. Robot is close wall_12. Robot is no longer close washing_machine_2
+007.
+Action 5: Open bathroom_cabinet_40. -> effect: Find drawing_176. Robot is inside bathroom_1. Robot i
+s close bathroom_cabinet_40. Robot is close wall_12. 
+Action 6: look for clothes_shirt_2086 around bathroom_cabinet_40. -> effect: Failed to find clothes_
+shirt_2086 around bathroom_cabinet_40. 
+Action 7: Walk to doorjamb_347. -> effect: Find hanger_375. Find hanger_359. Find hanger_376. Find h
+anger_374. Robot is inside home_office_319. Robot is close doorjamb_347. Robot is no longer inside b
+athroom_1.Robot is no longer close bathroom_cabinet_40.Robot is no longer close wall_12.
+Action 8: look for clothes_shirt_2086 around doorjamb_347. -> effect: Failed to find clothes_shirt_2
+086 around doorjamb_347. 
+Action 9: Walk to hanger_376. -> effect: Robot is inside home_office_319. Robot is close hanger_376.
+ Robot is close dresser_358. Robot is no longer close doorjamb_347.
+Action 10: look for clothes_shirt_2086 around hanger_376. -> effect: Failed to find clothes_shirt_20
+86 around hanger_376. 
+Action 11: Walk to hanger_374. -> effect: Robot is inside home_office_319. Robot is close dresser_35
+8. Robot is close hanger_374. Robot is no longer close hanger_376.
+Action 12: look for clothes_shirt_2086 around hanger_374. -> effect: Failed to find clothes_shirt_20
+86 around hanger_374. 
+Action 13: Walk to hanger_372. -> effect: Robot is inside home_office_319. Robot is close dresser_35
+8. Robot is close hanger_372. Robot is no longer close hanger_374.
+",,
+,,"exp(clothes_shirt_2086, hanger_372)",Failed to find clothes_shirt_2086 around hanger_372. ,,
+,,,,,"(CrowControllerApplier<walk_executor(closetdrawer_150)>, CrowControllerApplier<exp(clothes_shirt_208
+6, closetdrawer_150)>, CrowControllerApplier<walk_executor(clothes_shirt_2086)>, CrowControllerAppli
+er<obs(clothes_shirt_2086, Check if the shirt is dirty and needs cleaning)>)"
+,,walk_executor(closetdrawer_150),"Find hanger_128. Find hanger_110. Find hanger_140. Find hanger_132. Find hanger_113. Find hanger_142
+. Find hanger_124. Find hanger_130. Find hanger_134. Find hanger_136. Find hanger_138. Find hanger_1
+41. Find hanger_109. Find hanger_126. Find hanger_111. Find hanger_114. Find hanger_112. Find hanger
+_115. Robot is inside bedroom_67. Robot is close closetdrawer_154. Robot is close dresser_123. Robot
+ is close closetdrawer_150. Robot is no longer inside home_office_319.Robot is no longer close hange
+r_372.Robot is no longer close dresser_358.",,
+"/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-
+virtual-home/cdl_dataset/dataset/Iron_clothes/g1.txt",k1,missed actions: walk_executor(clothes_shirt_2086);wash_executor(clothes_shirt_2086);,missed action num: 2,,
+,,"exp(clothes_shirt_2086, closetdrawer_150)",Failed to find clothes_shirt_2086 around closetdrawer_150. ,,
+,,,,,"(CrowControllerApplier<walk_executor(curtain_407)>, CrowControllerApplier<exp(clothes_shirt_2086, cu
+rtain_407)>, CrowControllerApplier<walk_executor(clothes_shirt_2086)>, CrowControllerApplier<obs(clo
+thes_shirt_2086, Check if the shirt is dirty and needs cleaning)>)"
+,,walk_executor(curtain_407),"Robot is inside home_office_319. Robot is close curtain_408. Robot is close curtain_407. Robot is no
+ longer inside bedroom_67.Robot is no longer close closetdrawer_154.Robot is no longer close dresser
+_123.Robot is no longer close closetdrawer_150.",,
+"/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-
+virtual-home/cdl_dataset/dataset/Iron_clothes/g1.txt",k1,missed actions: walk_executor(clothes_shirt_2086);wash_executor(clothes_shirt_2086);,missed action num: 2,,
+,,"exp(clothes_shirt_2086, curtain_407)",Failed to find clothes_shirt_2086 around curtain_407. ,,
+,,,,,"(CrowControllerApplier<walk_executor(mousepad_167)>, CrowControllerApplier<exp(clothes_shirt_2086, m
+ousepad_167)>, CrowControllerApplier<walk_executor(clothes_shirt_2086)>, CrowControllerApplier<obs(c
+lothes_shirt_2086, Check if the shirt is dirty and needs cleaning)>)"
+,,walk_executor(mousepad_167),"Find mouse_166. Find chair_103. Find keyboard_168. Find drawing_175. Robot is inside bedroom_67. Rob
+ot is close desk_104. Robot is close mousepad_167. Robot is no longer inside home_office_319.Robot i
+s no longer close curtain_408.Robot is no longer close curtain_407.",,
+"/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-
+virtual-home/cdl_dataset/dataset/Iron_clothes/g1.txt",k1,missed actions: walk_executor(clothes_shirt_2086);wash_executor(clothes_shirt_2086);,missed action num: 2,,
+,,"exp(clothes_shirt_2086, mousepad_167)",Failed to find clothes_shirt_2086 around mousepad_167. ,,
+,,,,,"(CrowControllerApplier<walk_executor(toilet_37)>, CrowControllerApplier<open_executor(toilet_37)>, C
+rowControllerApplier<exp(clothes_shirt_2086, toilet_37)>, CrowControllerApplier<walk_executor(clothe
+s_shirt_2086)>, CrowControllerApplier<obs(clothes_shirt_2086, Check if the shirt is dirty and needs 
+cleaning)>)"
+,,walk_executor(toilet_37),"Find basket_for_clothes_2006. Robot is inside bathroom_1. Robot is close toilet_37. Robot is no long
+er inside bedroom_67.Robot is no longer close desk_104.Robot is no longer close mousepad_167.",,
+"/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-
+virtual-home/cdl_dataset/dataset/Iron_clothes/g1.txt",k1,missed actions: walk_executor(clothes_shirt_2086);wash_executor(clothes_shirt_2086);,missed action num: 2,,
+,,open_executor(toilet_37),Robot is inside bathroom_1. Robot is close toilet_37. ,,
+"/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-
+virtual-home/cdl_dataset/dataset/Iron_clothes/g1.txt",k1,missed actions: walk_executor(clothes_shirt_2086);wash_executor(clothes_shirt_2086);,missed action num: 2,,
+,,"exp(clothes_shirt_2086, toilet_37)",Failed to find clothes_shirt_2086 around toilet_37. ,,
+,,,,,"(CrowControllerApplier<walk_executor(basket_for_clothes_2006)>, CrowControllerApplier<exp(clothes_sh
+irt_2086, basket_for_clothes_2006)>, CrowControllerApplier<walk_executor(clothes_shirt_2086)>, CrowC
+ontrollerApplier<obs(clothes_shirt_2086, Check if the shirt is dirty and needs cleaning)>)"
+,,walk_executor(basket_for_clothes_2006),"Find clothes_pants_2085. Find clothes_shirt_2086. Find clothes_socks_2087. Find clothes_skirt_2088. 
+Find towel_rack_33. Find towel_rack_32. Find towel_rack_34. Find mat_22. Robot is inside bathroom_1.
+ Robot is close clothes_pants_2085. Robot is close clothes_shirt_2086. Robot is close clothes_socks_
+2087. Robot is close clothes_skirt_2088. Robot is close basket_for_clothes_2006. Robot is no longer 
+close toilet_37.",,
+"/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-
+virtual-home/cdl_dataset/dataset/Iron_clothes/g1.txt",k1,missed actions: wash_executor(clothes_shirt_2086);,missed action num: 1,,
+,,"exp(clothes_shirt_2086, basket_for_clothes_2006)",Find clothes_shirt_2086. ,,
+"Reset goals: The sub-goals are: 
+['1. Find the shirt that needs to be cleaned.', '2. Wash the shirt using the washing machine.', '3. 
+Iron the shirt once it is dry.']",,,,,
+" 
+behavior find_and_identify_shirt():
+    body:
+        bind basket_for_clothes: item where:
+            is_basket_for_clothes(basket_for_clothes) and id[basket_for_clothes] == 2006
+        # Select the basket for clothes with ID 2006
+
+        bind clothes_shirt: item where:
+            is_clothes_shirt(clothes_shirt) and inside(clothes_shirt, basket_for_clothes)
+        # Select clothes_shirt which is inside the basket
+
+        achieve close_char(char, clothes_shirt)
+        # Approach the basket containing the target shirt
+
+behavior __goal__():
+    body:
+        find_and_identify_shirt()
+        # Execute the task to find and identify the shirt inside the specified basket
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Find the shirt that needs to be cleaned.', '2. Clean the shirt.', '3. Iron the shirt.']",,,,,
+" 
+behavior __goal__():
+    body:
+        bind basket: item where:
+            is_basket_for_clothes(basket) and id[basket]==2006
+        # Select the basket_for_clothes with ID 2006 to locate the shirt
+
+        bind clothes_shirt: item where:
+            is_clothes_shirt(clothes_shirt) and inside(clothes_shirt, basket)
+        # Select clothes_shirt_2086 inside the basket_for_clothes
+
+        achieve close_char(char, clothes_shirt)
+        # Approach the shirt that needs to be cleaned
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Find the shirt that needs cleaning.', '2. Clean the shirt using the washing machine.', '3. Iron
+ the shirt once it is clean and dry.']",,,,,
+" 
+behavior find_clothes_shirt_in_bathroom(basket:item):
+    body:
+        achieve close_char(char, basket)
+        # Move close to the basket to search for the shirt
+
+behavior __goal__():
+    body:
+        bind bathroom: item where:
+            is_bathroom(bathroom) and inside_char(char, bathroom)
+        # Bind the current bathroom where the character is located
+
+        bind basket: item where:
+            is_basket_for_clothes(basket) and inside(basket, bathroom)
+        # Identify the basket for clothes in the bathroom
+        
+        find_clothes_shirt_in_bathroom(basket)
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Find the dirty shirt.', '2. Wash the shirt.', '3. Iron the shirt.']",,,,,
+"
+behavior __goal__():
+    body:
+        # Find the basket and the specific shirt
+        bind basket: item where:
+            is_basket_for_clothes(basket) and id[basket]==2006
+        # Ensure the basket is in bathroom_1
+        bind bathroom_1: item where:
+            is_bathroom(bathroom_1)
+        assert inside(basket, bathroom_1)
+
+        bind shirt: item where:
+            is_clothes_shirt(shirt) and id[shirt]==2086
+        # The goal is to achieve a close relationship with the shirt
+        achieve close_char(char, shirt)
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Find the shirt that needs to be cleaned.', '2. Wash the shirt.', '3. Iron the shirt after it is
+ clean.']",,,,,
+" 
+behavior __goal__():
+    body:
+        bind basket: item where:
+            is_basket_for_clothes(basket) and id[basket]==2006
+        # Bind to the specific basket where the shirt is located
+        
+        achieve close_char(char, basket)
+        # Approach the basket with clothes
+        
+        observe(basket, ""Look for clothes_shirt_2086 in the basket"")
+        # Observe the basket to verify the presence of clothes_shirt_2086
+",From function reset_goal,,,,
+,,,,,"(CrowControllerApplier<obs(basket_for_clothes_2006, Look for clothes_shirt_2086 in the basket)>,)"
+,,"obs(basket_for_clothes_2006, Look for clothes_shirt_2086 in the basket)","Get this information:  basket_for_clothes_2006 is close to towel_rack_32. basket_for_clothes_2006 is
+ close to towel_rack_33. basket_for_clothes_2006 is close to towel_rack_34. basket_for_clothes_2006 
+is close to shower_36. basket_for_clothes_2006 is close to clothes_pants_2085. basket_for_clothes_20
+06 is close to clothes_shirt_2086. basket_for_clothes_2006 is close to clothes_socks_2087. basket_fo
+r_clothes_2006 is close to clothes_skirt_2088. basket_for_clothes_2006 is close to toilet_37. basket
+_for_clothes_2006 is close to sink_42. basket_for_clothes_2006 is close to faucet_43. basket_for_clo
+thes_2006 is close to mat_22. basket_for_clothes_2006 is close to bathtub_30. basket_for_clothes_200
+6 is close to towel_rack_31. basket_for_clothes_2006 is close to character_65. clothes_socks_2087 is
+ inside basket_for_clothes_2006. basket_for_clothes_2006 is inside bathroom_1. clothes_pants_2085 is
+ inside basket_for_clothes_2006. clothes_skirt_2088 is inside basket_for_clothes_2006. clothes_shirt
+_2086 is inside basket_for_clothes_2006. basket_for_clothes_2006 is OPEN.",,
+" 
+behavior wash_shirt(shirt:item, sink:item):
+    body:
+        achieve dirty(shirt)
+        # Ensure the shirt is dirty at the beginning of the task
+
+        achieve_once inside(shirt, sink)
+        # Place the shirt inside the sink
+
+        if is_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_on(faucet)
+            # If the sink has a faucet, turn it on to fill with water
+
+        achieve has_water(sink)
+        # Ensure there is water inside the sink
+
+        scrub(shirt) # Scrubbing the shirt as part of the washing process
+        rinse(shirt) # Rinsing the shirt in the sink
+        squeeze(shirt) # Squeezing out the excess water from the shirt
+
+        if is_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_off(faucet)
+            # Turn the faucet off after washing
+
+        achieve clean(shirt)
+        # Ensure the shirt is clean at the end of the task
+
+        achieve has_water(shirt)
+        # Ensure the shirt is wet at the end of the washing process
+
+behavior __goal__():
+    body:
+        bind shirt: item where:
+            is_clothes_shirt(shirt) and id[shirt]==2086
+        # Select the shirt with the ID 2086
+
+        bind basket: item where:
+            is_basket_for_clothes(basket) 
+
+        bind sink: item where:
+            is_sink(sink)
+
+        wash_shirt(shirt, sink)
+",From function reset_sub_goal,,,,
+" 
+behavior wash_shirt(shirt:item, washing_machine:item):
+    body:
+        achieve inside(shirt, washing_machine)
+        # Place the shirt inside the washing machine
+        achieve closed(washing_machine)
+        # Close the washing machine door
+        achieve is_on(washing_machine)
+        # Turn on the washing machine to wash the shirt
+
+behavior __goal__():
+    body:
+        bind shirt: item where:
+            is_clothes_shirt(shirt) and id[shirt]==2086
+        # Select clothes_shirt with ID 2086
+        bind washing_machine: item where:
+            is_washing_machine(washing_machine)
+        # Select the washing machine in the scene
+        wash_shirt(shirt, washing_machine)
+",From function reset_sub_goal,,,,
+,,,,,"(CrowControllerApplier<grab_executor(clothes_shirt_2086)>, CrowControllerApplier<walk_executor(washi
+ng_machine_2007)>, CrowControllerApplier<putin_executor(clothes_shirt_2086, washing_machine_2007)>, 
+CrowControllerApplier<close_executor(washing_machine_2007)>, CrowControllerApplier<plugin_executor(w
+ashing_machine_2007)>, CrowControllerApplier<switchon_executor(washing_machine_2007)>)"
+,,grab_executor(clothes_shirt_2086),"Robot is inside bathroom_1. Robot is close clothes_pants_2085. Robot is close clothes_shirt_2086. Ro
+bot is close clothes_socks_2087. Robot is close clothes_skirt_2088. Robot is close basket_for_clothe
+s_2006. Grabbing clothes_shirt_2086 by right hand. ",,
+"/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-
+virtual-home/cdl_dataset/dataset/Iron_clothes/g1.txt",k1,missed actions: wash_executor(clothes_shirt_2086);,missed action num: 1,,
+,,walk_executor(washing_machine_2007),"Robot is inside bathroom_1. Robot is close clothes_shirt_2086. Robot is close washing_machine_2007. 
+Robot is no longer close clothes_pants_2085.Robot is no longer close clothes_socks_2087.Robot is no 
+longer close clothes_skirt_2088.Robot is no longer close basket_for_clothes_2006.",,
+"/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-
+virtual-home/cdl_dataset/dataset/Iron_clothes/g1.txt",k1,missed actions: wash_executor(clothes_shirt_2086);,missed action num: 1,,
+,,"putin_executor(clothes_shirt_2086, washing_machine_2007)","Robot is inside bathroom_1. Robot is close clothes_shirt_2086. Robot is close washing_machine_2007. 
+clothes_shirt_2086 released by right hand. ",,
+"/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-
+virtual-home/cdl_dataset/dataset/Iron_clothes/g1.txt",k1,missed actions: wash_executor(clothes_shirt_2086);,missed action num: 1,,
+,,close_executor(washing_machine_2007),Robot is inside bathroom_1. Robot is close clothes_shirt_2086. Robot is close washing_machine_2007. ,,
+"/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-
+virtual-home/cdl_dataset/dataset/Iron_clothes/g1.txt",k1,missed actions: wash_executor(clothes_shirt_2086);,missed action num: 1,,
+,,plugin_executor(washing_machine_2007),Robot is inside bathroom_1. Robot is close clothes_shirt_2086. Robot is close washing_machine_2007. ,,
+"/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-
+virtual-home/cdl_dataset/dataset/Iron_clothes/g1.txt",k1,missed actions: wash_executor(clothes_shirt_2086);,missed action num: 1,,
+,,switchon_executor(washing_machine_2007),Robot is inside bathroom_1. Robot is close clothes_shirt_2086. Robot is close washing_machine_2007. ,,
+"/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-
+virtual-home/cdl_dataset/dataset/Iron_clothes/g1.txt",k1,missed actions: wash_executor(clothes_shirt_2086);,missed action num: 1,,
+" 
+def is_clothes_clean(clothes:item):
+    # Function to check if clothes are clean
+    symbol clean_status=clean(clothes)
+    return clean_status
+
+behavior iron_shirt(shirt:item, iron:item, ironing_board:item):
+    body:
+        achieve on(shirt, ironing_board) # Place the shirt on the ironing board
+        achieve plugged(iron) # Plug in the iron
+        achieve is_on(iron) # Turn on the iron
+        achieve is_clothes_shirt(shirt) # Start ironing the shirt
+
+behavior close_the_iron(iron:item):
+    body:
+        achieve unplugged(iron)
+        achieve is_off(iron)
+
+behavior __goal__():
+    body:
+        bind shirt: item where:
+            is_clothes_shirt(shirt) and is_clothes_clean(shirt)
+        # Select cloth_shirt_2086 if it is clean
+        bind iron: item where:
+            is_iron(iron)
+        # Select an iron
+        bind ironing_board: item where:
+            is_ironing_board(ironing_board) 
+        # Select an ironing board
+        iron_shirt(shirt, iron, ironing_board)
+        close_the_iron(iron)
+",From function reset_sub_goal,,,,
+" 
+behavior iron_shirt(shirt:item, iron:item, ironing_board:item):
+    body:
+        achieve clean(shirt)
+        # Ensure that the shirt is clean before ironing
+        achieve_once inhand(iron)
+        # Temporarily hold the iron
+        achieve on(shirt, ironing_board)
+        # Place the shirt on the ironing board
+        achieve is_on(iron)
+        # Turn on the iron for use
+
+def has_ironing_board():
+    # Determine if there is an ironing board in the scene
+    symbol has_board=exists board: item : is_ironing_board(board)
+    return has_board
+
+behavior __goal__():
+    body:
+        bind shirt: item where:
+            is_clothes_shirt(shirt) and id[shirt]==2086
+        # Select the clean shirt with ID 2086
+        
+        bind iron: item where:
+            is_iron(iron)
+        # Select an iron in the scene
+
+        if has_ironing_board():
+            bind ironing_board: item where:
+                is_ironing_board(ironing_board)
+            # Select an ironing board in the scene
+                
+            iron_shirt(shirt, iron, ironing_board)
+            # Iron the clean shirt using the iron and the ironing board
+
+",From function reset_sub_goal,,,,
+,,,,,"(CrowControllerApplier<wash_executor(clothes_shirt_2086)>, CrowControllerApplier<walk_executor(ironi
+ng_board_2074)>, CrowControllerApplier<exp(iron_2089, ironing_board_2074)>, CrowControllerApplier<wa
+lk_executor(iron_2089)>, CrowControllerApplier<grab_executor(iron_2089)>, CrowControllerApplier<walk
+_executor(washing_machine_2007)>, CrowControllerApplier<switchoff_executor(washing_machine_2007)>, C
+rowControllerApplier<open_executor(washing_machine_2007)>, CrowControllerApplier<walk_executor(cloth
+es_shirt_2086)>, CrowControllerApplier<grab_executor(clothes_shirt_2086)>, CrowControllerApplier<wal
+k_executor(ironing_board_2074)>, CrowControllerApplier<put_executor(clothes_shirt_2086, ironing_boar
+d_2074)>, CrowControllerApplier<walk_executor(iron_2089)>, CrowControllerApplier<plugin_executor(iro
+n_2089)>, CrowControllerApplier<switchon_executor(iron_2089)>)"
+,,wash_executor(clothes_shirt_2086),Robot is inside bathroom_1. Robot is close clothes_shirt_2086. Robot is close washing_machine_2007. ,,
+"/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-
+virtual-home/cdl_dataset/dataset/Iron_clothes/g1.txt",k1,missed actions: ,missed action num: 0,,
+"/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-
+virtual-home/cdl_dataset/dataset/Iron_clothes/g1.txt",k2,"missed actions: switchoff_executor(washing_machine_2007);open_executor(washing_machine_2007);grab_ex
+ecutor(clothes_shirt_2086);walk_executor(ironing_board_2074);put_executor(clothes_shirt_2086, ironin
+g_board_2074);plugin_executor(iron_2089);switchon_executor(iron_2089);",missed action num: 7,,
+,,walk_executor(ironing_board_2074),"Find iron_2089. Robot is inside bathroom_1. Robot is close ironing_board_2074. Robot is no longer cl
+ose clothes_shirt_2086.Robot is no longer close washing_machine_2007.",,
+"/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-
+virtual-home/cdl_dataset/dataset/Iron_clothes/g1.txt",k2,"missed actions: walk_executor(washing_machine_2007);switchoff_executor(washing_machine_2007);open_ex
+ecutor(washing_machine_2007);walk_executor(clothes_shirt_2086);grab_executor(clothes_shirt_2086);wal
+k_executor(ironing_board_2074);put_executor(clothes_shirt_2086, ironing_board_2074);plugin_executor(
+iron_2089);switchon_executor(iron_2089);",missed action num: 9,,
+,,"exp(iron_2089, ironing_board_2074)",Find iron_2089. ,,
+,,,,,"(CrowControllerApplier<walk_executor(iron_2089)>, CrowControllerApplier<grab_executor(iron_2089)>, C
+rowControllerApplier<walk_executor(washing_machine_2007)>, CrowControllerApplier<switchoff_executor(
+washing_machine_2007)>, CrowControllerApplier<open_executor(washing_machine_2007)>, CrowControllerAp
+plier<walk_executor(clothes_shirt_2086)>, CrowControllerApplier<grab_executor(clothes_shirt_2086)>, 
+CrowControllerApplier<walk_executor(ironing_board_2074)>, CrowControllerApplier<put_executor(clothes
+_shirt_2086, ironing_board_2074)>, CrowControllerApplier<walk_executor(iron_2089)>, CrowControllerAp
+plier<plugin_executor(iron_2089)>, CrowControllerApplier<switchon_executor(iron_2089)>)"
+,,walk_executor(iron_2089),Robot is inside bathroom_1. Robot is close ironing_board_2074. Robot is close iron_2089. ,,
+"/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-
+virtual-home/cdl_dataset/dataset/Iron_clothes/g1.txt",k2,"missed actions: walk_executor(washing_machine_2007);switchoff_executor(washing_machine_2007);open_ex
+ecutor(washing_machine_2007);walk_executor(clothes_shirt_2086);grab_executor(clothes_shirt_2086);wal
+k_executor(ironing_board_2074);put_executor(clothes_shirt_2086, ironing_board_2074);plugin_executor(
+iron_2089);switchon_executor(iron_2089);",missed action num: 9,,
+,,grab_executor(iron_2089),"Robot is inside bathroom_1. Robot is close ironing_board_2074. Robot is close iron_2089. Grabbing ir
+on_2089 by right hand. ",,
+"/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-
+virtual-home/cdl_dataset/dataset/Iron_clothes/g1.txt",k2,"missed actions: walk_executor(washing_machine_2007);switchoff_executor(washing_machine_2007);open_ex
+ecutor(washing_machine_2007);walk_executor(clothes_shirt_2086);grab_executor(clothes_shirt_2086);wal
+k_executor(ironing_board_2074);put_executor(clothes_shirt_2086, ironing_board_2074);walk_executor(ir
+on_2089);plugin_executor(iron_2089);switchon_executor(iron_2089);",missed action num: 10,,
+,,walk_executor(washing_machine_2007),"Robot is inside bathroom_1. Robot is close iron_2089. Robot is close clothes_shirt_2086. Robot is cl
+ose washing_machine_2007. Robot is no longer close ironing_board_2074.",,
+"/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-
+virtual-home/cdl_dataset/dataset/Iron_clothes/g1.txt",k2,"missed actions: switchoff_executor(washing_machine_2007);open_executor(washing_machine_2007);grab_ex
+ecutor(clothes_shirt_2086);walk_executor(ironing_board_2074);put_executor(clothes_shirt_2086, ironin
+g_board_2074);walk_executor(iron_2089);plugin_executor(iron_2089);switchon_executor(iron_2089);",missed action num: 8,,
+,,switchoff_executor(washing_machine_2007),"Robot is inside bathroom_1. Robot is close iron_2089. Robot is close clothes_shirt_2086. Robot is cl
+ose washing_machine_2007. ",,
+"/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-
+virtual-home/cdl_dataset/dataset/Iron_clothes/g1.txt",k2,"missed actions: open_executor(washing_machine_2007);grab_executor(clothes_shirt_2086);walk_executor(
+ironing_board_2074);put_executor(clothes_shirt_2086, ironing_board_2074);walk_executor(iron_2089);pl
+ugin_executor(iron_2089);switchon_executor(iron_2089);",missed action num: 7,,
+,,open_executor(washing_machine_2007),"Robot is inside bathroom_1. Robot is close iron_2089. Robot is close clothes_shirt_2086. Robot is cl
+ose washing_machine_2007. ",,
+"/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-
+virtual-home/cdl_dataset/dataset/Iron_clothes/g1.txt",k2,"missed actions: grab_executor(clothes_shirt_2086);walk_executor(ironing_board_2074);put_executor(clo
+thes_shirt_2086, ironing_board_2074);walk_executor(iron_2089);plugin_executor(iron_2089);switchon_ex
+ecutor(iron_2089);",missed action num: 6,,
+,,walk_executor(clothes_shirt_2086),"Robot is inside bathroom_1. Robot is close iron_2089. Robot is close clothes_shirt_2086. Robot is cl
+ose washing_machine_2007. ",,
+"/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-
+virtual-home/cdl_dataset/dataset/Iron_clothes/g1.txt",k2,"missed actions: grab_executor(clothes_shirt_2086);walk_executor(ironing_board_2074);put_executor(clo
+thes_shirt_2086, ironing_board_2074);walk_executor(iron_2089);plugin_executor(iron_2089);switchon_ex
+ecutor(iron_2089);",missed action num: 6,,
+,,grab_executor(clothes_shirt_2086),"Robot is inside bathroom_1. Robot is close iron_2089. Robot is close clothes_shirt_2086. Robot is cl
+ose washing_machine_2007. Grabbing clothes_shirt_2086 by left hand. ",,
+"/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-
+virtual-home/cdl_dataset/dataset/Iron_clothes/g1.txt",k2,"missed actions: walk_executor(ironing_board_2074);put_executor(clothes_shirt_2086, ironing_board_207
+4);walk_executor(iron_2089);plugin_executor(iron_2089);switchon_executor(iron_2089);",missed action num: 5,,
+,,walk_executor(ironing_board_2074),"Robot is inside bathroom_1. Robot is close iron_2089. Robot is close clothes_shirt_2086. Robot is cl
+ose ironing_board_2074. Robot is no longer close washing_machine_2007.",,
+"/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-
+virtual-home/cdl_dataset/dataset/Iron_clothes/g1.txt",k2,"missed actions: put_executor(clothes_shirt_2086, ironing_board_2074);plugin_executor(iron_2089);swit
+chon_executor(iron_2089);",missed action num: 3,,
+,,"put_executor(clothes_shirt_2086, ironing_board_2074)","Robot is inside bathroom_1. Robot is close iron_2089. Robot is close clothes_shirt_2086. Robot is cl
+ose ironing_board_2074. clothes_shirt_2086 released by left hand. ",,
+"/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-
+virtual-home/cdl_dataset/dataset/Iron_clothes/g1.txt",k2,missed actions: plugin_executor(iron_2089);switchon_executor(iron_2089);,missed action num: 2,,
+,,walk_executor(iron_2089),"Robot is inside bathroom_1. Robot is close iron_2089. Robot is no longer close ironing_board_2074.Ro
+bot is no longer close clothes_shirt_2086.",,
+"/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-
+virtual-home/cdl_dataset/dataset/Iron_clothes/g1.txt",k2,missed actions: plugin_executor(iron_2089);switchon_executor(iron_2089);,missed action num: 2,,
+,,plugin_executor(iron_2089),Robot is inside bathroom_1. Robot is close iron_2089. ,,
+"/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-
+virtual-home/cdl_dataset/dataset/Iron_clothes/g1.txt",k2,missed actions: switchon_executor(iron_2089);,missed action num: 1,,
+,,switchon_executor(iron_2089),Robot is inside bathroom_1. Robot is close iron_2089. ,,
+"/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-
+virtual-home/cdl_dataset/dataset/Iron_clothes/g1.txt",k2,missed actions: ,missed action num: 0,,
+,,,"Human Instruction: The robot needs to complete the process of ironing the shirt. While the iron has 
+been plugged in and turned on, an explicit action to iron the shirt is missing. The robot should use
+ the iron to iron the shirt on the ironing board.
+
+The actions you have taken:
+Action 1: Walk to washing_machine_2007. -> effect: Robot is inside bathroom_1. Robot is close washin
+g_machine_2007. 
+Action 2: Open washing_machine_2007. -> effect: Robot is inside bathroom_1. Robot is close washing_m
+achine_2007. 
+Action 3: look for clothes_shirt_2086 around washing_machine_2007. -> effect: Failed to find clothes
+_shirt_2086 around washing_machine_2007. 
+Action 4: Walk to bathroom_cabinet_40. -> effect: Find towel_rack_31. Robot is inside bathroom_1. Ro
+bot is close bathroom_cabinet_40. Robot is close wall_12. Robot is no longer close washing_machine_2
+007.
+Action 5: Open bathroom_cabinet_40. -> effect: Find drawing_176. Robot is inside bathroom_1. Robot i
+s close bathroom_cabinet_40. Robot is close wall_12. 
+Action 6: look for clothes_shirt_2086 around bathroom_cabinet_40. -> effect: Failed to find clothes_
+shirt_2086 around bathroom_cabinet_40. 
+Action 7: Walk to doorjamb_347. -> effect: Find hanger_375. Find hanger_359. Find hanger_376. Find h
+anger_374. Robot is inside home_office_319. Robot is close doorjamb_347. Robot is no longer inside b
+athroom_1.Robot is no longer close bathroom_cabinet_40.Robot is no longer close wall_12.
+Action 8: look for clothes_shirt_2086 around doorjamb_347. -> effect: Failed to find clothes_shirt_2
+086 around doorjamb_347. 
+Action 9: Walk to hanger_376. -> effect: Robot is inside home_office_319. Robot is close hanger_376.
+ Robot is close dresser_358. Robot is no longer close doorjamb_347.
+Action 10: look for clothes_shirt_2086 around hanger_376. -> effect: Failed to find clothes_shirt_20
+86 around hanger_376. 
+Action 11: Walk to hanger_374. -> effect: Robot is inside home_office_319. Robot is close dresser_35
+8. Robot is close hanger_374. Robot is no longer close hanger_376.
+Action 12: look for clothes_shirt_2086 around hanger_374. -> effect: Failed to find clothes_shirt_20
+86 around hanger_374. 
+Action 13: Walk to hanger_372. -> effect: Robot is inside home_office_319. Robot is close dresser_35
+8. Robot is close hanger_372. Robot is no longer close hanger_374.
+Action 14: look for clothes_shirt_2086 around hanger_372. -> effect: Failed to find clothes_shirt_20
+86 around hanger_372. 
+Action 15: Walk to closetdrawer_150. -> effect: Find hanger_128. Find hanger_110. Find hanger_140. F
+ind hanger_132. Find hanger_113. Find hanger_142. Find hanger_124. Find hanger_130. Find hanger_134.
+ Find hanger_136. Find hanger_138. Find hanger_141. Find hanger_109. Find hanger_126. Find hanger_11
+1. Find hanger_114. Find hanger_112. Find hanger_115. Robot is inside bedroom_67. Robot is close clo
+setdrawer_154. Robot is close dresser_123. Robot is close closetdrawer_150. Robot is no longer insid
+e home_office_319.Robot is no longer close hanger_372.Robot is no longer close dresser_358.
+Action 16: look for clothes_shirt_2086 around closetdrawer_150. -> effect: Failed to find clothes_sh
+irt_2086 around closetdrawer_150. 
+Action 17: Walk to curtain_407. -> effect: Robot is inside home_office_319. Robot is close curtain_4
+08. Robot is close curtain_407. Robot is no longer inside bedroom_67.Robot is no longer close closet
+drawer_154.Robot is no longer close dresser_123.Robot is no longer close closetdrawer_150.
+Action 18: look for clothes_shirt_2086 around curtain_407. -> effect: Failed to find clothes_shirt_2
+086 around curtain_407. 
+Action 19: Walk to mousepad_167. -> effect: Find mouse_166. Find chair_103. Find keyboard_168. Find 
+drawing_175. Robot is inside bedroom_67. Robot is close desk_104. Robot is close mousepad_167. Robot
+ is no longer inside home_office_319.Robot is no longer close curtain_408.Robot is no longer close c
+urtain_407.
+Action 20: look for clothes_shirt_2086 around mousepad_167. -> effect: Failed to find clothes_shirt_
+2086 around mousepad_167. 
+Action 21: Walk to toilet_37. -> effect: Find basket_for_clothes_2006. Robot is inside bathroom_1. R
+obot is close toilet_37. Robot is no longer inside bedroom_67.Robot is no longer close desk_104.Robo
+t is no longer close mousepad_167.
+Action 22: Open toilet_37. -> effect: Robot is inside bathroom_1. Robot is close toilet_37. 
+Action 23: look for clothes_shirt_2086 around toilet_37. -> effect: Failed to find clothes_shirt_208
+6 around toilet_37. 
+Action 24: Walk to basket_for_clothes_2006. -> effect: Find clothes_pants_2085. Find clothes_shirt_2
+086. Find clothes_socks_2087. Find clothes_skirt_2088. Find towel_rack_33. Find towel_rack_32. Find 
+towel_rack_34. Find mat_22. Robot is inside bathroom_1. Robot is close clothes_pants_2085. Robot is 
+close clothes_shirt_2086. Robot is close clothes_socks_2087. Robot is close clothes_skirt_2088. Robo
+t is close basket_for_clothes_2006. Robot is no longer close toilet_37.
+Action 25: look for clothes_shirt_2086 around basket_for_clothes_2006. -> effect: Find clothes_shirt
+_2086. 
+Action 26: Observe around basket_for_clothes_2006 with the question of Look for clothes_shirt_2086 i
+n the basket. -> effect: Get this information:  basket_for_clothes_2006 is close to towel_rack_32. b
+asket_for_clothes_2006 is close to towel_rack_33. basket_for_clothes_2006 is close to towel_rack_34.
+ basket_for_clothes_2006 is close to shower_36. basket_for_clothes_2006 is close to clothes_pants_20
+85. basket_for_clothes_2006 is close to clothes_shirt_2086. basket_for_clothes_2006 is close to clot
+hes_socks_2087. basket_for_clothes_2006 is close to clothes_skirt_2088. basket_for_clothes_2006 is c
+lose to toilet_37. basket_for_clothes_2006 is close to sink_42. basket_for_clothes_2006 is close to 
+faucet_43. basket_for_clothes_2006 is close to mat_22. basket_for_clothes_2006 is close to bathtub_3
+0. basket_for_clothes_2006 is close to towel_rack_31. basket_for_clothes_2006 is close to character_
+65. clothes_socks_2087 is inside basket_for_clothes_2006. basket_for_clothes_2006 is inside bathroom
+_1. clothes_pants_2085 is inside basket_for_clothes_2006. clothes_skirt_2088 is inside basket_for_cl
+othes_2006. clothes_shirt_2086 is inside basket_for_clothes_2006. basket_for_clothes_2006 is OPEN.
+Action 27: Grab clothes_shirt_2086. -> effect: Robot is inside bathroom_1. Robot is close clothes_pa
+nts_2085. Robot is close clothes_shirt_2086. Robot is close clothes_socks_2087. Robot is close cloth
+es_skirt_2088. Robot is close basket_for_clothes_2006. Grabbing clothes_shirt_2086 by right hand. 
+Action 28: Walk to washing_machine_2007. -> effect: Robot is inside bathroom_1. Robot is close cloth
+es_shirt_2086. Robot is close washing_machine_2007. Robot is no longer close clothes_pants_2085.Robo
+t is no longer close clothes_socks_2087.Robot is no longer close clothes_skirt_2088.Robot is no long
+er close basket_for_clothes_2006.
+Action 29: Put clothes_shirt_2086 into washing_machine_2007. -> effect: Robot is inside bathroom_1. 
+Robot is close clothes_shirt_2086. Robot is close washing_machine_2007. clothes_shirt_2086 released 
+by right hand. 
+Action 30: Close washing_machine_2007. -> effect: Robot is inside bathroom_1. Robot is close clothes
+_shirt_2086. Robot is close washing_machine_2007. 
+Action 31: Plug in washing_machine_2007. -> effect: Robot is inside bathroom_1. Robot is close cloth
+es_shirt_2086. Robot is close washing_machine_2007. 
+Action 32: Switch on washing_machine_2007. -> effect: Robot is inside bathroom_1. Robot is close clo
+thes_shirt_2086. Robot is close washing_machine_2007. 
+Action 33: Wash clothes_shirt_2086. -> effect: Robot is inside bathroom_1. Robot is close clothes_sh
+irt_2086. Robot is close washing_machine_2007. 
+Action 34: Walk to ironing_board_2074. -> effect: Find iron_2089. Robot is inside bathroom_1. Robot 
+is close ironing_board_2074. Robot is no longer close clothes_shirt_2086.Robot is no longer close wa
+shing_machine_2007.
+Action 35: look for iron_2089 around ironing_board_2074. -> effect: Find iron_2089. 
+Action 36: Walk to iron_2089. -> effect: Robot is inside bathroom_1. Robot is close ironing_board_20
+74. Robot is close iron_2089. 
+Action 37: Grab iron_2089. -> effect: Robot is inside bathroom_1. Robot is close ironing_board_2074.
+ Robot is close iron_2089. Grabbing iron_2089 by right hand. 
+Action 38: Walk to washing_machine_2007. -> effect: Robot is inside bathroom_1. Robot is close iron_
+2089. Robot is close clothes_shirt_2086. Robot is close washing_machine_2007. Robot is no longer clo
+se ironing_board_2074.
+Action 39: Switch off washing_machine_2007. -> effect: Robot is inside bathroom_1. Robot is close ir
+on_2089. Robot is close clothes_shirt_2086. Robot is close washing_machine_2007. 
+Action 40: Open washing_machine_2007. -> effect: Robot is inside bathroom_1. Robot is close iron_208
+9. Robot is close clothes_shirt_2086. Robot is close washing_machine_2007. 
+Action 41: Walk to clothes_shirt_2086. -> effect: Robot is inside bathroom_1. Robot is close iron_20
+89. Robot is close clothes_shirt_2086. Robot is close washing_machine_2007. 
+Action 42: Grab clothes_shirt_2086. -> effect: Robot is inside bathroom_1. Robot is close iron_2089.
+ Robot is close clothes_shirt_2086. Robot is close washing_machine_2007. Grabbing clothes_shirt_2086
+ by left hand. 
+Action 43: Walk to ironing_board_2074. -> effect: Robot is inside bathroom_1. Robot is close iron_20
+89. Robot is close clothes_shirt_2086. Robot is close ironing_board_2074. Robot is no longer close w
+ashing_machine_2007.
+Action 44: Put clothes_shirt_2086 on ironing_board_2074. -> effect: Robot is inside bathroom_1. Robo
+t is close iron_2089. Robot is close clothes_shirt_2086. Robot is close ironing_board_2074. clothes_
+shirt_2086 released by left hand. 
+Action 45: Walk to iron_2089. -> effect: Robot is inside bathroom_1. Robot is close iron_2089. Robot
+ is no longer close ironing_board_2074.Robot is no longer close clothes_shirt_2086.
+Action 46: Plug in iron_2089. -> effect: Robot is inside bathroom_1. Robot is close iron_2089. 
+Action 47: Switch on iron_2089. -> effect: Robot is inside bathroom_1. Robot is close iron_2089. 
+",,
+" 
+def has_ironed_shirt(ironing_board:item):
+    # Function to check if there is an ironed shirt on a specified ironing board
+    symbol has_ironed_shirt=exists o: item : is_clothes_shirt(o) and on(o, ironing_board)
+    return has_ironed_shirt
+
+behavior __goal__():
+    body:
+        bind ironing_board: item where:
+            is_ironing_board(ironing_board)
+        # Select the ironing board
+        
+        bind iron: item where:
+            is_iron(iron)
+        # Select the iron
+
+        bind shirt: item where:
+            is_clothes_shirt(shirt)
+        # Select the shirt
+
+        achieve plugged(iron) # Ensure the iron is plugged in
+        achieve is_on(iron) # Ensure the iron is on
+
+        if not has_ironed_shirt(ironing_board):
+            # If the shirt is not yet ironed, achieve it on the ironing board
+            achieve on(shirt, ironing_board)
+",From function reset_sub_goal,,,,
+"
+behavior iron_shirt_after_clean(shirt:item, iron:item, ironing_board:item):
+    body:
+        achieve plugged(iron)
+        achieve is_on(iron)
+        achieve on(shirt, ironing_board)
+
+behavior __goal__():
+    body:
+        bind shirt: item where:
+            is_clothes_shirt(shirt) and clean(shirt)
+        bind iron: item where:
+            is_iron(iron)
+        bind ironing_board: item where:
+            is_ironing_board(ironing_board)
+        iron_shirt_after_clean(shirt, iron, ironing_board)
+",From function reset_sub_goal,,,,
+"
+behavior iron_shirt(shirt:item, ironing_board:item, iron:item):
+    body:
+        achieve clean(shirt) 
+        achieve plugged(iron)
+        achieve is_on(iron)
+        achieve on(shirt, ironing_board) 
+        achieve_once inhand(iron) 
+
+behavior __goal__():
+    body:
+        bind shirt: item where:
+            is_clothes_shirt(shirt) and clean(shirt)
+        bind ironing_board: item where:
+            is_ironing_board(ironing_board)
+        bind iron: item where:
+            is_iron(iron) and has_switch(iron)
+        iron_shirt(shirt, ironing_board, iron)
+",From function reset_sub_goal,,,,
+" 
+behavior iron_shirt(shirt:item, ironing_board:item, iron:item):
+    body:
+        achieve on(shirt, ironing_board)
+        achieve plugged(iron)
+        achieve is_on(iron)
+        achieve inhand(iron)
+        # Iron the shirt on the ironing board
+
+behavior __goal__():
+    body:
+        bind shirt: item where:
+            is_clothes_shirt(shirt) and clean(shirt)
+        bind ironing_board: item where:
+            is_ironing_board(ironing_board)
+        bind iron: item where:
+            is_iron(iron)
+        iron_shirt(shirt, ironing_board, iron)
+",From function reset_sub_goal,,,,
+" 
+behavior iron_shirt(shirt:item, ironing_board:item, iron:item):
+    body:
+        achieve on(shirt, ironing_board)
+        # Place the shirt on the ironing board
+        
+        achieve plugged(iron)
+        # Ensure the iron is plugged in
+
+        achieve is_on(iron)
+        # Ensure the iron is turned on
+        
+        # This line implicitly assumes the ironing will be done by the system
+        # After these states, the shirt will be ironed
+
+behavior __goal__():
+    body:
+        bind shirt: item where:
+            is_clothes_shirt(shirt) and clean(shirt)
+        # Select the clean shirt
+
+        bind ironing_board: item where:
+            is_ironing_board(ironing_board)
+        # Select the ironing board
+
+        bind iron: item where:
+            is_iron(iron)
+        # Select the iron
+
+        iron_shirt(shirt, ironing_board, iron)
+        # Iron the shirt
+",From function reset_sub_goal,,,,
+" 
+def on_ironing_board(x: item, board: item):
+    # Check if an item is on the ironing board
+    symbol is_on_board = on(x, board)
+    return is_on_board
+
+def iron_is_ready(iron: item):
+    # Check if the iron is ready for use
+    symbol ready = plugged(iron) and is_on(iron)
+    return ready
+
+behavior iron_shirt(shirt: item, iron: item, ironing_board: item):
+    body:
+        achieve on(shirt, ironing_board)
+        # Ensure the shirt is on the ironing board
+        
+        if iron_is_ready(iron):
+            # If the iron is ready, proceed to iron the shirt
+            achieve_once inhand(iron)
+            # Temporarily hold the iron to complete the task of ironing
+            
+behavior __goal__():
+    body:
+        bind ironing_board: item where:
+            is_ironing_board(ironing_board)
+        # Select the ironing board
+
+        bind shirt: item where:
+            is_clothes_shirt(shirt) and clean(shirt)
+        # Select the clean shirt
+
+        bind iron: item where:
+            is_iron(iron) and not plugged(iron)
+        # Select the iron and ensure its not currently plugged in
+        
+        achieve plugged(iron)
+        achieve is_on(iron)
+        # Prepare the iron by plugging it in and turning it on
+        
+        achieve on(shirt, ironing_board)
+        # Ensure the shirt is placed on the ironing board
+        
+        iron_shirt(shirt, iron, ironing_board)
+        # Iron the shirt using the prepared iron
+",From function reset_sub_goal,,,,
+" 
+behavior iron_shirt(shirt:item, iron:item, ironing_board:item):
+    body:
+        achieve on(shirt, ironing_board) # Ensure the shirt is placed on the ironing board
+        achieve plugged(iron) # Ensure the iron is plugged in
+        achieve is_on(iron) # Ensure the iron is turned on
+        # The robot performs ironing when the iron is ready and the shirt is on the board
+
+behavior __goal__():
+    body:
+        bind shirt: item where:
+            is_clothes_shirt(shirt) and clean(shirt)
+        # Select the clean shirt
+        bind ironing_board: item where:
+            is_ironing_board(ironing_board)
+        # Select an ironing board
+        bind iron: item where:
+            is_iron(iron)
+        # Select an iron
+        iron_shirt(shirt, iron, ironing_board)
+",From function reset_sub_goal,,,,
+" 
+def has_shirt_on_board(board: item):
+    # Function to check if the shirt is on the ironing board
+    symbol has_shirt=exists o: item : is_clothes_shirt(o) and on(o, board)
+    return has_shirt
+
+behavior heat_iron(iron: item):
+    body:
+        achieve plugged(iron) # Plug in the iron
+        achieve is_on(iron) # Turn on the iron to heat
+
+behavior iron_shirt(shirt: item, board: item, iron: item):
+    body:
+        assert is_clothes_shirt(shirt)
+        achieve on(shirt, board) # Ensure shirt is on the ironing board
+        achieve close_char(char, board) # Move character closer to the ironing board for ironing
+
+behavior __goal__():
+    body:
+        bind ironing_board: item where:
+            is_ironing_board(ironing_board) and has_shirt_on_board(ironing_board)
+        # Select the ironing board with the shirt on it
+        
+        bind iron: item where:
+            is_iron(iron)
+        # Select the iron
+
+        heat_iron(iron) # Heat up the iron
+        foreach shirt: item:
+            if is_clothes_shirt(shirt) and on(shirt, ironing_board):
+                iron_shirt(shirt, ironing_board, iron) # Iron each shirt found on the board
+",From function reset_sub_goal,,,,
+,,,,,"(CrowControllerApplier<walk_executor(ironing_board_2074)>,)"
+,,walk_executor(ironing_board_2074),Robot is inside bathroom_1. Robot is close iron_2089. Robot is close ironing_board_2074. ,,
+,,,"Human Instruction: You need to use the iron to iron the shirt that is on the ironing board. This ste
+p is missing in the sequence of actions completed so far. Ensure the ironing action is performed.
+
+The actions you have taken:
+Action 1: Walk to washing_machine_2007. -> effect: Robot is inside bathroom_1. Robot is close washin
+g_machine_2007. 
+Action 2: Open washing_machine_2007. -> effect: Robot is inside bathroom_1. Robot is close washing_m
+achine_2007. 
+Action 3: look for clothes_shirt_2086 around washing_machine_2007. -> effect: Failed to find clothes
+_shirt_2086 around washing_machine_2007. 
+Action 4: Walk to bathroom_cabinet_40. -> effect: Find towel_rack_31. Robot is inside bathroom_1. Ro
+bot is close bathroom_cabinet_40. Robot is close wall_12. Robot is no longer close washing_machine_2
+007.
+Action 5: Open bathroom_cabinet_40. -> effect: Find drawing_176. Robot is inside bathroom_1. Robot i
+s close bathroom_cabinet_40. Robot is close wall_12. 
+Action 6: look for clothes_shirt_2086 around bathroom_cabinet_40. -> effect: Failed to find clothes_
+shirt_2086 around bathroom_cabinet_40. 
+Action 7: Walk to doorjamb_347. -> effect: Find hanger_375. Find hanger_359. Find hanger_376. Find h
+anger_374. Robot is inside home_office_319. Robot is close doorjamb_347. Robot is no longer inside b
+athroom_1.Robot is no longer close bathroom_cabinet_40.Robot is no longer close wall_12.
+Action 8: look for clothes_shirt_2086 around doorjamb_347. -> effect: Failed to find clothes_shirt_2
+086 around doorjamb_347. 
+Action 9: Walk to hanger_376. -> effect: Robot is inside home_office_319. Robot is close hanger_376.
+ Robot is close dresser_358. Robot is no longer close doorjamb_347.
+Action 10: look for clothes_shirt_2086 around hanger_376. -> effect: Failed to find clothes_shirt_20
+86 around hanger_376. 
+Action 11: Walk to hanger_374. -> effect: Robot is inside home_office_319. Robot is close dresser_35
+8. Robot is close hanger_374. Robot is no longer close hanger_376.
+Action 12: look for clothes_shirt_2086 around hanger_374. -> effect: Failed to find clothes_shirt_20
+86 around hanger_374. 
+Action 13: Walk to hanger_372. -> effect: Robot is inside home_office_319. Robot is close dresser_35
+8. Robot is close hanger_372. Robot is no longer close hanger_374.
+Action 14: look for clothes_shirt_2086 around hanger_372. -> effect: Failed to find clothes_shirt_20
+86 around hanger_372. 
+Action 15: Walk to closetdrawer_150. -> effect: Find hanger_128. Find hanger_110. Find hanger_140. F
+ind hanger_132. Find hanger_113. Find hanger_142. Find hanger_124. Find hanger_130. Find hanger_134.
+ Find hanger_136. Find hanger_138. Find hanger_141. Find hanger_109. Find hanger_126. Find hanger_11
+1. Find hanger_114. Find hanger_112. Find hanger_115. Robot is inside bedroom_67. Robot is close clo
+setdrawer_154. Robot is close dresser_123. Robot is close closetdrawer_150. Robot is no longer insid
+e home_office_319.Robot is no longer close hanger_372.Robot is no longer close dresser_358.
+Action 16: look for clothes_shirt_2086 around closetdrawer_150. -> effect: Failed to find clothes_sh
+irt_2086 around closetdrawer_150. 
+Action 17: Walk to curtain_407. -> effect: Robot is inside home_office_319. Robot is close curtain_4
+08. Robot is close curtain_407. Robot is no longer inside bedroom_67.Robot is no longer close closet
+drawer_154.Robot is no longer close dresser_123.Robot is no longer close closetdrawer_150.
+Action 18: look for clothes_shirt_2086 around curtain_407. -> effect: Failed to find clothes_shirt_2
+086 around curtain_407. 
+Action 19: Walk to mousepad_167. -> effect: Find mouse_166. Find chair_103. Find keyboard_168. Find 
+drawing_175. Robot is inside bedroom_67. Robot is close desk_104. Robot is close mousepad_167. Robot
+ is no longer inside home_office_319.Robot is no longer close curtain_408.Robot is no longer close c
+urtain_407.
+Action 20: look for clothes_shirt_2086 around mousepad_167. -> effect: Failed to find clothes_shirt_
+2086 around mousepad_167. 
+Action 21: Walk to toilet_37. -> effect: Find basket_for_clothes_2006. Robot is inside bathroom_1. R
+obot is close toilet_37. Robot is no longer inside bedroom_67.Robot is no longer close desk_104.Robo
+t is no longer close mousepad_167.
+Action 22: Open toilet_37. -> effect: Robot is inside bathroom_1. Robot is close toilet_37. 
+Action 23: look for clothes_shirt_2086 around toilet_37. -> effect: Failed to find clothes_shirt_208
+6 around toilet_37. 
+Action 24: Walk to basket_for_clothes_2006. -> effect: Find clothes_pants_2085. Find clothes_shirt_2
+086. Find clothes_socks_2087. Find clothes_skirt_2088. Find towel_rack_33. Find towel_rack_32. Find 
+towel_rack_34. Find mat_22. Robot is inside bathroom_1. Robot is close clothes_pants_2085. Robot is 
+close clothes_shirt_2086. Robot is close clothes_socks_2087. Robot is close clothes_skirt_2088. Robo
+t is close basket_for_clothes_2006. Robot is no longer close toilet_37.
+Action 25: look for clothes_shirt_2086 around basket_for_clothes_2006. -> effect: Find clothes_shirt
+_2086. 
+Action 26: Observe around basket_for_clothes_2006 with the question of Look for clothes_shirt_2086 i
+n the basket. -> effect: Get this information:  basket_for_clothes_2006 is close to towel_rack_32. b
+asket_for_clothes_2006 is close to towel_rack_33. basket_for_clothes_2006 is close to towel_rack_34.
+ basket_for_clothes_2006 is close to shower_36. basket_for_clothes_2006 is close to clothes_pants_20
+85. basket_for_clothes_2006 is close to clothes_shirt_2086. basket_for_clothes_2006 is close to clot
+hes_socks_2087. basket_for_clothes_2006 is close to clothes_skirt_2088. basket_for_clothes_2006 is c
+lose to toilet_37. basket_for_clothes_2006 is close to sink_42. basket_for_clothes_2006 is close to 
+faucet_43. basket_for_clothes_2006 is close to mat_22. basket_for_clothes_2006 is close to bathtub_3
+0. basket_for_clothes_2006 is close to towel_rack_31. basket_for_clothes_2006 is close to character_
+65. clothes_socks_2087 is inside basket_for_clothes_2006. basket_for_clothes_2006 is inside bathroom
+_1. clothes_pants_2085 is inside basket_for_clothes_2006. clothes_skirt_2088 is inside basket_for_cl
+othes_2006. clothes_shirt_2086 is inside basket_for_clothes_2006. basket_for_clothes_2006 is OPEN.
+Action 27: Grab clothes_shirt_2086. -> effect: Robot is inside bathroom_1. Robot is close clothes_pa
+nts_2085. Robot is close clothes_shirt_2086. Robot is close clothes_socks_2087. Robot is close cloth
+es_skirt_2088. Robot is close basket_for_clothes_2006. Grabbing clothes_shirt_2086 by right hand. 
+Action 28: Walk to washing_machine_2007. -> effect: Robot is inside bathroom_1. Robot is close cloth
+es_shirt_2086. Robot is close washing_machine_2007. Robot is no longer close clothes_pants_2085.Robo
+t is no longer close clothes_socks_2087.Robot is no longer close clothes_skirt_2088.Robot is no long
+er close basket_for_clothes_2006.
+Action 29: Put clothes_shirt_2086 into washing_machine_2007. -> effect: Robot is inside bathroom_1. 
+Robot is close clothes_shirt_2086. Robot is close washing_machine_2007. clothes_shirt_2086 released 
+by right hand. 
+Action 30: Close washing_machine_2007. -> effect: Robot is inside bathroom_1. Robot is close clothes
+_shirt_2086. Robot is close washing_machine_2007. 
+Action 31: Plug in washing_machine_2007. -> effect: Robot is inside bathroom_1. Robot is close cloth
+es_shirt_2086. Robot is close washing_machine_2007. 
+Action 32: Switch on washing_machine_2007. -> effect: Robot is inside bathroom_1. Robot is close clo
+thes_shirt_2086. Robot is close washing_machine_2007. 
+Action 33: Wash clothes_shirt_2086. -> effect: Robot is inside bathroom_1. Robot is close clothes_sh
+irt_2086. Robot is close washing_machine_2007. 
+Action 34: Walk to ironing_board_2074. -> effect: Find iron_2089. Robot is inside bathroom_1. Robot 
+is close ironing_board_2074. Robot is no longer close clothes_shirt_2086.Robot is no longer close wa
+shing_machine_2007.
+Action 35: look for iron_2089 around ironing_board_2074. -> effect: Find iron_2089. 
+Action 36: Walk to iron_2089. -> effect: Robot is inside bathroom_1. Robot is close ironing_board_20
+74. Robot is close iron_2089. 
+Action 37: Grab iron_2089. -> effect: Robot is inside bathroom_1. Robot is close ironing_board_2074.
+ Robot is close iron_2089. Grabbing iron_2089 by right hand. 
+Action 38: Walk to washing_machine_2007. -> effect: Robot is inside bathroom_1. Robot is close iron_
+2089. Robot is close clothes_shirt_2086. Robot is close washing_machine_2007. Robot is no longer clo
+se ironing_board_2074.
+Action 39: Switch off washing_machine_2007. -> effect: Robot is inside bathroom_1. Robot is close ir
+on_2089. Robot is close clothes_shirt_2086. Robot is close washing_machine_2007. 
+Action 40: Open washing_machine_2007. -> effect: Robot is inside bathroom_1. Robot is close iron_208
+9. Robot is close clothes_shirt_2086. Robot is close washing_machine_2007. 
+Action 41: Walk to clothes_shirt_2086. -> effect: Robot is inside bathroom_1. Robot is close iron_20
+89. Robot is close clothes_shirt_2086. Robot is close washing_machine_2007. 
+Action 42: Grab clothes_shirt_2086. -> effect: Robot is inside bathroom_1. Robot is close iron_2089.
+ Robot is close clothes_shirt_2086. Robot is close washing_machine_2007. Grabbing clothes_shirt_2086
+ by left hand. 
+Action 43: Walk to ironing_board_2074. -> effect: Robot is inside bathroom_1. Robot is close iron_20
+89. Robot is close clothes_shirt_2086. Robot is close ironing_board_2074. Robot is no longer close w
+ashing_machine_2007.
+Action 44: Put clothes_shirt_2086 on ironing_board_2074. -> effect: Robot is inside bathroom_1. Robo
+t is close iron_2089. Robot is close clothes_shirt_2086. Robot is close ironing_board_2074. clothes_
+shirt_2086 released by left hand. 
+Action 45: Walk to iron_2089. -> effect: Robot is inside bathroom_1. Robot is close iron_2089. Robot
+ is no longer close ironing_board_2074.Robot is no longer close clothes_shirt_2086.
+Action 46: Plug in iron_2089. -> effect: Robot is inside bathroom_1. Robot is close iron_2089. 
+Action 47: Switch on iron_2089. -> effect: Robot is inside bathroom_1. Robot is close iron_2089. 
+Action 48: Walk to ironing_board_2074. -> effect: Robot is inside bathroom_1. Robot is close iron_20
+89. Robot is close ironing_board_2074. 
+",,
+" 
+behavior set_up_iron(iron:item):
+    body:
+        achieve plugged(iron)
+        achieve is_on(iron)
+
+behavior iron_shirt(shirt:item, ironing_board:item, iron:item):
+    body:
+        achieve on(shirt, ironing_board)
+        achieve close(iron, shirt)
+
+behavior __goal__():
+    body:
+        bind shirt: item where:
+            is_clothes_shirt(shirt) and clean(shirt)
+        bind iron: item where:
+            is_iron(iron)
+        bind ironing_board: item where:
+            is_ironing_board(ironing_board)
+        set_up_iron(iron)
+        iron_shirt(shirt, ironing_board, iron)
+ ",From function reset_sub_goal,,,,
+,,,,,"(CrowControllerApplier<walk_executor(clothes_shirt_2086)>, CrowControllerApplier<put_executor(iron_2
+089, clothes_shirt_2086)>)"
+,,walk_executor(clothes_shirt_2086),"Robot is inside bathroom_1. Robot is close iron_2089. Robot is close ironing_board_2074. Robot is cl
+ose clothes_shirt_2086. ",,
+,,"put_executor(iron_2089, clothes_shirt_2086)","Robot is inside bathroom_1. Robot is close iron_2089. Robot is close ironing_board_2074. Robot is cl
+ose clothes_shirt_2086. iron_2089 released by right hand. ",,
