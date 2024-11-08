@@ -34,8 +34,8 @@ def load_scene(): # load the scene I designed, which is called by main_VH.py
     guidance_path='cdl_dataset/human_guidancea_library.json'
     guidance=json.load(open(guidance_path))
     additional_information=''
-    objects,states,relationships,properties,categories,classes,cat_statement=get_nodes_information(init_scene_graph)
-    construct_cdl(init_path,objects,states,relationships,properties,cat_statement)
+    objects,states,relationships,properties,categories,classes,cat_statement,sizes=get_nodes_information(init_scene_graph)
+    construct_cdl(init_path,objects,states,relationships,properties,cat_statement,sizes)
     return additional_information,classes,init_scene_graph,guidance
 
 def evaluation_task_loader(dataset_folder_path):
@@ -106,7 +106,14 @@ def run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph,guidance)
         pass
 
     if args.model=='CAP':
-        pass
+        args.agent_type='Policy'
+        agent=VHAgent(args, init_path,logger,True,epoch_path)
+        ##test_end
+        all_behaviors_from_library=agent.download_behaviors_from_library()
+        agent.set_human_helper(Human(init_scene_graph,guidance))
+        # agent.set_initial_human_instruction(task_data['Goal'])
+        agent.reset_goal(task_data['Goal'],classes,task_data['Task name'],First_time=True)#ini a GR
+
 
     env=VH_Env(init_scene_graph)
     while True:

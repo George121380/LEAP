@@ -10,7 +10,7 @@ def parse_args():
     parser.add_argument('--library_extraction', type=str,
                         help="Specify the library extraction method to be used.")
     
-    parser.add_argument('--model', type=str,default='ours', help="ours, LLM, LLM+P, CAP")
+    parser.add_argument('--model', type=str,default='CAP', help="ours, LLM, LLM+P, CAP")
 
     parser.add_argument('--human_guidance', type=str,default='Manual',help="LLM,Manual,None")
 
@@ -20,6 +20,6 @@ def parse_args():
     parser.add_argument('--human_check_eventually', type=bool, default=True,
                     help="Whether use human to check.")
     
-    parser.add_argument('--agent_type', type=str, default="Policy", help="Planning, Policy")
+    parser.add_argument('--agent_type', type=str, default="Planning", help="Planning, Policy")
 
     return parser.parse_args()

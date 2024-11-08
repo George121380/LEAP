@@ -8,7 +8,7 @@ from virtualhome_eval.simulation.evolving_graph.execution import Relation, State
 from virtualhome_eval.simulation.evolving_graph.scripts import *
 
 
-def construct_cdl(init_path,objects,states,relationships,properties,cat_statement):
+def construct_cdl(init_path,objects,states,relationships,properties,cat_statement,sizes):
     exploration_content=''
     problem_file_content = 'problem "virtualhome-problem"\n'
     problem_file_content += 'domain "virtualhome.cdl"\n\n'
@@ -53,14 +53,19 @@ def construct_cdl(init_path,objects,states,relationships,properties,cat_statemen
 
 
     problem_file_content += '#id\n\n'
-
-
     for obj in objects:
         if '_' in obj:
             id=re.search(r'_(\d+):', obj).group(1)
             name=obj.split(':')[0]
             problem_file_content += f'  id[{name}]={id}\n'
     problem_file_content += '#id_end\n\n'
+
+    problem_file_content += '#sizes\n\n'
+    for i in range(len(objects)):
+        if '_' in objects[i]:
+            if sizes[i]!=None:
+                problem_file_content += f'  size[{objects[i].split(":")[0]}]={sizes[i]}\n'
+    problem_file_content += '#sizes_end\n\n'
     
     with open(init_path, "w") as file:
         file.write(problem_file_content)
@@ -214,6 +219,7 @@ def get_nodes_information(graph,PO=True):
     classes=[]
     cat_statement=[]
     unknown_set=set()
+    sizes=[]
 
     for node in nodes:
         executable_objname=(node.class_name).replace("-","_")+'_'+str(node.id)
@@ -223,7 +229,7 @@ def get_nodes_information(graph,PO=True):
             objects.append(executable_objname+":item")
             op_classname=node.class_name.replace("-","_")
             cat_statement.append(f"is_{op_classname}[{executable_objname}]=True")
-
+            sizes.append(node.size)
             black_list=['pot','fryingpan']
 
             if op_classname in equal_dict and not op_classname in black_list:
@@ -276,7 +282,7 @@ def get_nodes_information(graph,PO=True):
 
     objects.append("char:character")
             # print(node.class_name,node.states)
-    return objects,states,relationships,properties,list(set(category)),list(set(classes)),cat_statement
+    return objects,states,relationships,properties,list(set(category)),list(set(classes)),cat_statement, sizes
 
 def transform_plan(plan):    
     executors = plan[0].split('; ')

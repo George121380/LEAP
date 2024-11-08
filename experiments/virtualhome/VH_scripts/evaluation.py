@@ -88,6 +88,7 @@ class Evaluator:
         self.task_file_path=task_file_path
         self.name2opid = {}
         self.name2id = {}
+        self.name2size = {}
         self.num_items = 0 # Record how mani items in the scene
         self.item_type = np.array([], dtype=object) # Record the type of each item
         self.category = {}
@@ -134,8 +135,8 @@ class Evaluator:
         with open(scene_path) as f:
             scene=json.load(f)
         init_scene_graph = EnvironmentGraph(scene)
-        objects,states,relationships,properties,categories,classes,cat_statement=get_nodes_information(init_scene_graph,PO=False)
-        construct_cdl(self.init_path,objects,states,relationships,properties,cat_statement)
+        objects,states,relationships,properties,categories,classes,cat_statement,sizes=get_nodes_information(init_scene_graph,PO=False)
+        construct_cdl(self.init_path,objects,states,relationships,properties,cat_statement,sizes)
         self.init_scene_graph=init_scene_graph
         self.classes=classes
     
@@ -182,6 +183,8 @@ class Evaluator:
         self._initialize_states()
         self._initialize_character_states()
 
+        size_section = re.search(r'#sizes\n(.+?)#sizes_end', content, re.DOTALL).group(1)
+        self._parse_size_section(size_section)
 
         # Initialize vectors with None values
         self.item_type = np.full(self.num_items, None, dtype=object)
@@ -258,6 +261,16 @@ class Evaluator:
             self.name2opid[name] = op_id
             op_id += 1
         return op_id
+    
+    def _parse_size_section(self, section:str):
+        lines = section.strip().split("\n")
+        for line in lines:
+            if "=" in line:
+                key, value, size_str = re.search(r'(\w+)\[(.+?)\]=(\d+)', line).groups()
+                key = key.strip()
+                value = value.strip()
+                size = size_str.strip()
+                self.name2size[value] = size
 
     def _parse_type_section(self, section:str):
         lines = section.strip().split("\n")
@@ -507,6 +520,14 @@ class Evaluator:
                     name = next(name for name, id_ in self.name2opid.items() if id_ == i)
                     file.write(f"    id[{name}]={self.name2id[name]}\n")
             file.write("    #id_end\n")
+
+            file.write("\n    #size\n")
+            for i, obj_type in enumerate(self.item_type):
+                if obj_type:
+                    name = next(name for name, id_ in self.name2opid.items() if id_ == i)
+                    if name in self.name2size:
+                        file.write(f"    size[{name}]={self.name2size[name]}\n")
+            file.write("    #size_end\n")
 
     def updates(self,observation):
         if "You can not" in observation:
