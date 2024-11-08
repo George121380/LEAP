@@ -1,6 +1,8 @@
 import re
 from prompt.ask_GPT import ask_GPT
-from prompt.goal_interpretation_prompt import get_goal_inter_prompt
+from prompt.planning_goal_interpretation_prompt import get_planning_goal_inter_prompt
+from prompt.policy_goal_interpretation_prompt import get_policy_goal_inter_prompt
+
 # from prompt.kitchen_prompt import get_goal_inter_prompt
 # from prompt.kitchen_loopfeedback import loop_refine
 from prompt.exploration_prompt import get_exp_behavior
@@ -34,12 +36,15 @@ def parse_evaluation(evaluation_text):
     
     return sub_task_completed, next_steps
 
-def goal_interpretation(goal,additional_information,long_horizon_goal,item_list=None,sub_tasks_list=None,behavior_from_library_names=None):
+def goal_interpretation(goal,additional_information,long_horizon_goal,item_list=None,sub_tasks_list=None,behavior_from_library_names=None, agent_type='Planning'):
     if ":item" in item_list[0]:
         for item in item_list:
             item=item.replace(":item",'')
     system = "I have a goal described in natural language, and I need it converted into a structured format."
-    content = get_goal_inter_prompt(goal,item_list,additional_information,long_horizon_goal,sub_tasks_list,behavior_from_library_names)
+    if agent_type=='Planning':
+        content = get_planning_goal_inter_prompt(goal,item_list,additional_information,long_horizon_goal,sub_tasks_list,behavior_from_library_names)
+    if agent_type=='Policy':
+        content = get_policy_goal_inter_prompt(goal,item_list,additional_information,long_horizon_goal,sub_tasks_list,behavior_from_library_names)
     start_time=time.time()
     print('=' * 60+ " Goal CDL Generation")
     print(f"When Goal instruction is: {goal}")

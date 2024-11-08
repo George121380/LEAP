@@ -166,8 +166,10 @@ def test_evaluate(args):
     _,classes,init_scene_graph,guidance=load_scene()
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     epoch_logger = setup_logger(f'log/epoch_{timestamp}',timestamp=timestamp)
-    task_path='/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/cdl_dataset/dataset/Prepare_dinner/g2.txt'
+    task_path='/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/cdl_dataset/dataset/Make_coffee/g1.txt'
     run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph,guidance)
+    # test_simulator(args,epoch_logger,timestamp,task_path,classes,init_scene_graph,guidance)
+
 
 
 def evaluation(args): # main function
@@ -208,6 +210,54 @@ def check_evaluation_single(args):
     task_path='/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/cdl_dataset/dataset/Pet_cat/g2.txt'
     evaluator=Evaluator(task_path,epoch_logger,epoch_path)
 
+class StateObjectReference:
+    def __init__(self, name, index, dtype):
+        self.name = name
+        self.index = index
+        self.dtype = dtype
+
+    def __str__(self):
+        return f"StateObjectReference(name='{self.name}', index={self.index}, dtype='{self.dtype}')"
+
+class CrowController:
+    def __init__(self, x):
+        self.x = x
+
+    def __str__(self):
+        return f"CrowController(x='{self.x}')"
+
+class CrowControllerApplier:
+    def __init__(self, input_string):
+        # Parse the input string to extract name and arguments
+        name_part, args_part = input_string.split("(")
+        self.name = name_part.strip()
+        
+        # Remove closing parenthesis and split arguments by comma
+        args_list = args_part.strip(")").split(",")
+        
+        # Initialize arguments as a list of StateObjectReference objects
+        self.arguments = [
+            StateObjectReference(name=arg.strip(), index=113, dtype='Object')  # Assuming fixed index and dtype
+            for arg in args_list
+        ]
+        
+        self.controller = CrowController(x='item')  # assuming 'item' as x in controller
+
+    def __str__(self):
+        # Format arguments for output as a comma-separated list
+        args_str = ", ".join([arg.name for arg in self.arguments])
+        return f"{self.name}({args_str})"
+
+def test_simulator(args,epoch_logger,timestamp,task_path,classes,init_scene_graph,guidance):
+    env=VH_Env(init_scene_graph)
+    Action_list=['walk_executor(cup_2063)','grab_executor(cup_2064)','walk_executor(fridge_289)','switchoff_executor(fridge_289)', 'open_executor(fridge_289)','putin(cup_2064, fridge_289)']
+
+    for action in Action_list:
+        if 'put' in str(action):
+            print('Action: ',str(action))
+        action_crow=CrowControllerApplier(action)
+        observation = env.step(action_crow) #Execute action
+        
 if __name__ == '__main__':
     args = parse_args()
     # evaluation(args)

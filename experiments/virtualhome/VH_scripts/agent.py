@@ -17,7 +17,11 @@ class VHAgent:
         # Initialize dictionaries
         self.args=args
         self.logger=logger
-
+        self.agent_type = self.args.agent_type # Policy or Planning
+        if self.agent_type=='Policy':
+            self.commit_skeleton_everything=True
+        if self.agent_type=='Planning':
+            self.commit_skeleton_everything=False
         self.name2opid = {}
         self.name2id = {}
         self.num_items = 0 # Record how mani items in the scene
@@ -62,7 +66,7 @@ class VHAgent:
             self.internal_executable_file_path = os.path.join(epoch_path,'internal_executable.cdl')
         else:
             self.internal_executable_file_path = 'experiments/virtualhome/CDLs/internal_executable_NPO.cdl'
-        self.basic_domain_knowledge_file_path = 'experiments/virtualhome/CDLs/virtualhome_partial.cdl'
+        self.basic_domain_knowledge_file_path = 'experiments/virtualhome/toy_examples/toy_domain.cdl'
         # self.state_file_path = 'experiments/virtualhome/CDLs/current_agent_state.cdl'
         self.state_file_path = os.path.join(epoch_path,'current_agent_state.cdl')
         self.reset_add_info_record()
@@ -114,6 +118,8 @@ class VHAgent:
     def query_real_human(self,question:str):
         record='Record from func query_real_human in agent.py\n'
         record+=f'Question: {question}\n'
+        print(f"The current subgoal list: {self.sub_goal_list}")
+        print(f"And I am doing: {self.current_subgoal_nl}")
         re_decompose= input("Do you think I should re-decompose the task? (y/n): ")
         if re_decompose=='y' or re_decompose=='yes':
             re_decompose=True
@@ -122,7 +128,7 @@ class VHAgent:
         answer = input(f"{question}\nYour answer: ")
         record+=f'Answer: {answer}\n'
         self.logger.info("","","","",record,"")
-
+        print("Debug: ",re_decompose)
         return answer,re_decompose
     
     def ask_for_human_task_guidance(self):
@@ -847,7 +853,7 @@ class VHAgent:
                 #time
                 plans, stats = crow.crow_regression(
                 cdl_state.domain, cdl_state, goal=cdl_state.goal, min_search_depth=12, max_search_depth=12,
-                is_goal_ordered=True, is_goal_serializable=False, always_commit_skeleton=True, commit_skeleton_everything=False,
+                is_goal_ordered=True, is_goal_serializable=False, always_commit_skeleton=True, commit_skeleton_everything=self.commit_skeleton_everything,
                 enable_state_hash=False,
                 verbose=False
             )
@@ -957,6 +963,7 @@ class VHAgent:
             print(self.current_subgoal_nl)
             re_decompose=self.ask_for_human_task_guidance()
             if re_decompose:
+                print('Re-decompose the goal')
                 self.reset_goal_decomposition()
             print('Got human guidance')
             self.reset_sub_goal()
@@ -1003,7 +1010,7 @@ class VHAgent:
         # self.current_subgoal_nl=self.sub_goal_list[0]
         self.reset_goal_decomposition()
         # pdb.set_trace()
-        _,self.goal_representation,self.exploration_behavior,self.behaviors_from_library_representation=VH_pipeline(self.state_file_path,self.internal_executable_file_path,self.current_subgoal_nl,self.add_info_nl,self.goal_nl,self.sub_goal_list[:self.current_subgoal_num],self.classes,self.behaviors_from_library)
+        _,self.goal_representation,self.exploration_behavior,self.behaviors_from_library_representation=VH_pipeline(self.state_file_path,self.internal_executable_file_path,self.current_subgoal_nl,self.add_info_nl,self.goal_nl,self.sub_goal_list[:self.current_subgoal_num],self.classes, self.behaviors_from_library,True, self.agent_type)
         # pdb.set_trace()
 
         # block while test
@@ -1020,14 +1027,14 @@ class VHAgent:
                 re_decompose=self.ask_for_human_task_guidance()
                 if re_decompose:
                     self.reset_goal_decomposition()
-                _,self.goal_representation,self.exploration_behavior,self.behaviors_from_library_representation=VH_pipeline(self.state_file_path,self.internal_executable_file_path,self.current_subgoal_nl,self.add_info_nl,self.goal_nl,self.sub_goal_list[:self.current_subgoal_num],self.classes,self.behaviors_from_library)
+                _,self.goal_representation,self.exploration_behavior,self.behaviors_from_library_representation=VH_pipeline(self.state_file_path,self.internal_executable_file_path,self.current_subgoal_nl,self.add_info_nl,self.goal_nl,self.sub_goal_list[:self.current_subgoal_num],self.classes,self.behaviors_from_library, True, self.agent_type)
                 if self.goal_representation==None:
                     print("Failed to generate the goal representation after asking for human guidance")
                     return
 
     def reset_sub_goal(self):
         self.need_replan=True
-        _,self.goal_representation,self.exploration_behavior,self.behaviors_from_library_representation=VH_pipeline(self.state_file_path,self.internal_executable_file_path,self.current_subgoal_nl,self.add_info_nl,self.goal_nl,self.sub_goal_list[:self.current_subgoal_num],self.classes,self.behaviors_from_library)
+        _,self.goal_representation,self.exploration_behavior,self.behaviors_from_library_representation=VH_pipeline(self.state_file_path,self.internal_executable_file_path,self.current_subgoal_nl,self.add_info_nl,self.goal_nl,self.sub_goal_list[:self.current_subgoal_num],self.classes,self.behaviors_from_library, True, self.agent_type)
         if self.goal_representation==None:
             if self.current_sub_task_guided:
                 print("Failed to generate the goal representation")
@@ -1038,7 +1045,7 @@ class VHAgent:
                 re_decompose=self.ask_for_human_task_guidance()
                 if re_decompose:
                     self.reset_goal_decomposition()
-                _,self.goal_representation,self.exploration_behavior,self.behaviors_from_library_representation=VH_pipeline(self.state_file_path,self.internal_executable_file_path,self.current_subgoal_nl,self.add_info_nl,self.goal_nl,self.sub_goal_list[:self.current_subgoal_num],self.classes,self.behaviors_from_library)
+                _,self.goal_representation,self.exploration_behavior,self.behaviors_from_library_representation=VH_pipeline(self.state_file_path,self.internal_executable_file_path,self.current_subgoal_nl,self.add_info_nl,self.goal_nl,self.sub_goal_list[:self.current_subgoal_num],self.classes,self.behaviors_from_library, True, self.agent_type)
                 if self.goal_representation==None:
                     print("Failed to generate the goal representation after asking for human guidance")
                     return

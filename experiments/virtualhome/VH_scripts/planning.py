@@ -178,7 +178,7 @@ def find_behavior_from_library(goal_representation, behavior_from_library):
 #     return full_code
 
 
-def VH_pipeline(state_file:str,execute_file:str,current_subgoal:str,add_info:str,long_horizon_goal:str,sub_goal_list:list,classes,behavior_from_library,partial_observation=True):
+def VH_pipeline(state_file:str,execute_file:str,current_subgoal:str,add_info:str,long_horizon_goal:str,sub_goal_list:list,classes,behavior_from_library,partial_observation=True, agent_type="Planning"):
     """
     Args:
     state_file: Path to the file containing the current state for CDL planning
@@ -194,7 +194,7 @@ def VH_pipeline(state_file:str,execute_file:str,current_subgoal:str,add_info:str
     generate_time=0
     while generate_time<3:
         try:
-            goal_int=goal_interpretation(current_subgoal,add_info,long_horizon_goal,classes,sub_goal_list,behavior_from_library)
+            goal_int=goal_interpretation(current_subgoal,add_info,long_horizon_goal,classes,sub_goal_list,behavior_from_library, agent_type)
 
             goal_int=remove_special_characters(goal_int)
             # logger.info("Goal representation",goal_int)
@@ -247,7 +247,7 @@ def VH_pipeline(state_file:str,execute_file:str,current_subgoal:str,add_info:str
                             if '#goal_representation\n' in line:
                                 goal_start_line_num=line_number
                                 break
-                    goal_int=auto_debug(error_info,original_content,goal_int,current_subgoal,add_info,classes,goal_start_line_num,behavior_from_library)
+                    goal_int=auto_debug(error_info,original_content,goal_int,current_subgoal,add_info,classes,goal_start_line_num,behavior_from_library,agent_type)
                     goal_int=remove_special_characters(goal_int)
                     # logger.info("Goal representation after debugging",goal_int)
                     if partial_observation:

@@ -1,0 +1,308 @@
+Goal Representation,Debug Result,Action,Add Info,LLM Answer,Plan
+"Reset goals: The sub-goals are: 
+['1. Find the cat and the bathtub.', '2. Shower the cat in the bathtub.', '3. Use a towel to dry the
+ cat.']",,,,,
+" 
+def in_bathroom(bathtub:item):
+    # Function to check if a bathtub is inside the bathroom
+    symbol in_bathroom=exists room: item : is_bathroom(room) and inside(bathtub, room)
+    return in_bathroom
+
+behavior __goal__():
+    body:
+        if exists cat: item : is_cat(cat) and not visited(cat):
+            # If we find a cat in our known items, approach it
+            bind cat: item where:
+                is_cat(cat) and not visited(cat)
+            achieve close_char(char, cat)
+
+        else:
+            # If no known information about the cat, check all potential places for the cat
+            foreach cat: item:
+                if is_cat(cat) and not visited(cat):
+                    observe(cat,""Check for cats location"")
+
+        if exists bathtub: item : is_bathtub(bathtub) and in_bathroom(bathtub):
+            # If we find a bathtub in the bathroom, approach it
+            bind bathtub: item where:
+                is_bathtub(bathtub) and in_bathroom(bathtub)
+            achieve close_char(char, bathtub)
+
+        else:
+            # If no known information about the bathtub, check all unvisited potential places
+            foreach bathtub: item:
+                if is_bathtub(bathtub) and not visited(bathtub):
+                    observe(bathtub,""Check location of bathtub"")
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['1. Find the bathtub.', '2. Shower the cat in the bathtub.', '3. Use a towel to dry the cat.']",,,,,
+"
+def is_bathtub_in_home(bathtub:item):
+    # Function to check if a bathtub exists in a home
+    symbol is_bathtub_home=exists room: item : inside(bathtub, room)
+    return is_bathtub_home
+
+behavior __goal__():
+    body:
+        if exists bathtub: item : is_bathtub(bathtub) and is_bathtub_in_home(bathtub):
+            # Check if there is a bathtub in a home
+            bind bathtub: item where:
+                is_bathtub(bathtub) and is_bathtub_in_home(bathtub)
+            # Select a bathtub that is inside a home
+            achieve close_char(char, bathtub)
+            # Move the character closer to the bathtub
+
+        else:
+            # If no bathtub is found, initiate exploration to locate one
+            foreach bathtub: item:
+                if is_bathtub(bathtub) and not visited(bathtub):
+                    observe(bathtub, ""Check if this is a bathtub"")
+                    # Observe whether the item is a bathtub and is in a desirable location
+",From function reset_goal,,,,
+,,,,,"(CrowControllerApplier<walk_executor(bathtub_30)>,)"
+,,walk_executor(bathtub_30),"Find towel_rack_33. Find basket_for_clothes_2006. Robot is inside bathroom_1. Robot is close floor_5
+. Robot is close bathtub_30. ",,
+"/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-
+virtual-home/cdl_dataset/dataset/Pet_cat/g5.txt",k1,"missed actions: walk_executor(cat_2055);grab_executor(cat_2055);walk_executor(sink_42);putin_executo
+r(cat_2055, sink_42);",missed action num: 4,,
+" 
+def is_in_bathtub(cat:item):
+    # Function to check if the cat is in the bathtub
+    symbol in_bathtub=exists b: item : is_bathtub(b) and inside(cat, b)
+    return in_bathtub
+
+behavior bathe_cat(cat:item, bathtub:item):
+    body:
+        achieve inside(cat, bathtub)
+        # Ensure the cat is inside the bathtub
+        
+        if not has_water(bathtub):
+            # Check if the bathtub doesnt have water
+            achieve has_water(bathtub)
+            # Fill the bathtub with water
+        
+        wash(cat)
+        # Wash the cat
+
+behavior __goal__():
+    body:
+        bind bathtub: item where:
+            is_bathtub(bathtub)
+        # Select a bathtub
+        
+        bind cat: item where:
+            is_cat(cat)
+        # Select the cat
+
+        if not is_in_bathtub(cat):
+            achieve close_char(char, bathtub)
+            # Move the character closer to the bathtub
+
+        bathe_cat(cat, bathtub)
+        # Bathe the cat in the bathtub
+",From function reset_sub_goal,,,,
+" 
+def is_cat_in_bathtub(cat:item, bathtub:item):
+    # Function to check if a cat is in the bathtub
+    symbol cat_in_bathtub = exists o: item : is_cat(o) and inside(o, bathtub)
+    return cat_in_bathtub
+
+behavior __goal__():
+    body:
+        bind bathtub: item where:
+            is_bathtub(bathtub) and id[bathtub] == 30
+        # Select bathtub with ID 30
+        
+        bind cat: item where:
+            is_cat(cat)
+        # Select the cat
+
+        if not is_cat_in_bathtub(cat, bathtub):
+            achieve inside(cat, bathtub)
+            # Ensure the cat is inside the bathtub
+        
+        achieve has_water(bathtub)
+        # Ensure the bathtub has water for showering the cat
+",From function reset_sub_goal,,,,
+,,,,"Record from func query_real_human in agent.py
+Question: Can you teach me how to ""2. shower the cat in the bathtub."" ?
+Answer: You need to first find the cat on the couch, then put the cat into the bathtub, and you can 
+directly wash it.
+",
+" 
+def is_cat_on_couch(cat:item):
+    # Function to check if the cat is on the couch
+    symbol on_couch=exists couch: item : is_couch(couch) and on(cat, couch)
+    return on_couch
+
+behavior put_cat_in_bathtub(cat:item, bathtub:item):
+    body:
+        achieve inside(cat, bathtub) # Put the cat inside the bathtub
+
+behavior wash_cat(cat:item):
+    body:
+        wash(cat) # Wash the cat
+
+behavior __goal__():
+    body:
+        bind bathtub: item where:
+            is_bathtub(bathtub) and id[bathtub]==30
+        # Select the bathtub with ID 30
+
+        bind cat: item where:
+            is_cat(cat) and is_cat_on_couch(cat)
+        # Select the cat that is on the couch
+
+        achieve close_char(char, cat) # Approach the cat
+
+        put_cat_in_bathtub(cat, bathtub) # Put the cat in the bathtub
+        
+        wash_cat(cat) # Wash the cat
+",From function reset_sub_goal,,,,
+" 
+def locate_cat(couch:item):
+    # Function to check if a cat is on the couch
+    symbol cat_on_couch=exists cat: item : is_cat(cat) and on(cat, couch)
+    return cat_on_couch
+
+behavior move_cat_to_bathtub(cat:item, bathtub:item):
+    body:
+        achieve inside(cat, bathtub)
+
+behavior open_water_source(bathtub:item):
+    body:
+        bind faucet: item where:
+            is_faucet(faucet) and close(faucet, bathtub)
+        achieve_once is_on(faucet)
+
+behavior wash_cat(bathtub:item):
+    body:
+        if has_water(bathtub):
+            bind cat: item where:
+                is_cat(cat) and inside(cat, bathtub)
+            wash(cat)
+            scrub(cat)
+
+behavior __goal__():
+    body:
+        bind couch: item where:
+            is_couch(couch)
+        if locate_cat(couch):
+            bind cat: item where:
+                is_cat(cat) and on(cat, couch)
+            bind bathtub: item where:
+                is_bathtub(bathtub) and has_water(bathtub)
+            move_cat_to_bathtub(cat, bathtub)
+            open_water_source(bathtub)
+            wash_cat(bathtub)
+        else:
+            foreach couch: item:
+                if is_couch(couch) and not visited(couch):
+                    observe(couch, ""Check if the cat is on the couch"")
+",From function reset_sub_goal,,,,
+,,,,,"(CrowControllerApplier<walk_executor(couch_352)>, CrowControllerApplier<obs(couch_352, Check if the 
+cat is on the couch)>)"
+,,walk_executor(couch_352),"Find mat_401. Find remote_control_2052. Find clothes_jacket_2047. Find cat_2055. Find pillow_405. Fi
+nd drawing_400. Find pillow_406. Find hairbrush_2002. Find vacuum_cleaner_2070. Robot is inside home
+_office_319. Robot is close couch_352. Robot is close mat_401. Robot is no longer inside bathroom_1.
+Robot is no longer close floor_5.Robot is no longer close bathtub_30.",,
+"/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-
+virtual-home/cdl_dataset/dataset/Pet_cat/g5.txt",k1,"missed actions: walk_executor(cat_2055);grab_executor(cat_2055);walk_executor(sink_42);putin_executo
+r(cat_2055, sink_42);",missed action num: 4,,
+,,"obs(couch_352, Check if the cat is on the couch)","Get this information:  couch_352 is inside home_office_319. table_355 is inside couch_352. cat_2055 
+is on couch_352. couch_352 is facing television_410. couch_352 is on mat_401. curtain_409 is on couc
+h_352. couch_352 is close to remote_control_2052. couch_352 is close to cat_2055. couch_352 is close
+ to drawing_400. couch_352 is close to mat_401. couch_352 is close to pillow_405. couch_352 is close
+ to vacuum_cleaner_2070. couch_352 is close to curtain_407. couch_352 is close to pillow_406. couch_
+352 is close to curtain_408. couch_352 is close to curtain_409. couch_352 is close to television_410
+. couch_352 is close to floor_321. couch_352 is close to floor_322. couch_352 is close to floor_323.
+ couch_352 is close to floor_324. couch_352 is close to wall_329. couch_352 is close to wall_333. co
+uch_352 is close to wall_335. couch_352 is close to hairbrush_2002. couch_352 is close to window_348
+. couch_352 is close to ceilinglamp_349. couch_352 is close to walllamp_350. couch_352 is close to t
+vstand_353. couch_352 is close to table_355. couch_352 is close to clothes_jacket_2047. couch_352 is
+ close to character_65. hairbrush_2002 is on couch_352. remote_control_2052 is on couch_352. clothes
+_jacket_2047 is on couch_352. pillow_406 is inside couch_352. couch_352 is CLEAN.",,
+,,,"Human Instruction: You need to put the cat into the bathtub and open the water source to start showe
+ring the cat.
+
+Human Guidance: You need to first find the cat on the couch, then put the cat into the bathtub, and 
+you can directly wash it.
+The actions you have taken:
+Action 1: Walk to bathtub_30.
+Action 2: Walk to couch_352.
+Action 3: Observe around couch_352 with the question of Check if the cat is on the couch.
+",,
+" 
+behavior find_cat(cat:item, location:item):
+    body:
+        achieve on(cat, location) # Ensure the cat is located on the specified location
+
+behavior move_cat_to_bathtub(cat:item, bathtub:item):
+    body:
+        achieve inside(cat, bathtub) # Place the cat inside the bathtub
+
+behavior open_the_water_source():
+    body:
+        bind faucet: item where:
+            is_faucet(faucet) and close_char(char, faucet)
+        achieve is_on(faucet) # Turn on the faucet
+
+behavior __goal__():
+    body:
+        bind bathtub: item where:
+            is_bathtub(bathtub) and id[bathtub]==30
+        bind cat: item where:
+            is_cat(cat)
+        bind couch: item where:
+            is_couch(couch) and id[couch]==352
+        find_cat(cat, couch)
+        move_cat_to_bathtub(cat, bathtub)
+        open_the_water_source()
+",From function reset_sub_goal,,,,
+" 
+def has_cat_on_couch(couch:item):
+    # Function to check if there is a cat on a specified couch
+    symbol has_cat=exists o: item : is_cat(o) and on(o, couch)
+    return has_cat
+
+def is_bathtub_with_faucet(bathtub:item):
+    # Function to check if a bathtub has a faucet
+    symbol has_faucet=exists faucet: item : is_faucet(faucet) and close(faucet, bathtub)
+    return has_faucet
+
+behavior wash_cat(cat:item, bathtub:item):
+    body:
+        achieve_once inside(cat, bathtub) # Place the cat inside the bathtub
+        if is_bathtub_with_faucet(bathtub):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, bathtub)
+            achieve_once is_on(faucet) # Turn on the faucet if it is close to the bathtub
+            wash(cat) # Wash the cat
+            achieve_once is_off(faucet) # Turn off the faucet after washing
+
+behavior __goal__():
+    body:
+        bind couch: item where:
+            is_couch(couch)
+        # Select a couch
+        bind bathtub: item where:
+            is_bathtub(bathtub)
+        # Select a bathtub
+        
+        if has_cat_on_couch(couch):
+            bind cat: item where:
+                is_cat(cat) and on(cat, couch)
+            # Select the cat on the couch
+            wash_cat(cat, bathtub)
+        else:
+            observe(couch, ""Check if there is a cat on the couch"")
+            # Observe whether there is a cat on the couch if not already known
+",From function reset_sub_goal,,,,
+"/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-
+virtual-home/cdl_dataset/dataset/Pet_cat/g5.txt",k1,"missed actions: walk_executor(cat_2055);grab_executor(cat_2055);walk_executor(sink_42);putin_executo
+r(cat_2055, sink_42);",missed action num: 4,,
+"/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-
+virtual-home/cdl_dataset/dataset/Pet_cat/g5.txt",k1,"missed actions: walk_executor(cat_2055);grab_executor(cat_2055);walk_executor(sink_42);putin_executo
+r(cat_2055, sink_42);",missed action num: 4,,
+"/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-
+virtual-home/cdl_dataset/dataset/Pet_cat/g5.txt",k2,missed actions: walk_executor(towel_2056);grab_executor(towel_2056);,missed action num: 2,,
