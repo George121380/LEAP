@@ -1,0 +1,115 @@
+Goal Representation,Debug Result,Action,Add Info,LLM Answer,Plan
+"Reset goals: The sub-goals are: 
+['1. Find the bathroom sink.  ', '2. Fill the sink with water.  ', '3. Add soap to make it soapy.']",,,,,
+" 
+def in_bathroom(sink:item):
+    # Function to check if a sink is in the bathroom
+    symbol in_bathroom=exists room: item : is_bathroom(room) and inside(sink, room)
+    return in_bathroom
+
+behavior __goal__():
+    body:
+        if exists sink: item : is_sink(sink) and in_bathroom(sink):
+            # If we have already found the bathroom sink, we can directly approach it
+            bind sink: item where:
+                is_sink(sink) and in_bathroom(sink)
+            observe(sink, ""Approach the sink"") # Edited to remove the undefined walk_to command
+
+        else:
+            # Check all sinks in the scene that have not been visited
+            foreach sink: item:
+                if is_sink(sink) and not visited(sink):
+                    observe(sink, ""Check is the sink in the bathroom"")
+",From function reset_goal,,,,
+,,,,,"(CrowControllerApplier<walk_executor(sink_42)>, CrowControllerApplier<obs(sink_42, Approach the sink
+)>)"
+,,walk_executor(sink_42),"Find basket_for_clothes_2006. Find towel_rack_34. Find detergent_2084. Find soap_2053. Find cleaning
+_solution_2073. Find towel_rack_32. Find towel_rack_31. Robot is inside bathroom_1. Robot is close b
+athroom_counter_41. Robot is close sink_42. ",,
+cdl_dataset/dataset/Clean_the_bathroom/g2.txt,k1,"missed actions: walk_executor(soap_2053);grab_executor(soap_2053);walk_executor(sink_42);putin_execu
+tor(soap_2053, sink_42);",missed action num: 4,,
+,,"obs(sink_42, Approach the sink)","Get this information:  sink_42 is close to floor_2. sink_42 is close to floor_3. sink_42 is close to
+ detergent_2084. sink_42 is close to soap_2053. sink_42 is close to floor_4. sink_42 is close to bat
+hroom_cabinet_40. sink_42 is close to bathroom_counter_41. sink_42 is close to wall_9. sink_42 is cl
+ose to faucet_43. sink_42 is close to wall_12. sink_42 is close to basket_for_clothes_2006. sink_42 
+is close to washing_machine_2007. sink_42 is close to cleaning_solution_2073. sink_42 is close to ch
+aracter_65. sink_42 is inside bathroom_1. sink_42 is inside bathroom_counter_41. soap_2053 is on sin
+k_42. cleaning_solution_2073 is on sink_42. detergent_2084 is on sink_42. sink_42 is DIRTY.",,
+,,,,"Record from func query_real_human in agent.py
+Question: Can you teach me how to ""2. fill the sink with water.  "" ?
+Answer: Just turn on the faucet close to the sink
+",
+"
+def has_faucet(sink:item):
+    # Determine whether this sink has a faucet
+    symbol has_faucet=exists faucet:item: is_faucet(faucet) and close(faucet,sink)
+    return has_faucet
+
+behavior fill_sink_with_water(sink:item):
+    body:
+        if has_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            switch_on(faucet)
+            # Start filling the sink with water
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and visited(sink)
+        # Select the visited sink
+        fill_sink_with_water(sink)
+",From function reset_sub_goal,,,,
+" 
+def find_faucet(sink:item):
+    # Function to check if there is a faucet near the sink
+    symbol faucet_exists = exists faucet: item : is_faucet(faucet) and close(faucet, sink)
+    return faucet_exists
+
+behavior fill_sink_with_water(sink:item):
+    body:
+        if not has_water(sink):
+            # If the sink does not have water, turn on the faucet to fill it
+            if find_faucet(sink):
+                bind faucet: item where:
+                    is_faucet(faucet) and close(faucet, sink)
+                switch_on(faucet)
+            # The behavior assumes that once the faucet is turned on, the sink fills with water
+            assert has_water(sink)
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and visited(sink)
+        # Select a sink that has been found and visited
+        fill_sink_with_water(sink)
+        # Fill the selected sink with water
+",From function reset_sub_goal,,,,
+" 
+def has_faucet_near_sink(sink:item):
+    # Function to check if there is a faucet close to the sink
+    symbol has_faucet=exists faucet: item : is_faucet(faucet) and close(faucet, sink)
+    return has_faucet
+
+behavior fill_sink_with_water(sink:item):
+    body:
+        if has_faucet_near_sink(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            switch_on(faucet)
+            # Turn on the faucet near the sink to fill it with water
+
+            assert has_water(sink)
+            # Ensure the sink is filled with water
+
+            switch_off(faucet)
+            # Turn off the faucet after the sink is filled
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and visited(sink)
+        # Bind the sink that has already been visited
+
+        fill_sink_with_water(sink)
+",From function reset_sub_goal,,,,

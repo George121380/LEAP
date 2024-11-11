@@ -126,6 +126,8 @@ if __name__=='__main__':
     goal='Turn on the light in the bathroom'
     sub_goal_list=sub_goal_generater(goal,[],'')
     print(sub_goal_list)
+    print(len(sub_goal_list))
+
     goal='Make salad'
     sub_goal_list=sub_goal_generater(goal,[],'')
     print(sub_goal_list)

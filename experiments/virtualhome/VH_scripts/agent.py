@@ -1084,6 +1084,7 @@ class VHAgent:
         if self.current_subgoal_num==len(self.sub_goal_list)-1:
             result,insrtuctions=sub_goal_evaluate(self.goal_representation,self.add_info_action_history,self.current_subgoal_nl,self.goal_nl, 'This is the last sub-task',self.add_info_nl,self.name2opid.keys())
         else:
+            print(f"current_subgoal_num: {self.current_subgoal_num}")
             result,insrtuctions=sub_goal_evaluate(self.goal_representation,self.add_info_action_history,self.current_subgoal_nl,self.goal_nl, self.sub_goal_list[self.current_subgoal_num+1],self.add_info_nl,self.name2opid.keys())
         return result,insrtuctions
     

@@ -267,7 +267,7 @@ def test_simulator(args,epoch_logger,timestamp,task_path,classes,init_scene_grap
         
 if __name__ == '__main__':
     args = parse_args()
-    # evaluation(args)
-    test_evaluate(args)
+    evaluation(args)
+    # test_evaluate(args)
     # check_evaluation(args)
     # check_evaluation_single(args)

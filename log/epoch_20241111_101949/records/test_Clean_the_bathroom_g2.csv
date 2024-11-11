@@ -1,0 +1,127 @@
+Goal Representation,Debug Result,Action,Add Info,LLM Answer,Plan
+"Reset goals: The sub-goals are: 
+['1. Find the bathroom sink.', '2. Fill the sink with water.', '3. Add soap to the water to make it 
+soapy.']",,,,,
+" 
+def in_bathroom(sink: item):
+    # Check if the sink is in the bathroom
+    symbol in_bathroom = exists room: item : is_bathroom(room) and inside(sink, room)
+    return in_bathroom
+
+behavior __goal__():
+    body:
+        if exists sink: item : is_sink(sink) and in_bathroom(sink):
+            # Check if the sink is in the bathroom based on the known information
+            bind sink: item where:
+                is_sink(sink) and in_bathroom(sink)
+            # Select a sink that is in the bathroom
+            observe(sink, ""Move the character closer to the bathroom sink"")
+            # Replace walk_to(sink) function
+
+        else:
+            # If no bathroom sink is found in known information, initiate exploration
+            foreach sink: item:
+                if is_sink(sink) and not visited(sink):
+                    observe(sink, ""Check if the sink is in the bathroom"")
+                    # Observe whether the sink is located in the bathroom
+",From function reset_goal,,,,
+,,,,,"(CrowControllerApplier<walk_executor(sink_42)>, CrowControllerApplier<obs(sink_42, Move the characte
+r closer to the bathroom sink)>)"
+,,walk_executor(sink_42),"Find basket_for_clothes_2006. Find towel_rack_34. Find detergent_2084. Find soap_2053. Find cleaning
+_solution_2073. Find towel_rack_32. Find towel_rack_31. Robot is inside bathroom_1. Robot is close b
+athroom_counter_41. Robot is close sink_42. ",,
+cdl_dataset/dataset/Clean_the_bathroom/g2.txt,k1,"missed actions: walk_executor(soap_2053);grab_executor(soap_2053);walk_executor(sink_42);putin_execu
+tor(soap_2053, sink_42);",missed action num: 4,,
+,,"obs(sink_42, Move the character closer to the bathroom sink)","Get this information:  sink_42 is close to floor_2. sink_42 is close to floor_3. sink_42 is close to
+ detergent_2084. sink_42 is close to soap_2053. sink_42 is close to floor_4. sink_42 is close to bat
+hroom_cabinet_40. sink_42 is close to bathroom_counter_41. sink_42 is close to wall_9. sink_42 is cl
+ose to faucet_43. sink_42 is close to wall_12. sink_42 is close to basket_for_clothes_2006. sink_42 
+is close to washing_machine_2007. sink_42 is close to cleaning_solution_2073. sink_42 is close to ch
+aracter_65. sink_42 is inside bathroom_1. sink_42 is inside bathroom_counter_41. soap_2053 is on sin
+k_42. cleaning_solution_2073 is on sink_42. detergent_2084 is on sink_42. sink_42 is DIRTY.",,
+" 
+def is_bathroom_sink(sink:item):
+    symbol bathroom_sink=exists room: item : is_bathroom(room) and inside(sink, room)
+    return bathroom_sink
+
+behavior fill_sink_with_water(sink:item):
+    body:
+        get_water(sink)
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and is_bathroom_sink(sink) and visited(sink)
+        fill_sink_with_water(sink)
+",From function reset_sub_goal,,,,
+" 
+def is_bathroom_sink(sink:item):
+    # Determine if a sink is located inside the bathroom
+    symbol in_bathroom=exists room: item : is_bathroom(room) and inside(sink, room)
+    return in_bathroom
+
+behavior fill_sink_with_water(sink:item):
+    body:
+        get_water(sink)
+        assert has_water(sink)
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and is_bathroom_sink(sink)
+        assert close_char(char, sink)
+        fill_sink_with_water(sink)
+",From function reset_sub_goal,,,,
+,,,,,"(CrowControllerApplier<walk_executor(faucet_43)>, CrowControllerApplier<switchon_executor(faucet_43)
+>, CrowControllerApplier<switchoff_executor(faucet_43)>)"
+,,walk_executor(faucet_43),"Robot is inside bathroom_1. Robot is close bathroom_counter_41. Robot is close faucet_43. Robot is n
+o longer close sink_42.",,
+cdl_dataset/dataset/Clean_the_bathroom/g2.txt,k1,"missed actions: walk_executor(soap_2053);grab_executor(soap_2053);walk_executor(sink_42);putin_execu
+tor(soap_2053, sink_42);",missed action num: 4,,
+,,switchon_executor(faucet_43),Robot is inside bathroom_1. Robot is close bathroom_counter_41. Robot is close faucet_43. ,,
+cdl_dataset/dataset/Clean_the_bathroom/g2.txt,k1,"missed actions: walk_executor(soap_2053);grab_executor(soap_2053);walk_executor(sink_42);putin_execu
+tor(soap_2053, sink_42);",missed action num: 4,,
+,,switchoff_executor(faucet_43),Robot is inside bathroom_1. Robot is close bathroom_counter_41. Robot is close faucet_43. ,,
+cdl_dataset/dataset/Clean_the_bathroom/g2.txt,k1,"missed actions: walk_executor(soap_2053);grab_executor(soap_2053);walk_executor(sink_42);putin_execu
+tor(soap_2053, sink_42);",missed action num: 4,,
+" 
+def is_soap_nearby(sink:item):
+    # Function to check if there is soap near the sink
+    symbol nearby_soap = exists soap: item : is_soap(soap) and close(soap, sink)
+    return nearby_soap
+
+behavior grab_and_add_soap(soap:item, sink:item):
+    body:
+        grab(soap) # Grab the soap
+        put_inside(soap, sink) # Add the soap to the sink with water
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and id[sink]==42
+        # Select sink with ID 42
+
+        if is_soap_nearby(sink):
+            bind soap: item where:
+                is_soap(soap) and close(soap, sink)
+            grab_and_add_soap(soap, sink)
+        else:
+            foreach soap: item:
+                if is_soap(soap) and not visited(soap):
+                    observe(soap, ""Check the location of the soap"")
+",From function reset_sub_goal,,,,
+,,,,,"(CrowControllerApplier<walk_executor(soap_2053)>, CrowControllerApplier<grab_executor(soap_2053)>, C
+rowControllerApplier<walk_executor(sink_42)>, CrowControllerApplier<putin_executor(soap_2053, sink_4
+2)>)"
+,,walk_executor(soap_2053),"Robot is inside bathroom_1. Robot is close sink_42. Robot is close soap_2053. Robot is no longer clo
+se bathroom_counter_41.Robot is no longer close faucet_43.",,
+cdl_dataset/dataset/Clean_the_bathroom/g2.txt,k1,"missed actions: grab_executor(soap_2053);putin_executor(soap_2053, sink_42);",missed action num: 2,,
+,,grab_executor(soap_2053),"Robot is inside bathroom_1. Robot is close sink_42. Robot is close soap_2053. Grabbing soap_2053 by 
+right hand. ",,
+cdl_dataset/dataset/Clean_the_bathroom/g2.txt,k1,"missed actions: putin_executor(soap_2053, sink_42);",missed action num: 1,,
+,,walk_executor(sink_42),"Robot is inside bathroom_1. Robot is close sink_42. Robot is close soap_2053. Robot is close bathroo
+m_counter_41. ",,
+cdl_dataset/dataset/Clean_the_bathroom/g2.txt,k1,"missed actions: putin_executor(soap_2053, sink_42);",missed action num: 1,,
+,,"putin_executor(soap_2053, sink_42)","Robot is inside bathroom_1. Robot is close sink_42. Robot is close soap_2053. Robot is close bathroo
+m_counter_41. soap_2053 released by right hand. ",,
+cdl_dataset/dataset/Clean_the_bathroom/g2.txt,k1,missed actions: ,missed action num: 0,,
