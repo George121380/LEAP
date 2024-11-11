@@ -17,14 +17,22 @@ from human import Human
 from evaluation import Evaluator
 random.seed(time.time())
 import pdb
+import yaml 
+from types import SimpleNamespace
 import os
 from dataset import parse_file_to_json
+
 
 init_path="experiments/virtualhome/CDLs/init_scene_PO.cdl"
 dataset_folder_path='cdl_dataset/dataset'
 
 from tqdm import tqdm
-from args import parse_args
+
+def load_config(config_file="config.yaml"):
+    with open(config_file, "r") as file:
+        config_dict = yaml.safe_load(file)
+    config = SimpleNamespace(**config_dict)
+    return config
 
 def load_scene(): # load the scene I designed, which is called by main_VH.py
     scene_path='cdl_dataset/Scene.json'
@@ -266,7 +274,7 @@ def test_simulator(args,epoch_logger,timestamp,task_path,classes,init_scene_grap
         observation = env.step(action_crow) #Execute action
         
 if __name__ == '__main__':
-    args = parse_args()
+    args = load_config("experiments/virtualhome/VH_scripts/config.yaml")
     evaluation(args)
     # test_evaluate(args)
     # check_evaluation(args)
