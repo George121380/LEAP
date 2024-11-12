@@ -166,7 +166,7 @@ class Evaluator:
     def _initialize_properties(self):
         property_features = [
             "surfaces", "grabbable", "sittable","lieable","hangable","drinkable","eatable","recipient","cuttable", "pourable", 
-            "can_open", "has_switch", "containers", "has_plug", "readable","lookable","is_clothes","is_food","person","body_part","cover_object","has_paper","movable","cream"
+            "can_open", "has_switch", "containers", "has_plug", "readable","lookable","is_clothes","is_food","person","body_part","cover_object","has_paper","movable","cream","has_size"
         ]
         for feature in property_features:
             self.properties[feature] = np.full(self.num_items , "uncertain", dtype=object)

@@ -86,6 +86,7 @@ def run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph,guidance)
 
     if args.model=='ours':
         ##test
+        args.agent_type='Planning'
         agent=VHAgent(args, init_path,logger,True,epoch_path)
         ##test_end
         all_behaviors_from_library=agent.download_behaviors_from_library()
@@ -158,7 +159,8 @@ def run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph,guidance)
             else:
                 if can_ask_human_to_check_eventually:
                     action="human guided"
-                    continue
+                    print('testing yet')
+                    # continue
 
                 if epoch_logger:
                     task_summary_record(epoch_logger,task_data['Task name'],task_data['Goal'],executed_actions,start_time,complete_rate,task_path,agent.exp_helper_query_times)
@@ -181,7 +183,7 @@ def test_evaluate(args):
     _,classes,init_scene_graph,guidance=load_scene()
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     epoch_logger = setup_logger(f'log/epoch_{timestamp}',timestamp=timestamp)
-    task_path='/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/cdl_dataset/dataset/Make_coffee/g1.txt'
+    task_path='cdl_dataset/dataset/Make_coffee/g3.txt'
     run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph,guidance)
     # test_simulator(args,epoch_logger,timestamp,task_path,classes,init_scene_graph,guidance)
 
@@ -191,6 +193,8 @@ def evaluation(args): # main function
     files=evaluation_task_loader(dataset_folder_path)
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     epoch_logger = setup_logger(f'log/epoch_{timestamp}',timestamp=timestamp)
+    with open(f'log/epoch_{timestamp}/args.yaml', 'w') as file:
+        yaml.dump(vars(args), file)
     files = tqdm(files, desc="Evaluating tasks")
     for task_file in files:
         # try:
@@ -222,8 +226,9 @@ def check_evaluation_single(args):
     epoch_path=f'log/epoch_{timestamp}'
     epoch_logger = setup_logger(f'log/epoch_{timestamp}',timestamp=timestamp)
    
-    task_path='/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/cdl_dataset/dataset/Pet_cat/g2.txt'
+    task_path='cdl_dataset/dataset/Drink/g2.txt'
     evaluator=Evaluator(task_path,epoch_logger,epoch_path)
+    evaluator.left_action_counting_for_each_keystate()
 
 class StateObjectReference:
     def __init__(self, name, index, dtype):
@@ -265,7 +270,7 @@ class CrowControllerApplier:
 
 def test_simulator(args,epoch_logger,timestamp,task_path,classes,init_scene_graph,guidance):
     env=VH_Env(init_scene_graph)
-    Action_list=['walk_executor(cup_2063)','grab_executor(cup_2064)','walk_executor(fridge_289)','switchoff_executor(fridge_289)', 'open_executor(fridge_289)','putin(cup_2064, fridge_289)']
+    Action_list=['walk_executor(cup_2063)','grab_executor(cup_2063)','walk_executor(fridge_289)','switchoff_executor(fridge_289)', 'open_executor(fridge_289)','putin(cup_2064, fridge_289)']
 
     for action in Action_list:
         if 'put' in str(action):
@@ -275,7 +280,7 @@ def test_simulator(args,epoch_logger,timestamp,task_path,classes,init_scene_grap
         
 if __name__ == '__main__':
     args = load_config("experiments/virtualhome/VH_scripts/config.yaml")
-    evaluation(args)
+    # evaluation(args)
     # test_evaluate(args)
     # check_evaluation(args)
-    # check_evaluation_single(args)
+    check_evaluation_single(args)

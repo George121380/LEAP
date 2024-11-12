@@ -230,6 +230,8 @@ def get_nodes_information(graph,PO=True):
             op_classname=node.class_name.replace("-","_")
             cat_statement.append(f"is_{op_classname}[{executable_objname}]=True")
             sizes.append(node.size)
+            if node.size!=None:
+                properties.append(f"has_size[{executable_objname}]=True")
             black_list=['pot','fryingpan']
 
             if op_classname in equal_dict and not op_classname in black_list:
