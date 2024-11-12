@@ -1033,7 +1033,7 @@ class VHAgent:
         # self.current_subgoal_nl=self.sub_goal_list[0]
         self.reset_goal_decomposition()
         # pdb.set_trace()
-        _,self.goal_representation,self.exploration_behavior,self.behaviors_from_library_representation=VH_pipeline(self.state_file_path,self.internal_executable_file_path,self.current_subgoal_nl,self.add_info_nl,self.goal_nl,self.sub_goal_list[:self.current_subgoal_num],self.classes, self.behaviors_from_library,True, self.agent_type)
+        _,self.goal_representation,self.exploration_behavior,self.behaviors_from_library_representation=VH_pipeline(self.state_file_path,self.internal_executable_file_path,self.current_subgoal_nl,self.add_info_nl,self.goal_nl,self.sub_goal_list[:self.current_subgoal_num],self.classes, self.behaviors_from_library,True, self.agent_type, self.args.refinement)
         # pdb.set_trace()
 
         # block while test
@@ -1050,14 +1050,14 @@ class VHAgent:
                 re_decompose=self.ask_for_human_task_guidance()
                 if re_decompose:
                     self.reset_goal_decomposition()
-                _,self.goal_representation,self.exploration_behavior,self.behaviors_from_library_representation=VH_pipeline(self.state_file_path,self.internal_executable_file_path,self.current_subgoal_nl,self.add_info_nl,self.goal_nl,self.sub_goal_list[:self.current_subgoal_num],self.classes,self.behaviors_from_library, True, self.agent_type)
+                _,self.goal_representation,self.exploration_behavior,self.behaviors_from_library_representation=VH_pipeline(self.state_file_path,self.internal_executable_file_path,self.current_subgoal_nl,self.add_info_nl,self.goal_nl,self.sub_goal_list[:self.current_subgoal_num],self.classes,self.behaviors_from_library, True, self.agent_type, self.args.refinement)
                 if self.goal_representation==None:
                     print("Failed to generate the goal representation after asking for human guidance")
                     return
 
     def reset_sub_goal(self):
         self.need_replan=True
-        _,self.goal_representation,self.exploration_behavior,self.behaviors_from_library_representation=VH_pipeline(self.state_file_path,self.internal_executable_file_path,self.current_subgoal_nl,self.add_info_nl,self.goal_nl,self.sub_goal_list[:self.current_subgoal_num],self.classes,self.behaviors_from_library, True, self.agent_type)
+        _,self.goal_representation,self.exploration_behavior,self.behaviors_from_library_representation=VH_pipeline(self.state_file_path,self.internal_executable_file_path,self.current_subgoal_nl,self.add_info_nl,self.goal_nl,self.sub_goal_list[:self.current_subgoal_num],self.classes,self.behaviors_from_library, True, self.agent_type, self.args.refinement)
         if self.goal_representation==None:
             if self.current_sub_task_guided:
                 print("Failed to generate the goal representation")
@@ -1068,7 +1068,7 @@ class VHAgent:
                 re_decompose=self.ask_for_human_task_guidance()
                 if re_decompose:
                     self.reset_goal_decomposition()
-                _,self.goal_representation,self.exploration_behavior,self.behaviors_from_library_representation=VH_pipeline(self.state_file_path,self.internal_executable_file_path,self.current_subgoal_nl,self.add_info_nl,self.goal_nl,self.sub_goal_list[:self.current_subgoal_num],self.classes,self.behaviors_from_library, True, self.agent_type)
+                _,self.goal_representation,self.exploration_behavior,self.behaviors_from_library_representation=VH_pipeline(self.state_file_path,self.internal_executable_file_path,self.current_subgoal_nl,self.add_info_nl,self.goal_nl,self.sub_goal_list[:self.current_subgoal_num],self.classes,self.behaviors_from_library, True, self.agent_type, self.args.refinement)
                 if self.goal_representation==None:
                     print("Failed to generate the goal representation after asking for human guidance")
                     return
@@ -1088,7 +1088,8 @@ class VHAgent:
             result,insrtuctions=sub_goal_evaluate(self.goal_representation,self.add_info_action_history,self.current_subgoal_nl,self.goal_nl, self.sub_goal_list[self.current_subgoal_num+1],self.add_info_nl,self.name2opid.keys())
         return result,insrtuctions
     
-    def final_human_check(self):
+    def final_human_check(self): # ask human to check whether the task is done
+        print('Ask human to check whether the task is done')
         pass
     
     def reset_add_info_record(self):

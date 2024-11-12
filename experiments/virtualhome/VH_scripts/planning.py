@@ -178,7 +178,7 @@ def find_behavior_from_library(goal_representation, behavior_from_library):
 #     return full_code
 
 
-def VH_pipeline(state_file:str,execute_file:str,current_subgoal:str,add_info:str,long_horizon_goal:str,sub_goal_list:list,classes,behavior_from_library,partial_observation=True, agent_type="Planning"):
+def VH_pipeline(state_file:str,execute_file:str,current_subgoal:str,add_info:str,long_horizon_goal:str,sub_goal_list:list,classes,behavior_from_library,partial_observation=True, agent_type="Planning", refinement=True):
     """
     Args:
     state_file: Path to the file containing the current state for CDL planning
@@ -192,7 +192,14 @@ def VH_pipeline(state_file:str,execute_file:str,current_subgoal:str,add_info:str
     """
     exploration_content=''
     generate_time=0
-    while generate_time<3:
+
+    generate_times_limit=3
+    correct_times_limit=2
+
+    if refinement:
+        generate_times_limit=generate_times_limit*correct_times_limit
+
+    while generate_time<generate_times_limit:
         try:
             goal_int=goal_interpretation(current_subgoal,add_info,long_horizon_goal,classes,sub_goal_list,behavior_from_library, agent_type)
 
@@ -220,7 +227,7 @@ def VH_pipeline(state_file:str,execute_file:str,current_subgoal:str,add_info:str
                 file.write(combined_content)
             loop=False
             correct_time=0
-            while correct_time < 2:
+            while correct_time < correct_times_limit:
                 try:
                     # pdb.set_trace()
                     solver_start_time=time.time()
@@ -240,27 +247,30 @@ def VH_pipeline(state_file:str,execute_file:str,current_subgoal:str,add_info:str
                             return plan,goal_int,add_behavior_from_library
 
                 except TransformationError as e:
-                    solver_end_time=time.time()
-                    # print(f"Time for solving:{solver_end_time-solver_start_time:.4f}s")
-                    error_info=e.errors
-                    # print("Error information: ",error_info)
-                    # logger.info(goal_int,error_info,"","","","")
-                    with open(new_file_path, "r") as file:
-                        for line_number, line in enumerate(file, start=1):
-                            if '#goal_representation\n' in line:
-                                goal_start_line_num=line_number
-                                break
-                    goal_int=auto_debug(error_info,original_content,goal_int,current_subgoal,add_info,classes,goal_start_line_num,behavior_from_library,agent_type)
-                    goal_int=remove_special_characters(goal_int)
-                    # logger.info("Goal representation after debugging",goal_int)
-                    if partial_observation:
-                        exploration_content=exploration_VH(current_subgoal,add_info,new_file_path)
-                        exploration_content=remove_special_characters(exploration_content)
-                    add_behavior_from_library=find_behavior_from_library(goal_int,behavior_from_library)
-                    combined_content=original_content+"\n#exp_behavior\n"+exploration_content+'\n#exp_behavior_end\n'+"\n#behaviors_from_library\n"+add_behavior_from_library+"\n#behaviors_from_library_end\n"+"\n#goal_representation\n" + goal_int+"\n#goal_representation_end\n"
-                    with open(new_file_path, "w") as file:
-                        file.write(combined_content)
-                    correct_time+=1
+                    if refinement:
+                        solver_end_time=time.time()
+                        # print(f"Time for solving:{solver_end_time-solver_start_time:.4f}s")
+                        error_info=e.errors
+                        # print("Error information: ",error_info)
+                        # logger.info(goal_int,error_info,"","","","")
+                        with open(new_file_path, "r") as file:
+                            for line_number, line in enumerate(file, start=1):
+                                if '#goal_representation\n' in line:
+                                    goal_start_line_num=line_number
+                                    break
+                        goal_int=auto_debug(error_info,original_content,goal_int,current_subgoal,add_info,classes,goal_start_line_num,behavior_from_library,agent_type)
+                        goal_int=remove_special_characters(goal_int)
+                        # logger.info("Goal representation after debugging",goal_int)
+                        if partial_observation:
+                            exploration_content=exploration_VH(current_subgoal,add_info,new_file_path)
+                            exploration_content=remove_special_characters(exploration_content)
+                        add_behavior_from_library=find_behavior_from_library(goal_int,behavior_from_library)
+                        combined_content=original_content+"\n#exp_behavior\n"+exploration_content+'\n#exp_behavior_end\n'+"\n#behaviors_from_library\n"+add_behavior_from_library+"\n#behaviors_from_library_end\n"+"\n#goal_representation\n" + goal_int+"\n#goal_representation_end\n"
+                        with open(new_file_path, "w") as file:
+                            file.write(combined_content)
+                        correct_time+=1
+                    else:
+                        break
 
         except TransformationError as e:
             solver_end_time=time.time()

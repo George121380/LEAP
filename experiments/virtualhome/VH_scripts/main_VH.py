@@ -159,8 +159,9 @@ def run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph,guidance)
             else:
                 if can_ask_human_to_check_eventually:
                     action="human guided"
-                    print('testing yet')
-                    # continue
+                    agent.final_human_check()
+                    continue
+
 
                 if epoch_logger:
                     task_summary_record(epoch_logger,task_data['Task name'],task_data['Goal'],executed_actions,start_time,complete_rate,task_path,agent.exp_helper_query_times)
@@ -280,7 +281,7 @@ def test_simulator(args,epoch_logger,timestamp,task_path,classes,init_scene_grap
         
 if __name__ == '__main__':
     args = load_config("experiments/virtualhome/VH_scripts/config.yaml")
-    # evaluation(args)
+    evaluation(args)
     # test_evaluate(args)
     # check_evaluation(args)
-    check_evaluation_single(args)
+    # check_evaluation_single(args)
