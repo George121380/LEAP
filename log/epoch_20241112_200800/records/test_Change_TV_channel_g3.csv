@@ -1,0 +1,120 @@
+Goal Representation,Debug Result,Action,Add Info,LLM Answer,Plan
+"Reset goals: The sub-goals are: 
+['1. Find the couch and sit on it.', '2. Find the remote control and use it to turn on the TV.']",,,,,
+" 
+behavior sit_on_couch(couch:item):
+    body:
+        achieve on_char(char, couch)
+
+behavior __goal__():
+    body:
+        bind couch: item where:
+            is_couch(couch)
+        sit_on_couch(couch)
+",From function reset_goal,,,,
+,,,,,"(CrowControllerApplier<walk_executor(couch_352)>, CrowControllerApplier<sit_executor(couch_352)>)"
+,,walk_executor(couch_352),"Find mat_401. Find remote_control_2052. Find clothes_jacket_2047. Find cat_2055. Find pillow_405. Fi
+nd drawing_400. Find pillow_406. Find hairbrush_2002. Find vacuum_cleaner_2070. Robot is inside home
+_office_319. Robot is close couch_352. Robot is close mat_401. Robot is no longer inside bathroom_1.",,
+cdl_dataset/dataset/Change_TV_channel/g3.txt,k1,missed actions: sit_executor(couch_352);,missed action num: 1,,
+,,sit_executor(couch_352),"Find headset_2062. Find hanger_363. Find hanger_374. Find drawing_404. Find keyboard_415. Find heads
+et_2076. Find hanger_369. Find hanger_361. Find spectacles_2082. Find drawing_402. Find hanger_372. 
+Find chair_356. Find book_2066. Find phone_2077. Find mouse_413. Find hanger_375. Find pencil_2001. 
+Find hanger_367. Find hanger_359. Find dvd_player_2061. Find drawing_403. Find hanger_365. Find book
+_2067. Find hanger_376. Robot is inside home_office_319. Robot is close couch_352. Robot is close ma
+t_401. Robot is on couch_352. Robot is facing television_410. ",,
+cdl_dataset/dataset/Change_TV_channel/g3.txt,k1,missed actions: ,missed action num: 0,,
+" 
+def has_remote_control(obj:item):
+    # Function to check if a remote control is located on a specified object
+    symbol has_remote=exists o: item : is_remote_control(o) and on(o, obj)
+    return has_remote
+
+behavior __goal__():
+    body:
+        # First, check if there is a remote control visible on any known objects
+        if exists obj: item : has_remote_control(obj):
+            bind remote_control: item where:
+                is_remote_control(remote_control)
+            achieve_once inhand(remote_control)
+        else:
+            # If no remote control has been observed, inspect possible places where it might be loca
+ted
+            foreach obj: item:
+                if not visited(obj):
+                    observe(obj, ""Check if there is a remote control on or near this object"")
+
+        # Bind the television instance in the current context
+        bind television: item where:
+            is_television(television)
+
+        # Use the remote control to turn on the TV
+        achieve is_on(television)
+",From function reset_sub_goal,,,,
+,,,,,"(CrowControllerApplier<standup_executor(char)>, CrowControllerApplier<walk_executor(remote_control_2
+052)>, CrowControllerApplier<grab_executor(remote_control_2052)>, CrowControllerApplier<standup_exec
+utor(char)>, CrowControllerApplier<walk_executor(television_248)>, CrowControllerApplier<switchon_ex
+ecutor(television_248)>)"
+,,standup_executor(char),"Robot is inside home_office_319. Robot is close couch_352. Robot is close mat_401. Robot is on couch
+_352. Robot is facing television_410. ",,
+,,walk_executor(remote_control_2052),"Robot is inside home_office_319. Robot is close couch_352. Robot is close remote_control_2052. Robot
+ is on couch_352. Robot is no longer close mat_401.Robot is no longer facing television_410.",,
+,,grab_executor(remote_control_2052),"Robot is inside home_office_319. Robot is close couch_352. Robot is close remote_control_2052. Robot
+ is on couch_352. Grabbing remote_control_2052 by right hand. ",,
+" 
+def is_remote_for_tv(remote:item, tv:item):
+    return is_remote_control(remote) and is_television(tv) and has_switch(tv)
+
+behavior find_and_turn_on_tv(remote:item, tv:item):
+    body:
+        achieve_once inhand(remote) # Achieve holding the remote control temporarily
+        achieve is_on(tv) # Turn on the TV
+
+behavior __goal__():
+    body:
+        bind remote: item where:
+            is_remote_control(remote) and visited(remote) # Ensure the remote is known
+        bind tv: item where:
+            is_television(tv)
+        find_and_turn_on_tv(remote, tv)
+",From function reset_sub_goal,,,,
+" 
+def is_within_reach(obj: item):
+    # Function to check if an item is within reach (close) to char
+    symbol close_to_char=close_char(char, obj)
+    return close_to_char
+
+behavior grab_item(item: item):
+    body:
+        if not is_within_reach(item):
+            achieve close_char(char, item)
+        achieve_once inhand(item)
+
+behavior activate_device(device:item, remote_control:item):
+    body:
+        if has_switch(device):
+            achieve_once close_char(char, device)
+            achieve is_on(device)
+
+behavior __goal__():
+    body:
+        bind remote_control: item where:
+            is_remote_control(remote_control)
+        # Select remote control instance
+
+        bind television: item where:
+            is_television(television)
+        # Select television instance
+
+        grab_item(remote_control)
+        # Use the remote control to activate the television
+        activate_device(television, remote_control)
+",From function reset_sub_goal,,,,
+,,,,,"(CrowControllerApplier<walk_executor(television_248)>, CrowControllerApplier<switchon_executor(telev
+ision_248)>)"
+,,walk_executor(television_248),"Find mat_236. Find drawing_241. Find drawing_242. Find drawing_243. Find phone_247. Find cd_2075. Fi
+nd cd_player_2060. Find wall_clock_249. Robot is inside dining_room_201. Robot is close remote_contr
+ol_2052. Robot is close television_248. Robot is close tvstand_225. Robot is on couch_352. Robot is 
+no longer inside home_office_319.Robot is no longer close couch_352.",,
+,,switchon_executor(television_248),"Robot is inside dining_room_201. Robot is close remote_control_2052. Robot is close television_248. 
+Robot is close tvstand_225. Robot is on couch_352. ",,

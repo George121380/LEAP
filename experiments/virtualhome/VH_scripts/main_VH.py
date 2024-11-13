@@ -181,12 +181,17 @@ def run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph,guidance)
             return True
 
 def test_evaluate(args):
+    start_time = time.time()
+    print('Start Time: ',start_time)
     _,classes,init_scene_graph,guidance=load_scene()
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     epoch_logger = setup_logger(f'log/epoch_{timestamp}',timestamp=timestamp)
-    task_path='cdl_dataset/dataset/Make_coffee/g3.txt'
-    run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph,guidance)
-    # test_simulator(args,epoch_logger,timestamp,task_path,classes,init_scene_graph,guidance)
+    task_path='/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/cdl_dataset/dataset/Put_groceries_in_Fridge/g4.txt'
+    # run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph,guidance)
+    test_simulator(args,epoch_logger,timestamp,task_path,classes,init_scene_graph,guidance)
+    end_time = time.time()
+    print('End Time: ',end_time)
+    print('Time Consumed: ',end_time-start_time)
 
 
 
@@ -220,6 +225,7 @@ def check_evaluation(args):
         task_path=os.path.join(dataset_folder_path,task_file)
         print(task_path)
         evaluator=Evaluator(task_path,epoch_logger,epoch_path)
+        
     
 
 def check_evaluation_single(args):
@@ -271,7 +277,7 @@ class CrowControllerApplier:
 
 def test_simulator(args,epoch_logger,timestamp,task_path,classes,init_scene_graph,guidance):
     env=VH_Env(init_scene_graph)
-    Action_list=['walk_executor(cup_2063)','grab_executor(cup_2063)','walk_executor(fridge_289)','switchoff_executor(fridge_289)', 'open_executor(fridge_289)','putin(cup_2064, fridge_289)']
+    Action_list=['walk_executor(cup_2063)','grab_executor(cup_2063)','walk_executor(clothes_pants_2085)','put_executor(cup_2063,clothes_pants_2085)']
 
     for action in Action_list:
         if 'put' in str(action):
@@ -281,7 +287,7 @@ def test_simulator(args,epoch_logger,timestamp,task_path,classes,init_scene_grap
         
 if __name__ == '__main__':
     args = load_config("experiments/virtualhome/VH_scripts/config.yaml")
-    evaluation(args)
+    # evaluation(args)
     # test_evaluate(args)
-    # check_evaluation(args)
+    check_evaluation(args)
     # check_evaluation_single(args)

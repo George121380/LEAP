@@ -55,8 +55,8 @@ def load_scene():
     guidance_path='cdl_dataset/human_guidancea_library.json'
     guidance=json.load(open(guidance_path))
     additional_information=''
-    objects,states,relationships,properties,categories,classes,cat_statement=get_nodes_information(init_scene_graph)
-    construct_cdl(init_path,objects,states,relationships,properties,cat_statement)
+    objects,states,relationships,properties,categories,classes,cat_statement, sizes=get_nodes_information(init_scene_graph)
+    construct_cdl(init_path,objects,states,relationships,properties,cat_statement, sizes)
     return additional_information,classes,init_scene_graph,guidance
 
 def evaluation_task_loader(dataset_folder_path):
