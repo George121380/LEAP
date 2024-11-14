@@ -39,6 +39,8 @@ def parse_file_to_json(file_path):
                 data['Task name'] = line.partition(':')[2].strip()
             elif line.startswith('Goal:'):
                 data['Goal'] = line.partition(':')[2].strip()
+            elif line.startswith('Guidance:'):
+                data['Guidance'] = line.partition(':')[2].strip()
             elif line.startswith('Logic:'):
                 data['Logic'] = line.partition(':')[2].strip()
             elif line.startswith('Actions'):

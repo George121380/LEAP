@@ -129,6 +129,8 @@ class Evaluator:
         self.action_completion_rate="No required actions"
         self.Logic=parse_logic_from_file_path(task_file_path)
         self.Action_sequences=parse_action_sequence_from_file_path(task_file_path)
+        self.has_multiple_logic=self.check_multistep_Logic()
+
 
     def load_scene(self)->None:
         scene_path='cdl_dataset/Scene.json'
@@ -140,6 +142,13 @@ class Evaluator:
         self.init_scene_graph=init_scene_graph
         self.classes=classes
     
+    def check_multistep_Logic(self):
+        if isinstance(self.Logic, list):
+            for item in self.Logic:
+                if isinstance(item, list) and len(item) > 1: 
+                    return True
+        return False
+
     def _initialize_relationships(self):
         relationship_features = [
             "on", "inside", "between", 
@@ -811,6 +820,9 @@ class Evaluator:
  
 
     def evaluate(self,ast,action_history,Root=False):
+        if not self.has_multiple_logic:
+            print('This task do not have multiple logic, skip every step evaluation')
+            return
         print('='*60,"Evaluation: Start")
         if not self.keystate_achieved_flag:
             if self.keystates:

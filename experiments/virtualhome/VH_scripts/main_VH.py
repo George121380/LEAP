@@ -76,12 +76,16 @@ def run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph,guidance)
     epoch_path = f'log/epoch_{timestamp}'
     logger = setup_logger(folder_path,timestamp=None,task_name=log_name)
     task_data=parse_file_to_json(task_path)
-    print('='*60)
-    print("Task Path is: ",task_path)
-    print("Task Goal is: ",task_data['Goal'])
-    print('='*60)
+    
+    # print('='*60)
+    # print("Task Path is: ",task_path)
+    # print("Task Goal is: ",task_data['Goal'])
+    # print('='*60)
     evaluator=Evaluator(task_path,logger,epoch_path)
-
+    if evaluator.has_multiple_logic:
+        print('Multiple Logic:', task_path)
+    return
+    # return
     can_ask_human_to_check_eventually=args.human_check_eventually
 
     if args.model=='ours':
@@ -173,12 +177,12 @@ def run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph,guidance)
         evaluator.updates(observation) #Update evaluator's state
         if not 'obs' in action.name and not 'exp' in action.name:
             evaluation_result=evaluator.evaluate(ast=None,action_history=agent.add_info_action_history_for_evaluation,Root=True)
-        if evaluation_result:
-            executed_actions=env.report_actions()
-            print("Task Success")
-            if epoch_logger:
-                task_summary_record(epoch_logger,task_data['Task name'],task_data['Goal'],executed_actions,start_time,1,task_path,agent.exp_helper_query_times)
-            return True
+        # if evaluation_result:
+        #     executed_actions=env.report_actions()
+        #     print("Task Success")
+        #     if epoch_logger:
+        #         task_summary_record(epoch_logger,task_data['Task name'],task_data['Goal'],executed_actions,start_time,1,task_path,agent.exp_helper_query_times)
+        #     return True
 
 def test_evaluate(args):
     start_time = time.time()
@@ -225,7 +229,7 @@ def check_evaluation(args):
         task_path=os.path.join(dataset_folder_path,task_file)
         print(task_path)
         evaluator=Evaluator(task_path,epoch_logger,epoch_path)
-        
+
     
 
 def check_evaluation_single(args):
@@ -287,7 +291,7 @@ def test_simulator(args,epoch_logger,timestamp,task_path,classes,init_scene_grap
         
 if __name__ == '__main__':
     args = load_config("experiments/virtualhome/VH_scripts/config.yaml")
-    # evaluation(args)
+    evaluation(args)
     # test_evaluate(args)
-    check_evaluation(args)
+    # check_evaluation(args)
     # check_evaluation_single(args)
