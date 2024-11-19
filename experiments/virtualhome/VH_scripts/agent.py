@@ -78,9 +78,7 @@ class VHAgent:
         self.exp_fail_num=0
         self.empty_plan_times=0
         self.max_replan_num=3
-        # self.library=behavior_library(epoch_path)
-        self.library=behavior_library('/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/log/11.15backup/epoch_20241115_184316')
-
+        self.library=behavior_library(epoch_path)
         self._parse_file(filepath)
         self.save_to_file()
         self.save_to_file(self.state_file_path)
