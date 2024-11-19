@@ -16,33 +16,33 @@ import os
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 class Human:
-    def __init__(self, scene_graph,knowledge):
+    def __init__(self, scene_graph,guidance):
         self.scene_graph = scene_graph
         self.name2id = {}
-        self.knowledge=knowledge
+        self.guidance=guidance
         ############################
-        self.RAG_model=SentenceTransformer('all-MiniLM-L6-v2')
-        self.init_RAG()
+        # self.RAG_model=SentenceTransformer('all-MiniLM-L6-v2')
+        # self.init_RAG()
         ############################
 
-    def init_RAG(self):
-        self.knowledge_embedding = self.RAG_model.encode(list(self.knowledge.keys()),clean_up_tokenization_spaces=False)
-        dimension = self.knowledge_embedding .shape[1]
-        self.index = faiss.IndexFlatL2(dimension)
-        self.index.add(np.array(self.knowledge_embedding))
-        self.knowledge_keys = list(self.knowledge.keys())
-        self.knowledge_values = list(self.knowledge.values())
+    # def init_RAG(self):
+    #     self.knowledge_embedding = self.RAG_model.encode(list(self.knowledge.keys()),clean_up_tokenization_spaces=False)
+    #     dimension = self.knowledge_embedding .shape[1]
+    #     self.index = faiss.IndexFlatL2(dimension)
+    #     self.index.add(np.array(self.knowledge_embedding))
+    #     self.knowledge_keys = list(self.knowledge.keys())
+    #     self.knowledge_values = list(self.knowledge.values())
 
-    def RAG_query(self,question):
-        question_embedding = self.RAG_model.encode(question,clean_up_tokenization_spaces=False)
-        D, I = self.index.search(np.reshape(question_embedding,(1,-1)), 5)
-        relavant_knowledge = {self.knowledge_keys[idx]: self.knowledge_values[idx] for idx in I[0]}
-        return relavant_knowledge
+    # def RAG_query(self,question):
+    #     question_embedding = self.RAG_model.encode(question,clean_up_tokenization_spaces=False)
+    #     D, I = self.index.search(np.reshape(question_embedding,(1,-1)), 5)
+    #     relavant_knowledge = {self.knowledge_keys[idx]: self.knowledge_values[idx] for idx in I[0]}
+    #     return relavant_knowledge
 
     def set_name2id(self,name2id):
         self.name2id = name2id
 
-    def QA(self,question):
+    def QA(self,question,task_info=None):
         """
         Args:
             input: question (str)
@@ -74,10 +74,10 @@ class Human:
         
         if 'how to' in question: # ask for guidance
             # guidance=Guidance_helper(question,self.knowledge)
-            RAG_query_result=self.RAG_query(question)
-            guidance=Guidance_helper(question,RAG_query_result)
-
-            return guidance
+            # RAG_query_result=self.RAG_query(question)
+            # guidance=Guidance_helper(question,RAG_query_result)
+            guidance,re_decompose=Guidance_helper(question,self.guidance,task_info)
+            return guidance,re_decompose
     
     def check_related_edges(self,node_id):
         related_edges=[]
@@ -94,9 +94,6 @@ class Human:
 
     def human_evaluation(self,goal):
         pass
-
-
-
 
 def load_task():
     scene_path='cdl_dataset/assert/Scene.json'

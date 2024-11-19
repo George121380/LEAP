@@ -1,20 +1,26 @@
-def Guidance_helper_prompt(task,knowledge):
-
-    kl=''
-    for k in knowledge:
-        kl+=f'- {k}:\n {knowledge[k]}\n'
+def Guidance_helper_prompt(task,guidance,task_info):
+    Goal=task_info['Goal']
+    Sub_goals=''
+    for sub_goal in task_info['Subgoals']:
+        Sub_goals+=sub_goal+'\n'
     prompt="""
-### Task Instruction ###
-A household robot is trying to complete a task but encounters some difficulties and asks for your assistance. You can only provide specific information. If the robot's question is outside the scope of this information, respond with "I don't know."
+### Instruction ###
+A household robot is attempting to complete a task but has encountered some difficulties. It is seeking your guidance. Below are your thoughts on how to complete the task. Based on these thoughts, provide the robot with clear guidance. The guidance you provide must be a strict subset of the steps described in "Your Thoughts." You are not allowed to add extra details or elaborate beyond the given thoughts. The actions discussed here are relatively abstract, so avoid specifying exact amounts or durations (e.g., "how much" or "how long"). If the robot’s plan significantly deviates from your thoughts, you may suggest that the robot should replan.
+
+### Task Information ###
+Goal for the robot: """+Goal+""" 
+Current subgoals planned by the robot: 
+"""+Sub_goals+"""
 
 ### Robot's Question ###
 """+task+"""
 
-### Info you can provide ###
-"""+kl+"""
+### Your thought ###
+To successfully complete the task, the robot should ideally follow these steps: """+guidance+"""
 
 ### Output Format ###
-Answer precisely. If the robot's question does not match the available information, simply reply, "I don't know." If the question is relevant, respond with a concise and clear explanation, as if teaching a child, using one short sentence. Organize your response naturally without using a numbered list, and avoid changing verbs or the sequence of the original content.
+Need to replan: Yes/No
+Guidance: [Your guidance]
 """
 
     return prompt

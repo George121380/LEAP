@@ -1,0 +1,50 @@
+Goal Representation,Debug Result,Action,Add Info,LLM Answer,Plan
+"Reset goals: The sub-goals are: 
+['Prepare a sink of soapy water in the bathroom.']",,,,,
+" 
+def has_faucet(sink: item):
+    # Determine whether this sink has a faucet
+    symbol has_faucet=exists faucet: item: is_faucet(faucet) and close(faucet, sink)
+    return has_faucet
+
+def has_soap_near_sink(sink: item):
+    # Determine whether there is soap near the sink
+    symbol has_soap=exists soap: item: is_soap(soap) and close(soap, sink)
+    return has_soap
+
+behavior fill_sink_with_soapy_water(sink: item):
+    body:
+        achieve closed(sink)
+        # Ensure the sink is closed
+        
+        if has_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_on(faucet)
+            # If the sink has a faucet, turn it on to fill with water
+
+        if has_soap_near_sink(sink):
+            bind soap: item where:
+                is_soap(soap) and close(soap, sink)
+            achieve_once inhand(soap)
+            # If there is soap near the sink, grab it temporarily
+            scrub(sink)
+            # Use the soap to make the water soapy
+        
+        achieve has_water(sink)
+        # Ensure the sink now contains water
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and inside_char(char, sink)
+        # Select the sink in the bathroom
+
+        fill_sink_with_soapy_water(sink)
+        # Fill the sink with soapy water
+",From function reset_goal,,,,
+,,,,"Record from func query_LLM_human in agent.py
+Question: Can you tell me how to prepare a sink of soapy water in the bathroom.
+Answer: Need to replan: No  
+Guidance: Put soap in the sink, then turn on the faucet to fill the sink with water.
+",

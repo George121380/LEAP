@@ -109,15 +109,16 @@ def Exp_helper(target_obj,discription):
     print('=' * 60)
     return res
 
-def Guidance_helper(question,knowledge):
-    system="You are the owner of a room, and at this moment, your household robot is encountering some difficulties while completing its task. Based on your knowledge, please guide the household robot to finish the task."
+def Guidance_helper(question,guidance,task_info):
+    system="Imagine you are the owner of the house. You are trying to teach a house robot to finish a task. I will provide you some guidance about how to finish the task. Refer to this guidance and try to answer the robot."
     print('=' * 60)
     print(f"Human Guidance_helper:")
-    content=Guidance_helper_prompt(question,knowledge)
-    res=ask_GPT(system,content)
+    content=Guidance_helper_prompt(question,guidance,task_info)
+    answer=ask_GPT(system,content)
     print('=' * 60)
-    print(res)
-    return res
+    print(answer)
+    re_decompose=False
+    return answer,re_decompose
 
 if __name__=='__main__':
     goal='Wash my t-shirt by the washing machine'

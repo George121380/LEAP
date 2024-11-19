@@ -103,6 +103,7 @@ class Evaluator:
         # self.internal_executable_file_path = 'experiments/virtualhome/CDLs/evaluator_execution.cdl'
         self.internal_executable_file_path = os.path.join(epoch_path,'evaluator_execution.cdl')
         self.basic_domain_knowledge_file_path = 'experiments/virtualhome/CDLs/virtualhome_evaluator.cdl'
+        self.domain = crow.load_domain_file(self.basic_domain_knowledge_file_path)
         self.init_scene_graph=None
         self.classes=None
         self.load_scene()
@@ -694,8 +695,9 @@ class Evaluator:
     
     def get_state(self):
         # Get the current CDL state of the agent, "problem" will be used by CDL Solver
-        domain = crow.load_domain_file(self.basic_domain_knowledge_file_path)
-        problem = crow.load_problem_file(self.internal_executable_file_path, domain=domain)
+        # domain = crow.load_domain_file(self.basic_domain_knowledge_file_path)
+
+        problem = crow.load_problem_file(self.internal_executable_file_path, domain=self.domain)
         return problem
 
     def check_single_keystate(self,key_state,key_state_representation:str):
@@ -819,8 +821,8 @@ class Evaluator:
             raise ValueError('Unknown AST node')
  
 
-    def evaluate(self,ast,action_history,Root=False):
-        if not self.has_multiple_logic:
+    def evaluate(self,ast,action_history,Root=False,final=False):
+        if not self.has_multiple_logic and not final:
             print('This task do not have multiple logic, skip every step evaluation')
             return
         print('='*60,"Evaluation: Start")
@@ -853,7 +855,7 @@ class Evaluator:
         return self.keystate_achieved_flag and self.required_actions_achieved_flag
     
     def evaluate_final(self,ast,action_history,Root=False):
-        evaluate_result=self.evaluate(ast,action_history,Root)
+        evaluate_result=self.evaluate(ast,action_history,Root,final=True)
         self.end_counting=self.left_action_counting_for_each_keystate()
         # Calculate the completion rate of each keystate
         complete_rate={}

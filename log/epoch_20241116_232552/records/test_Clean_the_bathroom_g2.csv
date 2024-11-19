@@ -1,0 +1,51 @@
+Goal Representation,Debug Result,Action,Add Info,LLM Answer,Plan
+"Reset goals: The sub-goals are: 
+['Prepare a sink of soapy water in the bathroom.']",,,,,
+" 
+def has_faucet(sink:item):
+    # Determine whether the sink has a faucet
+    symbol has_faucet=exists faucet:item: is_faucet(faucet) and close(faucet, sink)
+    return has_faucet
+
+def is_in_bathroom(sink:item):
+    # Determine whether the sink is in the bathroom
+    symbol in_bathroom=exists room:item: is_bathroom(room) and inside(sink, room)
+    return in_bathroom
+
+behavior prepare_soapy_water(sink:item, soap:item):
+    body:
+        achieve has_water(sink)
+        # Ensure the sink is filled with water
+
+        if has_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_on(faucet)
+            # If the sink has a faucet, turn it on to fill the sink with water
+ 
+        if is_soap(soap):
+            achieve_once inhand(soap)
+            # Take soap in hand
+
+        achieve inside(soap, sink)
+        # Place soap inside sink to create soapy water
+        
+        if has_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_off(faucet)
+            # Turn off the faucet
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and is_in_bathroom(sink)
+        # Select a sink in the bathroom
+        
+        bind soap: item where:
+            is_soap(soap)
+        # Select soap
+
+        prepare_soapy_water(sink, soap)
+        # Prepare a sink of soapy water in the bathroom
+",From function reset_goal,,,,

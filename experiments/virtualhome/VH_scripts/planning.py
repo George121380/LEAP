@@ -198,6 +198,7 @@ def VH_pipeline(state_file:str,execute_file:str,current_subgoal:str,add_info:str
 
     if refinement:
         generate_times_limit=generate_times_limit*correct_times_limit
+        correct_times_limit=1
 
     while generate_time<generate_times_limit:
         try:

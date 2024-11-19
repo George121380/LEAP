@@ -78,7 +78,9 @@ class VHAgent:
         self.exp_fail_num=0
         self.empty_plan_times=0
         self.max_replan_num=3
-        self.library=behavior_library(epoch_path)
+        # self.library=behavior_library(epoch_path)
+        self.library=behavior_library('/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/log/11.15backup/epoch_20241115_184316')
+
         self._parse_file(filepath)
         self.save_to_file()
         self.save_to_file(self.state_file_path)
@@ -109,14 +111,19 @@ class VHAgent:
         self.human_helper.set_name2id(self.name2id)
 
     def query_LLM_human(self,question:str):
+        # ask for LLM-based human guidance
         record='Record from func query_LLM_human in agent.py\n'
         record+=f'Question: {question}\n'
-        answer=self.human_helper.QA(question)
+        task_info={}
+        task_info['Goal']=self.goal_nl
+        task_info['Subgoals']=self.sub_goal_list
+        answer,re_decompose=self.human_helper.QA(question,task_info)
         record+=f'Answer: {answer}\n'
         self.logger.info("","","","",record,"")
-        return answer
+        return answer,re_decompose
     
     def query_real_human(self,question:str):
+        # ask for real human guidance
         record='Record from func query_real_human in agent.py\n'
         record+=f'Question: {question}\n'
         print(f"The current subgoal list: {self.sub_goal_list}")

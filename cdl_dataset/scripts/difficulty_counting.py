@@ -104,13 +104,17 @@ def run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph,guidance)
         result_dict[task_path][str(combination)]={}
 
         evaluator=Evaluator(task_path,logger,epoch_path)
-        env=VH_Env(init_scene_graph)
+        current_graph=init_scene_graph.copy()
+        env=VH_Env(current_graph)
         for key in combination:
             plan=evaluator.complete_single_keystate(key)
             result_dict[task_path][str(combination)][key]=len(plan)
             for action in plan:
                 print('Action: ',str(action))
                 observation = env.step(action) #Execute action
+                if 'You can not' in observation:
+                    print(observation)
+                    raise Exception('Syntax Error')
                 evaluator.updates(observation) #Update evaluator's state
     json.dump(result_dict,open('result.json','w'),indent=4)
        

@@ -39,12 +39,12 @@ def load_scene(): # load the scene I designed, which is called by main_VH.py
     with open(scene_path) as f:
         scene=json.load(f)
     init_scene_graph = EnvironmentGraph(scene)
-    guidance_path='cdl_dataset/human_guidancea_library.json'
-    guidance=json.load(open(guidance_path))
+    # guidance_path='cdl_dataset/human_guidancea_library.json'
+    # guidance=json.load(open(guidance_path))
     additional_information=''
     objects,states,relationships,properties,categories,classes,cat_statement,sizes=get_nodes_information(init_scene_graph)
     construct_cdl(init_path,objects,states,relationships,properties,cat_statement,sizes)
-    return additional_information,classes,init_scene_graph,guidance
+    return additional_information,classes,init_scene_graph
 
 def evaluation_task_loader(dataset_folder_path):
     all_files=[]
@@ -66,7 +66,7 @@ def task_summary_record(epoch_logger,task_name,goal,action_history,start_time,co
     time_info+=f'\nExp_helper query times: {str(exp_helper_query_times)}'
     epoch_logger.info(task_name,goal,action_history,time_info,complete_rate,task_path)
     
-def run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph,guidance):
+def run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph):
     start_time = time.time()
     c=os.path.basename(os.path.dirname(task_path))
     g_index=os.path.basename(task_path).replace('.txt','')
@@ -82,9 +82,9 @@ def run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph,guidance)
     # print("Task Goal is: ",task_data['Goal'])
     # print('='*60)
     evaluator=Evaluator(task_path,logger,epoch_path)
-    if evaluator.has_multiple_logic:
-        print('Multiple Logic:', task_path)
-    return
+    # if evaluator.has_multiple_logic:
+    #     print('Multiple Logic:', task_path)
+    # return
     # return
     can_ask_human_to_check_eventually=args.human_check_eventually
 
@@ -94,7 +94,7 @@ def run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph,guidance)
         agent=VHAgent(args, init_path,logger,True,epoch_path)
         ##test_end
         all_behaviors_from_library=agent.download_behaviors_from_library()
-        agent.set_human_helper(Human(init_scene_graph,guidance))
+        agent.set_human_helper(Human(init_scene_graph,task_data['Guidance']))
         # agent.set_initial_human_instruction(task_data['Goal'])
         agent.reset_goal(task_data['Goal'],classes,task_data['Task name'],First_time=True)#ini a GR
 
@@ -105,10 +105,24 @@ def run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph,guidance)
         #     answer=agent.query_human(question)
         #     Human_Guidance.append(answer)
 
-    # return True
+        # question='cook chicken?'
+        # question="Can you tell me how to "+question
+        # answer=agent.query_LLM_human(question)
+
+        Human_Guidance=[]
+        for sub_goal in agent.sub_goal_list:
+            question=re.sub(r'^\d+[\.\:]?\s*', '', sub_goal.lower())
+            question="Can you tell me how to "+question
+            print("#"*80)
+            print(question)
+            print("#"*80)
+            answer=agent.query_LLM_human(question)
+            Human_Guidance.append(answer)
+
+    return True
     if args.model=='LLM':
         agent = LLM_Agent(args, init_path,logger,epoch_path)
-        agent.set_human_helper(Human(init_scene_graph,guidance))
+        agent.set_human_helper(Human(init_scene_graph,task_data['Guidance']))
         agent.reset_goal(task_data['Goal'],task_data['Task name'])#ini a GR
         agent.item_infoto_nl()
         # agent.act()
@@ -123,7 +137,7 @@ def run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph,guidance)
         agent=VHAgent(args, init_path,logger,True,epoch_path)
         ##test_end
         all_behaviors_from_library=agent.download_behaviors_from_library()
-        agent.set_human_helper(Human(init_scene_graph,guidance))
+        agent.set_human_helper(Human(init_scene_graph,task_data['Guidance']))
         # agent.set_initial_human_instruction(task_data['Goal'])
         agent.reset_goal(task_data['Goal'],classes,task_data['Task name'],First_time=True)#ini a GR
 
@@ -187,12 +201,12 @@ def run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph,guidance)
 def test_evaluate(args):
     start_time = time.time()
     print('Start Time: ',start_time)
-    _,classes,init_scene_graph,guidance=load_scene()
+    _,classes,init_scene_graph=load_scene()
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     epoch_logger = setup_logger(f'log/epoch_{timestamp}',timestamp=timestamp)
     task_path='/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/cdl_dataset/dataset/Put_groceries_in_Fridge/g4.txt'
-    # run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph,guidance)
-    test_simulator(args,epoch_logger,timestamp,task_path,classes,init_scene_graph,guidance)
+    # run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph)
+    test_simulator(args,epoch_logger,timestamp,task_path,classes,init_scene_graph)
     end_time = time.time()
     print('End Time: ',end_time)
     print('Time Consumed: ',end_time-start_time)
@@ -208,9 +222,9 @@ def evaluation(args): # main function
     files = tqdm(files, desc="Evaluating tasks")
     for task_file in files:
         # try:
-            _,classes,init_scene_graph,guidance=load_scene()
+            _,classes,init_scene_graph=load_scene()
             task_path=os.path.join(dataset_folder_path,task_file)
-            Debug=run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph,guidance)
+            Debug=run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph)
             
         # except Exception as e:
         #     print(e)
@@ -230,7 +244,24 @@ def check_evaluation(args):
         print(task_path)
         evaluator=Evaluator(task_path,epoch_logger,epoch_path)
 
-    
+def case_study_easy2hard(args): # main function
+
+    task_combination_1=['Prepare_breakfast/g4.txt']
+    # task_combination_1=['Prepare_breakfast/g3.txt','Prepare_breakfast/g4.txt']
+
+
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    epoch_logger = setup_logger(f'log/epoch_{timestamp}',timestamp=timestamp)
+    with open(f'log/epoch_{timestamp}/args.yaml', 'w') as file:
+        yaml.dump(vars(args), file)
+    combination_1 = tqdm(task_combination_1, desc="Evaluating tasks")
+    for task_file in combination_1:
+            _,classes,init_scene_graph=load_scene()
+            task_path=os.path.join(dataset_folder_path,task_file)
+            Debug=run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph)
+    end_time = datetime.now().strftime('%Y%m%d_%H%M%S')
+    epoch_logger.info('Evaluation Finished',end_time,'','','','')
+
 
 def check_evaluation_single(args):
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -295,3 +326,4 @@ if __name__ == '__main__':
     # test_evaluate(args)
     # check_evaluation(args)
     # check_evaluation_single(args)
+    # case_study_easy2hard(args)
