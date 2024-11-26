@@ -6,8 +6,7 @@ sys.path.append('')
 from datetime import datetime
 from experiments.virtualhome.VH_scripts.agent import VHAgent
 from experiments.virtualhome.VH_scripts.agent_LLM import LLM_Agent
-
-from utils_eval import get_nodes_information,construct_cdl
+from utils_eval import get_nodes_information,construct_cdl, CrowControllerApplier, load_config, evaluation_task_loader
 from env import VH_Env
 from environment import EnvironmentState, EnvironmentGraph
 import random
@@ -18,44 +17,24 @@ from evaluation import Evaluator
 random.seed(time.time())
 import pdb
 import yaml 
-from types import SimpleNamespace
 import os
 from dataset import parse_file_to_json
-
-
-init_path="experiments/virtualhome/CDLs/init_scene_PO.cdl"
-dataset_folder_path='cdl_dataset/dataset'
-
 from tqdm import tqdm
 
-def load_config(config_file="config.yaml"):
-    with open(config_file, "r") as file:
-        config_dict = yaml.safe_load(file)
-    config = SimpleNamespace(**config_dict)
-    return config
+init_path="experiments/virtualhome/CDLs/init_scene_PO.cdl"
+init_path_NPO="experiments/virtualhome/CDLs/init_scene_NPO.cdl"
+dataset_folder_path='cdl_dataset/dataset'
 
-def load_scene(): # load the scene I designed, which is called by main_VH.py
-    scene_path='cdl_dataset/Scene.json'
+def load_scene(scene_id): # load the scene I designed, which is called by main_VH.py
+    scene_path=f'cdl_dataset/scenes/Scene_{scene_id}.json'
     with open(scene_path) as f:
         scene=json.load(f)
     init_scene_graph = EnvironmentGraph(scene)
-    # guidance_path='cdl_dataset/human_guidancea_library.json'
-    # guidance=json.load(open(guidance_path))
-    additional_information=''
+    objects,states,relationships,properties,categories,classes,cat_statement,sizes=get_nodes_information(init_scene_graph,PO=False)
+    construct_cdl(init_path_NPO,objects,states,relationships,properties,cat_statement,sizes)
     objects,states,relationships,properties,categories,classes,cat_statement,sizes=get_nodes_information(init_scene_graph)
     construct_cdl(init_path,objects,states,relationships,properties,cat_statement,sizes)
-    return additional_information,classes,init_scene_graph
-
-def evaluation_task_loader(dataset_folder_path):
-    all_files=[]
-    subdirs = [d for d in os.listdir(dataset_folder_path) if os.path.isdir(os.path.join(dataset_folder_path, d))]
-    for subdir in subdirs:
-        subdir_path = os.path.join(dataset_folder_path, subdir)
-        files = [f for f in os.listdir(subdir_path) if os.path.isfile(os.path.join(subdir_path, f))]
-        for file in files:
-            if not 'bug' in file:
-                all_files.append(os.path.join(subdir,file))
-    return all_files
+    return classes,init_scene_graph
 
 def task_summary_record(epoch_logger,task_name,goal,action_history,start_time,complete_rate,task_path,exp_helper_query_times):
     current_time = time.time()
@@ -81,10 +60,9 @@ def run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph):
     # print("Task Path is: ",task_path)
     # print("Task Goal is: ",task_data['Goal'])
     # print('='*60)
-    evaluator=Evaluator(task_path,logger,epoch_path)
+    evaluator=Evaluator(args,task_path,logger,epoch_path)
     # if evaluator.has_multiple_logic:
     #     print('Multiple Logic:', task_path)
-    # return
     # return
     can_ask_human_to_check_eventually=args.human_check_eventually
 
@@ -119,7 +97,7 @@ def run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph):
             answer=agent.query_LLM_human(question)
             Human_Guidance.append(answer)
 
-    return True
+    # return True
     if args.model=='LLM':
         agent = LLM_Agent(args, init_path,logger,epoch_path)
         agent.set_human_helper(Human(init_scene_graph,task_data['Guidance']))
@@ -127,7 +105,6 @@ def run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph):
         agent.item_infoto_nl()
         # agent.act()
         # return
-
 
     if args.model=='LLM+P':
         pass
@@ -198,22 +175,20 @@ def run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph):
         #         task_summary_record(epoch_logger,task_data['Task name'],task_data['Goal'],executed_actions,start_time,1,task_path,agent.exp_helper_query_times)
         #     return True
 
-def test_evaluate(args):
+def evaluate_single(args):
     start_time = time.time()
-    print('Start Time: ',start_time)
-    _,classes,init_scene_graph=load_scene()
+    # print('Start Time: ',start_time)
+    classes,init_scene_graph=load_scene(args.scene_id)
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     epoch_logger = setup_logger(f'log/epoch_{timestamp}',timestamp=timestamp)
-    task_path='/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/cdl_dataset/dataset/Put_groceries_in_Fridge/g4.txt'
-    # run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph)
-    test_simulator(args,epoch_logger,timestamp,task_path,classes,init_scene_graph)
+    task_path='cdl_dataset/dataset/Wash_clothes/g1.txt'
+    run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph)
+    # test_simulator(init_scene_graph)
     end_time = time.time()
-    print('End Time: ',end_time)
+    # print('End Time: ',end_time)
     print('Time Consumed: ',end_time-start_time)
 
-
-
-def evaluation(args): # main function
+def evaluate_all(args): # main function
     files=evaluation_task_loader(dataset_folder_path)
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     epoch_logger = setup_logger(f'log/epoch_{timestamp}',timestamp=timestamp)
@@ -222,7 +197,7 @@ def evaluation(args): # main function
     files = tqdm(files, desc="Evaluating tasks")
     for task_file in files:
         # try:
-            _,classes,init_scene_graph=load_scene()
+            classes,init_scene_graph=load_scene(args.scene_id)
             task_path=os.path.join(dataset_folder_path,task_file)
             Debug=run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph)
             
@@ -234,7 +209,7 @@ def evaluation(args): # main function
     epoch_logger.info('Evaluation Finished',end_time,'','','','')
 
 
-def check_evaluation(args):
+def check_task_define_all(args):
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     files=evaluation_task_loader(dataset_folder_path)
     epoch_path=f'log/epoch_{timestamp}'
@@ -242,7 +217,19 @@ def check_evaluation(args):
     for task_file in files:
         task_path=os.path.join(dataset_folder_path,task_file)
         print(task_path)
-        evaluator=Evaluator(task_path,epoch_logger,epoch_path)
+        evaluator=Evaluator(args,task_path,epoch_logger,epoch_path)
+        evaluator.left_action_counting_for_each_keystate()
+
+
+
+def check_task_define_single(args):
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    epoch_path=f'log/epoch_{timestamp}'
+    epoch_logger = setup_logger(f'log/epoch_{timestamp}',timestamp=timestamp)
+   
+    task_path='cdl_dataset/dataset/Drink/g2.txt'
+    evaluator=Evaluator(args,task_path,epoch_logger,epoch_path)
+    evaluator.left_action_counting_for_each_keystate()
 
 def case_study_easy2hard(args): # main function
 
@@ -256,61 +243,17 @@ def case_study_easy2hard(args): # main function
         yaml.dump(vars(args), file)
     combination_1 = tqdm(task_combination_1, desc="Evaluating tasks")
     for task_file in combination_1:
-            _,classes,init_scene_graph=load_scene()
+            classes,init_scene_graph=load_scene()
             task_path=os.path.join(dataset_folder_path,task_file)
             Debug=run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph)
     end_time = datetime.now().strftime('%Y%m%d_%H%M%S')
     epoch_logger.info('Evaluation Finished',end_time,'','','','')
 
 
-def check_evaluation_single(args):
-    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    epoch_path=f'log/epoch_{timestamp}'
-    epoch_logger = setup_logger(f'log/epoch_{timestamp}',timestamp=timestamp)
-   
-    task_path='cdl_dataset/dataset/Drink/g2.txt'
-    evaluator=Evaluator(task_path,epoch_logger,epoch_path)
-    evaluator.left_action_counting_for_each_keystate()
-
-class StateObjectReference:
-    def __init__(self, name, index, dtype):
-        self.name = name
-        self.index = index
-        self.dtype = dtype
-
-    def __str__(self):
-        return f"StateObjectReference(name='{self.name}', index={self.index}, dtype='{self.dtype}')"
-
-class CrowController:
-    def __init__(self, x):
-        self.x = x
-
-    def __str__(self):
-        return f"CrowController(x='{self.x}')"
-
-class CrowControllerApplier:
-    def __init__(self, input_string):
-        # Parse the input string to extract name and arguments
-        name_part, args_part = input_string.split("(")
-        self.name = name_part.strip()
-        
-        # Remove closing parenthesis and split arguments by comma
-        args_list = args_part.strip(")").split(",")
-        
-        # Initialize arguments as a list of StateObjectReference objects
-        self.arguments = [
-            StateObjectReference(name=arg.strip(), index=113, dtype='Object')  # Assuming fixed index and dtype
-            for arg in args_list
-        ]
-        
-        self.controller = CrowController(x='item')  # assuming 'item' as x in controller
-
-    def __str__(self):
-        # Format arguments for output as a comma-separated list
-        args_str = ", ".join([arg.name for arg in self.arguments])
-        return f"{self.name}({args_str})"
-
-def test_simulator(args,epoch_logger,timestamp,task_path,classes,init_scene_graph,guidance):
+def test_simulator(init_scene_graph):
+    """
+    Give a list of actions, test the simulator
+    """
     env=VH_Env(init_scene_graph)
     Action_list=['walk_executor(cup_2063)','grab_executor(cup_2063)','walk_executor(clothes_pants_2085)','put_executor(cup_2063,clothes_pants_2085)']
 
@@ -322,8 +265,8 @@ def test_simulator(args,epoch_logger,timestamp,task_path,classes,init_scene_grap
         
 if __name__ == '__main__':
     args = load_config("experiments/virtualhome/VH_scripts/config.yaml")
-    evaluation(args)
-    # test_evaluate(args)
-    # check_evaluation(args)
-    # check_evaluation_single(args)
+    # evaluate_all(args)
+    evaluate_single(args)
+    # check_task_define_all(args)
+    # check_task_define_single(args)
     # case_study_easy2hard(args)

@@ -17,20 +17,22 @@ def find_csv_files(root_dir):
     Returns:
     - dict: 一个嵌套字典，键是方法名，值是(实验名, csv文件路径)的列表。
     """
-    methods_experiments = {}
+    methods_experiments = []
 
     # 遍历根目录及其子目录
     for root, dirs, files in os.walk(root_dir):
         if 'epoch.csv' in files:
             # 提取方法和实验名称
-            method_name = os.path.basename(os.path.dirname(root))
+            # method_name = os.path.basename(os.path.dirname(root))
             experiment_name = os.path.basename(root)
             csv_file_path = os.path.join(root, 'epoch.csv')
 
             # 将结果添加到字典中
-            if method_name not in methods_experiments:
-                methods_experiments[method_name] = []
-            methods_experiments[method_name].append((experiment_name, csv_file_path))
+            # if method_name not in methods_experiments:
+            #     methods_experiments[method_name] = []
+            # methods_experiments[method_name].append((experiment_name, csv_file_path))
+            methods_experiments.append((experiment_name, csv_file_path))
+
 
     return methods_experiments
 
@@ -68,7 +70,7 @@ def parse_completion_rates(csv_file_path):
         if end_report == 'Evaluation Finished':
             continue
 
-        keystate_matches = re.findall(r'(Keystate: k\d+) - Completion Rate: ([\d.]+)', completion_rate)
+        keystate_matches = re.findall(r'(Keystate: k\d+) - Requires: ([\d.]+)', completion_rate)
         action_match = re.search(r'Action Completion Rate: ([\d.]+|No actions required)', completion_rate)
 
         keystate_dict = {}
@@ -124,12 +126,12 @@ def calculation(result_list):
                         solution_steps_num += keystate_steps_num
 
                         if not keystate in entry['keystate_completion_rate']:
-                            current_keystate_complete_rate = 0 # 未找到对应的keystate
+                            steps_left = keystate_steps_num # 未找到对应的keystate
                         else:
-                            current_keystate_complete_rate = entry['keystate_completion_rate'][keystate]
-                        current_solution_keystate_completion_rate += current_keystate_complete_rate * keystate_steps_num
+                            steps_left = entry['keystate_completion_rate'][keystate]
+                        current_solution_keystate_completion_rate += steps_left
 
-                    current_solution_keystate_completion_rate /= solution_steps_num
+                    current_solution_keystate_completion_rate = (solution_steps_num-current_solution_keystate_completion_rate)/solution_steps_num
                     max_keystate_completion_rate = max(max_keystate_completion_rate, current_solution_keystate_completion_rate)
 
                 if entry['action_completion_rate'] == 'No actions required':
@@ -228,18 +230,21 @@ def save_to_csv(dataframe, output_path):
     dataframe.to_csv(output_path, index=True)
 
 if __name__ == '__main__':
-    methods_experiments = find_csv_files('baseline_result')
+    # methods_experiments = find_csv_files('baseline_result')
+    methods_experiments = find_csv_files('Nov_test_result')
+
 
     methods_experiments_results = {}
 
-    for method_name, experiments in methods_experiments.items():
+    for experiments in methods_experiments:
+
         method_results = []
-        print(f'正在处理 {method_name} 方法的实验结果...')
-        for exp_name, csv_file_path in experiments:
-            result_list = parse_completion_rates(csv_file_path)
-            avg_success_rate, success_rate_dict = calculation(result_list)
-            method_results.append((exp_name, success_rate_dict))
-        methods_experiments_results[method_name] = method_results
+        print(f'正在处理 {experiments} 方法的实验结果...')
+        exp_name, csv_file_path=experiments
+        result_list = parse_completion_rates(csv_file_path)
+        avg_success_rate, success_rate_dict = calculation(result_list)
+        method_results.append((exp_name, success_rate_dict))
+        methods_experiments_results[experiments] = method_results
 
     # 汇总表格1：包含所有实验结果
     aggregated_df = aggregate_success_rates_per_task(methods_experiments_results)
@@ -257,6 +262,6 @@ if __name__ == '__main__':
     print('方法按照平均成功率排序的表格已保存到 sorted_methods_by_avg_success_rate.csv')
 
     # 可选：打印每个方法的平均成功率
-    for method_name in methods_experiments.keys():
+    for method_name in methods_experiments:
         avg_success_rate = aggregated_df[f'{method_name}_average'].mean()
         print(f'{method_name} 的平均成功率: {avg_success_rate}')

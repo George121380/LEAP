@@ -2,7 +2,9 @@ import os
 import json
 import re
 import sys
-sys.path.append('/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/embodied-agent-eval/src/VIRTUALHOME/AgentEval-main')
+sys.path.append('embodied-agent-eval/src/VIRTUALHOME/AgentEval-main')
+import yaml 
+from types import SimpleNamespace
 from virtualhome_eval.simulation.evolving_graph.environment import EnvironmentGraph, Property
 from virtualhome_eval.simulation.evolving_graph.execution import Relation, State
 from virtualhome_eval.simulation.evolving_graph.scripts import *
@@ -386,3 +388,67 @@ def check_unexplorable(location_name):
     return location_category in unexplorable_list
 
 
+class StateObjectReference:
+    """
+    A class used by simulation test.
+    """
+    def __init__(self, name, index, dtype):
+        self.name = name
+        self.index = index
+        self.dtype = dtype
+
+    def __str__(self):
+        return f"StateObjectReference(name='{self.name}', index={self.index}, dtype='{self.dtype}')"
+
+class CrowController:
+    def __init__(self, x):
+        self.x = x
+
+    def __str__(self):
+        return f"CrowController(x='{self.x}')"
+
+class CrowControllerApplier:
+    def __init__(self, input_string):
+        # Parse the input string to extract name and arguments
+        name_part, args_part = input_string.split("(")
+        self.name = name_part.strip()
+        
+        # Remove closing parenthesis and split arguments by comma
+        args_list = args_part.strip(")").split(",")
+        
+        # Initialize arguments as a list of StateObjectReference objects
+        self.arguments = [
+            StateObjectReference(name=arg.strip(), index=113, dtype='Object')  # Assuming fixed index and dtype
+            for arg in args_list
+        ]
+        
+        self.controller = CrowController(x='item')  # assuming 'item' as x in controller
+
+    def __str__(self):
+        # Format arguments for output as a comma-separated list
+        args_str = ", ".join([arg.name for arg in self.arguments])
+        return f"{self.name}({args_str})"
+    
+
+def load_config(config_file="config.yaml"):
+    """
+    Load config.yaml file and return a SimpleNamespace object.
+    """
+    with open(config_file, "r") as file:
+        config_dict = yaml.safe_load(file)
+    config = SimpleNamespace(**config_dict)
+    return config
+
+def evaluation_task_loader(dataset_folder_path):
+    """
+    Load all the evaluation tasks from the dataset folder.
+    """
+    all_files=[]
+    subdirs = [d for d in os.listdir(dataset_folder_path) if os.path.isdir(os.path.join(dataset_folder_path, d))]
+    for subdir in subdirs:
+        subdir_path = os.path.join(dataset_folder_path, subdir)
+        files = [f for f in os.listdir(subdir_path) if os.path.isfile(os.path.join(subdir_path, f))]
+        for file in files:
+            if not 'bug' in file:
+                all_files.append(os.path.join(subdir,file))
+    return all_files

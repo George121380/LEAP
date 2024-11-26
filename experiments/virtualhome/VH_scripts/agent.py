@@ -33,7 +33,12 @@ class VHAgent:
         self.state = {}
         self.character_state = {}
         self.exploration = {}
-        self.download_mode='ALL' # how to download behaviors from library
+        if 'whole' in args.library_method:
+            self.download_mode='ALL'
+        elif 'rag' in args.library_method:
+            self.download_mode='RAG'
+        else:
+            self.download_mode='None'
 
         # Task information
         self.task_name=''
@@ -78,13 +83,16 @@ class VHAgent:
         self.exp_fail_num=0
         self.empty_plan_times=0
         self.max_replan_num=3
-        self.library=behavior_library(epoch_path)
+        # self.library=behavior_library(epoch_path)
+        self.library=behavior_library("baseline_result/our_w_library_o_human/epoch_20241014_050125") # for debug
         self._parse_file(filepath)
         self.save_to_file()
         self.save_to_file(self.state_file_path)
         self.exp_helper_query_times=0
 
-
+    """
+    Functions for maintaining the library
+    """
     def lift_behaviors(self):
         # add executable behaviors to the library
         self.library.lift_group(self.task_name,self.current_subgoal_nl,self.goal_representation)
@@ -107,6 +115,8 @@ class VHAgent:
     def set_human_helper(self,human_helper):
         self.human_helper=human_helper
         self.human_helper.set_name2id(self.name2id)
+
+
 
     def query_LLM_human(self,question:str):
         # ask for LLM-based human guidance
@@ -143,10 +153,10 @@ class VHAgent:
         question=f'Can you teach me how to "{self.current_subgoal_nl.lower()}" ?'
 
         if self.args.human_guidance=='LLM':
-            Human_Guidance=self.query_LLM_human(question)
+            Human_Guidance, re_decompose=self.query_LLM_human(question)
 
         if self.args.human_guidance=='Manual':
-            Human_Guidance,re_decompose=self.query_real_human(question)
+            Human_Guidance, re_decompose=self.query_real_human(question)
 
         self.current_subtask_guidance=Human_Guidance
         self.update_add_info()
@@ -738,7 +748,7 @@ class VHAgent:
                 else:
                     if self.exp_fail_num==5:
                         self.exp_helper_query_times+=1
-                        human_answer=self.query_LLM_human(f'Can you help me to find {exp_target} ?')
+                        human_answer, _ =self.query_LLM_human(f'Can you help me to find {exp_target} ?')
                         print(f'Query human about the location of {exp_target}.')
                         self.exp_fail_num=0
                         self.add_info_human_instruction+=human_answer+'\n'
@@ -1038,7 +1048,22 @@ class VHAgent:
         # self.current_subgoal_nl=self.sub_goal_list[0]
         self.reset_goal_decomposition()
         # pdb.set_trace()
-        _,self.goal_representation,self.exploration_behavior,self.behaviors_from_library_representation=VH_pipeline(self.state_file_path,self.internal_executable_file_path,self.current_subgoal_nl,self.add_info_nl,self.goal_nl,self.sub_goal_list[:self.current_subgoal_num],self.classes, self.behaviors_from_library,True, self.agent_type, self.args.refinement)
+        # _,self.goal_representation,self.exploration_behavior,self.behaviors_from_library_representation=VH_pipeline(self.state_file_path,self.internal_executable_file_path,self.current_subgoal_nl,self.add_info_nl,self.goal_nl,self.sub_goal_list[:self.current_subgoal_num],self.classes, self.behaviors_from_library,self.library.behavior_embedding(self.behaviors_from_library),True, self.agent_type, self.args.refinement)
+        _, self.goal_representation, self.exploration_behavior, self.behaviors_from_library_representation = VH_pipeline(
+            state_file=self.state_file_path,
+            execute_file=self.internal_executable_file_path,
+            current_subgoal=self.current_subgoal_nl,
+            add_info=self.add_info_nl,
+            long_horizon_goal=self.goal_nl,
+            sub_goal_list=self.sub_goal_list[:self.current_subgoal_num],
+            classes=self.classes,
+            behavior_from_library=self.behaviors_from_library,
+            behavior_from_library_embedding=self.library.behavior_embedding(self.behaviors_from_library),
+            partial_observation=True,
+            agent_type=self.agent_type,
+            refinement=self.args.refinement
+        )
+
         # pdb.set_trace()
 
         # block while test
@@ -1055,14 +1080,44 @@ class VHAgent:
                 re_decompose=self.ask_for_human_task_guidance()
                 if re_decompose:
                     self.reset_goal_decomposition()
-                _,self.goal_representation,self.exploration_behavior,self.behaviors_from_library_representation=VH_pipeline(self.state_file_path,self.internal_executable_file_path,self.current_subgoal_nl,self.add_info_nl,self.goal_nl,self.sub_goal_list[:self.current_subgoal_num],self.classes,self.behaviors_from_library, True, self.agent_type, self.args.refinement)
+                # _,self.goal_representation,self.exploration_behavior,self.behaviors_from_library_representation=VH_pipeline(self.state_file_path,self.internal_executable_file_path,self.current_subgoal_nl,self.add_info_nl,self.goal_nl,self.sub_goal_list[:self.current_subgoal_num],self.classes,self.behaviors_from_library, True, self.agent_type, self.args.refinement)
+                _, self.goal_representation, self.exploration_behavior, self.behaviors_from_library_representation = VH_pipeline(
+                    state_file=self.state_file_path,
+                    execute_file=self.internal_executable_file_path,
+                    current_subgoal=self.current_subgoal_nl,
+                    add_info=self.add_info_nl,
+                    long_horizon_goal=self.goal_nl,
+                    sub_goal_list=self.sub_goal_list[:self.current_subgoal_num],
+                    classes=self.classes,
+                    behavior_from_library=self.behaviors_from_library,
+                    behavior_from_library_embedding=self.library.behavior_embedding(self.behaviors_from_library),
+                    partial_observation=True,
+                    agent_type=self.agent_type,
+                    refinement=self.args.refinement
+                )
+
                 if self.goal_representation==None:
                     print("Failed to generate the goal representation after asking for human guidance")
                     return
 
     def reset_sub_goal(self):
         self.need_replan=True
-        _,self.goal_representation,self.exploration_behavior,self.behaviors_from_library_representation=VH_pipeline(self.state_file_path,self.internal_executable_file_path,self.current_subgoal_nl,self.add_info_nl,self.goal_nl,self.sub_goal_list[:self.current_subgoal_num],self.classes,self.behaviors_from_library, True, self.agent_type, self.args.refinement)
+        # _,self.goal_representation,self.exploration_behavior,self.behaviors_from_library_representation=VH_pipeline(self.state_file_path,self.internal_executable_file_path,self.current_subgoal_nl,self.add_info_nl,self.goal_nl,self.sub_goal_list[:self.current_subgoal_num],self.classes,self.behaviors_from_library, True, self.agent_type, self.args.refinement)
+        _, self.goal_representation, self.exploration_behavior, self.behaviors_from_library_representation = VH_pipeline(
+            state_file=self.state_file_path,
+            execute_file=self.internal_executable_file_path,
+            current_subgoal=self.current_subgoal_nl,
+            add_info=self.add_info_nl,
+            long_horizon_goal=self.goal_nl,
+            sub_goal_list=self.sub_goal_list[:self.current_subgoal_num],
+            classes=self.classes,
+            behavior_from_library=self.behaviors_from_library,
+            behavior_from_library_embedding=self.library.behavior_embedding(self.behaviors_from_library),
+            partial_observation=True,
+            agent_type=self.agent_type,
+            refinement=self.args.refinement
+        )
+
         if self.goal_representation==None:
             if self.current_sub_task_guided:
                 print("Failed to generate the goal representation")
@@ -1073,7 +1128,22 @@ class VHAgent:
                 re_decompose=self.ask_for_human_task_guidance()
                 if re_decompose:
                     self.reset_goal_decomposition()
-                _,self.goal_representation,self.exploration_behavior,self.behaviors_from_library_representation=VH_pipeline(self.state_file_path,self.internal_executable_file_path,self.current_subgoal_nl,self.add_info_nl,self.goal_nl,self.sub_goal_list[:self.current_subgoal_num],self.classes,self.behaviors_from_library, True, self.agent_type, self.args.refinement)
+                # _,self.goal_representation,self.exploration_behavior,self.behaviors_from_library_representation=VH_pipeline(self.state_file_path,self.internal_executable_file_path,self.current_subgoal_nl,self.add_info_nl,self.goal_nl,self.sub_goal_list[:self.current_subgoal_num],self.classes,self.behaviors_from_library, True, self.agent_type, self.args.refinement)
+                _, self.goal_representation, self.exploration_behavior, self.behaviors_from_library_representation = VH_pipeline(
+                    state_file=self.state_file_path,
+                    execute_file=self.internal_executable_file_path,
+                    current_subgoal=self.current_subgoal_nl,
+                    add_info=self.add_info_nl,
+                    long_horizon_goal=self.goal_nl,
+                    sub_goal_list=self.sub_goal_list[:self.current_subgoal_num],
+                    classes=self.classes,
+                    behavior_from_library=self.behaviors_from_library,
+                    behavior_from_library_embedding=self.library.behavior_embedding(self.behaviors_from_library),
+                    partial_observation=True,
+                    agent_type=self.agent_type,
+                    refinement=self.args.refinement
+                )
+
                 if self.goal_representation==None:
                     print("Failed to generate the goal representation after asking for human guidance")
                     return

@@ -23,14 +23,20 @@ random.seed(time.time())
 import os
 from dataset import parse_file_to_json
 from logic_parser import parse_logic_from_file_path
-
+import yaml 
 init_path="experiments/virtualhome/CDLs/init_scene_PO.cdl"
 dataset_folder_path='cdl_dataset/dataset'
-
+from types import SimpleNamespace
 import argparse
 from tqdm import tqdm
 
 result_dict = {}
+
+def load_config(config_file="config.yaml"):
+    with open(config_file, "r") as file:
+        config_dict = yaml.safe_load(file)
+    config = SimpleNamespace(**config_dict)
+    return config
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Run an embodied agent evaluation.")    
@@ -47,8 +53,8 @@ def parse_args():
 
     return parser.parse_args()
 
-def load_scene():
-    scene_path='cdl_dataset/Scene.json'
+def load_scene(scene_id):
+    scene_path=f'cdl_dataset/scenes/Scene_{scene_id}.json'
     with open(scene_path) as f:
         scene=json.load(f)
     init_scene_graph = EnvironmentGraph(scene)
@@ -103,7 +109,7 @@ def run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph,guidance)
     for combination in keystates_combination:
         result_dict[task_path][str(combination)]={}
 
-        evaluator=Evaluator(task_path,logger,epoch_path)
+        evaluator=Evaluator(args,task_path,logger,epoch_path)
         current_graph=init_scene_graph.copy()
         env=VH_Env(current_graph)
         for key in combination:
@@ -125,7 +131,7 @@ def counting(args):
     epoch_logger = setup_logger(f'log/epoch_{timestamp}',timestamp=timestamp)
     files = tqdm(files, desc="Evaluating tasks")
     for task_file in files:
-        _,classes,init_scene_graph,guidance=load_scene()
+        _,classes,init_scene_graph,guidance=load_scene(args.scene_id)
         task_path=os.path.join(dataset_folder_path,task_file)
         if task_path in result_dict:
             continue
@@ -133,7 +139,7 @@ def counting(args):
     print(result_dict)
         
 if __name__ == '__main__':
-    args = parse_args()
+    args = load_config("experiments/virtualhome/VH_scripts/config.yaml")
     if os.path.exists('result.json'):
         with open('result.json') as f:
             result_dict=json.load(f)

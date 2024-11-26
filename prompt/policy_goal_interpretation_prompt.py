@@ -1,4 +1,4 @@
-def get_policy_goal_inter_prompt(goal,cat_list=None,additional_information=None,long_horizon_task=None,previous_subtasks=None,behavior_from_library_all=None):
+def get_policy_goal_inter_prompt(goal,cat_list=None,additional_information=None,long_horizon_task=None,previous_subtasks=None,behavior_from_library_embedding=None):
     if additional_information==None or additional_information=='\n':
         additional_information="None"
     categories=""
@@ -11,19 +11,6 @@ def get_policy_goal_inter_prompt(goal,cat_list=None,additional_information=None,
             completed_tasks+=" "+task+" "
     if completed_tasks=="":
         completed_tasks="None, it is the first sub-task."
-
-    behavior_from_library_names=[]
-    for behavior in behavior_from_library_all['content']:
-        behavior_from_library_names.append(behavior.split('\n')[0].replace('behavior ','')[:-1])
-
-    behavior_from_library=''
-    if len(behavior_from_library_names)!=0:
-        behavior_from_library='##Learned Behaviors:\n'
-        behavior_from_library+="Here are some of the skills you've learned, which you can use directly by passing in the corresponding parameters. When the behavior is related to the task, you should prioritize trying these behaviors."
-        for behavior in behavior_from_library_names:
-            if behavior!='':
-                behavior_from_library+="- "+behavior+'\n'
-        behavior_from_library+='Note: you can directly call these behaviors\n'
 
     prompt="""
 ##Task Description: 
@@ -137,7 +124,7 @@ The following behaviors can be directly invoked in the current sub-task goal rep
 - lie_somewhere(location:item) # Lie at a specific location.
 Important Note: Ensure that all parameters are properly defined before using them in the behaviors.
 
-"""+behavior_from_library+"""
+"""+behavior_from_library_embedding+"""
 ## Available Category Determination:
 """+categories+"""
 For any instance 'x', you can use 'is_y(x)' to determine if 'x' belongs to category 'y'. Categories cannot be operated upon directly; you can only assess the status and relationships of specific instances within a category. If you want to select an item instance that belongs to the category "box", you can use the following syntax:

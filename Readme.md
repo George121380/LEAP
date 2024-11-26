@@ -1,6 +1,13 @@
-#To-Do list
-9.16
+# To-Do:
 
-- [ ] Loop Feedback
-- [ ] Script not executable
-- [x] Human Guidance
+- [ ] Library testing -> Provide the whole library directly / RAG
+- [ ] Third scene
+- [ ] Replace 'achieve' by assert to accelerate everystep check.
+- [ ] Loop feecback
+- [ ] Give size properties to more objects
+- [ ] Record time consume for each part
+- [ ] Improve Log: Add library extraction record.
+
+# Debug:
+
+- [ ] Name Conflict while planning (obj_name_cdl==instance_name)

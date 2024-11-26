@@ -7,6 +7,7 @@ import os
 
 class behavior_library:
     def __init__(self,epoch_path):
+        self.embedding_method = 'whole' # 'whole' or 'rag'
         # self.source_path='experiments/virtualhome/resources/library_data.json'
         self.source_path=os.path.join(epoch_path,'library_data.json')
         if not os.path.exists(self.source_path):
@@ -333,6 +334,34 @@ class behavior_library:
                     })
 
         return all_behaviors, behavior_names, function_calls, behavior_calls
+    
+    def behavior_embedding(self,behaviors):
+        """
+        Args:
+            behaviors: return value of download_behaviors
+        
+        Returns:
+            behavior_embedding: str, directly used as part of the input for LLM
+        """
+        behavior_from_library_names=[]
+        if self.embedding_method=='rag':
+            for behavior in behaviors['content']:
+                behavior_from_library_names.append(behavior.split('\n')[0].replace('behavior ','')[:-1])
+                # TODO: add rag embedding
+
+        elif self.embedding_method=='whole':
+            for behavior in behaviors['content']:
+                behavior_from_library_names.append(behavior)
+
+        behavior_from_library=''
+        if len(behavior_from_library_names)!=0:
+            behavior_from_library='##Learned Behaviors:\n'
+            behavior_from_library+="Here are some of the skills you've learned, which you can use directly by passing in the corresponding parameters. When the behavior is related to the task, you should prioritize trying these behaviors.\n\n"
+            for behavior in behavior_from_library_names:
+                if behavior!='':
+                    behavior_from_library+=behavior+'\n'
+            behavior_from_library+='Note: You can directly utilize these behaviors or reference them when designing new ones.\n'
+        return behavior_from_library
 
     def extract_behavior_calls(self, behavior_cdl, current_behavior_name, behavior_call_pattern):
         """

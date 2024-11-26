@@ -83,7 +83,8 @@ def logic_parse(tokens):
     return ast
 
 class Evaluator:
-    def __init__(self,task_file_path,logger,epoch_path) -> None:
+    def __init__(self,args,task_file_path,logger,epoch_path) -> None:
+        self.args=args
         self.logger=logger
         self.task_file_path=task_file_path
         self.name2opid = {}
@@ -134,7 +135,9 @@ class Evaluator:
 
 
     def load_scene(self)->None:
-        scene_path='cdl_dataset/Scene.json'
+        # scene_path='cdl_dataset/Scene.json'
+        scene_path=f'cdl_dataset/scenes/Scene_{self.args.scene_id}.json'
+
         with open(scene_path) as f:
             scene=json.load(f)
         init_scene_graph = EnvironmentGraph(scene)
@@ -686,7 +689,8 @@ class Evaluator:
 
         if observation['action'].name=='cut_executor':
             target_id=self.name2opid[observation['action'].arguments[0].name]
-            knife_id=self.name2opid['knife_2050']
+            knife_id = next((value for key, value in self.name2opid.items() if "knife_" in key), None)
+            # knife_id=self.name2opid['knife_2050']
             rh = set(np.where(self.state['holds_rh'] == True)[0])
             lh = set(np.where(self.state['holds_lh'] == True)[0])
             union_indices = rh.union(lh)

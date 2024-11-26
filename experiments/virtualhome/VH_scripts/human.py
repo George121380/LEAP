@@ -70,7 +70,7 @@ class Human:
                 discription+='\n'
             answer=Exp_helper(target,discription)
             print(answer)
-            return answer
+            return answer, None
         
         if 'how to' in question: # ask for guidance
             # guidance=Guidance_helper(question,self.knowledge)

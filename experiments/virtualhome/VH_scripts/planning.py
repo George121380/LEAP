@@ -178,7 +178,7 @@ def find_behavior_from_library(goal_representation, behavior_from_library):
 #     return full_code
 
 
-def VH_pipeline(state_file:str,execute_file:str,current_subgoal:str,add_info:str,long_horizon_goal:str,sub_goal_list:list,classes,behavior_from_library,partial_observation=True, agent_type="Planning", refinement=True):
+def VH_pipeline(state_file:str,execute_file:str,current_subgoal:str,add_info:str,long_horizon_goal:str,sub_goal_list:list,classes,behavior_from_library,behavior_from_library_embedding,partial_observation=True, agent_type="Planning", refinement=True):
     """
     Args:
     state_file: Path to the file containing the current state for CDL planning
@@ -202,7 +202,7 @@ def VH_pipeline(state_file:str,execute_file:str,current_subgoal:str,add_info:str
 
     while generate_time<generate_times_limit:
         try:
-            goal_int=goal_interpretation(current_subgoal,add_info,long_horizon_goal,classes,sub_goal_list,behavior_from_library, agent_type)
+            goal_int=goal_interpretation(current_subgoal,add_info,long_horizon_goal,classes,sub_goal_list,behavior_from_library_embedding, agent_type)
 
             goal_int=remove_special_characters(goal_int)
             # logger.info("Goal representation",goal_int)

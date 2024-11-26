@@ -1,0 +1,108 @@
+Goal Representation,Debug Result,Action,Add Info,LLM Answer,Plan
+"Reset goals: The sub-goals are: 
+['Cut the chicken into pieces, then put it back in the fridge.']",,,,,
+" 
+def is_in_fridge(chicken: item):
+    # Helper function to check if the chicken is in the fridge
+    symbol in_fridge = exists fridge: item: is_fridge(fridge) and inside(chicken, fridge)
+    return in_fridge
+
+behavior cut_chicken(chicken: item):
+    body:
+        achieve cut(chicken)  # Achieve a state where the chicken is cut into pieces
+
+behavior move_to_fridge(chicken: item, fridge: item):
+    body:
+        achieve inside(chicken, fridge)  # Achieve a state where the chicken is inside the fridge
+
+behavior close_fridge(fridge: item):
+    body:
+        achieve closed(fridge)  # Achieve a state where the fridge is closed
+        
+behavior __goal__():
+    body:
+        bind chicken: item where:
+            is_food_chicken(chicken)
+        # Bind the chicken item
+        
+        bind fridge: item where:
+            is_fridge(fridge)
+        # Bind the fridge
+        
+        cut_chicken(chicken)
+        
+        if not is_in_fridge(chicken):
+            move_to_fridge(chicken, fridge)
+            close_fridge(fridge)
+",From function reset_goal,,,,
+,,,,"Record from func query_LLM_human in agent.py
+Question: Can you tell me how to cut the chicken into pieces, then put it back in the fridge.
+Answer: Need to replan: No  
+Guidance: Cut the chicken into pieces, then put it back in the fridge.
+",
+"Reset goals: The sub-goals are: 
+['Cut the chicken into pieces and put it back in the fridge.']",,,,,
+"
+behavior put_back_chicken_piece(piece:item, fridge:item):
+    body:
+        achieve inside(piece, fridge)
+
+behavior __goal__():
+    body:
+        bind chicken: item where:
+            is_food_chicken(chicken)
+        # Ensure the chicken is cut into pieces
+        achieve cut(chicken)
+        
+        bind fridge: item where:
+            is_fridge(fridge)
+            
+        foreach piece: item:
+            if is_food_chicken(piece) and cut(piece):
+                put_back_chicken_piece(piece, fridge)
+        # Ensure the fridge is closed after placing the chicken inside
+        achieve closed(fridge)
+",From function reset_goal,,,,
+"Reset goals: The sub-goals are: 
+['Cut the chicken into pieces and put it back in the fridge.']",,,,,
+" 
+def is_cuttable_chicken(chicken:item):
+    # Determine if the item is cuttable and is chicken
+    symbol cuttable_chicken=is_food_chicken(chicken) and cuttable(chicken)
+    return cuttable_chicken
+
+behavior cut_chicken(chicken:item):
+    body:
+        achieve cut(chicken)
+
+behavior store_in_fridge(item:item, fridge:item):
+    body:
+        achieve inside(item, fridge)
+
+behavior __goal__():
+    body:
+        bind fridge: item where:
+            is_fridge(fridge)
+        # Select a fridge
+        bind chicken: item where:
+            is_food_chicken(chicken)
+        # Select chicken as the item
+        
+        if is_cuttable_chicken(chicken):
+            # If the chicken is cuttable, proceed to cut it
+            cut_chicken(chicken)
+        
+        store_in_fridge(chicken, fridge)
+",From function reset_goal,,,,
+"/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-
+virtual-home/cdl_dataset/dataset/Put_groceries_in_Fridge/g4.txt",k1,"missed actions: walk_executor(fridge_126);switchoff_executor(fridge_126);open_executor(fridge_126);w
+alk_executor(food_chicken_2089);grab_executor(food_chicken_2089);walk_executor(cutting_board_2123);p
+ut_executor(food_chicken_2089, cutting_board_2123);walk_executor(knife_2122);grab_executor(knife_212
+2);walk_executor(food_chicken_2089);cut_executor(food_chicken_2089);",missed action num: 11,,
+"/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-
+virtual-home/cdl_dataset/dataset/Put_groceries_in_Fridge/g4.txt",k1,"missed actions: walk_executor(fridge_126);switchoff_executor(fridge_126);open_executor(fridge_126);w
+alk_executor(food_chicken_2089);grab_executor(food_chicken_2089);walk_executor(cutting_board_2123);p
+ut_executor(food_chicken_2089, cutting_board_2123);walk_executor(knife_2122);grab_executor(knife_212
+2);walk_executor(food_chicken_2089);cut_executor(food_chicken_2089);",missed action num: 11,,
+"/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-
+virtual-home/cdl_dataset/dataset/Put_groceries_in_Fridge/g4.txt",k2,missed actions: ,missed action num: 0,,
