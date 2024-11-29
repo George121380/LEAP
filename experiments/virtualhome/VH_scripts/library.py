@@ -1,3 +1,17 @@
+"""
+This is a simplified version of library
+
+Lift: Directly lift all the behaviors and functions without any operations
+
+Download: Copy directly
+
+	# History K:
+	When the sub-task is: abcdefg
+	A successful representation:
+
+
+"""
+
 import json
 import sys
 import re
@@ -57,7 +71,10 @@ class behavior_library:
         else:
             return None
 
-    def replace_function_calls(self, code): # replace function calls in the code to avoid conflicts
+    def replace_function_calls(self, code): 
+        """
+        replace function calls in the code to avoid conflicts
+        """
         pattern = r'\b(\w+)\s*\('
 
         def replace_match(match):

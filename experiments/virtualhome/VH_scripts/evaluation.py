@@ -83,9 +83,9 @@ def logic_parse(tokens):
     return ast
 
 class Evaluator:
-    def __init__(self,args,task_file_path,logger,epoch_path) -> None:
+    def __init__(self,args,task_file_path,task_logger,epoch_path) -> None:
         self.args=args
-        self.logger=logger
+        self.logger=task_logger
         self.task_file_path=task_file_path
         self.name2opid = {}
         self.name2id = {}
@@ -720,15 +720,15 @@ class Evaluator:
     )
         if len(plans) == 0:
             print("Evaluator failed to find a plan")
-            self.logger.info(self.task_file_path,f'Checking {key_state}',"Evaluator failed to find a plan",'','','')
-
+            self.logger.info("From evaluation.py\n"+self.task_file_path+f"\nChecking {key_state}\n"+"Evaluator failed to find a plan")
             return 1e9
+        
         print("State:",len(plans[0]),"steps left")
         left_actions=''
         for action in plans[0]:
             left_actions+=str(action)+';'
         print(key_state," missed actions:",left_actions)
-        self.logger.info(self.task_file_path,key_state,f"missed actions: {left_actions}",f'missed action num: {len(plans[0])}','','')
+        self.logger.info("From evaluation.py\n"+self.task_file_path,key_state+f"\nmissed actions: {left_actions}"+f'\nmissed action num: {len(plans[0])}')
 
         # print("missed actions:",plans[0])
         return plans[0]
@@ -783,8 +783,6 @@ class Evaluator:
             print("Some keystates are incorrect")
         else:
             print("All keystates are correct")
-        #test
-        # self.logger.info(counting_dict,'','','','','')
         return counting_dict
         
 

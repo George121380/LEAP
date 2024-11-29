@@ -39,9 +39,9 @@ class Action:
         return self.executor_string
 
 class LLM_Agent:
-    def __init__(self,args,filepath,logger,epoch_path):
+    def __init__(self,args,filepath,task_logger,epoch_path):
         self.args=args
-        self.logger=logger
+        self.logger=task_logger
         self.model=SentenceTransformer('paraphrase-MiniLM-L6-v2')  # You can choose other models
         self.scene_info=None
         self.name2opid = {}
@@ -597,7 +597,7 @@ class LLM_Agent:
                         print(f'Query human about the location of {exp_target}.')
                         self.exp_fail_num=0
                         self.add_info_human_instruction+=human_answer+'\n'
-                        self.logger.info("","","",self.add_info_nl,"","")
+                        self.logger.info("From agent_LLM.py->updates"+self.add_info_nl)
 
                     self.exp_fail_num+=1
                     print(f'{exp_target} is not around {exp_loc}, re-explore')
@@ -663,7 +663,7 @@ class LLM_Agent:
             self.annotation(observation)
             self.add_info_action_history.append({'action':str(observation['action']),'effects':action_effects})
             self.add_info_action_history_for_evaluation.append({'action':str(observation['action']),'effects':action_effects})
-            self.logger.info("","",str(observation['action']),action_effects,"","")
+            self.logger.info("From agent_LLM.py->updates"+str(observation['action']),action_effects)
 
     def annotation(self,observation):
         if observation['action'].name=='switchon_executor' and 'faucet' in observation['action'].arguments[0].name:
@@ -693,7 +693,7 @@ class LLM_Agent:
         record+=f'Question: {question}\n'
         answer=self.human_helper.QA(question)
         record+=f'Answer: {answer}\n'
-        self.logger.info("","","","",record,"")
+        self.logger.info("From agent_LLM->query_human"+record)
         return answer
     
     def select_relevant_items(self, k=30):

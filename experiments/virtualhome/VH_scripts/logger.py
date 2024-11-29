@@ -45,7 +45,7 @@ class CsvHandler(logging.Handler):
 
         self.csv_writer = csv.writer(self.file, quoting=csv.QUOTE_MINIMAL)
 
-        self.csv_writer.writerow(['Goal Representation', 'Debug Result', 'Action', 'Add Info','LLM Answer','Plan'])
+        self.csv_writer.writerow(['Task Category', 'Content', 'Executed Actions', 'Info','Success Rate','Task Path'])
 
     def emit(self, record):
         csv_row = self.format(record)
@@ -56,7 +56,7 @@ class CsvHandler(logging.Handler):
         self.file.close()
         logging.Handler.close(self)
 
-def setup_logger(folder_path,timestamp=None,task_name=None):
+def setup_epoch_logger(folder_path,timestamp=None,task_name=None):
 
     logger_name = f'csv_logger_{task_name}' if task_name else f'csv_logger_{timestamp}'
     logger = logging.getLogger(logger_name)
@@ -64,6 +64,51 @@ def setup_logger(folder_path,timestamp=None,task_name=None):
 
     handler = CsvHandler(folder_path,task_name)
     formatter = CsvFormatter()
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+
+    return logger
+
+class TaskLoggerFormatter(logging.Formatter):
+    def __init__(self):
+        super().__init__()
+
+    def format(self, record):
+        lines = record.msg.split('\n')
+        formatted_message = '\n'.join(lines)
+        return f"{formatted_message}\n{'#' * 30}\n"
+
+class TaskLoggerHandler(logging.Handler):
+    def __init__(self, folder_path, task_name=None):
+        logging.Handler.__init__(self)
+
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
+
+        if task_name is None:
+            filename = "task_log.txt"
+        else:
+            filename = f"{task_name}_task_log.txt"
+
+        self.filepath = os.path.join(folder_path, filename)
+        self.file = open(self.filepath, 'a', encoding='utf-8')
+
+    def emit(self, record):
+        log_message = self.format(record)
+        self.file.write(log_message)
+        self.file.flush()
+
+    def close(self):
+        self.file.close()
+        logging.Handler.close(self)
+
+def setup_task_logger(folder_path, timestamp=None, task_name=None):
+    logger_name = f'task_logger_{task_name}' if task_name else f'task_logger_{timestamp}'
+    logger = logging.getLogger(logger_name)
+    logger.setLevel(logging.INFO)
+
+    handler = TaskLoggerHandler(folder_path, task_name)
+    formatter = TaskLoggerFormatter()
     handler.setFormatter(formatter)
     logger.addHandler(handler)
 

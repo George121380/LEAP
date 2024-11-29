@@ -13,10 +13,10 @@ import os
 import time
 
 class VHAgent:
-    def __init__(self, args, filepath, logger, PO=True,epoch_path=None):
+    def __init__(self, args, filepath, task_logger, PO=True,epoch_path=None):
         # Initialize dictionaries
         self.args=args
-        self.logger=logger
+        self.logger=task_logger
         self.agent_type = self.args.agent_type # Policy or Planning
         if self.agent_type=='Policy':
             self.commit_skeleton_everything=True
@@ -127,7 +127,7 @@ class VHAgent:
         task_info['Subgoals']=self.sub_goal_list
         answer,re_decompose=self.human_helper.QA(question,task_info)
         record+=f'Answer: {answer}\n'
-        self.logger.info("","","","",record,"")
+        self.logger.info("From agent.py\n"+record)
         return answer,re_decompose
     
     def query_real_human(self,question:str):
@@ -143,7 +143,7 @@ class VHAgent:
             re_decompose=False
         answer = input(f"{question}\nYour answer: ")
         record+=f'Answer: {answer}\n'
-        self.logger.info("","","","",record,"")
+        self.logger.info("From agent.py\n"+record)
         print("Debug: ",re_decompose)
         return answer,re_decompose
     
@@ -753,7 +753,7 @@ class VHAgent:
                         self.exp_fail_num=0
                         self.add_info_human_instruction+=human_answer+'\n'
                         self.update_add_info()
-                        self.logger.info("","","",self.add_info_nl,"","")
+                        self.logger.info("From agent.py\n"+self.add_info_nl)
                         self.record_add_info()
 
                     self.exp_fail_num+=1
@@ -822,7 +822,7 @@ class VHAgent:
             self.add_info_action_history.append({'action':str(observation['action']),'effects':action_effects})
             self.add_info_action_history_for_evaluation.append({'action':str(observation['action']),'effects':action_effects})
             self.update_add_info()
-            self.logger.info("","",str(observation['action']),action_effects,"","")
+            self.logger.info("From agent.py\n"+str(observation['action'])+"\n"+action_effects)
             self.record_add_info()
             self.save_to_file()
             self.save_to_file(self.state_file_path)   
@@ -927,7 +927,7 @@ class VHAgent:
                 for action in plan:
                     plan_print+=(str(action))
                 print(plan_print)
-                self.logger.info("","","","","",str(plan))
+                self.logger.info("From agent.py-> find a plan in act()\n"+plan_print)
                 action = plan[0]
                 self.current_step=1
                 self.plan=plan
@@ -969,7 +969,7 @@ class VHAgent:
                             # regenerate the subgoal
                             self.add_info_human_instruction=insrtuctions+'\n'
                             self.update_add_info()
-                            self.logger.info("","","",self.add_info_nl,"","")
+                            self.logger.info("From agent.py\n"+self.add_info_nl)
                             self.reset_sub_goal()
                             self.need_replan=True
                             self.record_add_info()
@@ -1014,7 +1014,7 @@ class VHAgent:
         print(self.sub_goal_list)
         record='Reset goals: The sub-goals are: \n'+str(self.sub_goal_list)
         # block while test
-        self.logger.info(record,"","","","","")
+        self.logger.info("From agent.py\n"+record)
         self.current_subgoal_nl=self.sub_goal_list[0]
         self.current_subgoal_num=0
         self.current_step=0
@@ -1061,13 +1061,14 @@ class VHAgent:
             behavior_from_library_embedding=self.library.behavior_embedding(self.behaviors_from_library),
             partial_observation=True,
             agent_type=self.agent_type,
-            refinement=self.args.refinement
+            refinement=self.args.refinement,
+            logger=self.logger
         )
 
         # pdb.set_trace()
 
         # block while test
-        self.logger.info(self.goal_representation,"From function reset_goal","","","","")
+        self.logger.info("From agent.py->reset_goal\n"+self.goal_representation)
 
         if self.goal_representation==None:
             if self.current_sub_task_guided:
@@ -1093,7 +1094,8 @@ class VHAgent:
                     behavior_from_library_embedding=self.library.behavior_embedding(self.behaviors_from_library),
                     partial_observation=True,
                     agent_type=self.agent_type,
-                    refinement=self.args.refinement
+                    refinement=self.args.refinement,
+                    logger=self.logger
                 )
 
                 if self.goal_representation==None:
@@ -1115,7 +1117,8 @@ class VHAgent:
             behavior_from_library_embedding=self.library.behavior_embedding(self.behaviors_from_library),
             partial_observation=True,
             agent_type=self.agent_type,
-            refinement=self.args.refinement
+            refinement=self.args.refinement,
+            logger=self.logger
         )
 
         if self.goal_representation==None:
@@ -1141,14 +1144,15 @@ class VHAgent:
                     behavior_from_library_embedding=self.library.behavior_embedding(self.behaviors_from_library),
                     partial_observation=True,
                     agent_type=self.agent_type,
-                    refinement=self.args.refinement
+                    refinement=self.args.refinement,
+                    logger=self.logger
                 )
 
                 if self.goal_representation==None:
                     print("Failed to generate the goal representation after asking for human guidance")
                     return
         # block while test
-        self.logger.info(self.goal_representation,"From function reset_sub_goal","","","","")
+        self.logger.info("From agent.py->reset_sub_goal\n"+self.goal_representation)
         self.reset_visited()
         self.record_goal_representation()
         self.save_to_file()

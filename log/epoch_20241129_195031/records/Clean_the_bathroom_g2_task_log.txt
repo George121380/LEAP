@@ -1,0 +1,196 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['Fill the sink in the bathroom with water and add soap to create soapy water.']
+##############################
+Use behavior from library:
+behavior fill_sink(sink:item, water_source:item):
+    body:
+        achieve has_water(sink)
+
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_soap_2054_around_bathroom_counter_41(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind bathroom_counter_instance:item where:
+            is_bathroom_counter(bathroom_counter_instance) and id[bathroom_counter_instance]==41
+        achieve close_char(char,bathroom_counter_instance)
+        if can_open(bathroom_counter_instance):
+            achieve_once open(bathroom_counter_instance)
+            exp(soap,bathroom_counter_instance)
+        else:
+            exp(soap,bathroom_counter_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,bathroom_counter_instance]=True
+        close[bathroom_counter_instance,soap]=True
+    
+
+behavior find_cleaning_solution_2073_around_bathroom_cabinet_40(cleaning_solution:item):
+    goal: not unknown(cleaning_solution)
+    body:
+        assert is_cleaning_solution(cleaning_solution)
+        bind bathroom_cabinet_instance:item where:
+            is_bathroom_cabinet(bathroom_cabinet_instance) and id[bathroom_cabinet_instance]==40
+        achieve close_char(char,bathroom_cabinet_instance)
+        if can_open(bathroom_cabinet_instance):
+            achieve_once open(bathroom_cabinet_instance)
+            exp(cleaning_solution,bathroom_cabinet_instance)
+        else:
+            exp(cleaning_solution,bathroom_cabinet_instance)
+    eff:
+        unknown[cleaning_solution]=False
+        close[cleaning_solution,bathroom_cabinet_instance]=True
+        close[bathroom_cabinet_instance,cleaning_solution]=True
+    
+
+#exp_behavior_end
+
+#behaviors_from_library
+behavior fill_sink(sink:item, water_source:item):
+    body:
+        achieve has_water(sink)
+
+
+#behaviors_from_library_end
+
+#goal_representation
+ 
+behavior fill_sink_with_water(sink:item, water_source:item):
+    body:
+        if has_faucet_1(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_on(faucet)
+            achieve has_water(sink)
+            achieve_once is_off(faucet)
+        else:
+            fill_sink(sink, water_source)
+
+behavior add_soap_to_sink(soap:item, sink:item):
+    body:
+        achieve inside(soap, sink)
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink)
+        # Select a sink in the bathroom
+
+        bind soap: item where:
+            is_soap(soap)
+        # Select soap to add to the sink
+
+        bind water_source: item where:
+            is_faucet(water_source) and close(water_source, sink)
+        # Select a water source near the sink
+
+        fill_sink_with_water(sink, water_source)
+        add_soap_to_sink(soap, sink)
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "behavior_definition":
+
+'Function has_faucet_1 not found. Note that recursive function calls are not supported in the current version.'
+##############################
+Use behavior from library:
+behavior fill_sink(sink:item, water_source:item):
+    body:
+        achieve has_water(sink)
+
+
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_soap_2054_around_bathroom_counter_41(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind bathroom_counter_instance:item where:
+            is_bathroom_counter(bathroom_counter_instance) and id[bathroom_counter_instance]==41
+        achieve close_char(char,bathroom_counter_instance)
+        if can_open(bathroom_counter_instance):
+            achieve_once open(bathroom_counter_instance)
+            exp(soap,bathroom_counter_instance)
+        else:
+            exp(soap,bathroom_counter_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,bathroom_counter_instance]=True
+        close[bathroom_counter_instance,soap]=True
+    
+
+behavior find_detergent_2084_around_bathroom_cabinet_40(detergent:item):
+    goal: not unknown(detergent)
+    body:
+        assert is_detergent(detergent)
+        bind bathroom_cabinet_instance:item where:
+            is_bathroom_cabinet(bathroom_cabinet_instance) and id[bathroom_cabinet_instance]==40
+        achieve close_char(char,bathroom_cabinet_instance)
+        if can_open(bathroom_cabinet_instance):
+            achieve_once open(bathroom_cabinet_instance)
+            exp(detergent,bathroom_cabinet_instance)
+        else:
+            exp(detergent,bathroom_cabinet_instance)
+    eff:
+        unknown[detergent]=False
+        close[detergent,bathroom_cabinet_instance]=True
+        close[bathroom_cabinet_instance,detergent]=True
+    
+
+#exp_behavior_end
+
+#behaviors_from_library
+behavior fill_sink(sink:item, water_source:item):
+    body:
+        achieve has_water(sink)
+
+
+#behaviors_from_library_end
+
+#goal_representation
+
+behavior fill_sink_with_water(sink:item, water_source:item):
+    body:
+        if is_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_on(faucet)
+            achieve has_water(sink)
+            achieve_once is_off(faucet)
+        else:
+            fill_sink(sink, water_source)
+
+behavior add_soap_to_sink(soap:item, sink:item):
+    body:
+        achieve inside(soap, sink)
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink)
+        # Select a sink in the bathroom
+
+        bind soap: item where:
+            is_soap(soap)
+        # Select soap to add to the sink
+
+        bind water_source: item where:
+            is_faucet(water_source) and close(water_source, sink)
+        # Select a water source near the sink
+
+        fill_sink_with_water(sink, water_source)
+        add_soap_to_sink(soap, sink)
+
+#goal_representation_end
+
+##############################

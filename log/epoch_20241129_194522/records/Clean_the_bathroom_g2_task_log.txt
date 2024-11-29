@@ -1,0 +1,184 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Find the bathroom sink.', '2. Fill the sink with water.', '3. Add soap to create soapy water.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_soap_2054_around_sink_42(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind sink_instance:item where:
+            is_sink(sink_instance) and id[sink_instance]==42
+        achieve close_char(char,sink_instance)
+        if can_open(sink_instance):
+            achieve_once open(sink_instance)
+            exp(soap,sink_instance)
+        else:
+            exp(soap,sink_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,sink_instance]=True
+        close[sink_instance,soap]=True
+    
+
+#exp_behavior_end
+
+#behaviors_from_library
+
+#behaviors_from_library_end
+
+#goal_representation
+ 
+behavior __goal__():
+    body:
+        bind bathroom: item where:
+            is_bathroom(bathroom)
+        # Identify the bathroom item from the scene
+
+        bind sink: item where:
+            is_sink(sink) and inside(sink, bathroom)
+        # Find the sink thats inside the bathroom
+        
+        achieve close_char(char, sink)
+        # Approach the bathroom sink
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+ 
+behavior __goal__():
+    body:
+        bind bathroom: item where:
+            is_bathroom(bathroom)
+        # Identify the bathroom item from the scene
+
+        bind sink: item where:
+            is_sink(sink) and inside(sink, bathroom)
+        # Find the sink thats inside the bathroom
+        
+        achieve close_char(char, sink)
+        # Approach the bathroom sink
+
+##############################
+From agent.py
+Record from func query_LLM_human in agent.py
+Question: Can you tell me how to find the bathroom sink.
+Answer: Need to replan: Yes  
+Guidance: You should replan and consider completing the task by putting soap in the sink first and then turning on the faucet to fill the sink with water.
+
+##############################
+From agent.py
+Record from func query_LLM_human in agent.py
+Question: Can you tell me how to fill the sink with water.
+Answer: Need to replan: Yes  
+Guidance: Start by putting soap in the sink, then turn on the faucet to fill the sink with water.
+
+##############################
+From agent.py
+Record from func query_LLM_human in agent.py
+Question: Can you tell me how to add soap to create soapy water.
+Answer: Need to replan: Yes  
+Guidance: You should first put soap in the sink, then turn on the faucet to fill the sink with water to create soapy water.
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(sink_42)
+##############################
+From agent.py
+walk_executor(sink_42)
+Find basket_for_clothes_2006. Find towel_rack_34. Find detergent_2084. Find soap_2053. Find cleaning_solution_2073. Find towel_rack_32. Find towel_rack_31. Robot is inside bathroom_1. Robot is close bathroom_counter_41. Robot is close sink_42. 
+##############################
+Use behavior from library:
+def has_faucet_1(sink:item):
+    # Determine whether this sink has a faucet
+    symbol has_faucet=exists faucet:item: is_faucet(faucet) and close(faucet,sink)
+    return has_faucet
+
+behavior fill_sink_with_water(sink:item, water_source:item):
+    body:
+        if has_faucet_1(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet,sink)
+            achieve_once is_on(faucet)
+            achieve has_water(sink)
+            achieve_once is_off(faucet)
+        else:
+            fill_sink(sink, water_source)
+
+behavior fill_sink(sink:item, water_source:item):
+    body:
+        achieve has_water(sink)
+
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_food_2022_around_fridge_289(food_food:item):
+    goal: not unknown(food_food)
+    body:
+        assert is_food_food(food_food)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_food,fridge_instance)
+        else:
+            exp(food_food,fridge_instance)
+    eff:
+        unknown[food_food]=False
+        close[food_food,fridge_instance]=True
+        close[fridge_instance,food_food]=True
+    
+
+#exp_behavior_end
+
+#behaviors_from_library
+def has_faucet_1(sink:item):
+    # Determine whether this sink has a faucet
+    symbol has_faucet=exists faucet:item: is_faucet(faucet) and close(faucet,sink)
+    return has_faucet
+
+behavior fill_sink_with_water(sink:item, water_source:item):
+    body:
+        if has_faucet_1(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet,sink)
+            achieve_once is_on(faucet)
+            achieve has_water(sink)
+            achieve_once is_off(faucet)
+        else:
+            fill_sink(sink, water_source)
+
+behavior fill_sink(sink:item, water_source:item):
+    body:
+        achieve has_water(sink)
+
+
+#behaviors_from_library_end
+
+#goal_representation
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and id[sink]==42
+        # Select sink with ID 42
+        bind water_source: item where:
+            is_faucet(water_source) and close(water_source, sink)
+            # Select a faucet that is close to sink_42
+        fill_sink_with_water(sink, water_source)
+        # Fill the sink with water
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "behavior_definition":
+
+'Function fill_sink not found. Note that recursive function calls are not supported in the current version.'
+##############################

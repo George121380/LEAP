@@ -1,0 +1,219 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['Prepare a sink of soapy water in the bathroom.']
+##############################
+Use behavior from library:
+def has_faucet_1(sink:item):
+    # Determine whether this sink has a faucet
+    symbol has_faucet=exists faucet:item: is_faucet(faucet) and close(faucet,sink)
+    return has_faucet
+
+behavior fill_sink(sink:item, water_source:item):
+    body:
+        achieve has_water(sink)
+
+behavior fill_sink_with_water(sink:item, water_source:item):
+    body:
+        if has_faucet_1(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet,sink)
+            achieve_once is_on(faucet)
+            achieve has_water(sink)
+            achieve_once is_off(faucet)
+        else:
+            fill_sink(sink, water_source)
+
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_detergent_2084_around_bathroom_counter_41(detergent:item):
+    goal: not unknown(detergent)
+    body:
+        assert is_detergent(detergent)
+        bind bathroom_counter_instance:item where:
+            is_bathroom_counter(bathroom_counter_instance) and id[bathroom_counter_instance]==41
+        achieve close_char(char,bathroom_counter_instance)
+        if can_open(bathroom_counter_instance):
+            achieve_once open(bathroom_counter_instance)
+            exp(detergent,bathroom_counter_instance)
+        else:
+            exp(detergent,bathroom_counter_instance)
+    eff:
+        unknown[detergent]=False
+        close[detergent,bathroom_counter_instance]=True
+        close[bathroom_counter_instance,detergent]=True
+    
+
+behavior find_cleaning_solution_2073_around_bathroom_cabinet_40(cleaning_solution:item):
+    goal: not unknown(cleaning_solution)
+    body:
+        assert is_cleaning_solution(cleaning_solution)
+        bind bathroom_cabinet_instance:item where:
+            is_bathroom_cabinet(bathroom_cabinet_instance) and id[bathroom_cabinet_instance]==40
+        achieve close_char(char,bathroom_cabinet_instance)
+        if can_open(bathroom_cabinet_instance):
+            achieve_once open(bathroom_cabinet_instance)
+            exp(cleaning_solution,bathroom_cabinet_instance)
+        else:
+            exp(cleaning_solution,bathroom_cabinet_instance)
+    eff:
+        unknown[cleaning_solution]=False
+        close[cleaning_solution,bathroom_cabinet_instance]=True
+        close[bathroom_cabinet_instance,cleaning_solution]=True
+    
+
+behavior find_soap_2053_around_bathroom_cabinet_40(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind bathroom_cabinet_instance:item where:
+            is_bathroom_cabinet(bathroom_cabinet_instance) and id[bathroom_cabinet_instance]==40
+        achieve close_char(char,bathroom_cabinet_instance)
+        if can_open(bathroom_cabinet_instance):
+            achieve_once open(bathroom_cabinet_instance)
+            exp(soap,bathroom_cabinet_instance)
+        else:
+            exp(soap,bathroom_cabinet_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,bathroom_cabinet_instance]=True
+        close[bathroom_cabinet_instance,soap]=True
+    
+
+#exp_behavior_end
+
+#behaviors_from_library
+def has_faucet_1(sink:item):
+    # Determine whether this sink has a faucet
+    symbol has_faucet=exists faucet:item: is_faucet(faucet) and close(faucet,sink)
+    return has_faucet
+
+behavior fill_sink(sink:item, water_source:item):
+    body:
+        achieve has_water(sink)
+
+behavior fill_sink_with_water(sink:item, water_source:item):
+    body:
+        if has_faucet_1(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet,sink)
+            achieve_once is_on(faucet)
+            achieve has_water(sink)
+            achieve_once is_off(faucet)
+        else:
+            fill_sink(sink, water_source)
+
+
+#behaviors_from_library_end
+
+#goal_representation
+ 
+def is_bathroom_sink(sink:item):
+    # Function to check if a sink is located in the bathroom
+    symbol is_bathroom=exists room: item : is_bathroom(room) and inside(sink, room)
+    return is_bathroom
+
+def has_soap(sink:item):
+    # Function to check if soap is in the sink
+    symbol soap_present=exists soap: item : is_soap(soap) and inside(soap, sink)
+    return soap_present
+
+behavior add_soap(sink:item):
+    body:
+        bind soap: item where:
+            is_soap(soap)
+        achieve inside(soap, sink) 
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and is_bathroom_sink(sink)
+        # Select the sink located in the bathroom
+
+        if not has_soap(sink):
+            # Check if the sink already has soap
+            add_soap(sink)
+            # Add soap to the sink if it doesnt already have it
+
+        fill_sink_with_water(sink, sink)
+        # Fill the sink with water to prepare for soapy water
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+ 
+def is_bathroom_sink(sink:item):
+    # Function to check if a sink is located in the bathroom
+    symbol is_bathroom=exists room: item : is_bathroom(room) and inside(sink, room)
+    return is_bathroom
+
+def has_soap(sink:item):
+    # Function to check if soap is in the sink
+    symbol soap_present=exists soap: item : is_soap(soap) and inside(soap, sink)
+    return soap_present
+
+behavior add_soap(sink:item):
+    body:
+        bind soap: item where:
+            is_soap(soap)
+        achieve inside(soap, sink) 
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and is_bathroom_sink(sink)
+        # Select the sink located in the bathroom
+
+        if not has_soap(sink):
+            # Check if the sink already has soap
+            add_soap(sink)
+            # Add soap to the sink if it doesnt already have it
+
+        fill_sink_with_water(sink, sink)
+        # Fill the sink with water to prepare for soapy water
+
+##############################
+From agent.py
+Record from func query_LLM_human in agent.py
+Question: Can you tell me how to prepare a sink of soapy water in the bathroom.
+Answer: Need to replan: No  
+Guidance: Put soap in the sink, then turn on the faucet to fill the sink with water.
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(bathroom_cabinet_40)open_executor(bathroom_cabinet_40)exp(soap_2053, bathroom_cabinet_40)walk_executor(soap_2053)grab_executor(soap_2053)walk_executor(sink_42)putin_executor(soap_2053, sink_42)walk_executor(faucet_43)switchon_executor(faucet_43)switchoff_executor(faucet_43)
+##############################
+From agent.py
+walk_executor(bathroom_cabinet_40)
+Find towel_rack_31. Robot is inside bathroom_1. Robot is close bathroom_cabinet_40. Robot is close wall_12. 
+##############################
+From agent.py
+open_executor(bathroom_cabinet_40)
+Find drawing_176. Robot is inside bathroom_1. Robot is close bathroom_cabinet_40. Robot is close wall_12. 
+##############################
+From agent.py
+exp(soap_2053, bathroom_cabinet_40)
+Failed to find soap_2053 around bathroom_cabinet_40. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(bathroom_counter_41)exp(soap_2053, bathroom_counter_41)walk_executor(soap_2053)grab_executor(soap_2053)walk_executor(sink_42)putin_executor(soap_2053, sink_42)walk_executor(faucet_43)switchon_executor(faucet_43)switchoff_executor(faucet_43)
+##############################
+From agent.py
+walk_executor(bathroom_counter_41)
+Find towel_rack_34. Find towel_rack_32. Robot is inside bathroom_1. Robot is close bathroom_counter_41. Robot is no longer close bathroom_cabinet_40.Robot is no longer close wall_12.
+##############################
+From agent.py
+exp(soap_2053, bathroom_counter_41)
+Failed to find soap_2053 around bathroom_counter_41. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(dresser_108)open_executor(dresser_108)exp(soap_2053, dresser_108)walk_executor(soap_2053)grab_executor(soap_2053)walk_executor(sink_42)putin_executor(soap_2053, sink_42)walk_executor(faucet_43)switchon_executor(faucet_43)switchoff_executor(faucet_43)
+##############################
+From agent.py
+walk_executor(dresser_108)
+Find hanger_109. Find hanger_110. Find hanger_111. Find hanger_112. Find hanger_113. Find hanger_114. Find hanger_115. Find hanger_128. Find hanger_130. Find hanger_132. Find hanger_134. Find hanger_136. Find hanger_138. Find hanger_126. Find hanger_140. Find mat_173. Find hanger_124. Find hanger_141. Find hanger_142. Robot is inside bedroom_67. Robot is close dresser_108. Robot is close hanger_109. Robot is close hanger_110. Robot is close hanger_111. Robot is close hanger_112. Robot is close hanger_113. Robot is close hanger_114. Robot is close hanger_115. Robot is close closetdrawer_116. Robot is close closetdrawer_117. Robot is close closetdrawer_118. Robot is close closetdrawer_119. Robot is close closetdrawer_120. Robot is close closetdrawer_121. Robot is close closetdrawer_122. Robot is no longer inside bathroom_1.Robot is no longer close bathroom_counter_41.
+##############################
