@@ -124,7 +124,6 @@ The following behaviors can be directly invoked in the current sub-task goal rep
 - lie_somewhere(location:item) # Lie at a specific location.
 Important Note: Ensure that all parameters are properly defined before using them in the behaviors.
 
-"""+behavior_from_library_embedding+"""
 ## Available Category Determination:
 """+categories+"""
 For any instance 'x', you can use 'is_y(x)' to determine if 'x' belongs to category 'y'. Categories cannot be operated upon directly; you can only assess the status and relationships of specific instances within a category. If you want to select an item instance that belongs to the category "box", you can use the following syntax:
@@ -525,8 +524,9 @@ Of course, you can also use attributes, states, and other information to more fl
 # Guidance-3:
 The observe(obj:item, question:string) is a powerful but resource-intensive behavior. It allows you to examine an object based on observation, during which you need to specify what information you wish to obtain from the object. Due to the high cost of using observe, the quality of your questions is crucial for improving execution efficiency. Generally speaking, information such as the type of object or its state can be obtained by referring to the methods provided in 'Available Category Determination' and 'Available States', so you usually don't need to invoke the observe behavior for these details. Some situations where observe behavior is necessary include when you want to check what items are inside or on the item you observe. For example, if you want to see what's inside the oven, you can use 'observe(oven, "What's inside the oven?")', or if you want to check what's on the table, you can use 'observe(table, "check items on the table")'. Also, feel free to ask more questions in the observe behavior to get more detailed information. For example, If you want to check what's inside the oven and whether it's on the kitchen counter, you can use 'observe(oven, "What's inside the oven? Is it on the kitchen counter?")'.
 
+"""+behavior_from_library_embedding+"""
+
 ## Output Requirements:
-You need to think step by step to give resonable output. However,
-You can only output content similar to the 'Output' in the 'Example'. Do not include any explanation or any other symbols.
+You need to think step by step to give resonable output. However, you can only output content similar to the 'Output' in the 'Example'. Do not include any explanation or any other symbols.
 """
     return prompt

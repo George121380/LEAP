@@ -6,7 +6,7 @@ sys.path.append('')
 from datetime import datetime
 from experiments.virtualhome.VH_scripts.agent import VHAgent
 from experiments.virtualhome.VH_scripts.agent_LLM import LLM_Agent
-from utils_eval import get_nodes_information,construct_cdl, CrowControllerApplier, load_config, evaluation_task_loader
+from utils_eval import get_nodes_information,construct_cdl, CrowControllerApplier, load_config, evaluation_task_loader, namespace_to_dict
 from env import VH_Env
 from environment import EnvironmentState, EnvironmentGraph
 import random
@@ -24,7 +24,7 @@ from tqdm import tqdm
 INIT_PATH_PO = "experiments/virtualhome/CDLs/init_scene_PO.cdl"
 INIT_PATH_NPO = "experiments/virtualhome/CDLs/init_scene_NPO.cdl"
 DATASET_FOLDER_PATH = 'cdl_dataset/dataset'
-running_mode='debug' #debug or test 
+running_mode='test' #debug or test 
 
 def load_scene(scene_id):
     """
@@ -69,7 +69,7 @@ def run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph):
     evaluator=Evaluator(args,task_path,task_logger,epoch_path)
 
     # Setup agent based on the model type
-    if args.model=='ours':
+    if args.model.type=='ours':
         args.agent_type='Planning'
         agent = VHAgent(
             args=args, 
@@ -81,7 +81,7 @@ def run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph):
         agent.download_behaviors_from_library()
         agent.set_human_helper(Human(init_scene_graph,task_data['Guidance']))
         agent.reset_goal(task_data['Goal'],classes,task_data['Task name'],First_time=True)#ini a GR
-    if args.model=='LLM':
+    if args.model.type=='LLM':
         agent = LLM_Agent(
             args=args,
             filepath=INIT_PATH_PO,
@@ -91,10 +91,11 @@ def run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph):
         agent.set_human_helper(Human(init_scene_graph,task_data['Guidance']))
         agent.reset_goal(task_data['Goal'],task_data['Task name'])#ini a GR
         agent.item_infoto_nl()
-    if args.model=='LLM+P':
+
+    if args.model.type=='LLM+P':
         pass
 
-    if args.model=='CAP':
+    if args.model.type=='CAP':
         args.agent_type='Policy'
         agent = VHAgent(
             args=args, 
@@ -153,7 +154,7 @@ def run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph):
                     task_summary_record(epoch_logger,task_data['Task name'],task_data['Goal'],executed_actions,start_time,1,task_path,agent.exp_helper_query_times)
                 return True
             else:
-                if args.human_check_eventually:
+                if args.human_guidance.human_check_eventually:
                     action="human guided"
                     agent.final_human_check()
                     continue
@@ -178,10 +179,10 @@ def run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph):
 def evaluate_single(args):
     start_time = time.time()
     # print('Start Time: ',start_time)
-    classes,init_scene_graph=load_scene(args.scene_id)
+    classes,init_scene_graph=load_scene(args.scene.id)
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     epoch_logger = setup_epoch_logger(f'log/epoch_{timestamp}',timestamp=timestamp)
-    task_path='cdl_dataset/dataset/Wash_clothes/g1.txt'
+    task_path='/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/cdl_dataset/dataset/Change_TV_channel/g3.txt'
     run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph)
     # test_simulator(init_scene_graph)
     end_time = time.time()
@@ -195,19 +196,19 @@ def evaluate_all(args): # main function
     # Set logger and save configs
     epoch_logger = setup_epoch_logger(f'log/epoch_{timestamp}',timestamp=timestamp)
     with open(f'log/epoch_{timestamp}/args.yaml', 'w') as file:
-        yaml.dump(vars(args), file)
+        yaml.dump(namespace_to_dict(args), file)
     
     files = tqdm(files, desc="Evaluating tasks")
     for task_file in files:
 
         if running_mode=='debug':
-            classes,init_scene_graph=load_scene(args.scene_id)
+            classes,init_scene_graph=load_scene(args.scene.id)
             task_path=os.path.join(DATASET_FOLDER_PATH,task_file)
             Debug=run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph)
             
         if running_mode=='test':
             try:
-                classes,init_scene_graph=load_scene(args.scene_id)
+                classes,init_scene_graph=load_scene(args.scene.id)
                 task_path=os.path.join(DATASET_FOLDER_PATH,task_file)
                 Debug=run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph)
             except Exception as e:
@@ -274,8 +275,8 @@ def test_simulator(init_scene_graph):
         
 if __name__ == '__main__':
     args = load_config("experiments/virtualhome/VH_scripts/config.yaml")
-    evaluate_all(args)
-    # evaluate_single(args)
+    # evaluate_all(args)
+    evaluate_single(args)
     # check_task_define_all(args)
     # check_task_define_single(args)
     # case_study_easy2hard(args)

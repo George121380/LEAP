@@ -3,20 +3,11 @@ from prompt.planning_auto_debug_prompt import planning_not_found_prompt,planning
 from prompt.policy_auto_debug_prompt import policy_not_found_prompt,policy_unknown_prompt,policy_other_prompt
 from concepts.dm.crow.parsers.cdl_parser import TransformationError
 from Interpretation import ask_GPT
-def auto_debug(error_info,original_content,goal_int,goal,additional_information,cat_list,goal_start_line_num,behavior_from_library_names,agent_type):
+def auto_debug(error_info,original_content,goal_int,goal,additional_information,cat_list,goal_start_line_num,behavior_from_library,agent_type):
     print('=' * 80)
     print("Debugging...")
     # print('=' * 80)
     # print("Error information: ",error_info)
-
-    behavior_from_library=''
-    if behavior_from_library_names!=None:
-        behavior_from_library='##Learned Behaviors:\n'
-        behavior_from_library+="Here are some of the skills you've learned, which you can use directly by passing in the corresponding parameters. When the behavior is related to the task, you should prioritize trying these behaviors."
-        for behavior in behavior_from_library_names:
-            if behavior!='':
-                behavior_from_library+="- "+behavior+'\n'
-        behavior_from_library+='Note: you can directly call these behaviors. Do not use achieve, achieve_once, or any other keywords with them.\n'
 
     if "Unknown variable" in error_info:
         error_variable = re.search(r"Unknown variable:\s*(\w+)", error_info)
@@ -51,9 +42,9 @@ def auto_debug(error_info,original_content,goal_int,goal,additional_information,
 
     else:
         if agent_type=='Planning':
-            prompt=planning_other_prompt(goal,cat_list,additional_information,goal_int,error_info)
+            prompt=planning_other_prompt(goal,cat_list,additional_information,goal_int,error_info,behavior_from_library,behavior_from_library)
         elif agent_type=='Policy':
-            prompt=policy_other_prompt(goal,cat_list,additional_information,goal_int,error_info)
+            prompt=policy_other_prompt(goal,cat_list,additional_information,goal_int,error_info,behavior_from_library)
         else:
             raise TransformationError("Unknown agent type.")
         system_prompt="I encountered this error while running the program. Please try to correct my mistake based on the syntax rules I provided."

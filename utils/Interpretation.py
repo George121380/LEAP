@@ -3,14 +3,12 @@ from prompt.ask_GPT import ask_GPT
 from prompt.planning_goal_interpretation_prompt import get_planning_goal_inter_prompt
 from prompt.policy_goal_interpretation_prompt import get_policy_goal_inter_prompt
 
-# from prompt.kitchen_prompt import get_goal_inter_prompt
-# from prompt.kitchen_loopfeedback import loop_refine
 from prompt.exploration_prompt import get_exp_behavior
-# from auto_debugger import exploration_auto_debug
-# from prompt.sub_goal_split_prompt import sub_goal_prompt
 from prompt.sub_goal_split_finer_prompt import sub_goal_prompt
 from prompt.sub_goal_evaluate_prompt import sub_goal_evaluate_prompt
 from prompt.obs_query_prompt import obs_query_prompt
+from prompt.loop_feedback_prompt import loop_feedback_prompt
+
 import sys
 sys.path.append('experiments/virtualhome/VH_scripts')
 import time
@@ -36,15 +34,15 @@ def parse_evaluation(evaluation_text):
     
     return sub_task_completed, next_steps
 
-def goal_interpretation(goal,additional_information,long_horizon_goal,item_list=None,sub_tasks_list=None,behavior_from_library_embedding=None, agent_type='Planning'):
+def goal_interpretation(goal,additional_information,long_horizon_goal,item_list=None,prev_sub_tasks_list=None,behavior_from_library_embedding=None, agent_type='Planning'):
     if ":item" in item_list[0]:
         for item in item_list:
             item=item.replace(":item",'')
     system = "I have a goal described in natural language, and I need it converted into a structured format."
     if agent_type=='Planning':
-        content = get_planning_goal_inter_prompt(goal,item_list,additional_information,long_horizon_goal,sub_tasks_list,behavior_from_library_embedding)
+        content = get_planning_goal_inter_prompt(goal,item_list,additional_information,long_horizon_goal,prev_sub_tasks_list,behavior_from_library_embedding)
     if agent_type=='Policy':
-        content = get_policy_goal_inter_prompt(goal,item_list,additional_information,long_horizon_goal,sub_tasks_list,behavior_from_library_embedding)
+        content = get_policy_goal_inter_prompt(goal,item_list,additional_information,long_horizon_goal,prev_sub_tasks_list,behavior_from_library_embedding)
     start_time=time.time()
     print('=' * 60+ " Goal CDL Generation")
     print(f"When Goal instruction is: {goal}")
@@ -55,11 +53,7 @@ def goal_interpretation(goal,additional_information,long_horizon_goal,item_list=
     return converted_content
 
 def exploration_VH(goal,additional_information,problem_cdl,checked=None):
-    # print('=' * 60)
-    # print(f"Exploration:")
-    # print('=' * 60)
     exp_behavior=get_exp_behavior(goal,additional_information,problem_cdl,checked)
-    # print('=' * 60)
     return exp_behavior
 
 def sub_goal_generater(goal,completed_sub_goal_list,human_guidance):
@@ -119,6 +113,16 @@ def Guidance_helper(question,guidance,task_info):
     print(answer)
     re_decompose=False
     return answer,re_decompose
+
+def refinement_loop_feedback(current_plan,full_goal,prev_sub_goal_list,current_subgoal,previous_action_history,goal_int, add_info, classes, agent_type):
+    system="Imagine you are the owner of the house. You are trying to teach a house robot to finish a task. I will provide you some guidance about how to finish the task. Refer to this guidance and try to answer the robot."
+    print('=' * 60)
+    print("loop feedback:")
+    content=loop_feedback_prompt(current_plan,full_goal,prev_sub_goal_list,current_subgoal,previous_action_history,goal_int, add_info, classes)
+    answer=ask_GPT(system,content)
+    print('=' * 60)
+    print(answer)
+    return answer
 
 if __name__=='__main__':
     goal='Wash my t-shirt by the washing machine'

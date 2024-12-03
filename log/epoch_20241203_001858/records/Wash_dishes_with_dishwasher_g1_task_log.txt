@@ -1,0 +1,644 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Identify the bowls and plates that need washing.', '2. Load the identified bowls and plates into the dishwasher.', '3. Start the dishwasher to wash the bowls and plates.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_bowl_2072_around_sink_231(bowl:item):
+    goal: not unknown(bowl)
+    body:
+        assert is_bowl(bowl)
+        bind sink_instance:item where:
+            is_sink(sink_instance) and id[sink_instance]==231
+        achieve close_char(char,sink_instance)
+        if can_open(sink_instance):
+            achieve_once open(sink_instance)
+            exp(bowl,sink_instance)
+        else:
+            exp(bowl,sink_instance)
+    eff:
+        unknown[bowl]=False
+        close[bowl,sink_instance]=True
+        close[sink_instance,bowl]=True
+    
+
+behavior find_plate_1000_around_dishwasher_1001(plate:item):
+    goal: not unknown(plate)
+    body:
+        assert is_plate(plate)
+        bind dishwasher_instance:item where:
+            is_dishwasher(dishwasher_instance) and id[dishwasher_instance]==1001
+        achieve close_char(char,dishwasher_instance)
+        if can_open(dishwasher_instance):
+            achieve_once open(dishwasher_instance)
+            exp(plate,dishwasher_instance)
+        else:
+            exp(plate,dishwasher_instance)
+    eff:
+        unknown[plate]=False
+        close[plate,dishwasher_instance]=True
+        close[dishwasher_instance,plate]=True
+    
+
+behavior find_bowl_2071_around_sink_231(bowl:item):
+    goal: not unknown(bowl)
+    body:
+        assert is_bowl(bowl)
+        bind sink_instance:item where:
+            is_sink(sink_instance) and id[sink_instance]==231
+        achieve close_char(char,sink_instance)
+        if can_open(sink_instance):
+            achieve_once open(sink_instance)
+            exp(bowl,sink_instance)
+        else:
+            exp(bowl,sink_instance)
+    eff:
+        unknown[bowl]=False
+        close[bowl,sink_instance]=True
+        close[sink_instance,bowl]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def has_bowls_or_plates_need_washing(sink:item):
+    # Function to check if there are bowls or plates in a specified sink that need washing
+    symbol need_washing=exists o: item : (is_bowl(o) or is_plate(o)) and inside(o, sink) and dirty(o)
+    return need_washing
+
+behavior __goal__():
+    body:
+        if exists sink: item : is_sink(sink) and has_bowls_or_plates_need_washing(sink):
+            # If we have already found the sink with bowls or plates that need washing
+            bind sink: item where:
+                is_sink(sink) and has_bowls_or_plates_need_washing(sink)
+            achieve close_char(char, sink)
+            # Move to the sink with bowls or plates that need washing
+
+        else:
+            # Check all sinks in the scene that have not been visited to find bowls or plates needing washing
+            foreach sink: item:
+                if is_sink(sink) and not visited(sink):
+                    observe(sink,"Check is there any bowl or plate that needs washing")
+                    # Observe to find bowls or plates that need washing
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+ 
+def has_bowls_or_plates_need_washing(sink:item):
+    # Function to check if there are bowls or plates in a specified sink that need washing
+    symbol need_washing=exists o: item : (is_bowl(o) or is_plate(o)) and inside(o, sink) and dirty(o)
+    return need_washing
+
+behavior __goal__():
+    body:
+        if exists sink: item : is_sink(sink) and has_bowls_or_plates_need_washing(sink):
+            # If we have already found the sink with bowls or plates that need washing
+            bind sink: item where:
+                is_sink(sink) and has_bowls_or_plates_need_washing(sink)
+            achieve close_char(char, sink)
+            # Move to the sink with bowls or plates that need washing
+
+        else:
+            # Check all sinks in the scene that have not been visited to find bowls or plates needing washing
+            foreach sink: item:
+                if is_sink(sink) and not visited(sink):
+                    observe(sink,"Check is there any bowl or plate that needs washing")
+                    # Observe to find bowls or plates that need washing
+
+##############################
+From agent.py
+Record from func query_LLM_human in agent.py
+Question: Can you tell me how to identify the bowls and plates that need washing.
+Answer: Need to replan: Yes  
+Guidance: Put all the bowls and the plates into the dishwasher.
+
+##############################
+From agent.py
+Record from func query_LLM_human in agent.py
+Question: Can you tell me how to load the identified bowls and plates into the dishwasher.
+Answer: Need to replan: No  
+Guidance: Put all the identified bowls and plates into the dishwasher.
+
+##############################
+From agent.py
+Record from func query_LLM_human in agent.py
+Question: Can you tell me how to start the dishwasher to wash the bowls and plates.
+Answer: Need to replan: No  
+Guidance: Turn on the dishwasher.
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(sink_42)obs(sink_42, Check is there any bowl or plate that needs washing)walk_executor(sink_231)obs(sink_231, Check is there any bowl or plate that needs washing)
+##############################
+From agent.py
+walk_executor(sink_42)
+Find basket_for_clothes_2006. Find towel_rack_34. Find detergent_2084. Find soap_2053. Find cleaning_solution_2073. Find towel_rack_32. Find towel_rack_31. Robot is inside bathroom_1. Robot is close bathroom_counter_41. Robot is close sink_42. 
+##############################
+From evaluation.py
+cdl_dataset/dataset/Wash_dishes_with_dishwasher/g1.txt
+Checking k1
+missed actions: walk_executor(dishwasher_1001);open_executor(dishwasher_1001);walk_executor(bowl_2071);grab_executor(bowl_2071);walk_executor(dishwasher_1001);putin_executor(bowl_2071, dishwasher_1001);walk_executor(bowl_2072);grab_executor(bowl_2072);walk_executor(dishwasher_1001);putin_executor(bowl_2072, dishwasher_1001);walk_executor(plate_1000);grab_executor(plate_1000);walk_executor(dishwasher_1001);putin_executor(plate_1000, dishwasher_1001);
+missed action num: 14
+##############################
+From agent.py
+obs(sink_42, Check is there any bowl or plate that needs washing)
+Get this information:  sink_42 is close to floor_2. sink_42 is close to floor_3. sink_42 is close to detergent_2084. sink_42 is close to soap_2053. sink_42 is close to floor_4. sink_42 is close to bathroom_cabinet_40. sink_42 is close to bathroom_counter_41. sink_42 is close to wall_9. sink_42 is close to faucet_43. sink_42 is close to wall_12. sink_42 is close to basket_for_clothes_2006. sink_42 is close to washing_machine_2007. sink_42 is close to cleaning_solution_2073. sink_42 is close to character_65. sink_42 is inside bathroom_1. sink_42 is inside bathroom_counter_41. soap_2053 is on sink_42. cleaning_solution_2073 is on sink_42. detergent_2084 is on sink_42. sink_42 is DIRTY.
+##############################
+From agent.py
+walk_executor(sink_231)
+Find pot_2069. Find cup_2063. Find knife_2050. Find napkin_2005. Find plate_1000. Find cup_2064. Find cutting_board_2051. Find oil_2079. Find fryingpan_2083. Find tray_296. Find drawing_239. Find soap_2054. Find drawing_238. Find drawing_240. Find drawing_241. Find drawing_242. Find drawing_243. Robot is inside dining_room_201. Robot is close kitchen_counter_230. Robot is close sink_231. Robot is no longer inside bathroom_1.Robot is no longer close bathroom_counter_41.Robot is no longer close sink_42.
+##############################
+From evaluation.py
+cdl_dataset/dataset/Wash_dishes_with_dishwasher/g1.txt
+Checking k1
+missed actions: walk_executor(dishwasher_1001);open_executor(dishwasher_1001);walk_executor(bowl_2071);grab_executor(bowl_2071);walk_executor(dishwasher_1001);putin_executor(bowl_2071, dishwasher_1001);walk_executor(bowl_2072);grab_executor(bowl_2072);walk_executor(dishwasher_1001);putin_executor(bowl_2072, dishwasher_1001);walk_executor(plate_1000);grab_executor(plate_1000);walk_executor(dishwasher_1001);putin_executor(plate_1000, dishwasher_1001);
+missed action num: 14
+##############################
+From agent.py
+obs(sink_231, Check is there any bowl or plate that needs washing)
+Get this information:  plate_1000 is on sink_231. sink_231 is close to soap_2054. sink_231 is close to floor_7. sink_231 is close to wall_11. sink_231 is close to wall_15. sink_231 is close to coffe_maker_290. sink_231 is close to toaster_292. sink_231 is close to toilet_37. sink_231 is close to shower_36. sink_231 is close to microwave_297. sink_231 is close to floor_202. sink_231 is close to floor_203. sink_231 is close to floor_204. sink_231 is close to wall_211. sink_231 is close to wall_212. sink_231 is close to cupboard_229. sink_231 is close to kitchen_counter_230. sink_231 is close to faucet_232. sink_231 is close to plate_1000. sink_231 is close to dishwasher_1001. sink_231 is close to character_65. soap_2054 is on sink_231. sink_231 is inside dining_room_201. sink_231 is inside kitchen_counter_230. sink_231 is DIRTY.
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_bowl_2071_around_sink_231(bowl:item):
+    goal: not unknown(bowl)
+    body:
+        assert is_bowl(bowl)
+        bind sink_instance:item where:
+            is_sink(sink_instance) and id[sink_instance]==231
+        achieve close_char(char,sink_instance)
+        if can_open(sink_instance):
+            achieve_once open(sink_instance)
+            exp(bowl,sink_instance)
+        else:
+            exp(bowl,sink_instance)
+    eff:
+        unknown[bowl]=False
+        close[bowl,sink_instance]=True
+        close[sink_instance,bowl]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior load_dishwasher(o:item, dishwasher:item):
+    body:
+        achieve inside(o, dishwasher)
+
+behavior __goal__():
+    body:
+        bind dishwasher: item where:
+            is_dishwasher(dishwasher)
+        
+        bind sink: item where:
+            is_sink(sink) and id[sink]==231
+        # Select sink with ID 231
+
+        foreach o: item:
+            if (is_bowl(o) or is_plate(o)) and inside(o, sink):
+                load_dishwasher(o, dishwasher)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+behavior load_dishwasher(o:item, dishwasher:item):
+    body:
+        achieve inside(o, dishwasher)
+
+behavior __goal__():
+    body:
+        bind dishwasher: item where:
+            is_dishwasher(dishwasher)
+        
+        bind sink: item where:
+            is_sink(sink) and id[sink]==231
+        # Select sink with ID 231
+
+        foreach o: item:
+            if (is_bowl(o) or is_plate(o)) and inside(o, sink):
+                load_dishwasher(o, dishwasher)
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_bowl_2072_around_sink_231(bowl:item):
+    goal: not unknown(bowl)
+    body:
+        assert is_bowl(bowl)
+        bind sink_instance:item where:
+            is_sink(sink_instance) and id[sink_instance]==231
+        achieve close_char(char,sink_instance)
+        if can_open(sink_instance):
+            achieve_once open(sink_instance)
+            exp(bowl,sink_instance)
+        else:
+            exp(bowl,sink_instance)
+    eff:
+        unknown[bowl]=False
+        close[bowl,sink_instance]=True
+        close[sink_instance,bowl]=True
+    
+
+behavior find_bowl_2071_around_sink_231(bowl:item):
+    goal: not unknown(bowl)
+    body:
+        assert is_bowl(bowl)
+        bind sink_instance:item where:
+            is_sink(sink_instance) and id[sink_instance]==231
+        achieve close_char(char,sink_instance)
+        if can_open(sink_instance):
+            achieve_once open(sink_instance)
+            exp(bowl,sink_instance)
+        else:
+            exp(bowl,sink_instance)
+    eff:
+        unknown[bowl]=False
+        close[bowl,sink_instance]=True
+        close[sink_instance,bowl]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior load_dishwasher(o:item, dishwasher:item):
+    body:
+        achieve inside(o, dishwasher)
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and (visited(sink) and id[sink]==231)
+        bind dishwasher: item where:
+            is_dishwasher(dishwasher)
+        
+        foreach o: item:
+            if is_bowl(o) or is_plate(o) and inside(o, sink):
+                load_dishwasher(o, dishwasher)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+behavior load_dishwasher(o:item, dishwasher:item):
+    body:
+        achieve inside(o, dishwasher)
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and (visited(sink) and id[sink]==231)
+        bind dishwasher: item where:
+            is_dishwasher(dishwasher)
+        
+        foreach o: item:
+            if is_bowl(o) or is_plate(o) and inside(o, sink):
+                load_dishwasher(o, dishwasher)
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_bowl_2071_around_sink_231(bowl:item):
+    goal: not unknown(bowl)
+    body:
+        assert is_bowl(bowl)
+        bind sink_instance:item where:
+            is_sink(sink_instance) and id[sink_instance]==231
+        achieve close_char(char,sink_instance)
+        if can_open(sink_instance):
+            achieve_once open(sink_instance)
+            exp(bowl,sink_instance)
+        else:
+            exp(bowl,sink_instance)
+    eff:
+        unknown[bowl]=False
+        close[bowl,sink_instance]=True
+        close[sink_instance,bowl]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior load_dishwasher(o:item, dishwasher:item):
+    body:
+        achieve inside(o, dishwasher)
+        # Place the item inside the dishwasher
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and id[sink]==231
+        # Select sink with ID 231
+        
+        bind dishwasher: item where:
+            is_dishwasher(dishwasher)
+        # Select a dishwasher
+
+        foreach o: item:
+        # Load all identified bowls and plates into the dishwasher
+            if is_bowl(o) or is_plate(o) and inside(o, sink):
+                load_dishwasher(o, dishwasher)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+behavior load_dishwasher(o:item, dishwasher:item):
+    body:
+        achieve inside(o, dishwasher)
+        # Place the item inside the dishwasher
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and id[sink]==231
+        # Select sink with ID 231
+        
+        bind dishwasher: item where:
+            is_dishwasher(dishwasher)
+        # Select a dishwasher
+
+        foreach o: item:
+        # Load all identified bowls and plates into the dishwasher
+            if is_bowl(o) or is_plate(o) and inside(o, sink):
+                load_dishwasher(o, dishwasher)
+
+##############################
+From agent.py-> find a plan in act()
+exp(bowl_2071, sink_231)walk_executor(dishwasher_1001)open_executor(dishwasher_1001)walk_executor(bowl_2071)grab_executor(bowl_2071)walk_executor(dishwasher_1001)putin_executor(bowl_2071, dishwasher_1001)walk_executor(sink_231)exp(bowl_2072, sink_231)walk_executor(bowl_2072)grab_executor(bowl_2072)walk_executor(dishwasher_1001)putin_executor(bowl_2072, dishwasher_1001)
+##############################
+From agent.py
+exp(bowl_2071, sink_231)
+Failed to find bowl_2071 around sink_231. 
+##############################
+From agent.py-> find a plan in act()
+exp(bowl_2071, sink_231)walk_executor(dishwasher_1001)open_executor(dishwasher_1001)walk_executor(bowl_2071)grab_executor(bowl_2071)walk_executor(dishwasher_1001)putin_executor(bowl_2071, dishwasher_1001)walk_executor(sink_231)exp(bowl_2072, sink_231)walk_executor(bowl_2072)grab_executor(bowl_2072)walk_executor(dishwasher_1001)putin_executor(bowl_2072, dishwasher_1001)
+##############################
+From agent.py
+exp(bowl_2071, sink_231)
+Failed to find bowl_2071 around sink_231. 
+##############################
+From agent.py-> find a plan in act()
+exp(bowl_2071, sink_231)walk_executor(dishwasher_1001)open_executor(dishwasher_1001)walk_executor(bowl_2071)grab_executor(bowl_2071)walk_executor(dishwasher_1001)putin_executor(bowl_2071, dishwasher_1001)walk_executor(sink_231)exp(bowl_2072, sink_231)walk_executor(bowl_2072)grab_executor(bowl_2072)walk_executor(dishwasher_1001)putin_executor(bowl_2072, dishwasher_1001)
+##############################
+From agent.py
+exp(bowl_2071, sink_231)
+Failed to find bowl_2071 around sink_231. 
+##############################
+From agent.py-> find a plan in act()
+exp(bowl_2071, sink_231)walk_executor(dishwasher_1001)open_executor(dishwasher_1001)walk_executor(bowl_2071)grab_executor(bowl_2071)walk_executor(dishwasher_1001)putin_executor(bowl_2071, dishwasher_1001)walk_executor(sink_231)exp(bowl_2072, sink_231)walk_executor(bowl_2072)grab_executor(bowl_2072)walk_executor(dishwasher_1001)putin_executor(bowl_2072, dishwasher_1001)
+##############################
+From agent.py
+exp(bowl_2071, sink_231)
+Failed to find bowl_2071 around sink_231. 
+##############################
+From agent.py-> find a plan in act()
+exp(bowl_2071, sink_231)walk_executor(dishwasher_1001)open_executor(dishwasher_1001)walk_executor(bowl_2071)grab_executor(bowl_2071)walk_executor(dishwasher_1001)putin_executor(bowl_2071, dishwasher_1001)walk_executor(sink_231)exp(bowl_2072, sink_231)walk_executor(bowl_2072)grab_executor(bowl_2072)walk_executor(dishwasher_1001)putin_executor(bowl_2072, dishwasher_1001)
+##############################
+From agent.py
+exp(bowl_2071, sink_231)
+Failed to find bowl_2071 around sink_231. 
+##############################
+From agent.py-> find a plan in act()
+exp(bowl_2071, sink_231)walk_executor(dishwasher_1001)open_executor(dishwasher_1001)walk_executor(bowl_2071)grab_executor(bowl_2071)walk_executor(dishwasher_1001)putin_executor(bowl_2071, dishwasher_1001)walk_executor(sink_231)exp(bowl_2072, sink_231)walk_executor(bowl_2072)grab_executor(bowl_2072)walk_executor(dishwasher_1001)putin_executor(bowl_2072, dishwasher_1001)
+##############################
+From agent.py
+Record from func query_LLM_human in agent.py
+Question: Can you help me to find bowl_2071 ?
+Answer: Locate dining_room_201. Inside, find table_226. Bowl_2071 is on top of table_226.
+
+##############################
+From agent.py
+Human Instruction: Locate dining_room_201. Inside, find table_226. Bowl_2071 is on top of table_226.
+
+The actions you have taken:
+Action 1: Walk to sink_42.
+Action 2: Observe around sink_42 with the question of Check is there any bowl or plate that needs washing.
+Action 3: Walk to sink_231.
+Action 4: Observe around sink_231 with the question of Check is there any bowl or plate that needs washing.
+Action 5: look for bowl_2071 around sink_231.
+Action 6: look for bowl_2071 around sink_231.
+Action 7: look for bowl_2071 around sink_231.
+Action 8: look for bowl_2071 around sink_231.
+Action 9: look for bowl_2071 around sink_231.
+
+##############################
+From agent.py
+exp(bowl_2071, sink_231)
+Failed to find bowl_2071 around sink_231. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(table_226)exp(bowl_2071, table_226)walk_executor(dishwasher_1001)open_executor(dishwasher_1001)walk_executor(bowl_2071)grab_executor(bowl_2071)walk_executor(dishwasher_1001)putin_executor(bowl_2071, dishwasher_1001)walk_executor(table_226)exp(bowl_2072, table_226)walk_executor(bowl_2072)grab_executor(bowl_2072)walk_executor(dishwasher_1001)putin_executor(bowl_2072, dishwasher_1001)
+##############################
+From agent.py
+walk_executor(table_226)
+Find coffee_filter_2000. Find bowl_2071. Find drawing_2003. Find bowl_2072. Find mat_236. Find fork_2080. Find fork_2081. Find mat_237. Robot is inside dining_room_201. Robot is close table_226. Robot is no longer close kitchen_counter_230.Robot is no longer close sink_231.
+##############################
+From evaluation.py
+cdl_dataset/dataset/Wash_dishes_with_dishwasher/g1.txt
+Checking k1
+missed actions: walk_executor(dishwasher_1001);open_executor(dishwasher_1001);walk_executor(bowl_2071);grab_executor(bowl_2071);walk_executor(dishwasher_1001);putin_executor(bowl_2071, dishwasher_1001);walk_executor(bowl_2072);grab_executor(bowl_2072);walk_executor(dishwasher_1001);putin_executor(bowl_2072, dishwasher_1001);walk_executor(plate_1000);grab_executor(plate_1000);walk_executor(dishwasher_1001);putin_executor(plate_1000, dishwasher_1001);
+missed action num: 14
+##############################
+From agent.py
+exp(bowl_2071, table_226)
+Find bowl_2071. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(dishwasher_1001)open_executor(dishwasher_1001)walk_executor(bowl_2071)grab_executor(bowl_2071)walk_executor(dishwasher_1001)putin_executor(bowl_2071, dishwasher_1001)walk_executor(bowl_2072)grab_executor(bowl_2072)walk_executor(dishwasher_1001)putin_executor(bowl_2072, dishwasher_1001)
+##############################
+From agent.py
+walk_executor(dishwasher_1001)
+Robot is inside dining_room_201. Robot is close dishwasher_1001. Robot is no longer close table_226.
+##############################
+From evaluation.py
+cdl_dataset/dataset/Wash_dishes_with_dishwasher/g1.txt
+Checking k1
+missed actions: open_executor(dishwasher_1001);walk_executor(bowl_2071);grab_executor(bowl_2071);walk_executor(dishwasher_1001);putin_executor(bowl_2071, dishwasher_1001);walk_executor(bowl_2072);grab_executor(bowl_2072);walk_executor(dishwasher_1001);putin_executor(bowl_2072, dishwasher_1001);walk_executor(plate_1000);grab_executor(plate_1000);walk_executor(dishwasher_1001);putin_executor(plate_1000, dishwasher_1001);
+missed action num: 13
+##############################
+From agent.py
+open_executor(dishwasher_1001)
+Robot is inside dining_room_201. Robot is close dishwasher_1001. 
+##############################
+From evaluation.py
+cdl_dataset/dataset/Wash_dishes_with_dishwasher/g1.txt
+Checking k1
+missed actions: walk_executor(bowl_2071);grab_executor(bowl_2071);walk_executor(dishwasher_1001);putin_executor(bowl_2071, dishwasher_1001);walk_executor(bowl_2072);grab_executor(bowl_2072);walk_executor(dishwasher_1001);putin_executor(bowl_2072, dishwasher_1001);walk_executor(plate_1000);grab_executor(plate_1000);walk_executor(dishwasher_1001);putin_executor(plate_1000, dishwasher_1001);
+missed action num: 12
+##############################
+From agent.py
+walk_executor(bowl_2071)
+Robot is inside dining_room_201. Robot is close table_226. Robot is close bowl_2071. Robot is no longer close dishwasher_1001.
+##############################
+From evaluation.py
+cdl_dataset/dataset/Wash_dishes_with_dishwasher/g1.txt
+Checking k1
+missed actions: grab_executor(bowl_2071);walk_executor(dishwasher_1001);putin_executor(bowl_2071, dishwasher_1001);walk_executor(bowl_2072);grab_executor(bowl_2072);walk_executor(dishwasher_1001);putin_executor(bowl_2072, dishwasher_1001);walk_executor(plate_1000);grab_executor(plate_1000);walk_executor(dishwasher_1001);putin_executor(plate_1000, dishwasher_1001);
+missed action num: 11
+##############################
+From agent.py
+grab_executor(bowl_2071)
+Robot is inside dining_room_201. Robot is close table_226. Robot is close bowl_2071. Grabbing bowl_2071 by right hand. 
+##############################
+From evaluation.py
+cdl_dataset/dataset/Wash_dishes_with_dishwasher/g1.txt
+Checking k1
+missed actions: walk_executor(dishwasher_1001);putin_executor(bowl_2071, dishwasher_1001);walk_executor(bowl_2072);grab_executor(bowl_2072);walk_executor(dishwasher_1001);putin_executor(bowl_2072, dishwasher_1001);walk_executor(plate_1000);grab_executor(plate_1000);walk_executor(dishwasher_1001);putin_executor(plate_1000, dishwasher_1001);
+missed action num: 10
+##############################
+From agent.py
+walk_executor(dishwasher_1001)
+Robot is inside dining_room_201. Robot is close bowl_2071. Robot is close dishwasher_1001. Robot is no longer close table_226.
+##############################
+From evaluation.py
+cdl_dataset/dataset/Wash_dishes_with_dishwasher/g1.txt
+Checking k1
+missed actions: putin_executor(bowl_2071, dishwasher_1001);walk_executor(bowl_2072);grab_executor(bowl_2072);walk_executor(dishwasher_1001);putin_executor(bowl_2072, dishwasher_1001);walk_executor(plate_1000);grab_executor(plate_1000);walk_executor(dishwasher_1001);putin_executor(plate_1000, dishwasher_1001);
+missed action num: 9
+##############################
+From agent.py
+putin_executor(bowl_2071, dishwasher_1001)
+Robot is inside dining_room_201. Robot is close bowl_2071. Robot is close dishwasher_1001. bowl_2071 released by right hand. 
+##############################
+From evaluation.py
+cdl_dataset/dataset/Wash_dishes_with_dishwasher/g1.txt
+Checking k1
+missed actions: walk_executor(bowl_2072);grab_executor(bowl_2072);walk_executor(dishwasher_1001);putin_executor(bowl_2072, dishwasher_1001);walk_executor(plate_1000);grab_executor(plate_1000);walk_executor(dishwasher_1001);putin_executor(plate_1000, dishwasher_1001);
+missed action num: 8
+##############################
+From agent.py
+walk_executor(bowl_2072)
+Robot is inside dining_room_201. Robot is close bowl_2072. Robot is close table_226. Robot is no longer close dishwasher_1001.Robot is no longer close bowl_2071.
+##############################
+From evaluation.py
+cdl_dataset/dataset/Wash_dishes_with_dishwasher/g1.txt
+Checking k1
+missed actions: grab_executor(bowl_2072);walk_executor(dishwasher_1001);putin_executor(bowl_2072, dishwasher_1001);walk_executor(plate_1000);grab_executor(plate_1000);walk_executor(dishwasher_1001);putin_executor(plate_1000, dishwasher_1001);
+missed action num: 7
+##############################
+From agent.py
+grab_executor(bowl_2072)
+Robot is inside dining_room_201. Robot is close bowl_2072. Robot is close table_226. Grabbing bowl_2072 by right hand. 
+##############################
+From evaluation.py
+cdl_dataset/dataset/Wash_dishes_with_dishwasher/g1.txt
+Checking k1
+missed actions: walk_executor(dishwasher_1001);putin_executor(bowl_2072, dishwasher_1001);walk_executor(plate_1000);grab_executor(plate_1000);walk_executor(dishwasher_1001);putin_executor(plate_1000, dishwasher_1001);
+missed action num: 6
+##############################
+From agent.py
+walk_executor(dishwasher_1001)
+Robot is inside dining_room_201. Robot is close bowl_2072. Robot is close dishwasher_1001. Robot is close bowl_2071. Robot is no longer close table_226.
+##############################
+From evaluation.py
+cdl_dataset/dataset/Wash_dishes_with_dishwasher/g1.txt
+Checking k1
+missed actions: putin_executor(bowl_2072, dishwasher_1001);walk_executor(plate_1000);grab_executor(plate_1000);walk_executor(dishwasher_1001);putin_executor(plate_1000, dishwasher_1001);
+missed action num: 5
+##############################
+From agent.py
+putin_executor(bowl_2072, dishwasher_1001)
+Robot is inside dining_room_201. Robot is close bowl_2072. Robot is close dishwasher_1001. Robot is close bowl_2071. bowl_2072 released by right hand. 
+##############################
+From evaluation.py
+cdl_dataset/dataset/Wash_dishes_with_dishwasher/g1.txt
+Checking k1
+missed actions: walk_executor(plate_1000);grab_executor(plate_1000);walk_executor(dishwasher_1001);putin_executor(plate_1000, dishwasher_1001);
+missed action num: 4
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior start_dishwasher(dishwasher:item):
+    body:
+        achieve closed(dishwasher)
+        achieve is_on(dishwasher)
+
+behavior __goal__():
+    body:
+        bind dishwasher: item where:
+            is_dishwasher(dishwasher) and id[dishwasher]==1001
+        start_dishwasher(dishwasher)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+behavior start_dishwasher(dishwasher:item):
+    body:
+        achieve closed(dishwasher)
+        achieve is_on(dishwasher)
+
+behavior __goal__():
+    body:
+        bind dishwasher: item where:
+            is_dishwasher(dishwasher) and id[dishwasher]==1001
+        start_dishwasher(dishwasher)
+
+##############################
+From agent.py-> find a plan in act()
+close_executor(dishwasher_1001)switchon_executor(dishwasher_1001)
+##############################
+From agent.py
+close_executor(dishwasher_1001)
+Robot is inside dining_room_201. Robot is close bowl_2072. Robot is close dishwasher_1001. Robot is close bowl_2071. 
+##############################
+From evaluation.py
+cdl_dataset/dataset/Wash_dishes_with_dishwasher/g1.txt
+Checking k1
+missed actions: open_executor(dishwasher_1001);walk_executor(plate_1000);grab_executor(plate_1000);walk_executor(dishwasher_1001);putin_executor(plate_1000, dishwasher_1001);
+missed action num: 5
+##############################
+From agent.py
+switchon_executor(dishwasher_1001)
+Robot is inside dining_room_201. Robot is close bowl_2072. Robot is close dishwasher_1001. Robot is close bowl_2071. 
+##############################
+From evaluation.py
+cdl_dataset/dataset/Wash_dishes_with_dishwasher/g1.txt
+Checking k1
+missed actions: switchoff_executor(dishwasher_1001);open_executor(dishwasher_1001);walk_executor(plate_1000);grab_executor(plate_1000);walk_executor(dishwasher_1001);putin_executor(plate_1000, dishwasher_1001);
+missed action num: 6
+##############################
+From evaluation.py
+cdl_dataset/dataset/Wash_dishes_with_dishwasher/g1.txt
+Checking k1
+missed actions: switchoff_executor(dishwasher_1001);open_executor(dishwasher_1001);walk_executor(plate_1000);grab_executor(plate_1000);walk_executor(dishwasher_1001);putin_executor(plate_1000, dishwasher_1001);
+missed action num: 6
+##############################
+From evaluation.py
+cdl_dataset/dataset/Wash_dishes_with_dishwasher/g1.txt
+Checking k1
+missed actions: switchoff_executor(dishwasher_1001);open_executor(dishwasher_1001);walk_executor(plate_1000);grab_executor(plate_1000);walk_executor(dishwasher_1001);putin_executor(plate_1000, dishwasher_1001);
+missed action num: 6
+##############################
+From evaluation.py
+cdl_dataset/dataset/Wash_dishes_with_dishwasher/g1.txt
+Checking k2
+missed actions: 
+missed action num: 0
+##############################

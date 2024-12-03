@@ -1,6 +1,7 @@
 import random
 import sys
 import openai as OpenAI
+import time
 import re
 import numpy as np
 sys.path.append('/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home')
@@ -45,25 +46,38 @@ def parse_file(file_path):
     bind_key = None
     name2id = {}
     checked = {}
-    id=1
-    goal_representation=''
+    id = 1
+    goal_representation = ''
+    
     with open(file_path, 'r') as file:
         section = None
+        strip_flag = False
         for line in file:
-            line = line.strip()
+            if section == 'goal_representation':
+                strip_flag = True
+            
+            elif section != 'goal_representation':
+                line = line.strip()
+            
             if line.startswith('#object_end'):
                 section = None
             elif line.startswith('#categories_end'):
                 section = None
             elif line.startswith('#'):
-                section = line[1:]
+                if line.startswith('#objects'):
+                    section = 'objects'
+                elif line.startswith('#categories'):
+                    section = 'categories'
+                elif line.startswith('#goal_representation'):
+                    section = 'goal_representation'
                 continue
+            
             elif section == 'objects':
                 parts = line.split(':')
                 if len(parts) == 2:
                     objects.append(parts[0].strip())
-                    name2id[parts[0].strip()]=id
-                    id+=1
+                    name2id[parts[0].strip()] = id
+                    id += 1
             elif section == 'categories':
                 parts = line.split('[')
                 if len(parts) == 2:
@@ -73,30 +87,34 @@ def parse_file(file_path):
                     if attr not in categories:
                         categories[attr] = set()
                     categories[attr].add(obj)
-            elif line.startswith('known['):
-                obj = line.split('[')[1].split(']')[0]
-                known_objects.add(obj)
-            elif line.startswith('unknown['):
+
+            if line.startswith('unknown['):
                 obj = line.split('[')[1].split(']')[0]
                 unknown_objects.add(obj)
-            elif line.startswith('checked['):
+
+            if line.startswith('checked['):
                 obj1, obj2 = line.split('[')[1].split(']')[0].split(',')
                 if obj1 not in checked:
-                    checked[obj1] = [False]*(len(objects)+1)
+                    checked[obj1] = [False] * (len(objects) + 1)
                 checked[obj1][name2id[obj2]] = True
+
+            elif section == 'goal_representation':
+                goal_representation += line
+
+            if strip_flag:
+                line = line.strip()
                 
-            elif line.startswith('bind '):
+            if line.startswith('bind '):
                 bind_key = line.split()[1].split(':')[0]
-            elif bind_key and line.startswith('is_'):
+            if bind_key and line.startswith('is_'):
                 bind_value = line.split('(')[0].strip()
                 binds[bind_key] = bind_value
                 bind_key = None
-            elif section == 'goal_representation':
-                goal_representation+=line
-                
-        known_objects = set(objects) - unknown_objects
+            
+    known_objects = set(objects) - unknown_objects
     
-    return objects, categories, known_objects, checked, binds, name2id,unknown_objects,goal_representation
+    return objects, categories, known_objects, unknown_objects, binds, name2id, checked, goal_representation
+
 
 def find_unknown_attributes(categories, known_objects, binds):
     unknown_attributes = set()
@@ -149,13 +167,19 @@ def random_select_target(categories,unknown_cats,checked,objects,name2id,known_o
     return target_objs,posible_locations
 
 def get_exp_behavior(goal, additional_information, problem_cdl,checked=None):
-    objects, categories, known_objects, _, binds,name2id,unknown_objects,goal_representation = parse_file(problem_cdl)
+    objects, categories, known_objects, unknown_objects, binds, name2id, checked, goal_representation = parse_file(problem_cdl)
     # unknown_attributes_needed = find_unknown_attributes(categories, known_objects, binds)
     unknown_attributes_needed = find_all_unknown(categories, unknown_objects)
     if len(unknown_attributes_needed)==0:
         return ''
+    #debug
+    t1 = time.time()
     unknown_attributes_needed = choose_relative_items(goal, unknown_attributes_needed, additional_information,goal_representation)
+    t2 = time.time()
+    print(f"Time for choose_relative_items:{t2-t1:.2f}s")
     target_objs,locations=random_select_target(categories,unknown_attributes_needed,checked,objects,name2id,known_objects)
+    t3 = time.time()
+    print(f"Time for random_select_target:{t3-t2:.2f}s")
     exp_behavior=get_exploration_prompt_template(locations,unknown_attributes_needed,goal,additional_information)
     return exp_behavior
 

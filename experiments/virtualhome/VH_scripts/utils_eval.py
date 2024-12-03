@@ -430,14 +430,46 @@ class CrowControllerApplier:
         return f"{self.name}({args_str})"
     
 
+class ConfigNamespace(SimpleNamespace):
+    def __getattr__(self, name):
+        if "." in name:
+            parts = name.split(".")
+            obj = self
+            for part in parts:
+                obj = super(ConfigNamespace, obj).__getattribute__(part)
+            return obj
+        return super().__getattr__(name)
+
 def load_config(config_file="config.yaml"):
     """
-    Load config.yaml file and return a SimpleNamespace object.
+    Load config.yaml file and return a ConfigNamespace object,
+    allowing access with dot notation, e.g., scene.id instead of scene['id'].
     """
     with open(config_file, "r") as file:
         config_dict = yaml.safe_load(file)
-    config = SimpleNamespace(**config_dict)
+    
+    def dict_to_namespace(d):
+        """
+        Recursively convert dictionaries to ConfigNamespace.
+        """
+        if isinstance(d, dict):
+            return ConfigNamespace(**{k: dict_to_namespace(v) for k, v in d.items()})
+        return d
+
+    config = dict_to_namespace(config_dict)
     return config
+
+def namespace_to_dict(namespace):
+    """
+    Recursively convert ConfigNamespace or SimpleNamespace objects to dictionaries.
+    """
+    if isinstance(namespace, SimpleNamespace):
+        return {key: namespace_to_dict(value) for key, value in vars(namespace).items()}
+    elif isinstance(namespace, dict):
+        return {key: namespace_to_dict(value) for key, value in namespace.items()}
+    elif isinstance(namespace, list):
+        return [namespace_to_dict(item) for item in namespace]
+    return namespace  # For other types, return as is
 
 def evaluation_task_loader(dataset_folder_path):
     """

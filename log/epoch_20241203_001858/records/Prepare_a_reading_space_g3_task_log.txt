@@ -1,0 +1,57 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Find the book.', '2. Put the book on the coffee table in the home office.', '3. Open the window in the home office.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_book_2067_around_bookshelf_101(book:item):
+    goal: not unknown(book)
+    body:
+        assert is_book(book)
+        bind bookshelf_instance:item where:
+            is_bookshelf(bookshelf_instance) and id[bookshelf_instance]==101
+        achieve close_char(char,bookshelf_instance)
+        if can_open(bookshelf_instance):
+            achieve_once open(bookshelf_instance)
+            exp(book,bookshelf_instance)
+        else:
+            exp(book,bookshelf_instance)
+    eff:
+        unknown[book]=False
+        close[book,bookshelf_instance]=True
+        close[bookshelf_instance,book]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_book_on_coffee_table(book: item, coffee_table: item):
+    # Define a function to check if the book is on the coffee table in the home office
+    symbol is_on_coffee_table = is_book(book) and on(book, coffee_table)
+    return is_on_coffee_table
+
+behavior find_book_and_put_on_coffee_table(book: item, coffee_table: item):
+    body:
+        achieve on(book, coffee_table)
+        # Achieve the state where the book is placed on the coffee table
+
+behavior __goal__():
+    body:
+        bind book: item where:
+            is_book(book)
+        # Select the book to find and put on the coffee table
+
+        bind coffee_table: item where:
+            is_coffee_table(coffee_table) and inside(coffee_table, home_office)
+        # Select the coffee table thats located in the home office
+
+        if not is_book_on_coffee_table(book, coffee_table):
+            find_book_and_put_on_coffee_table(book, coffee_table)
+            # If the book is not already on the coffee table, perform the behavior to place it there
+
+#goal_representation_end
+
+##############################

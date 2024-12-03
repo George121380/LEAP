@@ -72,7 +72,7 @@ def plan(problem, planning=True):
     return table
 
 if __name__ == '__main__':
-    goal='experiments/virtualhome/toy_examples/toy_problem.cdl'
+    goal='utils/cdl_case_study.cdl'
     print('Planning:')
     goal_solver(goal, planning=True)
     print('-' * 60)

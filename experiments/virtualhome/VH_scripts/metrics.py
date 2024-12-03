@@ -5,6 +5,47 @@ sys.path.append('cdl_dataset/scripts')
 from logic_parser import parse_logic_from_file_path
 import json
 import os
+import matplotlib.pyplot as plt
+
+def calculate_moving_average(success_rate_dict, window_size):
+    """
+    计算成功率的滑动平均值。
+
+    Args:
+    - success_rate_dict (dict): 任务路径到成功率的映射。
+    - window_size (int): 滑动窗口的大小。
+
+    Returns:
+    - list: 滑动平均值的列表。
+    """
+    task_paths = sorted(success_rate_dict.keys())
+    success_rates = [success_rate_dict[task_path] for task_path in task_paths]
+    moving_averages = []
+
+    for i in range(len(success_rates) - window_size + 1):
+        window = success_rates[i:i + window_size]
+        moving_average = sum(window) / window_size
+        moving_averages.append(moving_average)
+
+    return moving_averages, task_paths[window_size - 1:]
+
+def plot_moving_average(moving_averages, output_path):
+    """
+    绘制滑动平均值曲线并保存，横轴仅标注任务编号。
+
+    Args:
+    - moving_averages (list): 滑动平均值的列表。
+    - output_path (str): 图像保存路径。
+    """
+    plt.figure(figsize=(10, 6))
+    plt.plot(range(len(moving_averages)), moving_averages, marker='o')
+    plt.xlabel('Task Number')
+    plt.ylabel('Moving Average Success Rate')
+    plt.title('Moving Average of Success Rate')
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig(output_path)
+    plt.close()
 
 
 def find_csv_files(root_dir):
@@ -41,11 +82,11 @@ def parse_completion_rates(csv_file_path):
     result_list = []
 
     for index, row in df.iterrows():
-        completion_rate = row['LLM Answer']
-        debug_result = row['Debug Result']
-        end_report = row['Goal Representation']
+        completion_rate = row['Success Rate']
+        debug_result = row['Content']
+        end_report = row['Task Category']
 
-        task_path = row['Plan']
+        task_path = row['Task Path']
 
         if completion_rate == '1':
             result_dict = {
@@ -231,20 +272,27 @@ def save_to_csv(dataframe, output_path):
 
 if __name__ == '__main__':
     # methods_experiments = find_csv_files('baseline_result')
-    methods_experiments = find_csv_files('Nov_test_result')
+    methods_experiments = find_csv_files('/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/log/epoch_20241203_001858')
 
 
     methods_experiments_results = {}
 
-    for experiments in methods_experiments:
+    window_size = 15
 
+    for experiments in methods_experiments:
         method_results = []
         print(f'正在处理 {experiments} 方法的实验结果...')
-        exp_name, csv_file_path=experiments
+        exp_name, csv_file_path = experiments
         result_list = parse_completion_rates(csv_file_path)
         avg_success_rate, success_rate_dict = calculation(result_list)
         method_results.append((exp_name, success_rate_dict))
         methods_experiments_results[experiments] = method_results
+
+        # 计算滑动平均并绘制曲线
+        moving_averages, task_labels = calculate_moving_average(success_rate_dict, window_size)
+        plot_output_path = f'baseline_result/{exp_name}_moving_average_plot.png'
+        plot_moving_average(moving_averages, plot_output_path)
+        print(f'{exp_name} 的滑动平均值图表已保存到 {plot_output_path}')
 
     # 汇总表格1：包含所有实验结果
     aggregated_df = aggregate_success_rates_per_task(methods_experiments_results)

@@ -136,7 +136,7 @@ class Evaluator:
 
     def load_scene(self)->None:
         # scene_path='cdl_dataset/Scene.json'
-        scene_path=f'cdl_dataset/scenes/Scene_{self.args.scene_id}.json'
+        scene_path=f'cdl_dataset/scenes/Scene_{self.args.scene.id}.json'
 
         with open(scene_path) as f:
             scene=json.load(f)
@@ -728,7 +728,7 @@ class Evaluator:
         for action in plans[0]:
             left_actions+=str(action)+';'
         print(key_state," missed actions:",left_actions)
-        self.logger.info("From evaluation.py\n"+self.task_file_path,key_state+f"\nmissed actions: {left_actions}"+f'\nmissed action num: {len(plans[0])}')
+        self.logger.info("From evaluation.py\n"+self.task_file_path+f"\nChecking {key_state}\n"+f"missed actions: {left_actions}"+f'\nmissed action num: {len(plans[0])}')
 
         # print("missed actions:",plans[0])
         return plans[0]

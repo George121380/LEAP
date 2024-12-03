@@ -1,5 +1,5 @@
 def choose_relative_items_prompt(goal,unknown=None,additional_information=None,goal_representation=None):
-    if additional_information==None:
+    if additional_information==None or len(additional_information)==0:
         additional_information="None"
     categories=""
     num=0
@@ -10,7 +10,7 @@ def choose_relative_items_prompt(goal,unknown=None,additional_information=None,g
 The goal is: """+goal+""".
 The additional information is: """+additional_information+"""
 My goal representation is: """+goal_representation +"""
-The unknown categories are: """+categories+"""
+The unknown categories are: \n"""+categories+"""
 ## Task Instructions:
 I have a goal that needs to be accomplished, and I have provided some additional information to support this goal. To achieve the goal, I have proposed a goal representation. By parsing this goal representation, I can obtain the sequence of actions needed to complete the goal. Currently, there are some objects in the environment whose locations are unknown to me. I need you to use common sense, based on my goal, to help me determine which of these objects might be relevant to my task, and then help me select these objects and return the corresponding object numbers.
 

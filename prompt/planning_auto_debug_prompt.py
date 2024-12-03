@@ -911,7 +911,6 @@ The observe(obj:item, question:string) is a powerful but resource-intensive beha
 Try to avoid using the 'inhand(x:item)' state. In most cases, the program will automatically manage the 'inhand' operations. If you define 'inhand' manually, it can easily lead to a situation where the agent is holding too many items, causing the program to crash. There is generally only one situation where you need to declare the 'inhand' operation: when you need to hold certain items to complete a specific task. For example, when cleaning a mirror with a towel, you need to use 'achieve_once inhand(towel)'. Other than this, please avoid defining the 'inhand' state. In some cases, the task information may not clearly specify where certain items should be placed, such as in "gathering the food." In these cases, use your common sense to place the food in an appropriate location, like achieve 'on(food, kitchen_counter)', to avoid the issue of holding too many items. If possible, ensure that the agent's hands are empty after each sub-task is completed.
 
 ## Output Requirements:
-You need to think step by step to give resonable output. However,
-You can only output content similar to the 'Output' in the 'Example'. Do not include any explanation or any other symbols.
+You need to think step by step to give resonable output. However, you can only output content similar to the 'Output' in the 'Example'. Do not include any explanation or any other symbols.
 """
     return prompt
