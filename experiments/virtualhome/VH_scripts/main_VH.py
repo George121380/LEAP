@@ -24,7 +24,7 @@ from tqdm import tqdm
 INIT_PATH_PO = "experiments/virtualhome/CDLs/init_scene_PO.cdl"
 INIT_PATH_NPO = "experiments/virtualhome/CDLs/init_scene_NPO.cdl"
 DATASET_FOLDER_PATH = 'cdl_dataset/dataset'
-running_mode='test' #debug or test 
+running_mode='debug' #debug or test 
 
 def load_scene(scene_id):
     """
@@ -191,6 +191,7 @@ def evaluate_single(args):
 
 def evaluate_all(args): # main function
     files=evaluation_task_loader(DATASET_FOLDER_PATH)
+    random.shuffle(files)
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
 
     # Set logger and save configs
@@ -222,6 +223,8 @@ def evaluate_all(args): # main function
 def check_task_define_all(args):
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     files=evaluation_task_loader(DATASET_FOLDER_PATH)
+    # shuffle(files)
+    random.shuffle(files)
     epoch_path=f'log/epoch_{timestamp}'
     epoch_logger = setup_epoch_logger(f'log/epoch_{timestamp}',timestamp=timestamp)
     for task_file in files:
@@ -275,8 +278,8 @@ def test_simulator(init_scene_graph):
         
 if __name__ == '__main__':
     args = load_config("experiments/virtualhome/VH_scripts/config.yaml")
-    # evaluate_all(args)
-    evaluate_single(args)
+    evaluate_all(args)
+    # evaluate_single(args)
     # check_task_define_all(args)
     # check_task_define_single(args)
     # case_study_easy2hard(args)

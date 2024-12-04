@@ -1,0 +1,161 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Find the shirt and the skirt that need to be ironed.', '2. Iron the shirt and the skirt.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_clothes_skirt_2088_around_closetdrawer_143(clothes_skirt:item):
+    goal: not unknown(clothes_skirt)
+    body:
+        assert is_clothes_skirt(clothes_skirt)
+        bind closetdrawer_instance:item where:
+            is_closetdrawer(closetdrawer_instance) and id[closetdrawer_instance]==143
+        achieve close_char(char,closetdrawer_instance)
+        if can_open(closetdrawer_instance):
+            achieve_once open(closetdrawer_instance)
+            exp(clothes_skirt,closetdrawer_instance)
+        else:
+            exp(clothes_skirt,closetdrawer_instance)
+    eff:
+        unknown[clothes_skirt]=False
+        close[clothes_skirt,closetdrawer_instance]=True
+        close[closetdrawer_instance,clothes_skirt]=True
+    
+
+behavior find_clothes_shirt_2086_around_closetdrawer_143(clothes_shirt:item):
+    goal: not unknown(clothes_shirt)
+    body:
+        assert is_clothes_shirt(clothes_shirt)
+        bind closetdrawer_instance:item where:
+            is_closetdrawer(closetdrawer_instance) and id[closetdrawer_instance]==143
+        achieve close_char(char,closetdrawer_instance)
+        if can_open(closetdrawer_instance):
+            achieve_once open(closetdrawer_instance)
+            exp(clothes_shirt,closetdrawer_instance)
+        else:
+            exp(clothes_shirt,closetdrawer_instance)
+    eff:
+        unknown[clothes_shirt]=False
+        close[clothes_shirt,closetdrawer_instance]=True
+        close[closetdrawer_instance,clothes_shirt]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_clothes_iron_needed(item: item):
+    # Determine whether the clothing item is a shirt or skirt and needs ironing
+    symbol is_needed = (is_clothes_shirt(item) or is_clothes_skirt(item))
+    return is_needed
+
+behavior __goal__():
+    body:
+        if exists clothing: item : is_clothes_iron_needed(clothing):
+            # If there is clothing already identified that needs ironing
+            bind clothing: item where:
+                is_clothes_iron_needed(clothing)
+            achieve close_char(char, clothing)  
+            # Approach the clothing item that needs ironing
+
+        else:
+            # Investigate for clothing items that require ironing
+            foreach clothing: item:
+                if (is_clothes_shirt(clothing) or is_clothes_skirt(clothing)) and not visited(clothing):
+                    observe(clothing, "Check if this item needs ironing")
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+ 
+def is_clothes_iron_needed(item: item):
+    # Determine whether the clothing item is a shirt or skirt and needs ironing
+    symbol is_needed = (is_clothes_shirt(item) or is_clothes_skirt(item))
+    return is_needed
+
+behavior __goal__():
+    body:
+        if exists clothing: item : is_clothes_iron_needed(clothing):
+            # If there is clothing already identified that needs ironing
+            bind clothing: item where:
+                is_clothes_iron_needed(clothing)
+            achieve close_char(char, clothing)  
+            # Approach the clothing item that needs ironing
+
+        else:
+            # Investigate for clothing items that require ironing
+            foreach clothing: item:
+                if (is_clothes_shirt(clothing) or is_clothes_skirt(clothing)) and not visited(clothing):
+                    observe(clothing, "Check if this item needs ironing")
+
+##############################
+From agent.py
+Record from func query_LLM_human in agent.py
+Question: Can you tell me how to find the shirt and the skirt that need to be ironed.
+Answer: Need to replan: Yes  
+Guidance: Your current plan does not include steps for locating the shirt and skirt. Please revise your plan to include steps for finding the shirt and skirt that need to be ironed.
+
+##############################
+From agent.py
+Record from func query_LLM_human in agent.py
+Question: Can you tell me how to iron the shirt and the skirt.
+Answer: Need to replan: No  
+Guidance: For each piece of clothing, place it on the ironing board. Turn on the iron, then put the iron on the clothing, push and pull the iron.
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(closetdrawer_143)exp(clothes_shirt_2086, closetdrawer_143)walk_executor(clothes_shirt_2086)
+##############################
+From agent.py
+walk_executor(closetdrawer_143)
+Find hanger_128. Find hanger_110. Find hanger_140. Find hanger_132. Find hanger_113. Find hanger_130. Find hanger_134. Find hanger_136. Find hanger_138. Find hanger_141. Find hanger_142. Find hanger_109. Find hanger_111. Find hanger_112. Find hanger_124. Find hanger_126. Find hanger_114. Find hanger_115. Robot is inside bedroom_67. Robot is close dresser_123. Robot is close closetdrawer_150. Robot is close closetdrawer_143. Robot is no longer inside bathroom_1.
+##############################
+From evaluation.py
+cdl_dataset/dataset/Iron_clothes/g5.txt
+Checking k1
+missed actions: walk_executor(clothes_shirt_2086);grab_executor(clothes_shirt_2086);walk_executor(ironing_board_2074);put_executor(clothes_shirt_2086, ironing_board_2074);grab_executor(iron_2089);walk_executor(clothes_shirt_2086);put_executor(iron_2089, clothes_shirt_2086);walk_executor(iron_2089);plugin_executor(iron_2089);switchon_executor(iron_2089);
+missed action num: 10
+##############################
+From evaluation.py
+cdl_dataset/dataset/Iron_clothes/g5.txt
+Checking k2
+missed actions: walk_executor(clothes_skirt_2088);grab_executor(clothes_skirt_2088);walk_executor(ironing_board_2074);put_executor(clothes_skirt_2088, ironing_board_2074);grab_executor(iron_2089);walk_executor(clothes_skirt_2088);put_executor(iron_2089, clothes_skirt_2088);walk_executor(iron_2089);plugin_executor(iron_2089);switchon_executor(iron_2089);
+missed action num: 10
+##############################
+From agent.py
+exp(clothes_shirt_2086, closetdrawer_143)
+Failed to find clothes_shirt_2086 around closetdrawer_143. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(hanger_115)exp(clothes_shirt_2086, hanger_115)walk_executor(clothes_shirt_2086)
+##############################
+From agent.py
+walk_executor(hanger_115)
+Robot is inside bedroom_67. Robot is close hanger_115. Robot is close dresser_108. Robot is no longer close dresser_123.Robot is no longer close closetdrawer_150.Robot is no longer close closetdrawer_143.
+##############################
+From evaluation.py
+cdl_dataset/dataset/Iron_clothes/g5.txt
+Checking k1
+missed actions: walk_executor(clothes_shirt_2086);grab_executor(clothes_shirt_2086);walk_executor(ironing_board_2074);put_executor(clothes_shirt_2086, ironing_board_2074);grab_executor(iron_2089);walk_executor(clothes_shirt_2086);put_executor(iron_2089, clothes_shirt_2086);walk_executor(iron_2089);plugin_executor(iron_2089);switchon_executor(iron_2089);
+missed action num: 10
+##############################
+From evaluation.py
+cdl_dataset/dataset/Iron_clothes/g5.txt
+Checking k2
+missed actions: walk_executor(clothes_skirt_2088);grab_executor(clothes_skirt_2088);walk_executor(ironing_board_2074);put_executor(clothes_skirt_2088, ironing_board_2074);grab_executor(iron_2089);walk_executor(clothes_skirt_2088);put_executor(iron_2089, clothes_skirt_2088);walk_executor(iron_2089);plugin_executor(iron_2089);switchon_executor(iron_2089);
+missed action num: 10
+##############################
+From agent.py
+exp(clothes_shirt_2086, hanger_115)
+Failed to find clothes_shirt_2086 around hanger_115. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(hanger_141)exp(clothes_shirt_2086, hanger_141)walk_executor(clothes_shirt_2086)
+##############################
+From agent.py
+walk_executor(hanger_141)
+Robot is inside bedroom_67. Robot is close dresser_123. Robot is close hanger_141. Robot is no longer close hanger_115.Robot is no longer close dresser_108.
+##############################

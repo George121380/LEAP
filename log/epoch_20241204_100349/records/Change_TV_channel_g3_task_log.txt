@@ -1,0 +1,358 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Find a couch and sit on it.', '2. Find and use the remote control to turn on the TV.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def find_and_sit_couch():
+    # Determine whether the item is a couch and sittable
+    symbol found_sittable_couch = exists couch: item : is_couch(couch) and sittable(couch)
+    return found_sittable_couch
+
+behavior __goal__():
+    body:
+        if exists couch: item : is_couch(couch) and find_and_sit_couch():
+            bind couch: item where:
+                is_couch(couch) and find_and_sit_couch()
+            achieve close_char(char, couch)
+            achieve on_char(char, couch)
+        else:
+            foreach couch: item:
+                if is_couch(couch) and not visited(couch):
+                    observe(couch, "Check if the item is a sittable couch")
+
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+ 
+def find_and_sit_couch():
+    # Determine whether the item is a couch and sittable
+    symbol found_sittable_couch = exists couch: item : is_couch(couch) and sittable(couch)
+    return found_sittable_couch
+
+behavior __goal__():
+    body:
+        if exists couch: item : is_couch(couch) and find_and_sit_couch():
+            bind couch: item where:
+                is_couch(couch) and find_and_sit_couch()
+            achieve close_char(char, couch)
+            achieve on_char(char, couch)
+        else:
+            foreach couch: item:
+                if is_couch(couch) and not visited(couch):
+                    observe(couch, "Check if the item is a sittable couch")
+
+
+##############################
+From agent.py
+Record from func query_LLM_human in agent.py
+Question: Can you tell me how to find a couch and sit on it.
+Answer: Need to replan: Yes  
+Guidance: You should find a couch and sit on it first.
+
+##############################
+From agent.py
+Record from func query_LLM_human in agent.py
+Question: Can you tell me how to find and use the remote control to turn on the tv.
+Answer: Need to replan: Yes  
+Guidance: To turn on the TV, touch the remote control.
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(couch_352)sit_executor(couch_352)
+##############################
+From agent.py
+walk_executor(couch_352)
+Find mat_401. Find remote_control_2052. Find clothes_jacket_2047. Find cat_2055. Find pillow_405. Find drawing_400. Find pillow_406. Find hairbrush_2002. Find vacuum_cleaner_2070. Robot is inside home_office_319. Robot is close couch_352. Robot is close mat_401. Robot is no longer inside bathroom_1.
+##############################
+From agent.py
+sit_executor(couch_352)
+Find headset_2062. Find hanger_363. Find hanger_374. Find drawing_404. Find keyboard_415. Find headset_2076. Find hanger_369. Find hanger_361. Find spectacles_2082. Find drawing_402. Find hanger_372. Find chair_356. Find book_2066. Find phone_2077. Find mouse_413. Find hanger_375. Find pencil_2001. Find hanger_367. Find hanger_359. Find dvd_player_2061. Find drawing_403. Find hanger_365. Find book_2067. Find hanger_376. Robot is inside home_office_319. Robot is close couch_352. Robot is close mat_401. Robot is on couch_352. Robot is facing television_410. 
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_phone_247_around_drawing_403(phone:item):
+    goal: not unknown(phone)
+    body:
+        assert is_phone(phone)
+        bind drawing_instance:item where:
+            is_drawing(drawing_instance) and id[drawing_instance]==403
+        achieve close_char(char,drawing_instance)
+        if can_open(drawing_instance):
+            achieve_once open(drawing_instance)
+            exp(phone,drawing_instance)
+        else:
+            exp(phone,drawing_instance)
+    eff:
+        unknown[phone]=False
+        close[phone,drawing_instance]=True
+        close[drawing_instance,phone]=True
+    
+
+behavior find_cd_player_2060_around_dvd_player_2061(cd_player:item):
+    goal: not unknown(cd_player)
+    body:
+        assert is_cd_player(cd_player)
+        bind dvd_player_instance:item where:
+            is_dvd_player(dvd_player_instance) and id[dvd_player_instance]==2061
+        achieve close_char(char,dvd_player_instance)
+        if can_open(dvd_player_instance):
+            achieve_once open(dvd_player_instance)
+            exp(cd_player,dvd_player_instance)
+        else:
+            exp(cd_player,dvd_player_instance)
+    eff:
+        unknown[cd_player]=False
+        close[cd_player,dvd_player_instance]=True
+        close[dvd_player_instance,cd_player]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+behavior find_remote_control():
+    body:
+        foreach remote: item:
+            if is_remote_control(remote) and not visited(remote):
+                observe(remote, "Check if the item is a remote control and its location")
+
+behavior turn_on_tv(tv:item):
+    body:
+        achieve is_on(tv)
+
+behavior __goal__():
+    body:
+        bind tv: item where:
+            is_television(tv)
+        if not exists remote: item : is_remote_control(remote) and inhand(remote):
+            # If remote control is not in hand, search for it
+            find_remote_control()
+        else:
+            # When remote control is in hand, turn on the TV
+            turn_on_tv(tv)
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Unexpected token Token('VARNAME', 'remote') at line 5954, column 23.
+Expected one of: 
+	* COLON
+
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_phone_247_around_television_248(phone:item):
+    goal: not unknown(phone)
+    body:
+        assert is_phone(phone)
+        bind television_instance:item where:
+            is_television(television_instance) and id[television_instance]==248
+        achieve close_char(char,television_instance)
+        if can_open(television_instance):
+            achieve_once open(television_instance)
+            exp(phone,television_instance)
+        else:
+            exp(phone,television_instance)
+    eff:
+        unknown[phone]=False
+        close[phone,television_instance]=True
+        close[television_instance,phone]=True
+    
+
+#goal_representation
+
+behavior find_remote_control():
+    body:
+        foreach remote: item:
+            if is_remote_control(remote) and not visited(remote):
+                observe(remote, "Check if the item is a remote control and its location")
+
+behavior turn_on_tv(tv:item):
+    body:
+        achieve is_on(tv)
+
+behavior __goal__():
+    body:
+        bind tv: item where:
+            is_television(tv)
+        # Ensure the TV instance is selected
+        if not exists remote: item : is_remote_control(remote) and achieve_once inhand(remote):
+            # If remote control is not in hand, search for it
+            find_remote_control()
+        else:
+            # When remote control is in hand, turn on the TV
+            turn_on_tv(tv)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def has_remote(control:item):
+    # Function to check if an item is a remote control
+    symbol remote=exists rc: item : is_remote_control(rc) and close(rc, control)
+    return remote
+
+def has_switch(tv:item):
+    # Function to check if a TV has a switch
+    symbol switch=exists sw: item : has_switch(sw) and close(sw, tv)
+    return switch
+
+behavior find_and_use_remote_control(tv:item):
+    body:
+        bind remote_control: item where:
+            is_remote_control(remote_control)
+        # Select a remote control
+        
+        achieve_once inhand(remote_control)
+        # Hold the remote control once to operate
+        
+        if has_switch(tv):
+            achieve is_on(tv)
+            # Turn on the TV using the remote control
+        else:
+            observe(tv, "Check if the TV can be turned on with the remote control")
+            # Observe the TV to determine how to turn it on with the remote control
+
+behavior __goal__():
+    body:
+        bind tv: item where:
+            is_television(tv)
+        # Select a TV
+        
+        find_and_use_remote_control(tv)
+        # Find and use the remote control to turn on the TV
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+def has_remote(control:item):
+    # Function to check if an item is a remote control
+    symbol remote=exists rc: item : is_remote_control(rc) and close(rc, control)
+    return remote
+
+def has_switch(tv:item):
+    # Function to check if a TV has a switch
+    symbol switch=exists sw: item : has_switch(sw) and close(sw, tv)
+    return switch
+
+behavior find_and_use_remote_control(tv:item):
+    body:
+        bind remote_control: item where:
+            is_remote_control(remote_control)
+        # Select a remote control
+        
+        achieve_once inhand(remote_control)
+        # Hold the remote control once to operate
+        
+        if has_switch(tv):
+            achieve is_on(tv)
+            # Turn on the TV using the remote control
+        else:
+            observe(tv, "Check if the TV can be turned on with the remote control")
+            # Observe the TV to determine how to turn it on with the remote control
+
+behavior __goal__():
+    body:
+        bind tv: item where:
+            is_television(tv)
+        # Select a TV
+        
+        find_and_use_remote_control(tv)
+        # Find and use the remote control to turn on the TV
+
+##############################
+From agent.py-> find a plan in act()
+standup_executor(char)walk_executor(remote_control_2052)grab_executor(remote_control_2052)standup_executor(char)walk_executor(television_248)switchon_executor(television_248)
+##############################
+From agent.py
+standup_executor(char)
+Robot is inside home_office_319. Robot is close couch_352. Robot is close mat_401. Robot is on couch_352. Robot is facing television_410. 
+##############################
+From agent.py
+walk_executor(remote_control_2052)
+Robot is inside home_office_319. Robot is close couch_352. Robot is close remote_control_2052. Robot is on couch_352. Robot is no longer close mat_401.Robot is no longer facing television_410.
+##############################
+From agent.py
+grab_executor(remote_control_2052)
+Robot is inside home_office_319. Robot is close couch_352. Robot is close remote_control_2052. Robot is on couch_352. Grabbing remote_control_2052 by right hand. 
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_cd_player_2060_around_dvd_player_2061(cd_player:item):
+    goal: not unknown(cd_player)
+    body:
+        assert is_cd_player(cd_player)
+        bind dvd_player_instance:item where:
+            is_dvd_player(dvd_player_instance) and id[dvd_player_instance]==2061
+        achieve close_char(char,dvd_player_instance)
+        if can_open(dvd_player_instance):
+            achieve_once open(dvd_player_instance)
+            exp(cd_player,dvd_player_instance)
+        else:
+            exp(cd_player,dvd_player_instance)
+    eff:
+        unknown[cd_player]=False
+        close[cd_player,dvd_player_instance]=True
+        close[dvd_player_instance,cd_player]=True
+    
+
+behavior find_phone_247_around_phone_2077(phone:item):
+    goal: not unknown(phone)
+    body:
+        assert is_phone(phone)
+        bind phone_instance:item where:
+            is_phone(phone_instance) and id[phone_instance]==2077
+        achieve close_char(char,phone_instance)
+        if can_open(phone_instance):
+            achieve_once open(phone_instance)
+            exp(phone,phone_instance)
+        else:
+            exp(phone,phone_instance)
+    eff:
+        unknown[phone]=False
+        close[phone,phone_instance]=True
+        close[phone_instance,phone]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior use_remote_on_tv(remote_control:item, tv:item):
+    body:
+        achieve is_on(tv)
+
+behavior __goal__():
+    body:
+        bind remote_control: item where:
+            is_remote_control(remote_control) and inhand(remote_control)
+        bind tv: item where:
+            is_television(tv)
+        achieve close_char(char, remote_control)
+        use_remote_on_tv(remote_control, tv)
+
+#goal_representation_end
+
+##############################

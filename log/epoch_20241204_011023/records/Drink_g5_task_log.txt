@@ -1,0 +1,317 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['Use pot to boil some water.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_pot_2069_around_kitchen_counter_230(pot:item):
+    goal: not unknown(pot)
+    body:
+        assert is_pot(pot)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==230
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(pot,kitchen_counter_instance)
+        else:
+            exp(pot,kitchen_counter_instance)
+    eff:
+        unknown[pot]=False
+        close[pot,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,pot]=True
+    
+
+behavior find_dvd_player_2061_around_television_410(dvd_player:item):
+    goal: not unknown(dvd_player)
+    body:
+        assert is_dvd_player(dvd_player)
+        bind television_instance:item where:
+            is_television(television_instance) and id[television_instance]==410
+        achieve close_char(char,television_instance)
+        if can_open(television_instance):
+            achieve_once open(television_instance)
+            exp(dvd_player,television_instance)
+        else:
+            exp(dvd_player,television_instance)
+    eff:
+        unknown[dvd_player]=False
+        close[dvd_player,television_instance]=True
+        close[television_instance,dvd_player]=True
+    
+
+behavior find_food_kiwi_2027_around_fridge_289(food_kiwi:item):
+    goal: not unknown(food_kiwi)
+    body:
+        assert is_food_kiwi(food_kiwi)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_kiwi,fridge_instance)
+        else:
+            exp(food_kiwi,fridge_instance)
+    eff:
+        unknown[food_kiwi]=False
+        close[food_kiwi,fridge_instance]=True
+        close[fridge_instance,food_kiwi]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_ready_to_boil_water(pot:item, stove:item):
+    # Check if the pot has water and the stove can heat the pot
+    symbol ready=has_water(pot) and is_off(stove) and has_switch(stove)
+    return ready
+
+behavior fill_pot_with_water(pot:item, sink:item):
+    body:
+        achieve_once inside(pot, sink)
+        # Ensure the pot is placed in the sink
+
+        if has_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_on(faucet)
+            # Turn on the faucet to fill the pot with water
+
+        water(pot) # Fill the pot with water
+
+        if has_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_off(faucet)
+            # Turn off the faucet after filling the pot
+
+behavior boil_water_on_stove(pot:item, stove:item):
+    body:
+        achieve on(pot, stove)
+        achieve is_on(stove)
+        # Place the pot on the stove and turn it on to boil the water
+
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot) 
+        # Select a pot
+
+        bind sink: item where:
+            is_sink(sink)
+        # Select a sink to fill the pot with water
+
+        fill_pot_with_water(pot, sink)
+        # Fill the pot with water
+
+        bind stove: item where:
+            is_stove(stove) and is_ready_to_boil_water(pot, stove)
+        # Select a stove that is ready to boil water
+
+        boil_water_on_stove(pot, stove)
+        # Start boiling the water on the stove
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "behavior_definition":
+
+'Function has_faucet not found. Note that recursive function calls are not supported in the current version.'
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_pot_2069_around_kitchen_counter_230(pot:item):
+    goal: not unknown(pot)
+    body:
+        assert is_pot(pot)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==230
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(pot,kitchen_counter_instance)
+        else:
+            exp(pot,kitchen_counter_instance)
+    eff:
+        unknown[pot]=False
+        close[pot,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,pot]=True
+    
+
+#goal_representation
+ 
+def is_ready_to_boil_water(pot:item, stove:item):
+    # Check if the pot has water and the stove can heat the pot
+    symbol ready=has_water(pot) and is_off(stove) and has_switch(stove)
+    return ready
+
+behavior fill_pot_with_water(pot:item, sink:item):
+    body:
+        achieve_once inside(pot, sink)
+        # Ensure the pot is placed in the sink
+
+        if is_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_on(faucet)
+            # Turn on the faucet to fill the pot with water
+
+        water(pot) # Fill the pot with water
+
+        if is_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_off(faucet)
+            # Turn off the faucet after filling the pot
+
+behavior boil_water_on_stove(pot:item, stove:item):
+    body:
+        achieve on(pot, stove)
+        achieve is_on(stove)
+        # Place the pot on the stove and turn it on to boil the water
+
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot) 
+        # Select a pot
+
+        bind sink: item where:
+            is_sink(sink)
+        # Select a sink to fill the pot with water
+
+        fill_pot_with_water(pot, sink)
+        # Fill the pot with water
+
+        bind stove: item where:
+            is_stove(stove) and is_ready_to_boil_water(pot, stove)
+        # Select a stove that is ready to boil water
+
+        boil_water_on_stove(pot, stove)
+        # Start boiling the water on the stove
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "behavior_definition":
+
+'Function water not found. Note that recursive function calls are not supported in the current version.'
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_dvd_player_2061_around_television_410(dvd_player:item):
+    goal: not unknown(dvd_player)
+    body:
+        assert is_dvd_player(dvd_player)
+        bind television_instance:item where:
+            is_television(television_instance) and id[television_instance]==410
+        achieve close_char(char,television_instance)
+        if can_open(television_instance):
+            achieve_once open(television_instance)
+            exp(dvd_player,television_instance)
+        else:
+            exp(dvd_player,television_instance)
+    eff:
+        unknown[dvd_player]=False
+        close[dvd_player,television_instance]=True
+        close[television_instance,dvd_player]=True
+    
+
+behavior find_food_kiwi_2027_around_fridge_289(food_kiwi:item):
+    goal: not unknown(food_kiwi)
+    body:
+        assert is_food_kiwi(food_kiwi)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_kiwi,fridge_instance)
+        else:
+            exp(food_kiwi,fridge_instance)
+    eff:
+        unknown[food_kiwi]=False
+        close[food_kiwi,fridge_instance]=True
+        close[fridge_instance,food_kiwi]=True
+    
+
+behavior find_pot_2069_around_kitchen_counter_230(pot:item):
+    goal: not unknown(pot)
+    body:
+        assert is_pot(pot)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==230
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(pot,kitchen_counter_instance)
+        else:
+            exp(pot,kitchen_counter_instance)
+    eff:
+        unknown[pot]=False
+        close[pot,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,pot]=True
+    
+
+#goal_representation
+ 
+def is_ready_to_boil_water(pot:item, stove:item):
+    # Check if the pot has water and the stove can heat the pot
+    symbol ready=has_water(pot) and is_off(stove) and has_switch(stove)
+    return ready
+
+behavior fill_pot_with_water(pot:item, sink:item):
+    body:
+        achieve_once inside(pot, sink)
+        # Ensure the pot is placed in the sink
+
+        if is_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_on(faucet)
+            # Turn on the faucet to fill the pot with water
+
+        is_milk(pot) # Fill the pot with water
+
+        if is_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_off(faucet)
+            # Turn off the faucet after filling the pot
+
+behavior boil_water_on_stove(pot:item, stove:item):
+    body:
+        achieve on(pot, stove)
+        achieve is_on(stove)
+        # Place the pot on the stove and turn it on to boil the water
+
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot) 
+        # Select a pot
+
+        bind sink: item where:
+            is_sink(sink)
+        # Select a sink to fill the pot with water
+
+        fill_pot_with_water(pot, sink)
+        # Fill the pot with water
+
+        bind stove: item where:
+            is_stove(stove) and is_ready_to_boil_water(pot, stove)
+        # Select a stove that is ready to boil water
+
+        boil_water_on_stove(pot, stove)
+        # Start boiling the water on the stove
+
+#goal_representation_end
+
+##############################

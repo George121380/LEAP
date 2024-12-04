@@ -1052,6 +1052,7 @@ class VHAgent:
             long_horizon_goal=self.goal_nl,
             prev_sub_goal_list=self.sub_goal_list[:self.current_subgoal_num],
             classes=self.classes,
+            checked_items=self.exploration['checked'],
             behavior_from_library=self.library.download_behaviors(self.current_subgoal_nl),
             partial_observation=True,
             agent_type=self.agent_type,
@@ -1063,7 +1064,10 @@ class VHAgent:
         # pdb.set_trace()
 
         # block while test
-        self.logger.info("From agent.py->reset_goal\n"+self.goal_representation)
+        goal_representation_record=self.goal_representation
+        if self.goal_representation==None:
+            goal_representation_record='Failed to generate the goal representation'
+        self.logger.info("From agent.py->reset_goal\n"+goal_representation_record)
 
         if self.goal_representation==None:
             if self.current_sub_task_guided:
@@ -1085,6 +1089,7 @@ class VHAgent:
                     long_horizon_goal=self.goal_nl,
                     prev_sub_goal_list=self.sub_goal_list[:self.current_subgoal_num],
                     classes=self.classes,
+                    checked_items=self.exploration['checked'],
                     behavior_from_library=self.library.download_behaviors(self.current_subgoal_nl),
                     partial_observation=True,
                     agent_type=self.agent_type,
@@ -1108,6 +1113,7 @@ class VHAgent:
             long_horizon_goal=self.goal_nl,
             prev_sub_goal_list=self.sub_goal_list[:self.current_subgoal_num],
             classes=self.classes,
+            checked_items=self.exploration['checked'],
             behavior_from_library=self.library.download_behaviors(self.current_subgoal_nl),
             partial_observation=True,
             agent_type=self.agent_type,
@@ -1135,6 +1141,7 @@ class VHAgent:
                     long_horizon_goal=self.goal_nl,
                     prev_sub_goal_list=self.sub_goal_list[:self.current_subgoal_num],
                     classes=self.classes,
+                    checked_items=self.exploration['checked'],
                     behavior_from_library=self.library.download_behaviors(self.current_subgoal_nl),
                     partial_observation=True,
                     agent_type=self.agent_type,

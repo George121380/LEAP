@@ -92,12 +92,6 @@ def parse_file(file_path):
                 obj = line.split('[')[1].split(']')[0]
                 unknown_objects.add(obj)
 
-            if line.startswith('checked['):
-                obj1, obj2 = line.split('[')[1].split(']')[0].split(',')
-                if obj1 not in checked:
-                    checked[obj1] = [False] * (len(objects) + 1)
-                checked[obj1][name2id[obj2]] = True
-
             elif section == 'goal_representation':
                 goal_representation += line
 
@@ -113,7 +107,7 @@ def parse_file(file_path):
             
     known_objects = set(objects) - unknown_objects
     
-    return objects, categories, known_objects, unknown_objects, binds, name2id, checked, goal_representation
+    return objects, categories, known_objects, unknown_objects, binds, name2id, goal_representation
 
 
 def find_unknown_attributes(categories, known_objects, binds):
@@ -167,7 +161,10 @@ def random_select_target(categories,unknown_cats,checked,objects,name2id,known_o
     return target_objs,posible_locations
 
 def get_exp_behavior(goal, additional_information, problem_cdl,checked=None):
-    objects, categories, known_objects, unknown_objects, binds, name2id, checked, goal_representation = parse_file(problem_cdl)
+    t0 = time.time()
+    objects, categories, known_objects, unknown_objects, binds, name2id, goal_representation = parse_file(problem_cdl)
+    t1 = time.time()
+    print(f"Time for parse_file:{t1-t0:.2f}s")
     # unknown_attributes_needed = find_unknown_attributes(categories, known_objects, binds)
     unknown_attributes_needed = find_all_unknown(categories, unknown_objects)
     if len(unknown_attributes_needed)==0:

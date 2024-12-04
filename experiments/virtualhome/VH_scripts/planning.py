@@ -25,7 +25,7 @@ def remove_special_characters(input_string):
     remove_s=remove_s.replace("'''","")
     return remove_s
 
-def refinement_operation(goal_int:str,correct_times_limit:int,state_file:str,execute_file:str,current_subgoal:str,add_info:str,long_horizon_goal:str,prev_sub_goal_list:list,classes,behavior_from_library,partial_observation=True, agent_type="Planning", refinement=True,loop_feedback=False,logger=None):
+def refinement_operation(goal_int:str,correct_times_limit:int,state_file:str,execute_file:str,current_subgoal:str,add_info:str,long_horizon_goal:str,prev_sub_goal_list:list,classes,checked_items,behavior_from_library,partial_observation=True, agent_type="Planning", refinement=True,loop_feedback=False,logger=None):
     with open(state_file, "r") as file:
         original_content = file.read()
     combined_content = original_content + "\n#goal_representation\n" + goal_int+"\n#goal_representation_end\n"
@@ -37,7 +37,7 @@ def refinement_operation(goal_int:str,correct_times_limit:int,state_file:str,exe
     # Add exploration behaviors
     if partial_observation and exploration_content=='':
         exp_start_time=time.time()
-        exploration_content=exploration_VH(current_subgoal,add_info,new_file_path)
+        exploration_content=exploration_VH(current_subgoal,add_info,new_file_path,checked_items)
         exp_end_time=time.time()
         print(f"Time for exploration:{exp_end_time-exp_start_time:.2f}s")
         exploration_content=remove_special_characters(exploration_content)
@@ -49,7 +49,7 @@ def refinement_operation(goal_int:str,correct_times_limit:int,state_file:str,exe
 
     logger.info("Goal representation from planning.py\n"+"\n#exp_behavior\n"+exploration_content+'\n#exp_behavior_end\n'+"\n#goal_representation\n" + goal_int+"\n#goal_representation_end\n")
 
-    while correct_time < correct_times_limit:
+    while True:
         try:
             if agent_type=="Planning":
                 plan=goal_solver(new_file_path, planning=True)
@@ -66,9 +66,10 @@ def refinement_operation(goal_int:str,correct_times_limit:int,state_file:str,exe
 
         except Exception as e:
             # Refine after error
-            if refinement:
+            if refinement and correct_time<correct_times_limit:
                 try:
                     error_info=e.errors
+                    assert isinstance(error_info,str)
                     print("Error information: ",error_info)
                     logger.info("Inner TransformationError Debug\n"+error_info)
                     with open(new_file_path, "r") as file:
@@ -80,7 +81,7 @@ def refinement_operation(goal_int:str,correct_times_limit:int,state_file:str,exe
                     goal_int=remove_special_characters(goal_int)
 
                     if partial_observation:
-                        exploration_content=exploration_VH(current_subgoal,add_info,new_file_path)
+                        exploration_content=exploration_VH(current_subgoal,add_info,new_file_path,checked_items)
                         exploration_content=remove_special_characters(exploration_content)
 
                     combined_content=original_content+"\n#exp_behavior\n"+exploration_content+'\n#exp_behavior_end\n'+"\n#goal_representation\n" + goal_int+"\n#goal_representation_end\n"
@@ -88,16 +89,17 @@ def refinement_operation(goal_int:str,correct_times_limit:int,state_file:str,exe
                         file.write(combined_content)
                     correct_time+=1
                     logger.info("Goal representation after debugging in planning.py"+"\n#exp_behavior\n"+exploration_content+"\n#goal_representation\n" + goal_int+"\n#goal_representation_end\n")
+                     
+
                 except AttributeError:
                     logger.info(f"Error is:\n{e}")
                     print(f"Error is:\n{e}")
                     print("e does not have an 'error' attribute. Directly resample")
                     return None,None,None
             else:
-                return None,None,None
-    
+                return None,None,None    
 
-def VH_pipeline(state_file:str,execute_file:str,current_subgoal:str,add_info:str,long_horizon_goal:str,prev_sub_goal_list:list,classes,behavior_from_library,partial_observation=True, agent_type="Planning", refinement=True,loop_feedback=False,logger=None):
+def VH_pipeline(state_file:str,execute_file:str,current_subgoal:str,add_info:str,long_horizon_goal:str,prev_sub_goal_list:list,classes,checked_items,behavior_from_library,partial_observation=True, agent_type="Planning", refinement=True,loop_feedback=False,logger=None):
     """
     Args:
     state_file: Path to the file containing the current state for CDL planning
@@ -110,6 +112,7 @@ def VH_pipeline(state_file:str,execute_file:str,current_subgoal:str,add_info:str
     partial_observation: Whether the observation is partial or not
     """
     generate_time=0
+    correct_time=0
 
     generate_times_limit=3
     correct_times_limit=2
@@ -119,13 +122,17 @@ def VH_pipeline(state_file:str,execute_file:str,current_subgoal:str,add_info:str
         correct_times_limit=1
 
     while generate_time<generate_times_limit:
-
+        generate_time+=1
         goal_int=goal_interpretation(current_subgoal,add_info,long_horizon_goal,classes,prev_sub_goal_list,behavior_from_library, agent_type)
         goal_int=remove_special_characters(goal_int)
 
-        if refinement:
-            plan,goal_int,exploration_content=refinement_operation(goal_int,correct_times_limit,state_file,execute_file,current_subgoal,add_info,long_horizon_goal,prev_sub_goal_list,classes,behavior_from_library,partial_observation, agent_type, refinement,loop_feedback,logger)
-            return plan,goal_int,exploration_content
+        if refinement and correct_time<correct_times_limit:
+            correct_time+=1
+            plan,goal_int,exploration_content=refinement_operation(goal_int,correct_times_limit,state_file,execute_file,current_subgoal,add_info,long_horizon_goal,prev_sub_goal_list,classes,checked_items,behavior_from_library,partial_observation, agent_type, refinement,loop_feedback,logger)
+            if plan is not None:
+                if len(plan)>0:
+                    if len(plan[0])>0:
+                        return plan,goal_int,exploration_content
         
     print("debug")
     return None,None,None  

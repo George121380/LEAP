@@ -32,3 +32,5 @@ def can_control_dvd_player(remote_control: item, dvd_player: item):
     # Determine if remote control can control the specified DVD player
     symbol can_control = exists function: item : is_remote_control(remote_control) and close(remote_control, dvd_player)
     return can_control
+
+EXP还有bug
