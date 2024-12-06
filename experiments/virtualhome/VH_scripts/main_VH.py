@@ -191,6 +191,7 @@ def run(args,epoch_logger,epoch_path,task_path,classes,init_scene_graph):
         except Exception as e:
             print(e)
             evaluation_result,complete_rate=evaluator.evaluate_final(ast=None,action_history=agent.add_info_action_history_for_evaluation,Root=True)
+            executed_actions=env.report_actions()
             task_summary_record(epoch_logger,args.scene.id,'Syntax Error',executed_actions,start_time,complete_rate,task_path,agent.final_important_numbers_report())
             return False
        
