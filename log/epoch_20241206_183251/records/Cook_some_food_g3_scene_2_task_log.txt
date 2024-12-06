@@ -1,0 +1,810 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Wash all the vegetables.', '2. Put the washed vegetables in a pot and boil them on the stove.', '3. Transfer the boiled vegetables to a bowl to cool.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_apple_2043_around_freezer_140(food_apple:item):
+    goal: not unknown(food_apple)
+    body:
+        assert is_food_apple(food_apple)
+        bind freezer_instance:item where:
+            is_freezer(freezer_instance) and id[freezer_instance]==140
+        achieve close_char(char,freezer_instance)
+        if can_open(freezer_instance):
+            achieve_once open(freezer_instance)
+            exp(food_apple,freezer_instance)
+        else:
+            exp(food_apple,freezer_instance)
+    eff:
+        unknown[food_apple]=False
+        close[food_apple,freezer_instance]=True
+        close[freezer_instance,food_apple]=True
+    
+
+behavior find_food_food_2055_around_freezer_140(food_food:item):
+    goal: not unknown(food_food)
+    body:
+        assert is_food_food(food_food)
+        bind freezer_instance:item where:
+            is_freezer(freezer_instance) and id[freezer_instance]==140
+        achieve close_char(char,freezer_instance)
+        if can_open(freezer_instance):
+            achieve_once open(freezer_instance)
+            exp(food_food,freezer_instance)
+        else:
+            exp(food_food,freezer_instance)
+    eff:
+        unknown[food_food]=False
+        close[food_food,freezer_instance]=True
+        close[freezer_instance,food_food]=True
+    
+
+behavior find_food_banana_2045_around_freezer_140(food_banana:item):
+    goal: not unknown(food_banana)
+    body:
+        assert is_food_banana(food_banana)
+        bind freezer_instance:item where:
+            is_freezer(freezer_instance) and id[freezer_instance]==140
+        achieve close_char(char,freezer_instance)
+        if can_open(freezer_instance):
+            achieve_once open(freezer_instance)
+            exp(food_banana,freezer_instance)
+        else:
+            exp(food_banana,freezer_instance)
+    eff:
+        unknown[food_banana]=False
+        close[food_banana,freezer_instance]=True
+        close[freezer_instance,food_banana]=True
+    
+
+behavior find_food_onion_2026_around_kitchen_counter_128(food_onion:item):
+    goal: not unknown(food_onion)
+    body:
+        assert is_food_onion(food_onion)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==128
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_onion,kitchen_counter_instance)
+        else:
+            exp(food_onion,kitchen_counter_instance)
+    eff:
+        unknown[food_onion]=False
+        close[food_onion,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_onion]=True
+    
+
+behavior find_food_potato_2066_around_kitchen_counter_129(food_potato:item):
+    goal: not unknown(food_potato)
+    body:
+        assert is_food_potato(food_potato)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==129
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_potato,kitchen_counter_instance)
+        else:
+            exp(food_potato,kitchen_counter_instance)
+    eff:
+        unknown[food_potato]=False
+        close[food_potato,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_potato]=True
+    
+
+behavior find_food_carrot_2047_around_kitchen_counter_129(food_carrot:item):
+    goal: not unknown(food_carrot)
+    body:
+        assert is_food_carrot(food_carrot)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==129
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_carrot,kitchen_counter_instance)
+        else:
+            exp(food_carrot,kitchen_counter_instance)
+    eff:
+        unknown[food_carrot]=False
+        close[food_carrot,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_carrot]=True
+    
+
+behavior find_food_vegetable_2072_around_kitchen_counter_128(food_vegetable:item):
+    goal: not unknown(food_vegetable)
+    body:
+        assert is_food_vegetable(food_vegetable)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==128
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_vegetable,kitchen_counter_instance)
+        else:
+            exp(food_vegetable,kitchen_counter_instance)
+    eff:
+        unknown[food_vegetable]=False
+        close[food_vegetable,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_vegetable]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_vegetable(x:item):
+    # Determine whether an item is a vegetable
+    return is_food_vegetable(x)
+
+def has_faucet(sink:item):
+    # Determine whether this sink has a faucet
+    symbol has_faucet=exists faucet:item: is_faucet(faucet) and close(faucet,sink)
+    return has_faucet
+
+behavior wash_vegetables(vegetable:item, sink:item):
+    # Define the behavior to wash a vegetable in the sink
+    body:
+        achieve_once inside(vegetable, sink)
+        # Ensure the vegetable is placed inside the sink
+        
+        if has_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet,sink)
+            achieve_once is_on(faucet)
+            # If the sink has a faucet, turn it on to wash
+        
+        wash(vegetable)
+        
+        if has_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet,sink)
+            achieve_once is_off(faucet)
+            # Ensure the faucet is turned off after washing
+        
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink)
+        # Select a sink
+
+        foreach vegetable: item:
+            if is_food_vegetable(vegetable) and dirty(vegetable):
+                wash_vegetables(vegetable, sink)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_vegetable_2072_around_kitchen_counter_129(food_vegetable:item):
+    goal: not unknown(food_vegetable)
+    body:
+        assert is_food_vegetable(food_vegetable)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==129
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_vegetable,kitchen_counter_instance)
+        else:
+            exp(food_vegetable,kitchen_counter_instance)
+    eff:
+        unknown[food_vegetable]=False
+        close[food_vegetable,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_vegetable]=True
+    
+
+behavior find_food_apple_2043_around_freezer_140(food_apple:item):
+    goal: not unknown(food_apple)
+    body:
+        assert is_food_apple(food_apple)
+        bind freezer_instance:item where:
+            is_freezer(freezer_instance) and id[freezer_instance]==140
+        achieve close_char(char,freezer_instance)
+        if can_open(freezer_instance):
+            achieve_once open(freezer_instance)
+            exp(food_apple,freezer_instance)
+        else:
+            exp(food_apple,freezer_instance)
+    eff:
+        unknown[food_apple]=False
+        close[food_apple,freezer_instance]=True
+        close[freezer_instance,food_apple]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+
+behavior wash_vegetables(vegetable: item, sink: item):
+    body:
+        achieve_once inside(vegetable, sink)
+        # Ensure the vegetable is placed inside the sink
+
+        if exists faucet: item: is_faucet(faucet) and close(faucet, sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_on(faucet)
+            # If the sink has a faucet, turn it on to wash the vegetable
+
+        wash(vegetable) # Wash the vegetable
+
+        if exists faucet: item: is_faucet(faucet) and close(faucet, sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_off(faucet)
+            # If the sink has a faucet, turn it off after washing
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink)
+        # Select a sink
+        foreach vegetable: item:
+            if is_food_vegetable(vegetable) and dirty(vegetable):
+                wash_vegetables(vegetable, sink)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+Failed to generate the goal representation
+##############################
+From agent.py
+Record from func query_LLM_human in agent.py
+Question: Can you teach me how to "1. wash all the vegetables." ?
+Answer: Wash all the vegetables.
+Re-decompose: False
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_vegetable_2072_around_kitchen_counter_129(food_vegetable:item):
+    goal: not unknown(food_vegetable)
+    body:
+        assert is_food_vegetable(food_vegetable)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==129
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_vegetable,kitchen_counter_instance)
+        else:
+            exp(food_vegetable,kitchen_counter_instance)
+    eff:
+        unknown[food_vegetable]=False
+        close[food_vegetable,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_vegetable]=True
+    
+
+behavior find_food_food_2055_around_sink_307(food_food:item):
+    goal: not unknown(food_food)
+    body:
+        assert is_food_food(food_food)
+        bind sink_instance:item where:
+            is_sink(sink_instance) and id[sink_instance]==307
+        achieve close_char(char,sink_instance)
+        if can_open(sink_instance):
+            achieve_once open(sink_instance)
+            exp(food_food,sink_instance)
+        else:
+            exp(food_food,sink_instance)
+    eff:
+        unknown[food_food]=False
+        close[food_food,sink_instance]=True
+        close[sink_instance,food_food]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior wash_vegetable(vegetable:item):
+    body:
+        achieve clean(vegetable)
+
+behavior __goal__():
+    body:
+        foreach vegetable: item:
+            if is_food_vegetable(vegetable) and dirty(vegetable):
+                wash_vegetable(vegetable)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_vegetable_2072_around_kitchen_counter_129(food_vegetable:item):
+    goal: not unknown(food_vegetable)
+    body:
+        assert is_food_vegetable(food_vegetable)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==129
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_vegetable,kitchen_counter_instance)
+        else:
+            exp(food_vegetable,kitchen_counter_instance)
+    eff:
+        unknown[food_vegetable]=False
+        close[food_vegetable,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_vegetable]=True
+    
+
+behavior find_food_carrot_2047_around_kitchen_counter_129(food_carrot:item):
+    goal: not unknown(food_carrot)
+    body:
+        assert is_food_carrot(food_carrot)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==129
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_carrot,kitchen_counter_instance)
+        else:
+            exp(food_carrot,kitchen_counter_instance)
+    eff:
+        unknown[food_carrot]=False
+        close[food_carrot,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_carrot]=True
+    
+
+behavior find_food_food_2055_around_sink_307(food_food:item):
+    goal: not unknown(food_food)
+    body:
+        assert is_food_food(food_food)
+        bind sink_instance:item where:
+            is_sink(sink_instance) and id[sink_instance]==307
+        achieve close_char(char,sink_instance)
+        if can_open(sink_instance):
+            achieve_once open(sink_instance)
+            exp(food_food,sink_instance)
+        else:
+            exp(food_food,sink_instance)
+    eff:
+        unknown[food_food]=False
+        close[food_food,sink_instance]=True
+        close[sink_instance,food_food]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior clean_vegetable(vegetable:item, sink:item):
+    body:
+        achieve inside(vegetable, sink)
+        if exists faucet: item : is_faucet(faucet) and close(faucet, sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_on(faucet)
+            wash(vegetable)
+            achieve_once is_off(faucet)
+        else:
+            wash(vegetable)
+
+behavior __goal__():
+    body:
+        foreach vegetable: item:
+            if is_food_vegetable(vegetable) and dirty(vegetable):
+                bind sink: item where:
+                    is_sink(sink)
+                clean_vegetable(vegetable, sink)
+
+#goal_representation_end
+
+##############################
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Wash all the vegetables.', '2. Put the vegetables in a pot and boil them on the stove.', '3. Cool the boiled vegetables in a bowl.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_vegetable_2072_around_kitchen_counter_129(food_vegetable:item):
+    goal: not unknown(food_vegetable)
+    body:
+        assert is_food_vegetable(food_vegetable)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==129
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_vegetable,kitchen_counter_instance)
+        else:
+            exp(food_vegetable,kitchen_counter_instance)
+    eff:
+        unknown[food_vegetable]=False
+        close[food_vegetable,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_vegetable]=True
+    
+
+behavior find_food_carrot_2047_around_kitchen_counter_129(food_carrot:item):
+    goal: not unknown(food_carrot)
+    body:
+        assert is_food_carrot(food_carrot)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==129
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_carrot,kitchen_counter_instance)
+        else:
+            exp(food_carrot,kitchen_counter_instance)
+    eff:
+        unknown[food_carrot]=False
+        close[food_carrot,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_carrot]=True
+    
+
+behavior find_food_food_2055_around_sink_307(food_food:item):
+    goal: not unknown(food_food)
+    body:
+        assert is_food_food(food_food)
+        bind sink_instance:item where:
+            is_sink(sink_instance) and id[sink_instance]==307
+        achieve close_char(char,sink_instance)
+        if can_open(sink_instance):
+            achieve_once open(sink_instance)
+            exp(food_food,sink_instance)
+        else:
+            exp(food_food,sink_instance)
+    eff:
+        unknown[food_food]=False
+        close[food_food,sink_instance]=True
+        close[sink_instance,food_food]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior wash_vegetable(vegetable:item):
+    body:
+        achieve clean(vegetable)
+        # Ensure the vegetable is cleaned
+
+behavior __goal__():
+    body:
+        foreach vegetable: item:
+            if is_food_vegetable(vegetable) and dirty(vegetable):
+                wash_vegetable(vegetable)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_onion_2026_around_kitchen_counter_129(food_onion:item):
+    goal: not unknown(food_onion)
+    body:
+        assert is_food_onion(food_onion)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==129
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_onion,kitchen_counter_instance)
+        else:
+            exp(food_onion,kitchen_counter_instance)
+    eff:
+        unknown[food_onion]=False
+        close[food_onion,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_onion]=True
+    
+
+behavior find_food_potato_2066_around_kitchen_counter_128(food_potato:item):
+    goal: not unknown(food_potato)
+    body:
+        assert is_food_potato(food_potato)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==128
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_potato,kitchen_counter_instance)
+        else:
+            exp(food_potato,kitchen_counter_instance)
+    eff:
+        unknown[food_potato]=False
+        close[food_potato,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_potato]=True
+    
+
+behavior find_food_vegetable_2072_around_kitchen_counter_129(food_vegetable:item):
+    goal: not unknown(food_vegetable)
+    body:
+        assert is_food_vegetable(food_vegetable)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==129
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_vegetable,kitchen_counter_instance)
+        else:
+            exp(food_vegetable,kitchen_counter_instance)
+    eff:
+        unknown[food_vegetable]=False
+        close[food_vegetable,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_vegetable]=True
+    
+
+behavior find_food_food_2055_around_sink_307(food_food:item):
+    goal: not unknown(food_food)
+    body:
+        assert is_food_food(food_food)
+        bind sink_instance:item where:
+            is_sink(sink_instance) and id[sink_instance]==307
+        achieve close_char(char,sink_instance)
+        if can_open(sink_instance):
+            achieve_once open(sink_instance)
+            exp(food_food,sink_instance)
+        else:
+            exp(food_food,sink_instance)
+    eff:
+        unknown[food_food]=False
+        close[food_food,sink_instance]=True
+        close[sink_instance,food_food]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+
+behavior clean_vegetable(vegetable:item):
+    body:
+        wash(vegetable)
+
+behavior __goal__():
+    body:
+        bind vegetable: item where:
+            is_food_vegetable(vegetable) and dirty(vegetable)
+        clean_vegetable(vegetable)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+Failed to generate the goal representation
+##############################
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Wash all the vegetables.', '2. Put the vegetables in a pot and boil them on the stove.', '3. Cool the boiled vegetables in a bowl.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_onion_2026_around_kitchen_counter_129(food_onion:item):
+    goal: not unknown(food_onion)
+    body:
+        assert is_food_onion(food_onion)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==129
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_onion,kitchen_counter_instance)
+        else:
+            exp(food_onion,kitchen_counter_instance)
+    eff:
+        unknown[food_onion]=False
+        close[food_onion,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_onion]=True
+    
+
+behavior find_food_potato_2066_around_kitchen_counter_129(food_potato:item):
+    goal: not unknown(food_potato)
+    body:
+        assert is_food_potato(food_potato)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==129
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_potato,kitchen_counter_instance)
+        else:
+            exp(food_potato,kitchen_counter_instance)
+    eff:
+        unknown[food_potato]=False
+        close[food_potato,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_potato]=True
+    
+
+behavior find_food_vegetable_2072_around_kitchen_counter_129(food_vegetable:item):
+    goal: not unknown(food_vegetable)
+    body:
+        assert is_food_vegetable(food_vegetable)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==129
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_vegetable,kitchen_counter_instance)
+        else:
+            exp(food_vegetable,kitchen_counter_instance)
+    eff:
+        unknown[food_vegetable]=False
+        close[food_vegetable,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_vegetable]=True
+    
+
+behavior find_food_food_2055_around_sink_307(food_food:item):
+    goal: not unknown(food_food)
+    body:
+        assert is_food_food(food_food)
+        bind sink_instance:item where:
+            is_sink(sink_instance) and id[sink_instance]==307
+        achieve close_char(char,sink_instance)
+        if can_open(sink_instance):
+            achieve_once open(sink_instance)
+            exp(food_food,sink_instance)
+        else:
+            exp(food_food,sink_instance)
+    eff:
+        unknown[food_food]=False
+        close[food_food,sink_instance]=True
+        close[sink_instance,food_food]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior wash_vegetables(vegetable:item):
+    body:
+        wash(vegetable)
+        # Perform the washing behavior on the vegetable
+
+behavior __goal__():
+    body:
+        foreach vegetable: item:
+            if is_food_vegetable(vegetable) and dirty(vegetable):
+                wash_vegetables(vegetable)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_food_2055_around_sink_307(food_food:item):
+    goal: not unknown(food_food)
+    body:
+        assert is_food_food(food_food)
+        bind sink_instance:item where:
+            is_sink(sink_instance) and id[sink_instance]==307
+        achieve close_char(char,sink_instance)
+        if can_open(sink_instance):
+            achieve_once open(sink_instance)
+            exp(food_food,sink_instance)
+        else:
+            exp(food_food,sink_instance)
+    eff:
+        unknown[food_food]=False
+        close[food_food,sink_instance]=True
+        close[sink_instance,food_food]=True
+    
+
+behavior find_food_apple_2043_around_freezer_140(food_apple:item):
+    goal: not unknown(food_apple)
+    body:
+        assert is_food_apple(food_apple)
+        bind freezer_instance:item where:
+            is_freezer(freezer_instance) and id[freezer_instance]==140
+        achieve close_char(char,freezer_instance)
+        if can_open(freezer_instance):
+            achieve_once open(freezer_instance)
+            exp(food_apple,freezer_instance)
+        else:
+            exp(food_apple,freezer_instance)
+    eff:
+        unknown[food_apple]=False
+        close[food_apple,freezer_instance]=True
+        close[freezer_instance,food_apple]=True
+    
+
+behavior find_food_lemon_2061_around_kitchen_counter_129(food_lemon:item):
+    goal: not unknown(food_lemon)
+    body:
+        assert is_food_lemon(food_lemon)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==129
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_lemon,kitchen_counter_instance)
+        else:
+            exp(food_lemon,kitchen_counter_instance)
+    eff:
+        unknown[food_lemon]=False
+        close[food_lemon,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_lemon]=True
+    
+
+behavior find_food_dessert_2051_around_freezer_140(food_dessert:item):
+    goal: not unknown(food_dessert)
+    body:
+        assert is_food_dessert(food_dessert)
+        bind freezer_instance:item where:
+            is_freezer(freezer_instance) and id[freezer_instance]==140
+        achieve close_char(char,freezer_instance)
+        if can_open(freezer_instance):
+            achieve_once open(freezer_instance)
+            exp(food_dessert,freezer_instance)
+        else:
+            exp(food_dessert,freezer_instance)
+    eff:
+        unknown[food_dessert]=False
+        close[food_dessert,freezer_instance]=True
+        close[freezer_instance,food_dessert]=True
+    
+
+behavior find_food_vegetable_2072_around_kitchen_counter_129(food_vegetable:item):
+    goal: not unknown(food_vegetable)
+    body:
+        assert is_food_vegetable(food_vegetable)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==129
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_vegetable,kitchen_counter_instance)
+        else:
+            exp(food_vegetable,kitchen_counter_instance)
+    eff:
+        unknown[food_vegetable]=False
+        close[food_vegetable,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_vegetable]=True
+    
+
+behavior find_food_carrot_2047_around_kitchen_counter_129(food_carrot:item):
+    goal: not unknown(food_carrot)
+    body:
+        assert is_food_carrot(food_carrot)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==129
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_carrot,kitchen_counter_instance)
+        else:
+            exp(food_carrot,kitchen_counter_instance)
+    eff:
+        unknown[food_carrot]=False
+        close[food_carrot,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_carrot]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior clean_vegetable(vegetable:item):
+    body:
+        achieve clean(vegetable)
+
+behavior __goal__():
+    body:
+        foreach vegetable: item:
+            if is_food_vegetable(vegetable) and dirty(vegetable):
+                clean_vegetable(vegetable)
+
+#goal_representation_end
+
+##############################

@@ -194,10 +194,10 @@ def calculation(result_list):
 
 
 if __name__ == '__main__':
-    methods_experiments = find_csv_files('log/main_with_guidance')
-    # methods_experiments = find_csv_files('log/main_without_guidance')
+    # methods_experiments = find_csv_files('log/main_with_guidance')
+    methods_experiments = find_csv_files('log/main_without_guidance')
 
-    window_size = 50
+    window_size = 30
 
     for experiments in methods_experiments:
         print(f'正在处理 {experiments} 方法的实验结果...')

@@ -251,6 +251,8 @@ def evaluate_all_cross_scene(args): # main function
     else:
         # Create a new folder for the epoch
         epoch_path = f'log/epoch_{timestamp}'
+        epoch_logger = setup_epoch_logger(epoch_path)
+
         files=evaluation_task_loader(DATASET_FOLDER_PATH)
         scenes=[0,1,2]
 
@@ -261,7 +263,6 @@ def evaluate_all_cross_scene(args): # main function
             yaml.dump(namespace_to_dict(args), file)
         with open(f'{epoch_path}/shuffled_task_scene_pairs.json', 'w') as file:
             json.dump(task_scene_pairs, file, indent=4)
-        epoch_logger = setup_epoch_logger(epoch_path)
         
     
     task_scene_pairs = tqdm(task_scene_pairs, desc="Evaluating tasks")

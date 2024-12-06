@@ -1,0 +1,30 @@
+ 
+def is_clean_sink_for_cat_washing(sink:item):
+    # Function to determine if a sink is clean and suitable for washing the cat
+    return not dirty(sink) and is_sink(sink)
+
+behavior wash_cat_in_sink(cat:item, sink:item):
+    body:
+        achieve close_char(char, sink)
+        achieve inside(cat, sink)
+        if has_water(sink):
+            achieve_once has_water(cat)
+        wash(cat)
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat) and close_char(char, cat)
+        # Select the cat found earlier on the couch
+        
+        if exists sink: item : is_sink(sink) and is_clean_sink_for_cat_washing(sink):
+            bind sink: item where:
+                is_clean_sink_for_cat_washing(sink)
+            achieve close_char(char, sink)
+            wash_cat_in_sink(cat, sink)
+        
+        else:
+            # Explore for a clean and suitable sink to wash the cat
+            foreach sink: item:
+                if is_sink(sink):
+                    observe(sink, "Check if the sink is clean and suitable for washing the cat")
