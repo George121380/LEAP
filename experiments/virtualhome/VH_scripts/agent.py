@@ -43,6 +43,7 @@ class VHAgent:
         self.current_sub_task_guided=False
         if self.args.human_guidance.type=='None':
             self.current_sub_task_guided=True
+        self.guidance_query_times=0
         self.sub_goal_list=[]
         self.completed_sub_goal_list=[]
         self.add_info_nl=''
@@ -54,7 +55,7 @@ class VHAgent:
         self.exploration_behavior = ""
         self.goal_representation = ""
         self.behaviors_from_library={} # all skills in library
-        
+        self.library_pool = []
         """
         path to the CDL files
         internal_executable_file_path: the file can be solve py planner: state + goal
@@ -89,11 +90,31 @@ class VHAgent:
     def lift_behaviors(self):
         # add executable behaviors to the library
         if self.args.library.record_method == 'behavior':
-            self.library.lift(self.task_name,self.current_subgoal_nl,self.goal_representation)
+            for behavior in self.library_pool:
+                self.library.lift(behavior['task_name'],behavior['subgoal'],behavior['goal_representation'])
         
         elif self.args.library.record_method == 'actions':
-            self.library.lift(self.task_name,self.current_subgoal_nl,self.add_info_action_history_for_evaluation)
+            for actions in self.library_pool:
+                self.library.lift(actions['task_name'],actions['subgoal'],actions['action_history'])
         
+    def add_to_library_pool(self):
+        if self.args.library.record_method == 'behavior':
+            info={
+                'task_name':self.task_name,
+                'subgoal':self.current_subgoal_nl,
+                'goal_representation':self.goal_representation,
+            }
+            self.library_pool.append(info)
+        
+        elif self.args.library.record_method == 'actions':
+            info={
+                'task_name':self.task_name,
+                'subgoal':self.current_subgoal_nl,
+                'action_history':self.add_info_action_history_for_evaluation, # TODO: replace this history
+            }
+            self.library_pool.append(info)
+        self.library_pool
+
 
     def download_behaviors_from_library(self):
         # download behaviors from the library
@@ -122,6 +143,7 @@ class VHAgent:
         task_info['Subgoals']=self.sub_goal_list
         answer,re_decompose=self.human_helper.QA(question,task_info)
         record+=f'Answer: {answer}\n'
+        record+=f'Re-decompose: {re_decompose}\n'
         self.logger.info("From agent.py\n"+record)
         return answer,re_decompose
     
@@ -138,11 +160,13 @@ class VHAgent:
             re_decompose=False
         answer = input(f"{question}\nYour answer: ")
         record+=f'Answer: {answer}\n'
+        record+=f'Re-decompose: {re_decompose}\n'
         self.logger.info("From agent.py\n"+record)
         print("Debug: ",re_decompose)
         return answer,re_decompose
     
     def ask_for_human_task_guidance(self):
+        self.guidance_query_times+=1
         self.current_sub_task_guided=True
         re_decompose=False
         question=f'Can you teach me how to "{self.current_subgoal_nl.lower()}" ?'
@@ -943,7 +967,7 @@ class VHAgent:
                             self.completed_sub_goal_list.append(self.current_subgoal_nl)
                             self.self_evaluate_times_for_current_subgoal=0
                             print('current subgoal is done')
-                            self.lift_behaviors()
+                            self.add_to_library_pool()
                             self.current_subgoal_num+=1
                             if self.args.human_guidance.type!='None':
                                 self.current_sub_task_guided=False # reset the guided flag
@@ -1043,7 +1067,10 @@ class VHAgent:
         # self.current_subgoal_nl=self.sub_goal_list[0]
         self.reset_goal_decomposition()
         # pdb.set_trace()
-        # _,self.goal_representation,self.exploration_behavior,self.behaviors_from_library_representation=VH_pipeline(self.state_file_path,self.internal_executable_file_path,self.current_subgoal_nl,self.add_info_nl,self.goal_nl,self.sub_goal_list[:self.current_subgoal_num],self.classes, self.behaviors_from_library,self.library.behavior_embedding(self.behaviors_from_library),True, self.agent_type, self.args.refinement)
+        
+
+        # # debug
+        # return
         _, self.goal_representation, self.exploration_behavior = VH_pipeline(
             state_file=self.state_file_path,
             execute_file=self.internal_executable_file_path,
@@ -1169,9 +1196,18 @@ class VHAgent:
             result,insrtuctions=sub_goal_evaluate(self.goal_representation,self.add_info_action_history,self.current_subgoal_nl,self.goal_nl, self.sub_goal_list[self.current_subgoal_num+1],self.add_info_nl,self.name2opid.keys())
         return result,insrtuctions
     
-    def final_human_check(self): # ask human to check whether the task is done
+    def final_human_check(self): # ask human to check whether the task is done, removed
         print('Ask human to check whether the task is done')
+
         pass
+
+    def final_important_numbers_report(self):
+        info={
+            'exp_helper_query_times':self.exp_helper_query_times,
+            'guidance_query_times':self.guidance_query_times,
+            'library_scale':len(self.library.metadata),
+        }
+        return info
     
     def reset_add_info_record(self):
         record_path='visualization/add_info_monitor.txt'

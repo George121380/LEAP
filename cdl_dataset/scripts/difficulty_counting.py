@@ -11,13 +11,12 @@ from datetime import datetime
 from experiments.virtualhome.VH_scripts.agent import VHAgent
 from experiments.virtualhome.VH_scripts.agent_LLM import LLM_Agent
 
-from utils_eval import get_nodes_information,construct_cdl
+from utils_eval import get_nodes_information,construct_cdl,load_config
 from env import VH_Env
 from environment import EnvironmentState, EnvironmentGraph
 import random
 import time
-from logger import setup_logger
-from human import Human
+from logger import setup_task_logger
 from evaluation import Evaluator
 random.seed(time.time())
 import os
@@ -31,27 +30,6 @@ import argparse
 from tqdm import tqdm
 
 result_dict = {}
-
-def load_config(config_file="config.yaml"):
-    with open(config_file, "r") as file:
-        config_dict = yaml.safe_load(file)
-    config = SimpleNamespace(**config_dict)
-    return config
-
-def parse_args():
-    parser = argparse.ArgumentParser(description="Run an embodied agent evaluation.")    
-    parser.add_argument('--llm_model', type=str, default='gpt-4o', 
-                        help="Specify the LLM model to be used. gpt-4o, deepseek")
-    parser.add_argument('--library_extraction', type=str,
-                        help="Specify the library extraction method to be used.")
-    parser.add_argument('--model', type=str,default='ours',
-                        help="ours, LLM, LLM+P, CAP")
-    parser.add_argument('--human_guidance', type=str, default=False,
-                    help="Whether to use human guidance (True or False).")
-    parser.add_argument('--use_library', type=bool, default=False,
-                    help="Whether to use library (True or False).")
-
-    return parser.parse_args()
 
 def load_scene(scene_id):
     scene_path=f'cdl_dataset/scenes/Scene_{scene_id}.json'
@@ -96,7 +74,7 @@ def run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph,guidance)
 
     folder_path = f'log/epoch_{timestamp}/records'
     epoch_path = f'log/epoch_{timestamp}'
-    logger = setup_logger(folder_path,timestamp=None,task_name=log_name)
+    logger = setup_task_logger(folder_path,timestamp=None,task_name=log_name)
     task_data=parse_file_to_json(task_path)
     print('='*60)
     print("Task Path is: ",task_path)
@@ -128,10 +106,10 @@ def run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph,guidance)
 def counting(args):
     files=evaluation_task_loader(dataset_folder_path)
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    epoch_logger = setup_logger(f'log/epoch_{timestamp}',timestamp=timestamp)
+    epoch_logger = setup_task_logger(f'log/epoch_{timestamp}',timestamp=timestamp)
     files = tqdm(files, desc="Evaluating tasks")
     for task_file in files:
-        _,classes,init_scene_graph,guidance=load_scene(args.scene_id)
+        _,classes,init_scene_graph,guidance=load_scene(args.scene.id)
         task_path=os.path.join(dataset_folder_path,task_file)
         if task_path in result_dict:
             continue

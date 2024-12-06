@@ -1,0 +1,104 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['Find your cat and touch it.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_cat_2055_around_coffee_table_2068(cat:item):
+    goal: not unknown(cat)
+    body:
+        assert is_cat(cat)
+        bind coffee_table_instance:item where:
+            is_coffee_table(coffee_table_instance) and id[coffee_table_instance]==2068
+        achieve close_char(char,coffee_table_instance)
+        if can_open(coffee_table_instance):
+            achieve_once open(coffee_table_instance)
+            exp(cat,coffee_table_instance)
+        else:
+            exp(cat,coffee_table_instance)
+    eff:
+        unknown[cat]=False
+        close[cat,coffee_table_instance]=True
+        close[coffee_table_instance,cat]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_my_cat(cat:item):
+    # Determines if an item is your cat
+    return is_cat(cat) 
+
+behavior find_and_touch_cat(cat:item):
+    body:
+        achieve close_char(char, cat)
+        touch(cat)
+
+behavior __goal__():
+    body:
+        if exists cat: item : is_my_cat(cat):
+            # If your cat is identified, approach and touch it
+            bind cat: item where:
+                is_my_cat(cat)
+            find_and_touch_cat(cat)
+            
+        else:
+            # If you have not yet identified your cat, explore to locate it
+            foreach cat: item:
+                if is_cat(cat) and not visited(cat):
+                    observe(cat, "Check if this is my cat")
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+ 
+def is_my_cat(cat:item):
+    # Determines if an item is your cat
+    return is_cat(cat) 
+
+behavior find_and_touch_cat(cat:item):
+    body:
+        achieve close_char(char, cat)
+        touch(cat)
+
+behavior __goal__():
+    body:
+        if exists cat: item : is_my_cat(cat):
+            # If your cat is identified, approach and touch it
+            bind cat: item where:
+                is_my_cat(cat)
+            find_and_touch_cat(cat)
+            
+        else:
+            # If you have not yet identified your cat, explore to locate it
+            foreach cat: item:
+                if is_cat(cat) and not visited(cat):
+                    observe(cat, "Check if this is my cat")
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(coffee_table_2068)exp(cat_2055, coffee_table_2068)walk_executor(cat_2055)touch_executor(cat_2055)
+##############################
+From agent.py
+walk_executor(coffee_table_2068)
+Robot is inside home_office_319. Robot is close coffee_table_2068. Robot is no longer inside bathroom_1.
+##############################
+From agent.py
+exp(cat_2055, coffee_table_2068)
+Find cat_2055. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(cat_2055)touch_executor(cat_2055)
+##############################
+From agent.py
+walk_executor(cat_2055)
+Robot is inside home_office_319. Robot is close couch_352. Robot is close cat_2055. Robot is no longer close coffee_table_2068.
+##############################
+From agent.py
+touch_executor(cat_2055)
+Robot is inside home_office_319. Robot is close couch_352. Robot is close cat_2055. 
+##############################

@@ -1,0 +1,32 @@
+[
+    {
+        "task_name": "Wash dishes with dishwasher",
+        "source_sub_task": "1. Put cleaning solution in the dishwasher.",
+        "cdl": " \ndef has_cleaning_solution(dishwasher:item):\n    # Function to check if the dishwasher has cleaning solution inside it\n    symbol has_solution=exists o: item : is_cleaning_solution(o) and inside(o, dishwasher)\n    return has_solution\n\nbehavior put_cleaning_solution_in_dishwasher(solution:item, dishwasher:item):\n    body:\n        achieve inside(solution, dishwasher)\n        # Place the cleaning solution inside the dishwasher\n\nbehavior __goal__():\n    body:\n        if exists dishwasher: item : is_dishwasher(dishwasher) and not has_cleaning_solution(dishwasher):\n            # If the dishwasher doesnt have cleaning solution, proceed to place it inside\n            bind dishwasher: item where:\n                is_dishwasher(dishwasher) and not has_cleaning_solution(dishwasher)\n            # Select the dishwasher that doesnt have cleaning solution\n\n            bind cleaning_solution: item where:\n                is_cleaning_solution(cleaning_solution)\n            # Select the cleaning solution\n\n            put_cleaning_solution_in_dishwasher(cleaning_solution, dishwasher)\n"
+    },
+    {
+        "task_name": "Wash dishes with dishwasher",
+        "source_sub_task": "2. Load the bowls and plates into the dishwasher.",
+        "cdl": " \nbehavior load_dishwasher(o:item, dishwasher:item):\n    body:\n        achieve inside(o, dishwasher)\n        # Place the item inside the dishwasher\n\nbehavior __goal__():\n    body:\n        bind dishwasher: item where:\n            is_dishwasher(dishwasher)\n        # Select a dishwasher\n        foreach o: item:\n        # Load all plates and bowls into the dishwasher\n            if is_plate(o) or is_bowl(o):\n                load_dishwasher(o, dishwasher)\n"
+    },
+    {
+        "task_name": "Wash dishes with dishwasher",
+        "source_sub_task": "3. Start the dishwasher to wash the bowls and plates.",
+        "cdl": " \nbehavior start_dishwasher(dishwasher:item):\n    body:\n        achieve closed(dishwasher) # Close the dishwasher door\n        achieve is_on(dishwasher) # Turn on the dishwasher\n\nbehavior __goal__():\n    body:\n        bind dishwasher: item where:\n            is_dishwasher(dishwasher)\n        # Select a dishwasher\n        start_dishwasher(dishwasher) # Start the dishwasher\n"
+    },
+    {
+        "task_name": "Turn on light",
+        "source_sub_task": "1. Identify all the rooms.",
+        "cdl": " \ndef is_room(item:item):\n    # Function to determine if an item is a room\n    symbol is_a_room=exists room: item : (is_bathroom(room) or is_bedroom(room) or is_dining_room(room) or is_home_office(room)) and item==room\n    return is_a_room\n\nbehavior identify_rooms():\n    body:\n        bind room: item where:\n            is_room(room)\n        # Select any item that is identified as a room\n        achieve visited(room)\n        # Mark room as visited\n\nbehavior __goal__():\n    body:\n        foreach room: item:\n            # Identify all rooms by checking each item if it is a room\n            if is_room(room) and not visited(room):\n                observe(room, \"Identify and confirm all rooms\")\n"
+    },
+    {
+        "task_name": "Turn on light",
+        "source_sub_task": "2. Check if there are any lights on in each room.",
+        "cdl": "behavior check_lights_in_room(room:item):\n    body:\n        # Observe the room to check if the lights are on\n        foreach light: item:\n            if is_light(light) and inside(light, room) and not visited(light):\n                observe(light, \"Check if light is on in the room\")\n\nbehavior __goal__():\n    body:\n        foreach room: item:\n            if is_bathroom(room) or is_dining_room(room) or is_bedroom(room) or is_home_office(room):\n                check_lights_in_room(room)"
+    },
+    {
+        "task_name": "Turn on light",
+        "source_sub_task": "3. Turn on the lights in rooms where no lights are currently on.",
+        "cdl": " \ndef has_lights_off_in_room(room:item):\n    # Function to check if there is a light that is off in a specified room\n    symbol lights_off=exists light: item : is_light(light) and is_off(light) and inside(light, room)\n    return lights_off\n\nbehavior turn_on_lights_in_room(room:item):\n    body:\n        foreach light: item:\n            if is_light(light) and is_off(light) and inside(light, room):\n                achieve is_on(light)\n                # Turn on each light that is off in the room\n\nbehavior __goal__():\n    body:\n        foreach room: item:\n            if has_lights_off_in_room(room):\n                # If any lights are off in the room, turn them on\n                turn_on_lights_in_room(room)\n"
+    }
+]

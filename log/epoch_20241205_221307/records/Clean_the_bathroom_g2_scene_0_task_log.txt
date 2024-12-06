@@ -1,0 +1,184 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['Fill the bathroom sink with water and add soap to create soapy water.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_soap_2054_around_bathroom_counter_41(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind bathroom_counter_instance:item where:
+            is_bathroom_counter(bathroom_counter_instance) and id[bathroom_counter_instance]==41
+        achieve close_char(char,bathroom_counter_instance)
+        if can_open(bathroom_counter_instance):
+            achieve_once open(bathroom_counter_instance)
+            exp(soap,bathroom_counter_instance)
+        else:
+            exp(soap,bathroom_counter_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,bathroom_counter_instance]=True
+        close[bathroom_counter_instance,soap]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def has_soap_near_sink(sink:item):
+    # Check if there is soap close to the specified sink
+    symbol soap_near_sink=exists soap: item : is_soap(soap) and close(soap, sink)
+    return soap_near_sink
+
+behavior make_soapy_water(sink:item, soap:item):
+    body:
+        achieve plugged(sink)
+        # Ensure the sink is plugged to hold water
+        achieve has_water(sink)
+        # Fill the sink with water
+        achieve close(soap, sink)
+        # Confirm soap is close to the sink for creating bubbles
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and is_bathroom(sink)
+        # Select a sink in the bathroom
+
+        if has_soap_near_sink(sink):
+            bind soap: item where:
+                is_soap(soap) and close(soap, sink)
+            # Select soap that is close to the sink
+            make_soapy_water(sink, soap)
+        else:
+            foreach soap: item:
+                if is_soap(soap) and not visited(soap):
+                    observe(soap, "Determine if this soap is close to the bathroom sink")
+                    # Verify proximity of soap to the sink
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_soap_2053_around_bathroom_cabinet_40(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind bathroom_cabinet_instance:item where:
+            is_bathroom_cabinet(bathroom_cabinet_instance) and id[bathroom_cabinet_instance]==40
+        achieve close_char(char,bathroom_cabinet_instance)
+        if can_open(bathroom_cabinet_instance):
+            achieve_once open(bathroom_cabinet_instance)
+            exp(soap,bathroom_cabinet_instance)
+        else:
+            exp(soap,bathroom_cabinet_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,bathroom_cabinet_instance]=True
+        close[bathroom_cabinet_instance,soap]=True
+    
+
+behavior find_soap_2054_around_bathroom_counter_41(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind bathroom_counter_instance:item where:
+            is_bathroom_counter(bathroom_counter_instance) and id[bathroom_counter_instance]==41
+        achieve close_char(char,bathroom_counter_instance)
+        if can_open(bathroom_counter_instance):
+            achieve_once open(bathroom_counter_instance)
+            exp(soap,bathroom_counter_instance)
+        else:
+            exp(soap,bathroom_counter_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,bathroom_counter_instance]=True
+        close[bathroom_counter_instance,soap]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_bathroom_sink(sink:item):
+    # Function to check if the sink is in the bathroom
+    symbol in_bathroom=exists room: item : is_bathroom(room) and inside(sink, room)
+    return in_bathroom
+
+def has_faucet(sink:item):
+    # Determine whether this sink has a faucet
+    symbol has_faucet=exists faucet:item: is_faucet(faucet) and close(faucet,sink)
+    return has_faucet
+
+behavior fill_sink_with_water(sink:item):
+    body:
+        if has_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_on(faucet)
+            achieve has_water(sink)
+            achieve_once is_off(faucet)
+
+behavior add_soap_to_sink(sink:item, soap:item):
+    body:
+        achieve inside(soap, sink)
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and is_bathroom_sink(sink)
+        bind soap: item where:
+            is_soap(soap)
+        fill_sink_with_water(sink)
+        add_soap_to_sink(sink, soap)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+ 
+def is_bathroom_sink(sink:item):
+    # Function to check if the sink is in the bathroom
+    symbol in_bathroom=exists room: item : is_bathroom(room) and inside(sink, room)
+    return in_bathroom
+
+def has_faucet(sink:item):
+    # Determine whether this sink has a faucet
+    symbol has_faucet=exists faucet:item: is_faucet(faucet) and close(faucet,sink)
+    return has_faucet
+
+behavior fill_sink_with_water(sink:item):
+    body:
+        if has_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_on(faucet)
+            achieve has_water(sink)
+            achieve_once is_off(faucet)
+
+behavior add_soap_to_sink(sink:item, soap:item):
+    body:
+        achieve inside(soap, sink)
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and is_bathroom_sink(sink)
+        bind soap: item where:
+            is_soap(soap)
+        fill_sink_with_water(sink)
+        add_soap_to_sink(sink, soap)
+
+##############################
+From agent.py
+Record from func query_LLM_human in agent.py
+Question: Can you tell me how to fill the bathroom sink with water and add soap to create soapy water.
+Answer: Put soap in the sink, then turn on the faucet to fill the sink with water.
+
+##############################

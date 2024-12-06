@@ -1,0 +1,649 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Find the cat and a sink that can be used for washing.', '2. Gently wash the cat in the sink.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_cat_2069_around_kitchen_counter_119(cat:item):
+    goal: not unknown(cat)
+    body:
+        assert is_cat(cat)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==119
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(cat,kitchen_counter_instance)
+        else:
+            exp(cat,kitchen_counter_instance)
+    eff:
+        unknown[cat]=False
+        close[cat,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,cat]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def find_cat_and_sink(cat:item, sink:item):
+    symbol cat_near_sink = close(cat, sink) 
+    return cat_near_sink
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        # Select the cat
+            
+        if exists sink: item : is_sink(sink):
+            # If a sink is available, proceed to check if the cat is close to it
+            bind sink: item where:
+                is_sink(sink) and find_cat_and_sink(cat, sink)
+            # Select a sink if the cat is close to it
+        
+        else:
+            # If no sink found, observe and check relationship between cat and sink
+            foreach sink: item:
+                if is_sink(sink) and not visited(sink):
+                    observe(sink, "Check if this sink is suitable for washing a cat")
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_cat_2127_around_kitchen_counter_122(cat:item):
+    goal: not unknown(cat)
+    body:
+        assert is_cat(cat)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==122
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(cat,kitchen_counter_instance)
+        else:
+            exp(cat,kitchen_counter_instance)
+    eff:
+        unknown[cat]=False
+        close[cat,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,cat]=True
+    
+
+behavior find_soap_2010_around_bathroom_cabinet_17(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind bathroom_cabinet_instance:item where:
+            is_bathroom_cabinet(bathroom_cabinet_instance) and id[bathroom_cabinet_instance]==17
+        achieve close_char(char,bathroom_cabinet_instance)
+        if can_open(bathroom_cabinet_instance):
+            achieve_once open(bathroom_cabinet_instance)
+            exp(soap,bathroom_cabinet_instance)
+        else:
+            exp(soap,bathroom_cabinet_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,bathroom_cabinet_instance]=True
+        close[bathroom_cabinet_instance,soap]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def has_cat_and_sink():
+    # Function to check if there is a cat and a usable sink in the vicinity
+    symbol has_both=exists cat: item : is_cat(cat) and exists sink: item : is_sink(sink)
+    return has_both
+
+behavior __goal__():
+    body:
+        if exists sink: item : is_sink(sink):
+            # Find a sink first, then find the cat near the sink
+            bind sink: item where:
+                is_sink(sink)
+            if exists cat: item : is_cat(cat) and close(cat, sink):
+                bind cat: item where:
+                    is_cat(cat) and close(cat, sink)
+                achieve close_char(char, sink)
+                # Move the character closer to the sink
+            else:
+                foreach cat: item:
+                    if is_cat(cat) and not visited(cat):
+                        observe(cat, "Check if the cat can be washed near this location")
+                        # Observe cat by the sink
+        else:
+            foreach sink: item:
+                if is_sink(sink) and not visited(sink):
+                    observe(sink, "Check if the sink is usable for washing the cat")
+                    # Observe the usability of each sink
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Unexpected token Token('VARNAME', 'sink') at line 5535, column 63.
+Expected one of: 
+	* _NEWLINE
+	* SEMICOLON
+
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_cat_2069_around_kitchen_counter_119(cat:item):
+    goal: not unknown(cat)
+    body:
+        assert is_cat(cat)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==119
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(cat,kitchen_counter_instance)
+        else:
+            exp(cat,kitchen_counter_instance)
+    eff:
+        unknown[cat]=False
+        close[cat,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,cat]=True
+    
+
+behavior find_detergent_2011_around_washing_machine_2079(detergent:item):
+    goal: not unknown(detergent)
+    body:
+        assert is_detergent(detergent)
+        bind washing_machine_instance:item where:
+            is_washing_machine(washing_machine_instance) and id[washing_machine_instance]==2079
+        achieve close_char(char,washing_machine_instance)
+        if can_open(washing_machine_instance):
+            achieve_once open(washing_machine_instance)
+            exp(detergent,washing_machine_instance)
+        else:
+            exp(detergent,washing_machine_instance)
+    eff:
+        unknown[detergent]=False
+        close[detergent,washing_machine_instance]=True
+        close[washing_machine_instance,detergent]=True
+    
+
+#goal_representation
+ 
+def has_cat_and_sink(sink:item):
+    # Function to check if there is a cat close to a specified sink
+    symbol has_both=exists cat: item : is_cat(cat) and close(cat, sink)
+    return has_both
+
+behavior __goal__():
+    body:
+        if exists sink: item : is_sink(sink) and has_cat_and_sink(sink):
+            # Check if there is a sink with a cat close to it
+            bind sink: item where:
+                is_sink(sink) and has_cat_and_sink(sink)
+            bind cat: item where:
+                is_cat(cat) and close(cat, sink)
+            achieve close_char(char, sink)
+            # Move the character closer to the sink where the cat is located
+            
+        else:
+            # Check all sinks that have not been visited
+            foreach sink: item:
+                if is_sink(sink) and not visited(sink):
+                    observe(sink, "Check if there is a cat close to the sink")
+                # Observe if there is a cat near each sink
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+ 
+def has_cat_and_sink(sink:item):
+    # Function to check if there is a cat close to a specified sink
+    symbol has_both=exists cat: item : is_cat(cat) and close(cat, sink)
+    return has_both
+
+behavior __goal__():
+    body:
+        if exists sink: item : is_sink(sink) and has_cat_and_sink(sink):
+            # Check if there is a sink with a cat close to it
+            bind sink: item where:
+                is_sink(sink) and has_cat_and_sink(sink)
+            bind cat: item where:
+                is_cat(cat) and close(cat, sink)
+            achieve close_char(char, sink)
+            # Move the character closer to the sink where the cat is located
+            
+        else:
+            # Check all sinks that have not been visited
+            foreach sink: item:
+                if is_sink(sink) and not visited(sink):
+                    observe(sink, "Check if there is a cat close to the sink")
+                # Observe if there is a cat near each sink
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(sink_19)obs(sink_19, Check if there is a cat close to the sink)walk_executor(sink_120)obs(sink_120, Check if there is a cat close to the sink)
+##############################
+From agent.py
+walk_executor(sink_19)
+Find mat_32. Find detergent_2155. Find soap_2125. Find after_shave_2063. Find cleaning_solution_2143. Find drawing_33. Find phone_2029. Robot is inside bathroom_1. Robot is close bathroom_counter_18. Robot is close sink_19. Robot is no longer inside dining_room_41.
+##############################
+From agent.py
+obs(sink_19, Check if there is a cat close to the sink)
+Get this information:  sink_19 is close to mat_32. sink_19 is close to wall_3. sink_19 is close to wall_4. sink_19 is close to floor_10. sink_19 is close to detergent_2155. sink_19 is close to floor_11. sink_19 is close to soap_2125. sink_19 is close to floor_14. sink_19 is close to after_shave_2063. sink_19 is close to bathroom_cabinet_17. sink_19 is close to bathroom_counter_18. sink_19 is close to faucet_20. sink_19 is close to cleaning_solution_2143. sink_19 is close to character_240. sink_19 is inside bathroom_1. sink_19 is inside bathroom_counter_18. soap_2125 is on sink_19. detergent_2155 is on sink_19. sink_19 is facing drawing_33. after_shave_2063 is inside sink_19. cleaning_solution_2143 is on sink_19. sink_19 is DIRTY.
+##############################
+From agent.py
+walk_executor(sink_120)
+Find basket_for_clothes_2078. Find soap_2010. Find pot_2138. Find tray_128. Find ice_2024. Find soap_2126. Find pot_78. Find bowl_2141. Find plate_2152. Find cutting_board_2123. Find food_salt_2041. Find fork_2150. Find bowl_2140. Find bowl_2142. Find fork_2151. Robot is inside dining_room_41. Robot is close sink_120. Robot is close kitchen_counter_119. Robot is no longer inside bathroom_1.Robot is no longer close bathroom_counter_18.Robot is no longer close sink_19.
+##############################
+From agent.py
+obs(sink_120, Check if there is a cat close to the sink)
+Get this information:  soap_2010 is inside sink_120. sink_120 is close to wall_64. sink_120 is close to wall_67. sink_120 is close to ice_2024. sink_120 is close to walllamp_140. sink_120 is close to knifeblock_76. sink_120 is close to soap_2126. sink_120 is close to floor_45. sink_120 is close to pot_78. sink_120 is close to floor_46. sink_120 is close to cupboard_117. sink_120 is close to kitchen_counter_119. sink_120 is close to faucet_121. sink_120 is close to soap_2010. sink_120 is close to kitchen_counter_123. sink_120 is close to basket_for_clothes_2078. sink_120 is close to washing_machine_2079. sink_120 is close to character_240. ice_2024 is inside sink_120. soap_2126 is on sink_120. sink_120 is inside dining_room_41. sink_120 is inside kitchen_counter_119. sink_120 is DIRTY.
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_cat_2032_around_washing_machine_2079(cat:item):
+    goal: not unknown(cat)
+    body:
+        assert is_cat(cat)
+        bind washing_machine_instance:item where:
+            is_washing_machine(washing_machine_instance) and id[washing_machine_instance]==2079
+        achieve close_char(char,washing_machine_instance)
+        if can_open(washing_machine_instance):
+            achieve_once open(washing_machine_instance)
+            exp(cat,washing_machine_instance)
+        else:
+            exp(cat,washing_machine_instance)
+    eff:
+        unknown[cat]=False
+        close[cat,washing_machine_instance]=True
+        close[washing_machine_instance,cat]=True
+    
+
+behavior find_detergent_2011_around_washing_machine_2079(detergent:item):
+    goal: not unknown(detergent)
+    body:
+        assert is_detergent(detergent)
+        bind washing_machine_instance:item where:
+            is_washing_machine(washing_machine_instance) and id[washing_machine_instance]==2079
+        achieve close_char(char,washing_machine_instance)
+        if can_open(washing_machine_instance):
+            achieve_once open(washing_machine_instance)
+            exp(detergent,washing_machine_instance)
+        else:
+            exp(detergent,washing_machine_instance)
+    eff:
+        unknown[detergent]=False
+        close[detergent,washing_machine_instance]=True
+        close[washing_machine_instance,detergent]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+
+def has_faucet(sink:item):
+    # Function to check if the sink has a faucet close to it
+    symbol has_faucet=exists faucet:item: is_faucet(faucet) and close(faucet,sink)
+    return has_faucet
+
+behavior gently_wash_cat(cat:item, sink:item):
+    body:
+        achieve_once inside(cat, sink)
+        # Ensure the cat is placed inside the sink
+
+        if has_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet,sink)
+            achieve_once is_on(faucet)
+            # Turn on the faucet to wash the cat gently
+
+        wash(cat) # Use the wash behavior to gently clean the cat
+
+        if has_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet,sink)
+            achieve_once is_off(faucet)
+            # Turn off the faucet after washing the cat
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and id[sink]==120
+        # Select the sink with ID 120 to use for washing
+        bind cat: item where:
+            is_cat(cat)
+        # Select the cat for washing
+        gently_wash_cat(cat, sink)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+
+def has_faucet(sink:item):
+    # Function to check if the sink has a faucet close to it
+    symbol has_faucet=exists faucet:item: is_faucet(faucet) and close(faucet,sink)
+    return has_faucet
+
+behavior gently_wash_cat(cat:item, sink:item):
+    body:
+        achieve_once inside(cat, sink)
+        # Ensure the cat is placed inside the sink
+
+        if has_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet,sink)
+            achieve_once is_on(faucet)
+            # Turn on the faucet to wash the cat gently
+
+        wash(cat) # Use the wash behavior to gently clean the cat
+
+        if has_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet,sink)
+            achieve_once is_off(faucet)
+            # Turn off the faucet after washing the cat
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and id[sink]==120
+        # Select the sink with ID 120 to use for washing
+        bind cat: item where:
+            is_cat(cat)
+        # Select the cat for washing
+        gently_wash_cat(cat, sink)
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(washing_machine_2079)open_executor(washing_machine_2079)exp(cat_2127, washing_machine_2079)walk_executor(cat_2127)grab_executor(cat_2127)walk_executor(sink_120)putin_executor(cat_2127, sink_120)walk_executor(faucet_121)switchon_executor(faucet_121)walk_executor(cat_2127)wash_executor(cat_2127)
+##############################
+From agent.py
+walk_executor(washing_machine_2079)
+Robot is inside dining_room_41. Robot is close washing_machine_2079. Robot is no longer close sink_120.Robot is no longer close kitchen_counter_119.
+##############################
+From agent.py
+open_executor(washing_machine_2079)
+Robot is inside dining_room_41. Robot is close washing_machine_2079. 
+##############################
+From agent.py
+exp(cat_2127, washing_machine_2079)
+Failed to find cat_2127 around washing_machine_2079. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(basket_for_clothes_2078)exp(cat_2127, basket_for_clothes_2078)walk_executor(cat_2127)grab_executor(cat_2127)walk_executor(sink_120)putin_executor(cat_2127, sink_120)walk_executor(faucet_121)switchon_executor(faucet_121)walk_executor(cat_2127)wash_executor(cat_2127)
+##############################
+From agent.py
+walk_executor(basket_for_clothes_2078)
+Find clothes_pants_2157. Find clothes_shirt_2158. Find clothes_socks_2159. Find clothes_skirt_2160. Robot is inside dining_room_41. Robot is close clothes_pants_2157. Robot is close clothes_shirt_2158. Robot is close clothes_socks_2159. Robot is close clothes_skirt_2160. Robot is close basket_for_clothes_2078. Robot is no longer close washing_machine_2079.
+##############################
+From agent.py
+exp(cat_2127, basket_for_clothes_2078)
+Failed to find cat_2127 around basket_for_clothes_2078. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(shower_16)exp(cat_2127, shower_16)walk_executor(cat_2127)grab_executor(cat_2127)walk_executor(sink_120)putin_executor(cat_2127, sink_120)walk_executor(faucet_121)switchon_executor(faucet_121)walk_executor(cat_2127)wash_executor(cat_2127)
+##############################
+From agent.py
+walk_executor(shower_16)
+Robot is inside bathroom_1. Robot is close shower_16. Robot is no longer inside dining_room_41.Robot is no longer close clothes_pants_2157.Robot is no longer close clothes_shirt_2158.Robot is no longer close clothes_socks_2159.Robot is no longer close clothes_skirt_2160.Robot is no longer close basket_for_clothes_2078.
+##############################
+From agent.py
+exp(cat_2127, shower_16)
+Failed to find cat_2127 around shower_16. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(bathroom_cabinet_17)open_executor(bathroom_cabinet_17)exp(cat_2127, bathroom_cabinet_17)walk_executor(cat_2127)grab_executor(cat_2127)walk_executor(sink_120)putin_executor(cat_2127, sink_120)walk_executor(faucet_121)switchon_executor(faucet_121)walk_executor(cat_2127)wash_executor(cat_2127)
+##############################
+From agent.py
+walk_executor(bathroom_cabinet_17)
+Find tooth_paste_2059. Robot is inside bathroom_1. Robot is close bathroom_cabinet_17. Robot is close tooth_paste_2059. Robot is no longer close shower_16.
+##############################
+From agent.py
+open_executor(bathroom_cabinet_17)
+Robot is inside bathroom_1. Robot is close bathroom_cabinet_17. Robot is close tooth_paste_2059. 
+##############################
+From agent.py
+exp(cat_2127, bathroom_cabinet_17)
+Failed to find cat_2127 around bathroom_cabinet_17. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(soap_2010)exp(cat_2127, soap_2010)walk_executor(cat_2127)grab_executor(cat_2127)walk_executor(sink_120)putin_executor(cat_2127, sink_120)walk_executor(faucet_121)switchon_executor(faucet_121)walk_executor(cat_2127)wash_executor(cat_2127)
+##############################
+From agent.py
+walk_executor(soap_2010)
+Robot is inside dining_room_41. Robot is close sink_120. Robot is close soap_2010. Robot is no longer inside bathroom_1.Robot is no longer close bathroom_cabinet_17.Robot is no longer close tooth_paste_2059.
+##############################
+From agent.py
+exp(cat_2127, soap_2010)
+Failed to find cat_2127 around soap_2010. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(bed_197)exp(cat_2127, bed_197)walk_executor(cat_2127)grab_executor(cat_2127)walk_executor(sink_120)putin_executor(cat_2127, sink_120)walk_executor(faucet_121)switchon_executor(faucet_121)walk_executor(cat_2127)wash_executor(cat_2127)
+##############################
+From agent.py
+walk_executor(bed_197)
+Find clothes_dress_2116. Find clothes_scarf_2120. Find clothes_underwear_2121. Find drawing_201. Find pillow_207. Find pillow_208. Robot is inside bedroom_162. Robot is close bed_197. Robot is no longer inside dining_room_41.Robot is no longer close sink_120.Robot is no longer close soap_2010.
+##############################
+From agent.py
+Record from func query_LLM_human in agent.py
+Question: Can you help me to find cat_2127 ?
+Answer: Go to bedroom_162. Look for couch_198 in that room. You will find cat_2127 on couch_198.
+
+##############################
+From agent.py
+Human Instruction: Go to bedroom_162. Look for couch_198 in that room. You will find cat_2127 on couch_198.
+
+The actions you have taken:
+Action 1: Walk to sink_19.
+Action 2: Observe around sink_19 with the question of Check if there is a cat close to the sink.
+Action 3: Walk to sink_120.
+Action 4: Observe around sink_120 with the question of Check if there is a cat close to the sink.
+Action 5: Walk to washing_machine_2079.
+Action 6: Open washing_machine_2079.
+Action 7: look for cat_2127 around washing_machine_2079.
+Action 8: Walk to basket_for_clothes_2078.
+Action 9: look for cat_2127 around basket_for_clothes_2078.
+Action 10: Walk to shower_16.
+Action 11: look for cat_2127 around shower_16.
+Action 12: Walk to bathroom_cabinet_17.
+Action 13: Open bathroom_cabinet_17.
+Action 14: look for cat_2127 around bathroom_cabinet_17.
+Action 15: Walk to soap_2010.
+Action 16: look for cat_2127 around soap_2010.
+Action 17: Walk to bed_197.
+
+##############################
+From agent.py
+exp(cat_2127, bed_197)
+Failed to find cat_2127 around bed_197. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(shower_21)exp(cat_2127, shower_21)walk_executor(cat_2127)grab_executor(cat_2127)walk_executor(sink_120)putin_executor(cat_2127, sink_120)walk_executor(faucet_121)switchon_executor(faucet_121)walk_executor(cat_2127)wash_executor(cat_2127)
+##############################
+From agent.py
+walk_executor(shower_21)
+Robot is inside bathroom_1. Robot is close floor_13. Robot is close shower_21. Robot is no longer inside bedroom_162.Robot is no longer close bed_197.
+##############################
+From agent.py
+exp(cat_2127, shower_21)
+Failed to find cat_2127 around shower_21. 
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_cat_2032_around_couch_269(cat:item):
+    goal: not unknown(cat)
+    body:
+        assert is_cat(cat)
+        bind couch_instance:item where:
+            is_couch(couch_instance) and id[couch_instance]==269
+        achieve close_char(char,couch_instance)
+        if can_open(couch_instance):
+            achieve_once open(couch_instance)
+            exp(cat,couch_instance)
+        else:
+            exp(cat,couch_instance)
+    eff:
+        unknown[cat]=False
+        close[cat,couch_instance]=True
+        close[couch_instance,cat]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def has_cat_near_sink(sink:item):
+    # Function to check if the cat is near a specified sink
+    symbol cat_near_sink=exists cat: item : is_cat(cat) and close(cat, sink)
+    return cat_near_sink
+
+behavior gently_wash_cat_in_sink(cat:item, sink:item):
+    body:
+        achieve inside(cat, sink)
+        # Place the cat inside the sink for washing
+
+        if has_cat_near_sink(sink):
+            wash(cat)
+        # Gently wash the cat
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat) and id[cat] == 2127
+        # Select the cat with ID 2127
+        
+        bind sink: item where:
+            is_sink(sink) and id[sink] == 120
+        # Select the sink with ID 120
+
+        if not has_cat_near_sink(sink):
+            observe(sink, "Check if there is a cat close to the sink")
+
+        gently_wash_cat_in_sink(cat, sink)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+def has_cat_near_sink(sink:item):
+    # Function to check if the cat is near a specified sink
+    symbol cat_near_sink=exists cat: item : is_cat(cat) and close(cat, sink)
+    return cat_near_sink
+
+behavior gently_wash_cat_in_sink(cat:item, sink:item):
+    body:
+        achieve inside(cat, sink)
+        # Place the cat inside the sink for washing
+
+        if has_cat_near_sink(sink):
+            wash(cat)
+        # Gently wash the cat
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat) and id[cat] == 2127
+        # Select the cat with ID 2127
+        
+        bind sink: item where:
+            is_sink(sink) and id[sink] == 120
+        # Select the sink with ID 120
+
+        if not has_cat_near_sink(sink):
+            observe(sink, "Check if there is a cat close to the sink")
+
+        gently_wash_cat_in_sink(cat, sink)
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(sink_120)obs(sink_120, Check if there is a cat close to the sink)walk_executor(couch_269)exp(cat_2127, couch_269)walk_executor(cat_2127)grab_executor(cat_2127)walk_executor(sink_120)putin_executor(cat_2127, sink_120)walk_executor(cat_2127)wash_executor(cat_2127)
+##############################
+From agent.py
+walk_executor(sink_120)
+Robot is inside dining_room_41. Robot is close sink_120. Robot is close kitchen_counter_119. Robot is no longer inside bathroom_1.Robot is no longer close shower_21.Robot is no longer close floor_13.
+##############################
+From agent.py
+obs(sink_120, Check if there is a cat close to the sink)
+Get this information:  soap_2010 is inside sink_120. sink_120 is close to wall_64. sink_120 is close to wall_67. sink_120 is close to ice_2024. sink_120 is close to walllamp_140. sink_120 is close to knifeblock_76. sink_120 is close to soap_2126. sink_120 is close to floor_45. sink_120 is close to pot_78. sink_120 is close to floor_46. sink_120 is close to cupboard_117. sink_120 is close to kitchen_counter_119. sink_120 is close to faucet_121. sink_120 is close to soap_2010. sink_120 is close to kitchen_counter_123. sink_120 is close to basket_for_clothes_2078. sink_120 is close to washing_machine_2079. sink_120 is close to character_240. ice_2024 is inside sink_120. soap_2126 is on sink_120. sink_120 is inside dining_room_41. sink_120 is inside kitchen_counter_119. sink_120 is DIRTY.
+##############################
+From agent.py
+walk_executor(couch_269)
+Find brush_2002. Find drawing_288. Find pillow_287. Find shoes_2033. Find phone_2017. Find pillow_286. Robot is inside home_office_241. Robot is close couch_269. Robot is no longer inside dining_room_41.Robot is no longer close sink_120.Robot is no longer close kitchen_counter_119.
+##############################
+From agent.py
+exp(cat_2127, couch_269)
+Failed to find cat_2127 around couch_269. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(sink_120)obs(sink_120, Check if there is a cat close to the sink)walk_executor(couch_198)exp(cat_2127, couch_198)walk_executor(cat_2127)grab_executor(cat_2127)walk_executor(sink_120)putin_executor(cat_2127, sink_120)walk_executor(cat_2127)wash_executor(cat_2127)
+##############################
+From agent.py
+walk_executor(sink_120)
+Robot is inside dining_room_41. Robot is close sink_120. Robot is close kitchen_counter_119. Robot is no longer inside home_office_241.Robot is no longer close couch_269.
+##############################
+From agent.py
+obs(sink_120, Check if there is a cat close to the sink)
+Get this information:  soap_2010 is inside sink_120. sink_120 is close to wall_64. sink_120 is close to wall_67. sink_120 is close to ice_2024. sink_120 is close to walllamp_140. sink_120 is close to knifeblock_76. sink_120 is close to soap_2126. sink_120 is close to floor_45. sink_120 is close to pot_78. sink_120 is close to floor_46. sink_120 is close to cupboard_117. sink_120 is close to kitchen_counter_119. sink_120 is close to faucet_121. sink_120 is close to soap_2010. sink_120 is close to kitchen_counter_123. sink_120 is close to basket_for_clothes_2078. sink_120 is close to washing_machine_2079. sink_120 is close to character_240. ice_2024 is inside sink_120. soap_2126 is on sink_120. sink_120 is inside dining_room_41. sink_120 is inside kitchen_counter_119. sink_120 is DIRTY.
+##############################
+From agent.py
+walk_executor(couch_198)
+Find cat_2127. Find clothes_jacket_2119. Find phone_2016. Find mat_203. Find chair_2003. Find rag_2052. Find instrument_guitar_2028. Robot is inside bedroom_162. Robot is close couch_198. Robot is no longer inside dining_room_41.Robot is no longer close sink_120.Robot is no longer close kitchen_counter_119.
+##############################
+From agent.py
+exp(cat_2127, couch_198)
+Find cat_2127. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(sink_120)obs(sink_120, Check if there is a cat close to the sink)walk_executor(cat_2127)grab_executor(cat_2127)walk_executor(sink_120)putin_executor(cat_2127, sink_120)walk_executor(cat_2127)wash_executor(cat_2127)
+##############################
+From agent.py
+walk_executor(sink_120)
+Robot is inside dining_room_41. Robot is close sink_120. Robot is close kitchen_counter_119. Robot is no longer inside bedroom_162.Robot is no longer close couch_198.
+##############################
+From agent.py
+obs(sink_120, Check if there is a cat close to the sink)
+Get this information:  soap_2010 is inside sink_120. sink_120 is close to wall_64. sink_120 is close to wall_67. sink_120 is close to ice_2024. sink_120 is close to walllamp_140. sink_120 is close to knifeblock_76. sink_120 is close to soap_2126. sink_120 is close to floor_45. sink_120 is close to pot_78. sink_120 is close to floor_46. sink_120 is close to cupboard_117. sink_120 is close to kitchen_counter_119. sink_120 is close to faucet_121. sink_120 is close to soap_2010. sink_120 is close to kitchen_counter_123. sink_120 is close to basket_for_clothes_2078. sink_120 is close to washing_machine_2079. sink_120 is close to character_240. ice_2024 is inside sink_120. soap_2126 is on sink_120. sink_120 is inside dining_room_41. sink_120 is inside kitchen_counter_119. sink_120 is DIRTY.
+##############################
+From agent.py
+walk_executor(cat_2127)
+Robot is inside bedroom_162. Robot is close couch_198. Robot is close cat_2127. Robot is no longer inside dining_room_41.Robot is no longer close sink_120.Robot is no longer close kitchen_counter_119.
+##############################
+From agent.py
+grab_executor(cat_2127)
+Robot is inside bedroom_162. Robot is close couch_198. Robot is close cat_2127. Grabbing cat_2127 by right hand. 
+##############################
+From agent.py
+walk_executor(sink_120)
+Robot is inside dining_room_41. Robot is close cat_2127. Robot is close sink_120. Robot is close kitchen_counter_119. Robot is no longer inside bedroom_162.Robot is no longer close couch_198.
+##############################
+From agent.py
+putin_executor(cat_2127, sink_120)
+Robot is inside dining_room_41. Robot is close cat_2127. Robot is close sink_120. Robot is close kitchen_counter_119. cat_2127 released by right hand. 
+##############################
+From agent.py
+walk_executor(cat_2127)
+Robot is inside bedroom_162. Robot is close cat_2127. Robot is close sink_120. Robot is no longer inside dining_room_41.Robot is no longer close kitchen_counter_119.
+##############################
+From agent.py
+wash_executor(cat_2127)
+Robot is inside bedroom_162. Robot is close cat_2127. Robot is close sink_120. 
+##############################
+From evaluation.py
+cdl_dataset/dataset/Pet_cat/g4.txt
+Checking k1
+missed actions: 
+missed action num: 0
+##############################

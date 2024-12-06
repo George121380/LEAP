@@ -1,0 +1,518 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['Turn on the DVD player using the remote control.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_remote_control_2124_around_tvstand_273(remote_control:item):
+    goal: not unknown(remote_control)
+    body:
+        assert is_remote_control(remote_control)
+        bind tvstand_instance:item where:
+            is_tvstand(tvstand_instance) and id[tvstand_instance]==273
+        achieve close_char(char,tvstand_instance)
+        if can_open(tvstand_instance):
+            achieve_once open(tvstand_instance)
+            exp(remote_control,tvstand_instance)
+        else:
+            exp(remote_control,tvstand_instance)
+    eff:
+        unknown[remote_control]=False
+        close[remote_control,tvstand_instance]=True
+        close[tvstand_instance,remote_control]=True
+    
+
+behavior find_dvd_player_2130_around_tvstand_273(dvd_player:item):
+    goal: not unknown(dvd_player)
+    body:
+        assert is_dvd_player(dvd_player)
+        bind tvstand_instance:item where:
+            is_tvstand(tvstand_instance) and id[tvstand_instance]==273
+        achieve close_char(char,tvstand_instance)
+        if can_open(tvstand_instance):
+            achieve_once open(tvstand_instance)
+            exp(dvd_player,tvstand_instance)
+        else:
+            exp(dvd_player,tvstand_instance)
+    eff:
+        unknown[dvd_player]=False
+        close[dvd_player,tvstand_instance]=True
+        close[tvstand_instance,dvd_player]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior turn_on_dvd_player(remote_control:item, dvd_player:item):
+    body:
+        achieve is_on(dvd_player) # Turn on the DVD player
+
+def has_switch_on_dvd_player(dvd_player:item):
+    symbol has_switch=has_switch(dvd_player)
+    return has_switch
+
+behavior __goal__():
+    body:
+        bind remote_control: item where:
+            is_remote_control(remote_control)
+        # Select the remote control
+
+        bind dvd_player: item where:
+            is_dvd_player(dvd_player)
+        # Select the DVD player
+
+        if not has_switch_on_dvd_player(dvd_player):
+            observe(dvd_player, "Check if the DVD player has a switch")
+
+        turn_on_dvd_player(remote_control, dvd_player)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+ 
+behavior turn_on_dvd_player(remote_control:item, dvd_player:item):
+    body:
+        achieve is_on(dvd_player) # Turn on the DVD player
+
+def has_switch_on_dvd_player(dvd_player:item):
+    symbol has_switch=has_switch(dvd_player)
+    return has_switch
+
+behavior __goal__():
+    body:
+        bind remote_control: item where:
+            is_remote_control(remote_control)
+        # Select the remote control
+
+        bind dvd_player: item where:
+            is_dvd_player(dvd_player)
+        # Select the DVD player
+
+        if not has_switch_on_dvd_player(dvd_player):
+            observe(dvd_player, "Check if the DVD player has a switch")
+
+        turn_on_dvd_player(remote_control, dvd_player)
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(tvstand_273)exp(dvd_player_2130, tvstand_273)walk_executor(dvd_player_2130)plugin_executor(dvd_player_2130)close_executor(dvd_player_2130)switchon_executor(dvd_player_2130)
+##############################
+From agent.py
+walk_executor(tvstand_273)
+Find cd_2145. Find remote_control_2124. Find cd_player_2129. Find dvd_player_2130. Find headset_2131. Find mat_284. Find drawing_288. Robot is inside home_office_241. Robot is close tvstand_273. Robot is close floor_259. Robot is close floor_260. Robot is no longer inside dining_room_41.
+##############################
+From agent.py
+exp(dvd_player_2130, tvstand_273)
+Find dvd_player_2130. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(dvd_player_2130)plugin_executor(dvd_player_2130)switchon_executor(dvd_player_2130)
+##############################
+From agent.py
+walk_executor(dvd_player_2130)
+Robot is inside home_office_241. Robot is close tvstand_273. Robot is close dvd_player_2130. Robot is no longer close floor_259.Robot is no longer close floor_260.
+##############################
+From agent.py
+plugin_executor(dvd_player_2130)
+Robot is inside home_office_241. Robot is close tvstand_273. Robot is close dvd_player_2130. 
+##############################
+From agent.py
+switchon_executor(dvd_player_2130)
+Robot is inside home_office_241. Robot is close tvstand_273. Robot is close dvd_player_2130. 
+##############################
+From agent.py
+Human Instruction: You need to use the remote control to turn on the DVD player. The current actions turned it on directly, but the goal was to use the remote control instead.
+
+The actions you have taken:
+Action 1: Walk to tvstand_273.
+Action 2: look for dvd_player_2130 around tvstand_273.
+Action 3: Walk to dvd_player_2130.
+Action 4: Plug in dvd_player_2130.
+Action 5: Switch on dvd_player_2130.
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def has_remote_control_dvd_player():
+    # Determine if there is a remote control for the DVD player identified and ready
+    symbol remote_control_detected=exists remote: item : is_remote_control(remote) and visited(remote)
+    return remote_control_detected
+
+behavior use_remote_for_dvd(dvd_player:item, remote:item):
+    body:
+        achieve is_on(dvd_player)
+        # Use the remote control to turn on the DVD player
+
+behavior __goal__():
+    body:
+        bind dvd_player: item where:
+            is_dvd_player(dvd_player) and plugged(dvd_player) and is_off(dvd_player)
+        # Select the pluggedin DVD player that is currently off
+        if has_remote_control_dvd_player():
+            bind remote: item where:
+                is_remote_control(remote) and visited(remote)
+            # If the remote control is already found, proceed to use it
+            use_remote_for_dvd(dvd_player, remote)
+        else:
+            # If the remote control has not been found, search for it
+            foreach remote: item:
+                if is_remote_control(remote) and not visited(remote):
+                    observe(remote, "Check if this is the remote for the DVD player")
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_phone_2016_around_nightstand_192(phone:item):
+    goal: not unknown(phone)
+    body:
+        assert is_phone(phone)
+        bind nightstand_instance:item where:
+            is_nightstand(nightstand_instance) and id[nightstand_instance]==192
+        achieve close_char(char,nightstand_instance)
+        if can_open(nightstand_instance):
+            achieve_once open(nightstand_instance)
+            exp(phone,nightstand_instance)
+        else:
+            exp(phone,nightstand_instance)
+    eff:
+        unknown[phone]=False
+        close[phone,nightstand_instance]=True
+        close[nightstand_instance,phone]=True
+    
+
+behavior find_mouse_213_around_mousepad_214(mouse:item):
+    goal: not unknown(mouse)
+    body:
+        assert is_mouse(mouse)
+        bind mousepad_instance:item where:
+            is_mousepad(mousepad_instance) and id[mousepad_instance]==214
+        achieve close_char(char,mousepad_instance)
+        if can_open(mousepad_instance):
+            achieve_once open(mousepad_instance)
+            exp(mouse,mousepad_instance)
+        else:
+            exp(mouse,mousepad_instance)
+    eff:
+        unknown[mouse]=False
+        close[mouse,mousepad_instance]=True
+        close[mousepad_instance,mouse]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+behavior turn_on_dvd_with_remote(dvd_player: item, remote_control: item):
+    body:
+        achieve plugged(dvd_player)
+        # Ensure the DVD player is plugged in
+        achieve close_char(char, remote_control)
+        # Move the character closer to the remote control
+        achieve_once inhand(remote_control)
+        # Temporarily achieve holding the remote control
+        achieve is_on(dvd_player)
+        # Turn on the DVD player using the remote control
+
+behavior __goal__():
+    body:
+        bind dvd_player: item where:
+            is_dvd_player(dvd_player)
+        # Identify the DVD player
+        bind remote_control: item where:
+            is_remote_control(remote_control)
+        # Identify the remote control
+        turn_on_dvd_with_remote(dvd_player, remote_control)
+        # Execute the behavior to turn on the DVD player with the remote control
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+behavior turn_on_dvd_with_remote(dvd_player: item, remote_control: item):
+    body:
+        achieve plugged(dvd_player)
+        # Ensure the DVD player is plugged in
+        achieve close_char(char, remote_control)
+        # Move the character closer to the remote control
+        achieve_once inhand(remote_control)
+        # Temporarily achieve holding the remote control
+        achieve is_on(dvd_player)
+        # Turn on the DVD player using the remote control
+
+behavior __goal__():
+    body:
+        bind dvd_player: item where:
+            is_dvd_player(dvd_player)
+        # Identify the DVD player
+        bind remote_control: item where:
+            is_remote_control(remote_control)
+        # Identify the remote control
+        turn_on_dvd_with_remote(dvd_player, remote_control)
+        # Execute the behavior to turn on the DVD player with the remote control
+##############################
+From agent.py-> find a plan in act()
+walk_executor(remote_control_2124)grab_executor(remote_control_2124)
+##############################
+From agent.py
+walk_executor(remote_control_2124)
+Robot is inside home_office_241. Robot is close tvstand_273. Robot is close remote_control_2124. Robot is no longer close dvd_player_2130.
+##############################
+From agent.py
+grab_executor(remote_control_2124)
+Robot is inside home_office_241. Robot is close tvstand_273. Robot is close remote_control_2124. Grabbing remote_control_2124 by right hand. 
+##############################
+From agent.py
+Human Instruction: You need to turn on the DVD player using the remote control that you are holding, as this was specified in the task instructions. The current actions showed that the DVD player was turned on manually, not through the remote control.
+
+The actions you have taken:
+Action 1: Walk to tvstand_273.
+Action 2: look for dvd_player_2130 around tvstand_273.
+Action 3: Walk to dvd_player_2130.
+Action 4: Plug in dvd_player_2130.
+Action 5: Switch on dvd_player_2130.
+Action 6: Walk to remote_control_2124.
+Action 7: Grab remote_control_2124.
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_phone_2017_around_phone_2017(phone:item):
+    goal: not unknown(phone)
+    body:
+        assert is_phone(phone)
+        bind phone_instance:item where:
+            is_phone(phone_instance) and id[phone_instance]==2017
+        achieve close_char(char,phone_instance)
+        if can_open(phone_instance):
+            achieve_once open(phone_instance)
+            exp(phone,phone_instance)
+        else:
+            exp(phone,phone_instance)
+    eff:
+        unknown[phone]=False
+        close[phone,phone_instance]=True
+        close[phone_instance,phone]=True
+    
+
+behavior find_cd_player_2129_around_cupboard_117(cd_player:item):
+    goal: not unknown(cd_player)
+    body:
+        assert is_cd_player(cd_player)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==117
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(cd_player,cupboard_instance)
+        else:
+            exp(cd_player,cupboard_instance)
+    eff:
+        unknown[cd_player]=False
+        close[cd_player,cupboard_instance]=True
+        close[cupboard_instance,cd_player]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior achieve_turned_on(dvd_player:item, remote_control:item):
+    body:
+        achieve is_on(dvd_player)
+        # Ensure the DVD player is turned on
+
+behavior __goal__():
+    body:
+        bind dvd_player: item where:
+            is_dvd_player(dvd_player) and has_switch(dvd_player)
+        # Select the DVD player
+        
+        bind remote_control: item where:
+            is_remote_control(remote_control)
+        # Select the remote control
+        
+        achieve_once inhand(remote_control)
+        achieve_turned_on(dvd_player, remote_control)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_laser_pointer_2034_around_kitchen_counter_122(laser_pointer:item):
+    goal: not unknown(laser_pointer)
+    body:
+        assert is_laser_pointer(laser_pointer)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==122
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(laser_pointer,kitchen_counter_instance)
+        else:
+            exp(laser_pointer,kitchen_counter_instance)
+    eff:
+        unknown[laser_pointer]=False
+        close[laser_pointer,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,laser_pointer]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior turn_on_dvd_with_remote(dvd_player:item, remote_control:item):
+    body:
+        achieve_once inhand(remote_control)
+        # Temporarily hold the remote control
+        achieve is_on(dvd_player)
+        # Turn on the DVD player using the remote control
+
+behavior __goal__():
+    body:
+        bind dvd_player: item where:
+            is_dvd_player(dvd_player) and id[dvd_player]==2130
+        # Select the DVD player with ID 2130
+        bind remote_control: item where:
+            is_remote_control(remote_control) and id[remote_control]==2124
+        # Select the remote control with ID 2124
+        turn_on_dvd_with_remote(dvd_player, remote_control)
+ 
+#goal_representation_end
+
+##############################
+From agent.py
+Record from func query_LLM_human in agent.py
+Question: Can you teach me how to "turn on the dvd player using the remote control." ?
+Answer: Hold the remote control, get close to the DVD player, and touch the remote control.
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_ice_cream_2097_around_fridge_126(food_ice_cream:item):
+    goal: not unknown(food_ice_cream)
+    body:
+        assert is_food_ice_cream(food_ice_cream)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==126
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_ice_cream,fridge_instance)
+        else:
+            exp(food_ice_cream,fridge_instance)
+    eff:
+        unknown[food_ice_cream]=False
+        close[food_ice_cream,fridge_instance]=True
+        close[fridge_instance,food_ice_cream]=True
+    
+
+behavior find_phone_2029_around_kitchen_counter_123(phone:item):
+    goal: not unknown(phone)
+    body:
+        assert is_phone(phone)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==123
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(phone,kitchen_counter_instance)
+        else:
+            exp(phone,kitchen_counter_instance)
+    eff:
+        unknown[phone]=False
+        close[phone,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,phone]=True
+    
+
+behavior find_mouse_213_around_mousepad_214(mouse:item):
+    goal: not unknown(mouse)
+    body:
+        assert is_mouse(mouse)
+        bind mousepad_instance:item where:
+            is_mousepad(mousepad_instance) and id[mousepad_instance]==214
+        achieve close_char(char,mousepad_instance)
+        if can_open(mousepad_instance):
+            achieve_once open(mousepad_instance)
+            exp(mouse,mousepad_instance)
+        else:
+            exp(mouse,mousepad_instance)
+    eff:
+        unknown[mouse]=False
+        close[mouse,mousepad_instance]=True
+        close[mousepad_instance,mouse]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior hold_and_use_remote(remote:item, dvd_player:item):
+    body:
+        achieve_once inhand(remote)
+        achieve close_char(char, dvd_player)
+        achieve is_on(dvd_player)
+
+behavior __goal__():
+    body:
+        bind remote: item where:
+            is_remote_control(remote) and id[remote]==2124
+
+        bind dvd_player: item where:
+            is_dvd_player(dvd_player) and id[dvd_player]==2130
+
+        hold_and_use_remote(remote, dvd_player)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+behavior hold_and_use_remote(remote:item, dvd_player:item):
+    body:
+        achieve_once inhand(remote)
+        achieve close_char(char, dvd_player)
+        achieve is_on(dvd_player)
+
+behavior __goal__():
+    body:
+        bind remote: item where:
+            is_remote_control(remote) and id[remote]==2124
+
+        bind dvd_player: item where:
+            is_dvd_player(dvd_player) and id[dvd_player]==2130
+
+        hold_and_use_remote(remote, dvd_player)
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(dvd_player_2130)
+##############################
+From agent.py
+walk_executor(dvd_player_2130)
+Robot is inside home_office_241. Robot is close tvstand_273. Robot is close remote_control_2124. Robot is close dvd_player_2130. 
+##############################
+From evaluation.py
+cdl_dataset/dataset/Listen_to_music/g2.txt
+Checking k1
+missed actions: 
+missed action num: 0
+##############################

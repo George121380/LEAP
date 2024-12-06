@@ -125,7 +125,7 @@ def is_subsequence(needle, haystack):
                 return True
     return False
 
-def parse_action_sequence_from_file_path(file_path):
+def parse_action_sequence_from_file_path(file_path,scene_id):
     """
     This is the only function that should be called from outside
     
@@ -137,7 +137,7 @@ def parse_action_sequence_from_file_path(file_path):
     with open(file_path) as file:
         lines = file.readlines()
         for line in lines:
-            if line.startswith("Actions"):
+            if line.startswith(f"S{scene_id}_Actions"):
                 actions_defination=line
                 break
     if actions_defination is None:

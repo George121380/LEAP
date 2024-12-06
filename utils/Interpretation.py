@@ -108,11 +108,14 @@ def Guidance_helper(question,guidance,task_info):
     print('=' * 60)
     print(f"Human Guidance_helper:")
     content=Guidance_helper_prompt(question,guidance,task_info)
-    answer=ask_GPT(system,content)
-    print('=' * 60)
-    print(answer)
-    re_decompose=False
-    return answer,re_decompose
+    while True:
+        answer=ask_GPT(system,content)
+        pattern = r'Need to replan:\s*(Yes|No)\s*Guidance:\s*(.*)'
+        match = re.match(pattern, answer, re.DOTALL)
+        if match:
+            re_decompose = (match.group(1).strip().lower() == 'yes')
+            guidance = match.group(2).strip()
+            return guidance, re_decompose
 
 def refinement_loop_feedback(current_plan,full_goal,prev_sub_goal_list,current_subgoal,previous_action_history,goal_int, add_info, classes, agent_type):
     system="Imagine you are the owner of the house. You are trying to teach a house robot to finish a task. I will provide you some guidance about how to finish the task. Refer to this guidance and try to answer the robot."

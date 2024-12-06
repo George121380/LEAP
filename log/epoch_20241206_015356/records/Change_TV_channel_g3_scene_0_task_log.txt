@@ -1,0 +1,100 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Sit on the couch.', '2. Find the remote control and turn on the TV.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+#exp_behavior_end
+
+#goal_representation
+behavior __goal__():
+    body:
+        bind couch: item where:
+            is_couch(couch)
+        # Select the couch in the scene
+
+        achieve on_char(char, couch)
+        # Sit on the couch to achieve the subtask goal of sitting on the couch
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+behavior __goal__():
+    body:
+        bind couch: item where:
+            is_couch(couch)
+        # Select the couch in the scene
+
+        achieve on_char(char, couch)
+        # Sit on the couch to achieve the subtask goal of sitting on the couch
+##############################
+From agent.py-> find a plan in act()
+walk_executor(couch_352)sit_executor(couch_352)
+##############################
+From agent.py
+walk_executor(couch_352)
+Find mat_401. Find remote_control_2052. Find clothes_jacket_2047. Find cat_2055. Find pillow_405. Find drawing_400. Find pillow_406. Find hairbrush_2002. Find vacuum_cleaner_2070. Robot is inside home_office_319. Robot is close couch_352. Robot is close mat_401. Robot is no longer inside bathroom_1.
+##############################
+From agent.py
+sit_executor(couch_352)
+Find headset_2062. Find hanger_363. Find hanger_374. Find drawing_404. Find keyboard_415. Find headset_2076. Find hanger_369. Find hanger_361. Find spectacles_2082. Find drawing_402. Find hanger_372. Find chair_356. Find book_2066. Find phone_2077. Find mouse_413. Find hanger_375. Find pencil_2001. Find hanger_367. Find hanger_359. Find dvd_player_2061. Find drawing_403. Find hanger_365. Find book_2067. Find hanger_376. Robot is inside home_office_319. Robot is close couch_352. Robot is close mat_401. Robot is on couch_352. Robot is facing television_410. 
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def has_remote_control(tvstand:item):
+    # Function to check if there is a remote control on the TV stand
+    symbol has_remote=exists o: item : is_remote_control(o) and on(o, tvstand)
+    return has_remote
+
+behavior locate_remote_control(tvstand:item):
+    body:
+        if has_remote_control(tvstand):
+            achieve close_char(char, tvstand)
+        else:
+            foreach tvstand: item:
+                if is_tvstand(tvstand) and not visited(tvstand):
+                    observe(tvstand, "Find the remote control on the TV stand")
+
+behavior use_remote_to_turn_on_tv(remote_control:item, television:item):
+    body:
+        achieve_once inhand(remote_control)
+        # Hold the remote control to use it
+        achieve close_char(char, television)
+        # Approach the television
+        achieve is_on(television)
+        # Turn on the television
+
+behavior __goal__():
+    body:
+        bind tvstand: item where:
+            is_tvstand(tvstand)
+        # Select a TV stand
+        
+        locate_remote_control(tvstand)
+        
+        bind remote_control: item where:
+            is_remote_control(remote_control) and on(remote_control, tvstand)
+        # Select the remote control found on the TV stand
+
+        bind television: item where:
+            is_television(television)
+        # Select the television
+
+        use_remote_to_turn_on_tv(remote_control, television)
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "behavior_definition":
+
+Variable tvstand already exists.
+##############################

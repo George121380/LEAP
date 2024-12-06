@@ -43,8 +43,12 @@ def parse_file_to_json(file_path):
                 data['Guidance'] = line.partition(':')[2].strip()
             elif line.startswith('Logic:'):
                 data['Logic'] = line.partition(':')[2].strip()
-            elif line.startswith('Actions'):
-                data['Actions'] = line.partition(':')[2]
+            elif line.startswith('S0_Actions'):
+                data['S0_Actions'] = line.partition(':')[2]
+            elif line.startswith('S1_Actions'):
+                data['S1_Actions'] = line.partition(':')[2]
+            elif line.startswith('S2_Actions'):
+                data['S2_Actions'] = line.partition(':')[2]
             elif line.startswith('behavior'):
                 in_behavior = True
                 # Extract behavior name using regex

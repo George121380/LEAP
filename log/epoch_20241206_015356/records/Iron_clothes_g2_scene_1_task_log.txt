@@ -1,0 +1,694 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['Iron the pair of pants.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_clothes_pants_2036_around_dresser_274(clothes_pants:item):
+    goal: not unknown(clothes_pants)
+    body:
+        assert is_clothes_pants(clothes_pants)
+        bind dresser_instance:item where:
+            is_dresser(dresser_instance) and id[dresser_instance]==274
+        achieve close_char(char,dresser_instance)
+        if can_open(dresser_instance):
+            achieve_once open(dresser_instance)
+            exp(clothes_pants,dresser_instance)
+        else:
+            exp(clothes_pants,dresser_instance)
+    eff:
+        unknown[clothes_pants]=False
+        close[clothes_pants,dresser_instance]=True
+        close[dresser_instance,clothes_pants]=True
+    
+
+behavior find_clothes_pants_2157_around_bed_197(clothes_pants:item):
+    goal: not unknown(clothes_pants)
+    body:
+        assert is_clothes_pants(clothes_pants)
+        bind bed_instance:item where:
+            is_bed(bed_instance) and id[bed_instance]==197
+        achieve close_char(char,bed_instance)
+        if can_open(bed_instance):
+            achieve_once open(bed_instance)
+            exp(clothes_pants,bed_instance)
+        else:
+            exp(clothes_pants,bed_instance)
+    eff:
+        unknown[clothes_pants]=False
+        close[clothes_pants,bed_instance]=True
+        close[bed_instance,clothes_pants]=True
+    
+
+behavior find_iron_2161_around_ironing_board_2144(iron:item):
+    goal: not unknown(iron)
+    body:
+        assert is_iron(iron)
+        bind ironing_board_instance:item where:
+            is_ironing_board(ironing_board_instance) and id[ironing_board_instance]==2144
+        achieve close_char(char,ironing_board_instance)
+        if can_open(ironing_board_instance):
+            achieve_once open(ironing_board_instance)
+            exp(iron,ironing_board_instance)
+        else:
+            exp(iron,ironing_board_instance)
+    eff:
+        unknown[iron]=False
+        close[iron,ironing_board_instance]=True
+        close[ironing_board_instance,iron]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def has_ironing_board_present():
+    # Determine if there is an ironing board in the room
+    symbol present=exists ironing_board: item : is_ironing_board(ironing_board)
+    return present
+
+def has_an_iron(ironing_board: item):
+    # Determine if there is an iron available on the ironing board
+    symbol has_iron=exists iron: item : is_iron(iron) and on(iron, ironing_board)
+    return has_iron
+
+behavior prepare_for_ironing(ironing_board: item, iron: item):
+    body:
+        achieve plugged(iron)  # Ensure the iron is plugged in
+        achieve has_water(iron)  # Ensure the iron has water
+
+behavior heat_up_iron(iron: item):
+    body:
+        achieve is_on(iron)  # Turn the iron on to heat
+
+behavior iron_pants(ironing_board: item, iron: item, pants: item):
+    body:
+        achieve inside(pants, ironing_board)
+        # Ensure the pants are on the ironing board for ironing
+
+behavior __goal__():
+    body:
+        if has_ironing_board_present():
+            bind ironing_board: item where:
+                is_ironing_board(ironing_board)
+            # Select an available ironing board
+
+            if has_an_iron(ironing_board):
+                bind iron: item where:
+                    is_iron(iron) and on(iron, ironing_board)
+                # Select an iron from the ironing board
+
+                bind pants: item where:
+                    is_clothes_pants(pants)
+                # Select the pants to iron
+
+                prepare_for_ironing(ironing_board, iron)
+                heat_up_iron(iron)
+                iron_pants(ironing_board, iron, pants)
+            else:
+                observe(ironing_board, "Check if there is an iron on the ironing board")
+                # Need to check if there is an iron on the board
+
+        else:
+            observe(room, "Check if there is an ironing board in the room")
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "behavior_definition":
+
+Unknown variable: room; available variables: [].
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_clothes_pants_2157_around_dresser_274(clothes_pants:item):
+    goal: not unknown(clothes_pants)
+    body:
+        assert is_clothes_pants(clothes_pants)
+        bind dresser_instance:item where:
+            is_dresser(dresser_instance) and id[dresser_instance]==274
+        achieve close_char(char,dresser_instance)
+        if can_open(dresser_instance):
+            achieve_once open(dresser_instance)
+            exp(clothes_pants,dresser_instance)
+        else:
+            exp(clothes_pants,dresser_instance)
+    eff:
+        unknown[clothes_pants]=False
+        close[clothes_pants,dresser_instance]=True
+        close[dresser_instance,clothes_pants]=True
+    
+
+behavior find_iron_2161_around_ironing_board_2144(iron:item):
+    goal: not unknown(iron)
+    body:
+        assert is_iron(iron)
+        bind ironing_board_instance:item where:
+            is_ironing_board(ironing_board_instance) and id[ironing_board_instance]==2144
+        achieve close_char(char,ironing_board_instance)
+        if can_open(ironing_board_instance):
+            achieve_once open(ironing_board_instance)
+            exp(iron,ironing_board_instance)
+        else:
+            exp(iron,ironing_board_instance)
+    eff:
+        unknown[iron]=False
+        close[iron,ironing_board_instance]=True
+        close[ironing_board_instance,iron]=True
+    
+
+#goal_representation
+ 
+def has_ironing_board_present():
+    # Determine if there is an ironing board in the room
+    symbol present=exists ironing_board: item : is_ironing_board(ironing_board)
+    return present
+
+def has_an_iron(ironing_board: item):
+    # Determine if there is an iron available on the ironing board
+    symbol has_iron=exists iron: item : is_iron(iron) and on(iron, ironing_board)
+    return has_iron
+
+behavior prepare_for_ironing(ironing_board: item, iron: item):
+    body:
+        achieve plugged(iron)  # Ensure the iron is plugged in
+        achieve has_water(iron)  # Ensure the iron has water
+
+behavior heat_up_iron(iron: item):
+    body:
+        achieve is_on(iron)  # Turn the iron on to heat
+
+behavior iron_pants(ironing_board: item, iron: item, pants: item):
+    body:
+        achieve inside(pants, ironing_board)
+        # Ensure the pants are on the ironing board for ironing
+
+behavior __goal__():
+    body:
+        if has_ironing_board_present():
+            bind ironing_board: item where:
+                is_ironing_board(ironing_board)
+            # Select an available ironing board
+
+            if has_an_iron(ironing_board):
+                bind iron: item where:
+                    is_iron(iron) and on(iron, ironing_board)
+                # Select an iron from the ironing board
+
+                bind pants: item where:
+                    is_clothes_pants(pants)
+                # Select the pants to iron
+
+                prepare_for_ironing(ironing_board, iron)
+                heat_up_iron(iron)
+                iron_pants(ironing_board, iron, pants)
+            else:
+                observe(ironing_board, "Check if there is an iron on the ironing board")
+                # Need to check if there is an iron on the board
+
+        else:
+            bind room: item where:
+                inside(ironing_board, room)
+            observe(room, "Check if there is an ironing board in the room")
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "behavior_definition":
+
+Unknown variable: ironing_board; available variables: [Variable<room: item>].
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_clothes_pants_2157_around_dresser_274(clothes_pants:item):
+    goal: not unknown(clothes_pants)
+    body:
+        assert is_clothes_pants(clothes_pants)
+        bind dresser_instance:item where:
+            is_dresser(dresser_instance) and id[dresser_instance]==274
+        achieve close_char(char,dresser_instance)
+        if can_open(dresser_instance):
+            achieve_once open(dresser_instance)
+            exp(clothes_pants,dresser_instance)
+        else:
+            exp(clothes_pants,dresser_instance)
+    eff:
+        unknown[clothes_pants]=False
+        close[clothes_pants,dresser_instance]=True
+        close[dresser_instance,clothes_pants]=True
+    
+
+behavior find_clothes_pants_2036_around_dresser_274(clothes_pants:item):
+    goal: not unknown(clothes_pants)
+    body:
+        assert is_clothes_pants(clothes_pants)
+        bind dresser_instance:item where:
+            is_dresser(dresser_instance) and id[dresser_instance]==274
+        achieve close_char(char,dresser_instance)
+        if can_open(dresser_instance):
+            achieve_once open(dresser_instance)
+            exp(clothes_pants,dresser_instance)
+        else:
+            exp(clothes_pants,dresser_instance)
+    eff:
+        unknown[clothes_pants]=False
+        close[clothes_pants,dresser_instance]=True
+        close[dresser_instance,clothes_pants]=True
+    
+
+behavior find_iron_2161_around_ironing_board_2144(iron:item):
+    goal: not unknown(iron)
+    body:
+        assert is_iron(iron)
+        bind ironing_board_instance:item where:
+            is_ironing_board(ironing_board_instance) and id[ironing_board_instance]==2144
+        achieve close_char(char,ironing_board_instance)
+        if can_open(ironing_board_instance):
+            achieve_once open(ironing_board_instance)
+            exp(iron,ironing_board_instance)
+        else:
+            exp(iron,ironing_board_instance)
+    eff:
+        unknown[iron]=False
+        close[iron,ironing_board_instance]=True
+        close[ironing_board_instance,iron]=True
+    
+
+#goal_representation
+ 
+def has_ironing_board_present():
+    # Determine if there is an ironing board in the room
+    symbol present=exists ironing_board: item : is_ironing_board(ironing_board)
+    return present
+
+def has_an_iron(ironing_board: item):
+    # Determine if there is an iron available on the ironing board
+    symbol has_iron=exists iron: item : is_iron(iron) and on(iron, ironing_board)
+    return has_iron
+
+behavior prepare_for_ironing(ironing_board: item, iron: item):
+    body:
+        achieve plugged(iron)  # Ensure the iron is plugged in
+        achieve has_water(iron)  # Ensure the iron has water
+
+behavior heat_up_iron(iron: item):
+    body:
+        achieve is_on(iron)  # Turn the iron on to heat
+
+behavior iron_pants(ironing_board: item, iron: item, pants: item):
+    body:
+        achieve inside(pants, ironing_board)
+        # Ensure the pants are on the ironing board for ironing
+
+behavior __goal__():
+    body:
+        if has_ironing_board_present():
+            bind ironing_board: item where:
+                is_ironing_board(ironing_board)
+            # Select an available ironing board
+
+            if has_an_iron(ironing_board):
+                bind iron: item where:
+                    is_iron(iron) and on(iron, ironing_board)
+                # Select an iron from the ironing board
+
+                bind pants: item where:
+                    is_clothes_pants(pants)
+                # Select the pants to iron
+
+                prepare_for_ironing(ironing_board, iron)
+                heat_up_iron(iron)
+                iron_pants(ironing_board, iron, pants)
+            else:
+                observe(ironing_board, "Check if there is an iron on the ironing board")
+                # Need to check if there is an iron on the board
+
+        else:
+            bind room: item where:
+                inside(ironing_board, room)
+            observe(room, "Check if there is an ironing board in the room")
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_clothes_pants_2036_around_dresser_274(clothes_pants:item):
+    goal: not unknown(clothes_pants)
+    body:
+        assert is_clothes_pants(clothes_pants)
+        bind dresser_instance:item where:
+            is_dresser(dresser_instance) and id[dresser_instance]==274
+        achieve close_char(char,dresser_instance)
+        if can_open(dresser_instance):
+            achieve_once open(dresser_instance)
+            exp(clothes_pants,dresser_instance)
+        else:
+            exp(clothes_pants,dresser_instance)
+    eff:
+        unknown[clothes_pants]=False
+        close[clothes_pants,dresser_instance]=True
+        close[dresser_instance,clothes_pants]=True
+    
+
+behavior find_iron_2161_around_ironing_board_2144(iron:item):
+    goal: not unknown(iron)
+    body:
+        assert is_iron(iron)
+        bind ironing_board_instance:item where:
+            is_ironing_board(ironing_board_instance) and id[ironing_board_instance]==2144
+        achieve close_char(char,ironing_board_instance)
+        if can_open(ironing_board_instance):
+            achieve_once open(ironing_board_instance)
+            exp(iron,ironing_board_instance)
+        else:
+            exp(iron,ironing_board_instance)
+    eff:
+        unknown[iron]=False
+        close[iron,ironing_board_instance]=True
+        close[ironing_board_instance,iron]=True
+    
+
+behavior find_clothes_pants_2157_around_dresser_274(clothes_pants:item):
+    goal: not unknown(clothes_pants)
+    body:
+        assert is_clothes_pants(clothes_pants)
+        bind dresser_instance:item where:
+            is_dresser(dresser_instance) and id[dresser_instance]==274
+        achieve close_char(char,dresser_instance)
+        if can_open(dresser_instance):
+            achieve_once open(dresser_instance)
+            exp(clothes_pants,dresser_instance)
+        else:
+            exp(clothes_pants,dresser_instance)
+    eff:
+        unknown[clothes_pants]=False
+        close[clothes_pants,dresser_instance]=True
+        close[dresser_instance,clothes_pants]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior iron_pants(pants:item, iron:item):
+    body:
+        achieve plugged(iron) 
+        # Ensure the iron is plugged in
+        achieve has_water(iron)
+        # Ensure the iron has water (if its a steam iron)
+        achieve is_on(iron)
+        # Turn on the iron
+        achieve inside(pants, ironing_board)
+        # Place the pants on the ironing board
+        achieve facing_char(char, pants) 
+        # Face the pants to begin ironing
+
+behavior __goal__():
+    body:
+        bind pants: item where:
+            is_clothes_pants(pants)
+        # Select the pair of pants
+
+        bind ironing_board: item where:
+            is_ironing_board(ironing_board)
+        # Select the ironing board
+
+        bind iron: item where:
+            is_iron(iron)
+        # Select the iron
+
+        iron_pants(pants, iron)
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "behavior_definition":
+
+Unknown variable: ironing_board; available variables: [Variable<pants: item>, Variable<iron: item>].
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_clothes_pants_2036_around_dresser_274(clothes_pants:item):
+    goal: not unknown(clothes_pants)
+    body:
+        assert is_clothes_pants(clothes_pants)
+        bind dresser_instance:item where:
+            is_dresser(dresser_instance) and id[dresser_instance]==274
+        achieve close_char(char,dresser_instance)
+        if can_open(dresser_instance):
+            achieve_once open(dresser_instance)
+            exp(clothes_pants,dresser_instance)
+        else:
+            exp(clothes_pants,dresser_instance)
+    eff:
+        unknown[clothes_pants]=False
+        close[clothes_pants,dresser_instance]=True
+        close[dresser_instance,clothes_pants]=True
+    
+
+behavior find_iron_2161_around_ironing_board_2144(iron:item):
+    goal: not unknown(iron)
+    body:
+        assert is_iron(iron)
+        bind ironing_board_instance:item where:
+            is_ironing_board(ironing_board_instance) and id[ironing_board_instance]==2144
+        achieve close_char(char,ironing_board_instance)
+        if can_open(ironing_board_instance):
+            achieve_once open(ironing_board_instance)
+            exp(iron,ironing_board_instance)
+        else:
+            exp(iron,ironing_board_instance)
+    eff:
+        unknown[iron]=False
+        close[iron,ironing_board_instance]=True
+        close[ironing_board_instance,iron]=True
+    
+
+#goal_representation
+
+behavior iron_pants(pants:item, iron:item, ironing_board:item):
+    body:
+        achieve plugged(iron) 
+        # Ensure the iron is plugged in
+        achieve has_water(iron)
+        # Ensure the iron has water (if its a steam iron)
+        achieve is_on(iron)
+        # Turn on the iron
+        achieve inside(pants, ironing_board)
+        # Place the pants on the ironing board
+        achieve facing_char(char, pants) 
+        # Face the pants to begin ironing
+
+behavior __goal__():
+    body:
+        bind pants: item where:
+            is_clothes_pants(pants)
+        # Select the pair of pants
+
+        bind ironing_board: item where:
+            is_ironing_board(ironing_board)
+        # Select the ironing board
+
+        bind iron: item where:
+            is_iron(iron)
+        # Select the iron
+
+        iron_pants(pants, iron, ironing_board)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+Failed to generate the goal representation
+##############################
+From agent.py
+Record from func query_LLM_human in agent.py
+Question: Can you teach me how to "iron the pair of pants." ?
+Answer: Put the pants on the ironing board. Turn on the iron. Then put the iron on the pants, push and pull it on the pants.
+Re-decompose: False
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_clothes_pants_2157_around_dresser_274(clothes_pants:item):
+    goal: not unknown(clothes_pants)
+    body:
+        assert is_clothes_pants(clothes_pants)
+        bind dresser_instance:item where:
+            is_dresser(dresser_instance) and id[dresser_instance]==274
+        achieve close_char(char,dresser_instance)
+        if can_open(dresser_instance):
+            achieve_once open(dresser_instance)
+            exp(clothes_pants,dresser_instance)
+        else:
+            exp(clothes_pants,dresser_instance)
+    eff:
+        unknown[clothes_pants]=False
+        close[clothes_pants,dresser_instance]=True
+        close[dresser_instance,clothes_pants]=True
+    
+
+behavior find_iron_2161_around_cupboard_118(iron:item):
+    goal: not unknown(iron)
+    body:
+        assert is_iron(iron)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==118
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(iron,cupboard_instance)
+        else:
+            exp(iron,cupboard_instance)
+    eff:
+        unknown[iron]=False
+        close[iron,cupboard_instance]=True
+        close[cupboard_instance,iron]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_ironing_setup_ready(pants: item, ironing_board: item, iron: item):
+    # Determine if the pants are on the ironing board and the iron is turned on
+    symbol setup_complete = on(pants, ironing_board) and is_on(iron)
+    return setup_complete
+
+behavior iron_pants(pants: item, ironing_board: item, iron: item):
+    body:
+        achieve on(pants, ironing_board)
+        # Place the pants on the ironing board
+
+        achieve is_on(iron)
+        # Turn the iron on
+
+        achieve_flip_and_iron(pants, iron)
+        # Iron the pants using the hot iron
+
+        assert clean(pants)
+        # Ensure the pants are clean after ironing
+
+behavior __goal__():
+    body:
+        bind pants: item where:
+            is_clothes_pants(pants)
+        # Select the pants to be ironed
+        
+        bind ironing_board: item where:
+            is_ironing_board(ironing_board)
+        # Select the ironing board
+        
+        bind iron: item where:
+            is_iron(iron)
+        # Select the iron
+        
+        if not is_ironing_setup_ready(pants, ironing_board, iron):
+            iron_pants(pants, ironing_board, iron)
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "behavior_definition":
+
+'Function achieve_flip_and_iron not found. Note that recursive function calls are not supported in the current version.'
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_clothes_pants_2036_around_ironing_board_2144(clothes_pants:item):
+    goal: not unknown(clothes_pants)
+    body:
+        assert is_clothes_pants(clothes_pants)
+        bind ironing_board_instance:item where:
+            is_ironing_board(ironing_board_instance) and id[ironing_board_instance]==2144
+        achieve close_char(char,ironing_board_instance)
+        if can_open(ironing_board_instance):
+            achieve_once open(ironing_board_instance)
+            exp(clothes_pants,ironing_board_instance)
+        else:
+            exp(clothes_pants,ironing_board_instance)
+    eff:
+        unknown[clothes_pants]=False
+        close[clothes_pants,ironing_board_instance]=True
+        close[ironing_board_instance,clothes_pants]=True
+    
+
+behavior find_iron_2161_around_cupboard_118(iron:item):
+    goal: not unknown(iron)
+    body:
+        assert is_iron(iron)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==118
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(iron,cupboard_instance)
+        else:
+            exp(iron,cupboard_instance)
+    eff:
+        unknown[iron]=False
+        close[iron,cupboard_instance]=True
+        close[cupboard_instance,iron]=True
+    
+
+#goal_representation
+ 
+def is_ironing_setup_ready(pants: item, ironing_board: item, iron: item):
+    # Determine if the pants are on the ironing board and the iron is turned on
+    symbol setup_complete = on(pants, ironing_board) and is_on(iron)
+    return setup_complete
+
+behavior iron_pants(pants: item, ironing_board: item, iron: item):
+    body:
+        achieve on(pants, ironing_board)
+        # Place the pants on the ironing board
+
+        achieve is_on(iron)
+        # Turn the iron on
+
+        achieve is_ironing_board(pants, iron)
+        # Iron the pants using the hot iron
+
+        assert clean(pants)
+        # Ensure the pants are clean after ironing
+
+behavior __goal__():
+    body:
+        bind pants: item where:
+            is_clothes_pants(pants)
+        # Select the pants to be ironed
+        
+        bind ironing_board: item where:
+            is_ironing_board(ironing_board)
+        # Select the ironing board
+        
+        bind iron: item where:
+            is_iron(iron)
+        # Select the iron
+        
+        if not is_ironing_setup_ready(pants, ironing_board, iron):
+            iron_pants(pants, ironing_board, iron)
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "behavior_definition":
+
+Number of arguments does not match the number of types: 2 vs 1. Args: (VariableExpression<V::pants>, VariableExpression<V::iron>), Types: (ObjectType<item>,)
+##############################

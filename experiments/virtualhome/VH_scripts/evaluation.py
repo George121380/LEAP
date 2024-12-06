@@ -130,7 +130,7 @@ class Evaluator:
         self.end_counting=None
         self.action_completion_rate="No required actions"
         self.Logic=parse_logic_from_file_path(task_file_path)
-        self.Action_sequences=parse_action_sequence_from_file_path(task_file_path)
+        self.Action_sequences=parse_action_sequence_from_file_path(task_file_path,args.scene.id)
         self.has_multiple_logic=self.check_multistep_Logic()
 
 
