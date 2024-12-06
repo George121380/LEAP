@@ -91,7 +91,7 @@ def refinement_operation(goal_int:str,correct_times_limit:int,state_file:str,exe
                     logger.info("Goal representation after debugging in planning.py"+"\n#exp_behavior\n"+exploration_content+"\n#goal_representation\n" + goal_int+"\n#goal_representation_end\n")
                      
 
-                except AttributeError:
+                except AssertionError:
                     logger.info(f"Error is:\n{e}")
                     print(f"Error is:\n{e}")
                     print("e does not have an 'error' attribute. Directly resample")

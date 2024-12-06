@@ -42,7 +42,7 @@ def auto_debug(error_info,original_content,goal_int,goal,additional_information,
 
     else:
         if agent_type=='Planning':
-            prompt=planning_other_prompt(goal,cat_list,additional_information,goal_int,error_info,behavior_from_library,behavior_from_library)
+            prompt=planning_other_prompt(goal,cat_list,additional_information,goal_int,error_info,behavior_from_library)
         elif agent_type=='Policy':
             prompt=policy_other_prompt(goal,cat_list,additional_information,goal_int,error_info,behavior_from_library)
         else:

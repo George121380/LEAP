@@ -315,8 +315,8 @@ def test_simulator(init_scene_graph):
         
 if __name__ == '__main__':
     args = load_config("experiments/virtualhome/VH_scripts/config.yaml")
-    # evaluate_all_cross_scene(args)
-    evaluate_single(args)
+    evaluate_all_cross_scene(args)
+    # evaluate_single(args)
     # evaluate_all(args)
     # check_task_define_all(args)
     # check_task_define_single(args)

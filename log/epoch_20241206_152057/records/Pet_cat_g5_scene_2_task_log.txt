@@ -1,0 +1,111 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Find the cat and carry it to the bathroom.', '2. Shower the cat in the bathtub.', '3. Use a towel to dry the cat completely.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_cat_2082_around_bed_376(cat:item):
+    goal: not unknown(cat)
+    body:
+        assert is_cat(cat)
+        bind bed_instance:item where:
+            is_bed(bed_instance) and id[bed_instance]==376
+        achieve close_char(char,bed_instance)
+        if can_open(bed_instance):
+            achieve_once open(bed_instance)
+            exp(cat,bed_instance)
+        else:
+            exp(cat,bed_instance)
+    eff:
+        unknown[cat]=False
+        close[cat,bed_instance]=True
+        close[bed_instance,cat]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_cat_found(cat:item):
+    # Function to check if a specific item is identified as a cat
+    symbol is_cat_instantiated=exists o: item : is_cat(o) and o==cat
+    return is_cat_instantiated
+
+behavior __goal__():
+    body:
+        if exists cat: item : is_cat(cat) and is_cat_found(cat):
+            # If we have already identified the cat, proceed to interact with it
+            bind cat: item where:
+                is_cat(cat) and is_cat_found(cat)
+            
+            achieve_once inhand(cat)
+            # Carry the cat
+            bind bathroom: item where:
+                is_bathroom(bathroom)
+            # Identify the bathroom
+            achieve inside(cat, bathroom)
+            # Carry the cat to the bathroom
+
+        else:
+            # If the cat has not been identified, inspect the surroundings to find it
+            foreach item: item: 
+                if is_cat(item) and not visited(item):
+                    observe(item, "Check if this is the cat")
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_cat_2082_around_couch_192(cat:item):
+    goal: not unknown(cat)
+    body:
+        assert is_cat(cat)
+        bind couch_instance:item where:
+            is_couch(couch_instance) and id[couch_instance]==192
+        achieve close_char(char,couch_instance)
+        if can_open(couch_instance):
+            achieve_once open(couch_instance)
+            exp(cat,couch_instance)
+        else:
+            exp(cat,couch_instance)
+    eff:
+        unknown[cat]=False
+        close[cat,couch_instance]=True
+        close[couch_instance,cat]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_cat_found(cat: item):
+    symbol found_cat = exists c: item : is_cat(c) and close_char(char, c)
+    return found_cat
+
+behavior move_cat_to_bathroom(cat: item, bathroom: item):
+    body:
+        achieve inside(cat, bathroom)
+
+behavior __goal__():
+    body:
+        if exists cat: item : is_cat(cat) and is_cat_found(cat):
+            bind cat: item where:
+                is_cat(cat) and is_cat_found(cat)
+            bind bathroom: item where:
+                is_bathroom(bathroom)
+            move_cat_to_bathroom(cat, bathroom)
+            
+        else:
+            # If the cat has not been seen, observe surroundings to find and approach it
+            foreach cat: item:
+                if is_cat(cat) and not visited(cat):
+                    observe(cat, "Find and approach the cat")
+
+#goal_representation_end
+
+##############################
