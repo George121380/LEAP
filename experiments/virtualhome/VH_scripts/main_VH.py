@@ -44,14 +44,14 @@ def load_scene(scene_id):
     construct_cdl(INIT_PATH_PO,objects,states,relationships,properties,cat_statement,sizes)
     return classes,init_scene_graph
 
-def task_summary_record(epoch_logger, task_name, goal, action_history, start_time, complete_rate, task_path, final_info):
+def task_summary_record(epoch_logger, scene_id, goal, action_history, start_time, complete_rate, task_path, final_info):
     """
     Record the summary of a task execution.
     """
     current_time = time.time()
     time_elapsed = int(current_time - start_time) if start_time else ''
     time_info = f"Time consume: {time_elapsed} seconds\nExp_helper query times: {final_info['exp_helper_query_times']}\nGuidance query times: {final_info['guidance_query_times']}\nlibrary scale: {final_info['library_scale']}"
-    epoch_logger.info(task_name, goal, action_history, time_info, complete_rate, task_path)
+    epoch_logger.info(task_path, goal, action_history, time_info, complete_rate, f"Scene_id: {str(scene_id)}")
     
 def run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph):
     """
@@ -157,7 +157,7 @@ def run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph):
                 return False
             print("Task failed")
             if epoch_logger:
-                task_summary_record(epoch_logger,task_data['Task name'],task_data['Goal'],executed_actions,start_time,complete_rate,task_path,agent.final_important_numbers_report())
+                task_summary_record(epoch_logger,args.scene.id,task_data['Goal'],executed_actions,start_time,complete_rate,task_path,agent.final_important_numbers_report())
             return True
         
         if action=='over':
@@ -173,11 +173,11 @@ def run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph):
                 print("Task Success")
                 agent.lift_behaviors()
                 if epoch_logger:
-                    task_summary_record(epoch_logger,task_data['Task name'],task_data['Goal'],executed_actions,start_time,1,task_path,agent.final_important_numbers_report())
+                    task_summary_record(epoch_logger,args.scene.id,task_data['Goal'],executed_actions,start_time,1,task_path,agent.final_important_numbers_report())
                 return True
             else:
                 if epoch_logger:
-                    task_summary_record(epoch_logger,task_data['Task name'],task_data['Goal'],executed_actions,start_time,complete_rate,task_path,agent.final_important_numbers_report())
+                    task_summary_record(epoch_logger,args.scene.id,task_data['Goal'],executed_actions,start_time,complete_rate,task_path,agent.final_important_numbers_report())
             return True
         
         print('Action: ',str(action))
@@ -190,7 +190,7 @@ def run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph):
         #     executed_actions=env.report_actions()
         #     print("Task Success")
         #     if epoch_logger:
-        #         task_summary_record(epoch_logger,task_data['Task name'],task_data['Goal'],executed_actions,start_time,1,task_path,agent.exp_helper_query_times)
+        #         task_summary_record(epoch_logger,args.scene.id,task_data['Goal'],executed_actions,start_time,1,task_path,agent.exp_helper_query_times)
         #     return True
 
 def evaluate_single(args):
@@ -200,7 +200,7 @@ def evaluate_single(args):
     classes,init_scene_graph=load_scene(args.scene.id)
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     epoch_logger = setup_epoch_logger(f'log/epoch_{timestamp}',timestamp=timestamp)
-    task_path='/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/cdl_dataset/dataset/Change_TV_channel/g3.txt'
+    task_path='/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/cdl_dataset/dataset/Wash_clothes/g4.txt'
     run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph)
     # test_simulator(init_scene_graph)
     end_time = time.time()
@@ -243,12 +243,16 @@ def evaluate_all_cross_scene(args): # main function
     scenes=[0,1,2]
     task_scene_pairs = [(task, scene) for task in files for scene in scenes]
     random.shuffle(task_scene_pairs)
+    
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
 
     # Set logger and save configs
     epoch_logger = setup_epoch_logger(f'log/epoch_{timestamp}',timestamp=timestamp)
     with open(f'log/epoch_{timestamp}/args.yaml', 'w') as file:
         yaml.dump(namespace_to_dict(args), file)
+
+    with open(f'log/epoch_{timestamp}/shuffled_task_scene_pairs.json', 'w') as file:
+        json.dump(task_scene_pairs, file, indent=4)
     
     task_scene_pairs = tqdm(task_scene_pairs, desc="Evaluating tasks")
     for task_scene_pair in task_scene_pairs:
@@ -326,8 +330,8 @@ def test_simulator(init_scene_graph):
         
 if __name__ == '__main__':
     args = load_config("experiments/virtualhome/VH_scripts/config.yaml")
-    evaluate_all_cross_scene(args)
-    # evaluate_single(args)
+    # evaluate_all_cross_scene(args)
+    evaluate_single(args)
     # evaluate_all(args)
     # check_task_define_all(args)
     # check_task_define_single(args)

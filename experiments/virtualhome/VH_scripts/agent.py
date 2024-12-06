@@ -862,7 +862,8 @@ class VHAgent:
 
         if observation['action'].name=='cut_executor':
             target_id=self.name2opid[observation['action'].arguments[0].name]
-            knife_id=self.name2opid['knife_2050']
+            knife_id = next((value for key, value in self.name2opid.items() if "knife_" in key), None)
+            # knife_id=self.name2opid['knife_2050']
             rh = set(np.where(self.state['holds_rh'] == True)[0])
             lh = set(np.where(self.state['holds_lh'] == True)[0])
             union_indices = rh.union(lh)
