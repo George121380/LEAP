@@ -1,0 +1,798 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Find the cat and take it to the bathroom.', '2. Place the cat in the bathtub and shower it.', '3. Use a towel to dry the cat.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_soap_2053_around_bathroom_cabinet_40(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind bathroom_cabinet_instance:item where:
+            is_bathroom_cabinet(bathroom_cabinet_instance) and id[bathroom_cabinet_instance]==40
+        achieve close_char(char,bathroom_cabinet_instance)
+        if can_open(bathroom_cabinet_instance):
+            achieve_once open(bathroom_cabinet_instance)
+            exp(soap,bathroom_cabinet_instance)
+        else:
+            exp(soap,bathroom_cabinet_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,bathroom_cabinet_instance]=True
+        close[bathroom_cabinet_instance,soap]=True
+    
+
+behavior find_cat_2055_around_couch_352(cat:item):
+    goal: not unknown(cat)
+    body:
+        assert is_cat(cat)
+        bind couch_instance:item where:
+            is_couch(couch_instance) and id[couch_instance]==352
+        achieve close_char(char,couch_instance)
+        if can_open(couch_instance):
+            achieve_once open(couch_instance)
+            exp(cat,couch_instance)
+        else:
+            exp(cat,couch_instance)
+    eff:
+        unknown[cat]=False
+        close[cat,couch_instance]=True
+        close[couch_instance,cat]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_cat_found(cat: item):
+    # Determine if the cat has been observed or is known to be in a specific location
+    symbol found = visited(cat)
+    return found
+
+behavior find_cat(cat:item):
+    body:
+        if is_cat_found(cat):
+            # If the cat is already found, ensure the character is close to it
+            achieve close_char(char, cat)
+        else:
+            # If the cat is not found, observe all unvisited items that could be the cat to locate it
+            foreach item: item:
+                if is_cat(item) and not visited(item):
+                    observe(item, "Locate the cat")
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        find_cat(cat)
+        
+        bind bathroom: item where:
+            is_bathroom(bathroom)
+        # Ensure the cat is moved to the bathroom
+        achieve inside(cat, bathroom)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_soap_2054_around_bathroom_counter_41(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind bathroom_counter_instance:item where:
+            is_bathroom_counter(bathroom_counter_instance) and id[bathroom_counter_instance]==41
+        achieve close_char(char,bathroom_counter_instance)
+        if can_open(bathroom_counter_instance):
+            achieve_once open(bathroom_counter_instance)
+            exp(soap,bathroom_counter_instance)
+        else:
+            exp(soap,bathroom_counter_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,bathroom_counter_instance]=True
+        close[bathroom_counter_instance,soap]=True
+    
+
+behavior find_cat_2055_around_couch_352(cat:item):
+    goal: not unknown(cat)
+    body:
+        assert is_cat(cat)
+        bind couch_instance:item where:
+            is_couch(couch_instance) and id[couch_instance]==352
+        achieve close_char(char,couch_instance)
+        if can_open(couch_instance):
+            achieve_once open(couch_instance)
+            exp(cat,couch_instance)
+        else:
+            exp(cat,couch_instance)
+    eff:
+        unknown[cat]=False
+        close[cat,couch_instance]=True
+        close[couch_instance,cat]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+behavior capture_cat(cat:item):
+    body:
+        achieve close_char(char, cat)
+        # Ensures the character is close to the cat
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        # Select the cat
+
+        capture_cat(cat)
+        # Capture the cat to bring it to the bathroom
+
+        bind bathroom: item where:
+            is_bathroom(bathroom)
+        # Select the bathroom
+
+        achieve inside(cat, bathroom)
+        # Bring the cat inside the bathroom
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+Failed to generate the goal representation
+##############################
+From agent.py
+Record from func query_LLM_human in agent.py
+Question: Can you teach me how to "1. find the cat and take it to the bathroom." ?
+Answer: Find the cat on the couch and take it to the bathroom.
+Re-decompose: False
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_soap_2053_around_bathroom_counter_41(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind bathroom_counter_instance:item where:
+            is_bathroom_counter(bathroom_counter_instance) and id[bathroom_counter_instance]==41
+        achieve close_char(char,bathroom_counter_instance)
+        if can_open(bathroom_counter_instance):
+            achieve_once open(bathroom_counter_instance)
+            exp(soap,bathroom_counter_instance)
+        else:
+            exp(soap,bathroom_counter_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,bathroom_counter_instance]=True
+        close[bathroom_counter_instance,soap]=True
+    
+
+behavior find_cat_2055_around_couch_352(cat:item):
+    goal: not unknown(cat)
+    body:
+        assert is_cat(cat)
+        bind couch_instance:item where:
+            is_couch(couch_instance) and id[couch_instance]==352
+        achieve close_char(char,couch_instance)
+        if can_open(couch_instance):
+            achieve_once open(couch_instance)
+            exp(cat,couch_instance)
+        else:
+            exp(cat,couch_instance)
+    eff:
+        unknown[cat]=False
+        close[cat,couch_instance]=True
+        close[couch_instance,cat]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+behavior find_cat_and_take_to_bathroom(cat:item, bathroom:item):
+    body:
+        if visited(cat):
+            # If the cat is already found, proceed to take it to the bathroom
+            achieve inside(cat, bathroom)
+        else:
+            # If the cat is not found, observe to locate the cat
+            observe(cat, "Locate the cat")
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        find_cat_and_take_to_bathroom(cat, bathroom)
+
+        bind bathroom: item where:
+            is_bathroom(bathroom)
+        # Ensure the bathroom is selected to take the cat there
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "behavior_definition":
+
+Unknown variable: bathroom; available variables: [].
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_cat_2055_around_couch_352(cat:item):
+    goal: not unknown(cat)
+    body:
+        assert is_cat(cat)
+        bind couch_instance:item where:
+            is_couch(couch_instance) and id[couch_instance]==352
+        achieve close_char(char,couch_instance)
+        if can_open(couch_instance):
+            achieve_once open(couch_instance)
+            exp(cat,couch_instance)
+        else:
+            exp(cat,couch_instance)
+    eff:
+        unknown[cat]=False
+        close[cat,couch_instance]=True
+        close[couch_instance,cat]=True
+    
+
+behavior find_soap_2053_around_bathroom_counter_41(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind bathroom_counter_instance:item where:
+            is_bathroom_counter(bathroom_counter_instance) and id[bathroom_counter_instance]==41
+        achieve close_char(char,bathroom_counter_instance)
+        if can_open(bathroom_counter_instance):
+            achieve_once open(bathroom_counter_instance)
+            exp(soap,bathroom_counter_instance)
+        else:
+            exp(soap,bathroom_counter_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,bathroom_counter_instance]=True
+        close[bathroom_counter_instance,soap]=True
+    
+
+#goal_representation
+
+behavior find_cat_and_take_to_bathroom(cat:item, bathroom:item):
+    body:
+        if visited(cat):
+            # If the cat is already found, proceed to take it to the bathroom
+            achieve inside(cat, bathroom)
+        else:
+            # If the cat is not found, observe to locate the cat
+            observe(cat, "Locate the cat")
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        bind bathroom: item where:
+            is_bathroom(bathroom)
+        find_cat_and_take_to_bathroom(cat, bathroom)
+        # Ensure the bathroom is selected to take the cat there
+
+#goal_representation_end
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(couch_352)exp(cat_2055, couch_352)walk_executor(cat_2055)obs(cat_2055, Locate the cat)
+##############################
+From agent.py
+walk_executor(couch_352)
+Find mat_401. Find remote_control_2052. Find clothes_jacket_2047. Find cat_2055. Find pillow_405. Find drawing_400. Find pillow_406. Find hairbrush_2002. Find vacuum_cleaner_2070. Robot is inside home_office_319. Robot is close couch_352. Robot is close mat_401. Robot is no longer inside bathroom_1.
+##############################
+From evaluation.py
+cdl_dataset/dataset/Pet_cat/g5.txt
+Checking k1
+missed actions: walk_executor(cat_2055);grab_executor(cat_2055);walk_executor(sink_42);putin_executor(cat_2055, sink_42);
+missed action num: 4
+##############################
+From agent.py
+exp(cat_2055, couch_352)
+Find cat_2055. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(cat_2055)obs(cat_2055, Locate the cat)
+##############################
+From agent.py
+walk_executor(cat_2055)
+Robot is inside home_office_319. Robot is close couch_352. Robot is close cat_2055. Robot is no longer close mat_401.
+##############################
+From evaluation.py
+cdl_dataset/dataset/Pet_cat/g5.txt
+Checking k1
+missed actions: grab_executor(cat_2055);walk_executor(sink_42);putin_executor(cat_2055, sink_42);
+missed action num: 3
+##############################
+From agent.py
+obs(cat_2055, Locate the cat)
+Get this information:  cat_2055 is on couch_352. cat_2055 is close to couch_352. cat_2055 is close to character_65. cat_2055 is inside home_office_319.
+##############################
+From agent.py
+Human Instruction: You need to take the cat to the bathroom.
+
+Human Guidance: Find the cat on the couch and take it to the bathroom.
+The actions you have taken:
+Action 1: Walk to couch_352.
+Action 2: look for cat_2055 around couch_352.
+Action 3: Walk to cat_2055.
+Action 4: Observe around cat_2055 with the question of Locate the cat.
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_soap_2054_around_bathroom_counter_41(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind bathroom_counter_instance:item where:
+            is_bathroom_counter(bathroom_counter_instance) and id[bathroom_counter_instance]==41
+        achieve close_char(char,bathroom_counter_instance)
+        if can_open(bathroom_counter_instance):
+            achieve_once open(bathroom_counter_instance)
+            exp(soap,bathroom_counter_instance)
+        else:
+            exp(soap,bathroom_counter_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,bathroom_counter_instance]=True
+        close[bathroom_counter_instance,soap]=True
+    
+
+behavior find_towel_2057_around_bathroom_counter_41(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind bathroom_counter_instance:item where:
+            is_bathroom_counter(bathroom_counter_instance) and id[bathroom_counter_instance]==41
+        achieve close_char(char,bathroom_counter_instance)
+        if can_open(bathroom_counter_instance):
+            achieve_once open(bathroom_counter_instance)
+            exp(towel,bathroom_counter_instance)
+        else:
+            exp(towel,bathroom_counter_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,bathroom_counter_instance]=True
+        close[bathroom_counter_instance,towel]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def locate_cat_on_couch(couch:item, cat:item):
+    # Function to ensure the cat is on the couch 
+    symbol cat_found = exists c: item : is_cat(c) and close(c, couch)
+    return cat_found
+
+behavior find_cat(couch:item, cat:item):
+    body:
+        if locate_cat_on_couch(couch, cat):
+            # Move close to the couch where the cat is located
+            achieve close_char(char, couch)
+        else:
+            # If the cat is not found near the couch, observe the couch
+            observe(couch, "Locate the cat on the couch")
+            achieve close_char(char, cat)
+
+behavior __goal__():
+    body:
+        bind couch: item where:
+            is_couch(couch) and id[couch] == 352
+        # Select the couch with ID 352
+
+        bind cat: item where:
+            is_cat(cat) and id[cat] == 2055
+        # Select the cat with ID 2055
+
+        find_cat(couch, cat)
+        # Find the cat and take it to the bathroom
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_cat_found(cat: item):
+    # Determine if the cat has been observed or is known to be in a specific location
+    symbol found = visited(cat)
+    return found
+
+behavior find_cat(cat:item):
+    body:
+        if is_cat_found(cat):
+            # If the cat is already found, ensure the character is close to it
+            achieve close_char(char, cat)
+        else:
+            # If the cat is not found, observe all unvisited items that could be the cat to locate it
+            foreach item: item:
+                if is_cat(item) and not visited(item):
+                    observe(item, "Locate the cat")
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        find_cat(cat)
+
+#goal_representation_end
+
+##############################
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Find the cat on the couch and take it to the bathroom.', '2. Shower the cat in the bathtub.', '3. Use a towel to dry the cat.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_soap_2053_around_bathroom_counter_41(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind bathroom_counter_instance:item where:
+            is_bathroom_counter(bathroom_counter_instance) and id[bathroom_counter_instance]==41
+        achieve close_char(char,bathroom_counter_instance)
+        if can_open(bathroom_counter_instance):
+            achieve_once open(bathroom_counter_instance)
+            exp(soap,bathroom_counter_instance)
+        else:
+            exp(soap,bathroom_counter_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,bathroom_counter_instance]=True
+        close[bathroom_counter_instance,soap]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_cat_found(cat: item):
+    # Determine if the cat has been observed
+    symbol found = visited(cat)
+    return found
+
+behavior find_cat_and_move_to_bathroom(cat:item, bathroom:item):
+    body:
+        if is_cat_found(cat):
+            # If the cat has been found, take it to the bathroom
+            achieve inside(cat, bathroom)
+        else:
+            # If the cat has not been found, search for it
+            foreach item: item:
+                if is_cat(item) and not visited(item):
+                    observe(item, "Locate the cat")
+                    achieve inside(item, bathroom)
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        # Select the cat
+
+        bind bathroom: item where:
+            is_bathroom(bathroom)
+        # Select the bathroom
+
+        find_cat_and_move_to_bathroom(cat, bathroom)
+        # Execute the goal of moving the cat to the bathroom
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_soap_2053_around_bathroom_counter_41(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind bathroom_counter_instance:item where:
+            is_bathroom_counter(bathroom_counter_instance) and id[bathroom_counter_instance]==41
+        achieve close_char(char,bathroom_counter_instance)
+        if can_open(bathroom_counter_instance):
+            achieve_once open(bathroom_counter_instance)
+            exp(soap,bathroom_counter_instance)
+        else:
+            exp(soap,bathroom_counter_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,bathroom_counter_instance]=True
+        close[bathroom_counter_instance,soap]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+behavior find_cat(cat:item):
+    body:
+        if visited(cat):
+            achieve close_char(char, cat)
+        else:
+            observe(cat, "Locate the cat on the couch")
+            achieve close_char(char, cat)
+
+behavior __goal__():
+    body:
+        bind couch: item where:
+            is_couch(couch) and id[couch] == 352
+        # Select the couch with ID 352
+
+        bind cat: item where:
+            is_cat(cat) and close(cat, couch)
+        find_cat(cat)
+        # Find the cat that is close to the couch
+
+        bind bathroom: item where:
+            is_bathroom(bathroom)
+        # Select the bathroom
+        
+        achieve inside(cat, bathroom)
+        # Take the cat to the bathroom
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+Failed to generate the goal representation
+##############################
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Find the cat on the couch.', '2. Take the cat to the bathroom.', '3. Shower the cat in the bathtub.', '4. Use a towel to dry the cat.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def find_cat_on_couch(cat:item, couch:item):
+    symbol close_to_couch = close(cat, couch)
+    return close_to_couch
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        # Select the cat
+
+        bind couch: item where:
+            is_couch(couch)
+        # Select the couch
+
+        if not find_cat_on_couch(cat, couch):
+            observe(couch, "Check if the cat is on the couch")
+            # If the cat is not confirmed to be on the couch, observe the couch to locate the cat
+        else:
+            achieve close_char(char, cat)
+            # Move close to the cat if the location is confirmed near the couch
+ 
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+#exp_behavior_end
+
+#goal_representation
+def is_cat_found(cat: item):
+    # Determine if the cat has been observed or is known to be in a specific location
+    symbol found = visited(cat)
+    return found
+
+behavior find_cat(cat:item):
+    body:
+        if is_cat_found(cat):
+            # If the cat is already found, ensure the character is close to it
+            achieve close_char(char, cat)
+        else:
+            # If the cat is not found, observe all unvisited items that could be the cat to locate it
+            foreach item: item:
+                if is_cat(item) and not visited(item):
+                   observe(item, "Locate the cat") 
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        find_cat(cat)
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+Failed to generate the goal representation
+##############################
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Find the cat on the couch and take it to the bathroom.', '2. Shower the cat in the bathtub.', '3. Use a towel to dry the cat.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+#exp_behavior_end
+
+#goal_representation
+behavior find_cat_on_couch_and_move_to_bathroom(cat:item, couch:item, bathroom:item):
+    body:
+        achieve_once inside(cat, bathroom)
+        # Ensure the cat is moved to the bathroom
+        
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        # Select the cat
+
+        bind couch: item where:
+            is_couch(couch) and close(cat, couch)
+        # Select the couch where the cat is close
+
+        bind bathroom: item where:
+            is_bathroom(bathroom)
+        # Select the bathroom
+
+        find_cat_on_couch_and_move_to_bathroom(cat, couch, bathroom)
+        # Find the cat on the couch and take it to the bathroom
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_mat_22_around_mousepad_167(mat:item):
+    goal: not unknown(mat)
+    body:
+        assert is_mat(mat)
+        bind mousepad_instance:item where:
+            is_mousepad(mousepad_instance) and id[mousepad_instance]==167
+        achieve close_char(char,mousepad_instance)
+        if can_open(mousepad_instance):
+            achieve_once open(mousepad_instance)
+            exp(mat,mousepad_instance)
+        else:
+            exp(mat,mousepad_instance)
+    eff:
+        unknown[mat]=False
+        close[mat,mousepad_instance]=True
+        close[mousepad_instance,mat]=True
+    
+
+behavior find_pillow_182_around_dresser_123(pillow:item):
+    goal: not unknown(pillow)
+    body:
+        assert is_pillow(pillow)
+        bind dresser_instance:item where:
+            is_dresser(dresser_instance) and id[dresser_instance]==123
+        achieve close_char(char,dresser_instance)
+        if can_open(dresser_instance):
+            achieve_once open(dresser_instance)
+            exp(pillow,dresser_instance)
+        else:
+            exp(pillow,dresser_instance)
+    eff:
+        unknown[pillow]=False
+        close[pillow,dresser_instance]=True
+        close[dresser_instance,pillow]=True
+    
+
+behavior find_napkin_2005_around_bathroom_counter_41(napkin:item):
+    goal: not unknown(napkin)
+    body:
+        assert is_napkin(napkin)
+        bind bathroom_counter_instance:item where:
+            is_bathroom_counter(bathroom_counter_instance) and id[bathroom_counter_instance]==41
+        achieve close_char(char,bathroom_counter_instance)
+        if can_open(bathroom_counter_instance):
+            achieve_once open(bathroom_counter_instance)
+            exp(napkin,bathroom_counter_instance)
+        else:
+            exp(napkin,bathroom_counter_instance)
+    eff:
+        unknown[napkin]=False
+        close[napkin,bathroom_counter_instance]=True
+        close[bathroom_counter_instance,napkin]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_cat_found(cat: item):
+    # Determine if the cat has been observed or is known to be in a specific location
+    symbol found = visited(cat)
+    return found
+
+behavior find_cat(cat:item):
+    body:
+        if is_cat_found(cat):
+            # If the cat is already found, ensure the character is close to it
+            achieve close_char(char, cat)
+        else:
+            # If the cat is not found, observe all unvisited items that could be the cat to locate it
+            foreach item: item:
+                if is_cat(item) and not visited(item):
+                    observe(item, "Locate the cat")
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        find_cat(cat)
+        
+        bind bathroom: item where:
+            is_bathroom(bathroom)
+        # Select the bathroom
+
+        achieve inside(cat, bathroom)
+        # Move the cat to the bathroom
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+Failed to generate the goal representation
+##############################
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Find the cat on the couch.', '2. Take the cat to the bathroom.', '3. Shower the cat in the bathtub.', '4. Use a towel to dry the cat.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+#exp_behavior_end
+
+#goal_representation
+behavior __goal__():
+    body:
+        bind couch: item where:
+            is_couch(couch)
+        # Select the couch
+
+        bind cat: item where:
+            is_cat(cat)
+        # Select the cat
+
+        assert close(char, couch) 
+        # Ensure the character is close to the couch
+
+        observe(couch,"Check for the cat on the couch")
+        # Observe the couch to locate the cat
+
+        achieve close_char(char, cat)
+        # Ensure the character is close to the located cat
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "behavior_definition":
+
+Error during applying close[observation, state](x: item, y: item).
+  Arguments: O::char, V::couch
+Argument #0 type does not match: expect item, got character.
+##############################

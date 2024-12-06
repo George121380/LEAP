@@ -144,55 +144,56 @@ def run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph):
     env=VH_Env(init_scene_graph)
 
     while True:
-        action,plan = agent.act() #Planning   
-        if action=="human guided":
-            continue 
-        if action=="Failed":
-            print("Task Path is: ",task_path)
-            print("Task Goal is: ",task_data['Goal'])
-            executed_actions=env.report_actions()
-            evaluation_result,complete_rate=evaluator.evaluate_final(ast=None,action_history=agent.add_info_action_history_for_evaluation,Root=True)
-            if evaluation_result=="Keystate Evaluate Error":
-                print("Keystate Evaluate Error")
-                return False
-            print("Task failed")
-            if epoch_logger:
-                task_summary_record(epoch_logger,args.scene.id,task_data['Goal'],executed_actions,start_time,complete_rate,task_path,agent.final_important_numbers_report())
-            return True
-        
-        if action=='over':
-            print("Task Path is: ",task_path)
-            print("Task Goal is: ",task_data['Goal'])
-            executed_actions=env.report_actions()
-            evaluation_result,complete_rate=evaluator.evaluate_final(ast=None,action_history=agent.add_info_action_history_for_evaluation,Root=True)
-            if evaluation_result=="Keystate Evaluate Error":
-                print("Keystate Evaluate Error")
-                return False
-            
-            if evaluation_result:
-                print("Task Success")
-                agent.lift_behaviors()
-                if epoch_logger:
-                    task_summary_record(epoch_logger,args.scene.id,task_data['Goal'],executed_actions,start_time,1,task_path,agent.final_important_numbers_report())
-                return True
-            else:
+        try:
+            action,plan = agent.act() #Planning   
+            if action=="human guided":
+                continue 
+            if action=="Failed":
+                print("Task Path is: ",task_path)
+                print("Task Goal is: ",task_data['Goal'])
+                executed_actions=env.report_actions()
+                evaluation_result,complete_rate=evaluator.evaluate_final(ast=None,action_history=agent.add_info_action_history_for_evaluation,Root=True)
+                if evaluation_result=="Keystate Evaluate Error":
+                    print("Keystate Evaluate Error")
+                    return False
+                print("Task failed")
                 if epoch_logger:
                     task_summary_record(epoch_logger,args.scene.id,task_data['Goal'],executed_actions,start_time,complete_rate,task_path,agent.final_important_numbers_report())
-            return True
-        
-        print('Action: ',str(action))
-        observation = env.step(action) #Execute action
-        agent.updates(observation) #Update agent's state
-        evaluator.updates(observation) #Update evaluator's state
-        if not 'obs' in action.name and not 'exp' in action.name:
-            evaluation_result=evaluator.evaluate(ast=None,action_history=agent.add_info_action_history_for_evaluation,Root=True)
-        # if evaluation_result:
-        #     executed_actions=env.report_actions()
-        #     print("Task Success")
-        #     if epoch_logger:
-        #         task_summary_record(epoch_logger,args.scene.id,task_data['Goal'],executed_actions,start_time,1,task_path,agent.exp_helper_query_times)
-        #     return True
-
+                return True
+            
+            if action=='over':
+                print("Task Path is: ",task_path)
+                print("Task Goal is: ",task_data['Goal'])
+                executed_actions=env.report_actions()
+                evaluation_result,complete_rate=evaluator.evaluate_final(ast=None,action_history=agent.add_info_action_history_for_evaluation,Root=True)
+                if evaluation_result=="Keystate Evaluate Error":
+                    print("Keystate Evaluate Error")
+                    return False
+                
+                if evaluation_result:
+                    print("Task Success")
+                    agent.lift_behaviors()
+                    if epoch_logger:
+                        task_summary_record(epoch_logger,args.scene.id,task_data['Goal'],executed_actions,start_time,1,task_path,agent.final_important_numbers_report())
+                    return True
+                else:
+                    if epoch_logger:
+                        task_summary_record(epoch_logger,args.scene.id,task_data['Goal'],executed_actions,start_time,complete_rate,task_path,agent.final_important_numbers_report())
+                return True
+            
+            print('Action: ',str(action))
+            observation = env.step(action) #Execute action
+            agent.updates(observation) #Update agent's state
+            evaluator.updates(observation) #Update evaluator's state
+            if not 'obs' in action.name and not 'exp' in action.name:
+                evaluation_result=evaluator.evaluate(ast=None,action_history=agent.add_info_action_history_for_evaluation,Root=True)
+                
+        except Exception as e:
+            print(e)
+            evaluation_result,complete_rate=evaluator.evaluate_final(ast=None,action_history=agent.add_info_action_history_for_evaluation,Root=True)
+            task_summary_record(epoch_logger,args.scene.id,'Syntax Error',executed_actions,start_time,complete_rate,task_path,agent.final_important_numbers_report())
+            return False
+       
 def evaluate_single(args):
     start_time = time.time()
     # print('Start Time: ',start_time)
@@ -218,23 +219,13 @@ def evaluate_all(args): # main function
         yaml.dump(namespace_to_dict(args), file)
     
     files = tqdm(files, desc="Evaluating tasks")
+
     for task_file in files:
-
-        if running_mode=='debug':
-            classes,init_scene_graph=load_scene(args.scene.id)
-            task_path=os.path.join(DATASET_FOLDER_PATH,task_file)
-            Debug=run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph)
-            
-        if running_mode=='test':
-            try:
-                classes,init_scene_graph=load_scene(args.scene.id)
-                task_path=os.path.join(DATASET_FOLDER_PATH,task_file)
-                Debug=run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph)
-            except Exception as e:
-                print(e)
-                epoch_logger.info(task_path,'Syntax Error',None,None,None,task_path)
-                continue
-
+        classes,init_scene_graph=load_scene(args.scene.id)
+        task_path=os.path.join(DATASET_FOLDER_PATH,task_file)
+        Debug=run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph)
+        if Debug==False:
+            raise Exception('Error in evaluation')
     end_time = datetime.now().strftime('%Y%m%d_%H%M%S')
     epoch_logger.info('Evaluation Finished',end_time,'','','','')
 
@@ -255,23 +246,17 @@ def evaluate_all_cross_scene(args): # main function
         json.dump(task_scene_pairs, file, indent=4)
     
     task_scene_pairs = tqdm(task_scene_pairs, desc="Evaluating tasks")
-    for task_scene_pair in task_scene_pairs:
-        args.scene.id = task_scene_pair[1]
-        if running_mode=='debug':
-            classes,init_scene_graph=load_scene(args.scene.id)
-            task_path=os.path.join(DATASET_FOLDER_PATH,task_scene_pair[0])
-            Debug=run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph)
-            
-        if running_mode=='test':
-            try:
-                classes,init_scene_graph=load_scene(args.scene.id)
-                task_path=os.path.join(DATASET_FOLDER_PATH,task_scene_pair[0])
-                Debug=run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph)
-            except Exception as e:
-                print(e)
-                epoch_logger.info(task_path,'Syntax Error',None,None,None,task_path)
-                continue
 
+    for task_scene_pair in task_scene_pairs:
+
+        args.scene.id = task_scene_pair[1]
+        classes,init_scene_graph=load_scene(args.scene.id)
+        task_path=os.path.join(DATASET_FOLDER_PATH,task_scene_pair[0])
+        Debug=run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph)
+        
+        if Debug==False:
+            raise Exception('Error in evaluation')
+        
     end_time = datetime.now().strftime('%Y%m%d_%H%M%S')
     epoch_logger.info('Evaluation Finished',end_time,'','','','')
 

@@ -1,47 +1,58 @@
 import pandas as pd
 import re
 import sys
-sys.path.append('cdl_dataset/scripts')
-from logic_parser import parse_logic_from_file_path
 import json
 import os
 import matplotlib.pyplot as plt
 
-def calculate_moving_average(success_rate_dict, window_size):
+sys.path.append('cdl_dataset/scripts')
+from logic_parser import parse_logic_from_file_path
+
+
+def parse_info(log_text):
+    parsed_data = {}
+    # Use regex to extract the relevant fields
+    parsed_data['Time consume'] = int(re.search(r"Time consume: (\d+) seconds", log_text).group(1))
+    parsed_data['Exp_helper query times'] = int(re.search(r"Exp_helper query times: (\d+)", log_text).group(1))
+    parsed_data['Guidance query times'] = int(re.search(r"Guidance query times: (\d+)", log_text).group(1))
+    parsed_data['library scale'] = re.search(r"library scale: ([\d']+)", log_text).group(1)
+    return parsed_data
+
+
+def calculate_moving_average(data_list, window_size):
     """
-    计算成功率的滑动平均值。
+    计算滑动平均值。
 
     Args:
-    - success_rate_dict (dict): 任务路径到成功率的映射。
-    - window_size (int): 滑动窗口的大小。
+    - data_list (list): 数据列表。
+    - window_size (int): 滑动窗口大小。
 
     Returns:
-    - list: 滑动平均值的列表。
+    - list: 滑动平均值列表。
     """
-    task_paths = sorted(success_rate_dict.keys())
-    success_rates = [success_rate_dict[task_path] for task_path in task_paths]
     moving_averages = []
-
-    for i in range(len(success_rates) - window_size + 1):
-        window = success_rates[i:i + window_size]
+    for i in range(len(data_list) - window_size + 1):
+        window = data_list[i:i + window_size]
         moving_average = sum(window) / window_size
         moving_averages.append(moving_average)
+    return moving_averages
 
-    return moving_averages, task_paths[window_size - 1:]
 
-def plot_moving_average(moving_averages, output_path):
+def plot_moving_average(moving_averages, output_path, ylabel, title):
     """
-    绘制滑动平均值曲线并保存，横轴仅标注任务编号。
+    绘制滑动平均值曲线并保存。
 
     Args:
-    - moving_averages (list): 滑动平均值的列表。
+    - moving_averages (list): 滑动平均值列表。
     - output_path (str): 图像保存路径。
+    - ylabel (str): Y轴标签。
+    - title (str): 图表标题。
     """
     plt.figure(figsize=(10, 6))
     plt.plot(range(len(moving_averages)), moving_averages, marker='o')
     plt.xlabel('Task Number')
-    plt.ylabel('Moving Average Success Rate')
-    plt.title('Moving Average of Success Rate')
+    plt.ylabel(ylabel)
+    plt.title(title)
     plt.grid(True)
     plt.tight_layout()
     plt.savefig(output_path)
@@ -50,42 +61,37 @@ def plot_moving_average(moving_averages, output_path):
 
 def find_csv_files(root_dir):
     """
-    从指定根目录中递归查找所有的`epoch.csv`文件并将其按方法和实验名称组织起来。
-    
+    从指定根目录中递归查找所有的`epoch.csv`文件。
+
     Args:
     - root_dir (str): 要搜索的根目录路径。
-    
+
     Returns:
-    - dict: 一个嵌套字典，键是方法名，值是(实验名, csv文件路径)的列表。
+    - list: (实验名, csv文件路径) 的列表。
     """
     methods_experiments = []
-
-    # 遍历根目录及其子目录
     for root, dirs, files in os.walk(root_dir):
         if 'epoch.csv' in files:
-            # 提取方法和实验名称
-            # method_name = os.path.basename(os.path.dirname(root))
             experiment_name = os.path.basename(root)
             csv_file_path = os.path.join(root, 'epoch.csv')
-
-            # 将结果添加到字典中
-            # if method_name not in methods_experiments:
-            #     methods_experiments[method_name] = []
-            # methods_experiments[method_name].append((experiment_name, csv_file_path))
             methods_experiments.append((experiment_name, csv_file_path))
-
-
     return methods_experiments
+
 
 def parse_completion_rates(csv_file_path):
     df = pd.read_csv(csv_file_path)
     result_list = []
+    guidance_nums = []  # 新增：记录 Guidance query times
 
     for index, row in df.iterrows():
+        info = {'Guidance query times': 0}
+        if row['Content'] != 'Syntax Error':
+            info = parse_info(row['Info'])
+        guidance_nums.append(info['Guidance query times'])  # 新增：存储 Guidance query times
+
         completion_rate = row['Success Rate']
         debug_result = row['Content']
         end_report = row['Task Category']
-
         task_path = row['Task Path']
 
         if completion_rate == '1':
@@ -93,7 +99,8 @@ def parse_completion_rates(csv_file_path):
                 'task_path': task_path,
                 'keystate_completion_rate': True,
                 'action_completion_rate': True,
-                'success': True
+                'success': True,
+                'guidance_num': info['Guidance query times'],
             }
             result_list.append(result_dict)
             continue
@@ -103,7 +110,8 @@ def parse_completion_rates(csv_file_path):
                 'task_path': task_path,
                 'keystate_completion_rate': False,
                 'action_completion_rate': False,
-                'success': 'syntax error'
+                'success': 'syntax error',
+                'guidance_num': info['Guidance query times'],
             }
             result_list.append(result_dict)
             continue
@@ -127,27 +135,25 @@ def parse_completion_rates(csv_file_path):
             'task_path': task_path,
             'keystate_completion_rate': keystate_dict,
             'action_completion_rate': action_completion_rate,
-            'success': False
+            'success': False,
+            'guidance_num': info['Guidance query times'],
         }
 
         result_list.append(result_dict)
 
-    return result_list
+    return result_list, guidance_nums
+
 
 def calculation(result_list):
     difficulty_dict = json.load(open('result.json'))
-    success_rate_dict = {}
+    success_rate_list = []
     sum_success_rate = 0
     for entry in result_list:
         task_success_rate = 0
         task_path = entry['task_path']
         if task_path not in difficulty_dict:
-            # dict_flag = False
-            # print(f'{task_path} not in difficulty_dict')
-            # break
             continue
-            raise ValueError(f'{task_path} not in difficulty_dict')
-        
+
         if entry['success'] == 'syntax error':
             task_success_rate = 0
         elif entry['success']:
@@ -158,21 +164,19 @@ def calculation(result_list):
                 task_success_rate = entry['action_completion_rate']
             else:
                 max_keystate_completion_rate = 0
-                    
                 for solution in solution_combination:
                     solution_steps_num = 0
                     current_solution_keystate_completion_rate = 0
                     for keystate in solution:
                         keystate_steps_num = difficulty_dict[task_path][str(solution)][keystate]
                         solution_steps_num += keystate_steps_num
-
                         if not keystate in entry['keystate_completion_rate']:
-                            steps_left = keystate_steps_num # 未找到对应的keystate
+                            steps_left = keystate_steps_num
                         else:
                             steps_left = entry['keystate_completion_rate'][keystate]
                         current_solution_keystate_completion_rate += steps_left
 
-                    current_solution_keystate_completion_rate = (solution_steps_num-current_solution_keystate_completion_rate)/solution_steps_num
+                    current_solution_keystate_completion_rate = (solution_steps_num - current_solution_keystate_completion_rate) / solution_steps_num
                     max_keystate_completion_rate = max(max_keystate_completion_rate, current_solution_keystate_completion_rate)
 
                 if entry['action_completion_rate'] == 'No actions required':
@@ -182,134 +186,31 @@ def calculation(result_list):
                     action_weight = 1
                     task_success_rate = (max_keystate_completion_rate * keystate_weight + entry['action_completion_rate'] * action_weight) / (keystate_weight + action_weight)
 
-        success_rate_dict[task_path] = round(task_success_rate,3)
+        success_rate_list.append(round(task_success_rate, 3))
         sum_success_rate += task_success_rate
 
-    avg_success_rate = sum_success_rate / len(success_rate_dict)
-    return avg_success_rate, success_rate_dict
+    avg_success_rate = sum_success_rate / len(success_rate_list)
+    return avg_success_rate, success_rate_list
 
-def aggregate_success_rates_per_task(methods_experiments_results):
-    """
-    汇总不同方法和实验的任务成功率。
-
-    Args:
-    - methods_experiments_results (dict): 一个嵌套字典，键是方法名，值是(实验名, success_rate_dict)的列表。
-
-    Returns:
-    - pd.DataFrame: 行是任务，列是方法的各次实验成功率，以及每个方法的平均成功率。
-    """
-    all_tasks = set()
-    for method_results in methods_experiments_results.values():
-        for _, success_rate_dict in method_results:
-            all_tasks.update(success_rate_dict.keys())
-
-    all_tasks = sorted(all_tasks)
-    df = pd.DataFrame(index=all_tasks)
-
-    for method_name, experiments in methods_experiments_results.items():
-        experiment_names = []
-        for exp_name, success_rate_dict in experiments:
-            experiment_names.append(exp_name)
-            column_name = f'{method_name}_{exp_name}'
-            df[column_name] = df.index.map(success_rate_dict)
-
-        # 计算每个方法的平均成功率
-        method_columns = [f'{method_name}_{exp_name}' for exp_name in experiment_names]
-        df[f'{method_name}_average'] = round(df[method_columns].mean(axis=1),3)
-
-    return df
-
-def best_method_per_task(df):
-    """
-    生成只包含每个方法的平均值的表格，并找到每个任务上表现最好的方法。
-
-    Args:
-    - df (pd.DataFrame): 包含每个方法各次实验的成功率和平均值的DataFrame。
-
-    Returns:
-    - pd.DataFrame: 只包含每个任务上各方法的平均成功率，以及每个任务上表现最好的方法的表格。
-    """
-    method_columns = [col for col in df.columns if 'average' in col]
-    avg_df = df[method_columns].copy()
-
-    # 找到每个任务平均值最高的方法
-    avg_df['best_method'] = avg_df.idxmax(axis=1)
-
-    return avg_df
-
-def best_method_sorted_by_max_avg(df):
-    """
-    生成只包含每个任务各方法的平均成功率表格，并按任务的最高平均成功率从小到大排序。
-
-    Args:
-    - df (pd.DataFrame): 包含每个方法各次实验的成功率和平均值的DataFrame。
-
-    Returns:
-    - pd.DataFrame: 只包含每个任务上各方法的平均成功率，按照每个任务的最高平均成功率从小到大排序。
-    """
-    # 筛选包含 'average' 的列，也就是各方法的平均成功率
-    method_columns = [col for col in df.columns if 'average' in col]
-    avg_df = df[method_columns].copy()
-
-    # 找到每个任务的最高平均成功率
-    avg_df['max_avg_success'] = avg_df.max(axis=1)
-
-    # 按最高平均成功率从小到大排序
-    avg_df_sorted = avg_df.sort_values(by='max_avg_success', ascending=True)
-
-    return avg_df_sorted
-
-
-def save_to_csv(dataframe, output_path):
-    """
-    将汇总的成功率保存到CSV文件。
-
-    Args:
-    - dataframe (pd.DataFrame): 要保存的DataFrame。
-    - output_path (str): CSV文件的保存路径。
-    """
-    dataframe.to_csv(output_path, index=True)
 
 if __name__ == '__main__':
-    # methods_experiments = find_csv_files('baseline_result')
-    methods_experiments = find_csv_files('/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/log/epoch_20241203_001858')
-
-
-    methods_experiments_results = {}
-
-    window_size = 15
+    methods_experiments = find_csv_files('/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/log/main_with_guidance')
+    window_size = 50
 
     for experiments in methods_experiments:
-        method_results = []
         print(f'正在处理 {experiments} 方法的实验结果...')
         exp_name, csv_file_path = experiments
-        result_list = parse_completion_rates(csv_file_path)
+        result_list, guidance_nums = parse_completion_rates(csv_file_path)
         avg_success_rate, success_rate_dict = calculation(result_list)
-        method_results.append((exp_name, success_rate_dict))
-        methods_experiments_results[experiments] = method_results
 
-        # 计算滑动平均并绘制曲线
-        moving_averages, task_labels = calculate_moving_average(success_rate_dict, window_size)
-        plot_output_path = f'baseline_result/{exp_name}_moving_average_plot.png'
-        plot_moving_average(moving_averages, plot_output_path)
-        print(f'{exp_name} 的滑动平均值图表已保存到 {plot_output_path}')
+        # 计算成功率的滑动平均并绘制曲线
+        success_moving_averages = calculate_moving_average(success_rate_dict, window_size)
+        plot_output_path = f'baseline_result/{exp_name}_success_rate_moving_average_plot.png'
+        plot_moving_average(success_moving_averages, plot_output_path, 'Moving Average Success Rate', 'Moving Average of Success Rate')
 
-    # 汇总表格1：包含所有实验结果
-    aggregated_df = aggregate_success_rates_per_task(methods_experiments_results)
-    save_to_csv(aggregated_df, 'baseline_result/aggregated_success_rates.csv')
-    print('汇总的成功率已保存到 aggregated_success_rates.csv')
+        # 计算 Guidance query times 的滑动平均并绘制曲线
+        guidance_moving_averages = calculate_moving_average(guidance_nums, window_size)
+        guidance_plot_output_path = f'baseline_result/{exp_name}_guidance_moving_average_plot.png'
+        plot_moving_average(guidance_moving_averages, guidance_plot_output_path, 'Moving Average Guidance Query Times', 'Moving Average of Guidance Query Times')
 
-    # 表格2：只包含方法的平均成功率和最佳方法
-    avg_df = best_method_per_task(aggregated_df)
-    save_to_csv(avg_df, 'baseline_result/best_method_per_task.csv')
-    print('平均成功率和最佳方法已保存到 best_method_per_task.csv')
-
-    # 表格3：按照平均成功率排序的方法
-    sorted_avg_df = best_method_sorted_by_max_avg(aggregated_df)
-    save_to_csv(sorted_avg_df, 'baseline_result/sorted_methods_by_avg_success_rate.csv')
-    print('方法按照平均成功率排序的表格已保存到 sorted_methods_by_avg_success_rate.csv')
-
-    # 可选：打印每个方法的平均成功率
-    for method_name in methods_experiments:
-        avg_success_rate = aggregated_df[f'{method_name}_average'].mean()
-        print(f'{method_name} 的平均成功率: {avg_success_rate}')
+        print(f'{exp_name} 的结果图表已保存。')

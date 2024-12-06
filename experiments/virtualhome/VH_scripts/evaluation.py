@@ -117,8 +117,8 @@ class Evaluator:
             self.goal_lt=None
         self.keystates=self.task_data['Keystates']
 
-        if 'Actions' in self.task_data:
-            self.required_actions=self.task_data['Actions']
+        if 'S0_Actions' in self.task_data or 'S1_Actions' in self.task_data or 'S2_Actions' in self.task_data:
+            self.required_actions=self.task_data[f'S{self.args.scene.id}_Actions']
         else:
             self.required_actions=None
         self.keystate_achieved_flag=False
