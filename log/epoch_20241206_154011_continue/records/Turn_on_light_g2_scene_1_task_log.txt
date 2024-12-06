@@ -1,0 +1,277 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['Turn on the lights in the bedroom, then turn on the lights in the bathroom.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_phone_2147_around_bed_197(phone:item):
+    goal: not unknown(phone)
+    body:
+        assert is_phone(phone)
+        bind bed_instance:item where:
+            is_bed(bed_instance) and id[bed_instance]==197
+        achieve close_char(char,bed_instance)
+        if can_open(bed_instance):
+            achieve_once open(bed_instance)
+            exp(phone,bed_instance)
+        else:
+            exp(phone,bed_instance)
+    eff:
+        unknown[phone]=False
+        close[phone,bed_instance]=True
+        close[bed_instance,phone]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def has_switch(light:item):
+    # Determine whether a light has a switch
+    symbol with_switch=exists switch: item : has_switch(light) 
+    return with_switch
+
+behavior turn_on_light(light:item):
+    body:
+        assert with_switch(has_switch(light))
+        achieve is_on(light)
+
+behavior __goal__():
+    body:
+        bind bedroom_light: item where:
+            is_light(bedroom_light) and inside(bedroom_light, is_bedroom(bedroom))
+        
+        bind bathroom_light: item where:
+            is_light(bathroom_light) and inside(bathroom_light, is_bathroom(bathroom))
+        
+        turn_on_light(bedroom_light)
+        turn_on_light(bathroom_light)
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "behavior_definition":
+
+'Function with_switch not found. Note that recursive function calls are not supported in the current version.'
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+#goal_representation
+ 
+def has_switch(light:item):
+    # Determine whether a light has a switch
+    symbol is_powersocket=exists switch: item : has_switch(light) 
+    return is_powersocket
+
+behavior turn_on_light(light:item):
+    body:
+        assert is_powersocket(has_switch(light))
+        achieve is_on(light)
+
+behavior __goal__():
+    body:
+        bind bedroom_light: item where:
+            is_light(bedroom_light) and inside(bedroom_light, is_bedroom(bedroom))
+        
+        bind bathroom_light: item where:
+            is_light(bathroom_light) and inside(bathroom_light, is_bathroom(bathroom))
+        
+        turn_on_light(bedroom_light)
+        turn_on_light(bathroom_light)
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "behavior_definition":
+
+Error during applying is_powersocket[observation, state](x: item).
+  Arguments: has_switch(V::light)
+Argument #0 type does not match: expect item, got bool.
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+#goal_representation
+ 
+behavior turn_on_light(light:item):
+    body:
+        assert has_switch(light)
+        achieve is_on(light)
+
+behavior __goal__():
+    body:
+        bind bedroom_light: item where:
+            is_light(bedroom_light) and inside(bedroom_light, is_bedroom(bedroom))
+        
+        bind bathroom_light: item where:
+            is_light(bathroom_light) and inside(bathroom_light, is_bathroom(bathroom))
+        
+        turn_on_light(bedroom_light)
+        turn_on_light(bathroom_light)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior turn_on_light(light:item):
+    body:
+        achieve is_on(light)
+
+behavior __goal__():
+    body:
+        bind bedroom_light: item where:
+            is_light(bedroom_light) and inside(bedroom_light, is_bedroom)
+        # Select the light in the bedroom
+        
+        bind bathroom_light: item where:
+            is_light(bathroom_light) and inside(bathroom_light, is_bathroom)
+        # Select the light in the bathroom
+        
+        turn_on_light(bedroom_light)
+        # Turn on the light in the bedroom
+        
+        turn_on_light(bathroom_light)
+        # Turn on the light in the bathroom
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "behavior_definition":
+
+Unknown variable: is_bedroom; available variables: [Variable<bedroom_light: item>].
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+#goal_representation
+
+behavior turn_on_light(light:item):
+    body:
+        achieve is_on(light)
+
+behavior __goal__():
+    body:
+        bind bedroom_light: item where:
+            is_light(bedroom_light) and inside(bedroom_light, is_bedroom)
+        # Select the light in the bedroom
+        
+        bind bathroom_light: item where:
+            is_light(bathroom_light) and inside(bathroom_light, is_bathroom)
+        # Select the light in the bathroom
+        
+        turn_on_light(bedroom_light)
+        # Turn on the light in the bedroom
+        
+        turn_on_light(bathroom_light)
+        # Turn on the light in the bathroom
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "behavior_definition":
+
+Unknown variable: is_bedroom; available variables: [Variable<bedroom_light: item>].
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+#goal_representation
+
+behavior turn_on_light(light:item):
+    body:
+        achieve is_on(light)
+
+behavior __goal__():
+    body:
+        bind bedroom_light: item where:
+            is_light(bedroom_light) and inside(bedroom_light, room) and is_bedroom(room)
+        # Select the light in the bedroom
+        
+        bind bathroom_light: item where:
+            is_light(bathroom_light) and inside(bathroom_light, room) and is_bathroom(room)
+        # Select the light in the bathroom
+        
+        turn_on_light(bedroom_light)
+        # Turn on the light in the bedroom
+        
+        turn_on_light(bathroom_light)
+        # Turn on the light in the bathroom
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+Failed to generate the goal representation
+##############################
+From agent.py
+Record from func query_LLM_human in agent.py
+Question: Can you teach me how to "turn on the lights in the bedroom, then turn on the lights in the bathroom." ?
+Answer: Turn on the lights in the bedroom. Then turn on the lights in the bathroom.
+Re-decompose: False
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior turn_on_light(room:item):
+    body:
+        bind light: item where:
+            is_light(light) and inside(light, room)
+        achieve is_on(light)
+
+behavior __goal__():
+    body:
+        bind bedroom: item where:
+            is_bedroom(bedroom)
+        bind bathroom: item where:
+            is_bathroom(bathroom)
+        turn_on_light(bedroom)
+        turn_on_light(bathroom)
+
+#goal_representation_end
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(light_212)switchon_executor(light_212)walk_executor(light_39)switchon_executor(light_39)
+##############################
+From agent.py
+walk_executor(light_212)
+Find drawing_202. Robot is inside bedroom_162. Robot is close light_212. Robot is no longer inside dining_room_41.
+##############################
+From agent.py
+switchon_executor(light_212)
+Find drawing_110. Robot is inside bedroom_162. Robot is close light_212. 
+##############################
+From agent.py
+walk_executor(light_39)
+Robot is inside bathroom_1. Robot is close light_39. Robot is no longer inside bedroom_162.Robot is no longer close light_212.
+##############################
+From agent.py
+switchon_executor(light_39)
+Find pillow_108. Find drawing_111. Robot is inside bathroom_1. Robot is close light_39. 
+##############################
+From evaluation.py
+cdl_dataset/dataset/Turn_on_light/g2.txt
+Checking k1
+missed actions: 
+missed action num: 0
+##############################

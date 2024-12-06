@@ -1,0 +1,1091 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['Iron the pants.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_clothes_pants_2113_around_dresser_377(clothes_pants:item):
+    goal: not unknown(clothes_pants)
+    body:
+        assert is_clothes_pants(clothes_pants)
+        bind dresser_instance:item where:
+            is_dresser(dresser_instance) and id[dresser_instance]==377
+        achieve close_char(char,dresser_instance)
+        if can_open(dresser_instance):
+            achieve_once open(dresser_instance)
+            exp(clothes_pants,dresser_instance)
+        else:
+            exp(clothes_pants,dresser_instance)
+    eff:
+        unknown[clothes_pants]=False
+        close[clothes_pants,dresser_instance]=True
+        close[dresser_instance,clothes_pants]=True
+    
+
+behavior find_iron_2117_around_ironing_board_2099(iron:item):
+    goal: not unknown(iron)
+    body:
+        assert is_iron(iron)
+        bind ironing_board_instance:item where:
+            is_ironing_board(ironing_board_instance) and id[ironing_board_instance]==2099
+        achieve close_char(char,ironing_board_instance)
+        if can_open(ironing_board_instance):
+            achieve_once open(ironing_board_instance)
+            exp(iron,ironing_board_instance)
+        else:
+            exp(iron,ironing_board_instance)
+    eff:
+        unknown[iron]=False
+        close[iron,ironing_board_instance]=True
+        close[ironing_board_instance,iron]=True
+    
+
+behavior find_basket_for_clothes_2040_around_washing_machine_2041(basket_for_clothes:item):
+    goal: not unknown(basket_for_clothes)
+    body:
+        assert is_basket_for_clothes(basket_for_clothes)
+        bind washing_machine_instance:item where:
+            is_washing_machine(washing_machine_instance) and id[washing_machine_instance]==2041
+        achieve close_char(char,washing_machine_instance)
+        if can_open(washing_machine_instance):
+            achieve_once open(washing_machine_instance)
+            exp(basket_for_clothes,washing_machine_instance)
+        else:
+            exp(basket_for_clothes,washing_machine_instance)
+    eff:
+        unknown[basket_for_clothes]=False
+        close[basket_for_clothes,washing_machine_instance]=True
+        close[washing_machine_instance,basket_for_clothes]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_ironing_complete(pants: item):
+    # Check if the pants are ironed
+    return clean(pants)
+
+def is_ironing_setup(iron: item, ironing_board: item):
+    # Check if the ironing setup is complete
+    symbol setup_complete = is_on(iron) and plugged(iron) and on(pants, ironing_board)
+    return setup_complete
+
+behavior iron_pants(pants: item, iron: item, ironing_board: item):
+    body:
+        achieve_once inhand(iron) 
+        # Temporarily hold the iron
+
+        achieve plugged(iron)
+        # Plug in the iron
+
+        achieve is_on(iron)
+        # Turn on the iron
+
+        achieve on(pants, ironing_board)
+        # Place the pants on the ironing board
+        
+        if is_ironing_setup(iron, ironing_board):
+            achieve clean(pants)
+            # Ironing is done when the pants are clean
+
+        achieve unplugged(iron)
+        # Unplug the iron after use
+
+behavior __goal__():
+    body:
+        bind pants: item where:
+            is_clothes_pants(pants)
+        # Select pants
+
+        bind iron: item where:
+            is_iron(iron)
+        # Select iron
+
+        bind ironing_board: item where:
+            is_ironing_board(ironing_board)
+        # Select ironing board
+
+        if not is_ironing_complete(pants):
+            iron_pants(pants, iron, ironing_board)
+        # If the pants are not ironed, proceed with the ironing process
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "function_definition":
+
+Unknown variable: pants; available variables: [Variable<iron: item>, Variable<ironing_board: item>].
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_clothes_pants_2113_around_dresser_377(clothes_pants:item):
+    goal: not unknown(clothes_pants)
+    body:
+        assert is_clothes_pants(clothes_pants)
+        bind dresser_instance:item where:
+            is_dresser(dresser_instance) and id[dresser_instance]==377
+        achieve close_char(char,dresser_instance)
+        if can_open(dresser_instance):
+            achieve_once open(dresser_instance)
+            exp(clothes_pants,dresser_instance)
+        else:
+            exp(clothes_pants,dresser_instance)
+    eff:
+        unknown[clothes_pants]=False
+        close[clothes_pants,dresser_instance]=True
+        close[dresser_instance,clothes_pants]=True
+    
+
+behavior find_iron_2117_around_ironing_board_2099(iron:item):
+    goal: not unknown(iron)
+    body:
+        assert is_iron(iron)
+        bind ironing_board_instance:item where:
+            is_ironing_board(ironing_board_instance) and id[ironing_board_instance]==2099
+        achieve close_char(char,ironing_board_instance)
+        if can_open(ironing_board_instance):
+            achieve_once open(ironing_board_instance)
+            exp(iron,ironing_board_instance)
+        else:
+            exp(iron,ironing_board_instance)
+    eff:
+        unknown[iron]=False
+        close[iron,ironing_board_instance]=True
+        close[ironing_board_instance,iron]=True
+    
+
+#goal_representation
+ 
+def is_ironing_complete(pants: item):
+    # Check if the pants are ironed
+    return clean(pants)
+
+def is_ironing_setup(iron: item, ironing_board: item, pants: item):
+    # Check if the ironing setup is complete
+    symbol setup_complete = is_on(iron) and plugged(iron) and on(pants, ironing_board)
+    return setup_complete
+
+behavior iron_pants(pants: item, iron: item, ironing_board: item):
+    body:
+        achieve_once inhand(iron)
+        # Temporarily hold the iron
+
+        achieve plugged(iron)
+        # Plug in the iron
+
+        achieve is_on(iron)
+        # Turn on the iron
+
+        achieve on(pants, ironing_board)
+        # Place the pants on the ironing board
+        
+        if is_ironing_setup(iron, ironing_board, pants):
+            achieve clean(pants)
+            # Ironing is done when the pants are clean
+
+        achieve unplugged(iron)
+        # Unplug the iron after use
+
+behavior __goal__():
+    body:
+        bind pants: item where:
+            is_clothes_pants(pants)
+        # Select pants
+
+        bind iron: item where:
+            is_iron(iron)
+        # Select iron
+
+        bind ironing_board: item where:
+            is_ironing_board(ironing_board)
+        # Select ironing board
+
+        if not is_ironing_complete(pants):
+            iron_pants(pants, iron, ironing_board)
+        # If the pants are not ironed, proceed with the ironing process
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_clothes_pants_2113_around_washing_machine_2041(clothes_pants:item):
+    goal: not unknown(clothes_pants)
+    body:
+        assert is_clothes_pants(clothes_pants)
+        bind washing_machine_instance:item where:
+            is_washing_machine(washing_machine_instance) and id[washing_machine_instance]==2041
+        achieve close_char(char,washing_machine_instance)
+        if can_open(washing_machine_instance):
+            achieve_once open(washing_machine_instance)
+            exp(clothes_pants,washing_machine_instance)
+        else:
+            exp(clothes_pants,washing_machine_instance)
+    eff:
+        unknown[clothes_pants]=False
+        close[clothes_pants,washing_machine_instance]=True
+        close[washing_machine_instance,clothes_pants]=True
+    
+
+behavior find_iron_2117_around_ironing_board_2099(iron:item):
+    goal: not unknown(iron)
+    body:
+        assert is_iron(iron)
+        bind ironing_board_instance:item where:
+            is_ironing_board(ironing_board_instance) and id[ironing_board_instance]==2099
+        achieve close_char(char,ironing_board_instance)
+        if can_open(ironing_board_instance):
+            achieve_once open(ironing_board_instance)
+            exp(iron,ironing_board_instance)
+        else:
+            exp(iron,ironing_board_instance)
+    eff:
+        unknown[iron]=False
+        close[iron,ironing_board_instance]=True
+        close[ironing_board_instance,iron]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+
+behavior iron_pants(pants: item, iron: item, ironing_board: item):
+    body:
+        achieve plugged(iron)
+        # Ensure the iron is plugged in
+
+        achieve_once inhand(iron)
+        # Hold the iron
+
+        assert is_clothes(pants)
+        # Confirm that the item is a pair of clothes (pants)
+
+        achieve on(pants, ironing_board)
+        # Place the pants on the ironing board
+
+        achieve is_on(iron)
+        # Turn on the iron to iron the pants
+
+        # Begin the process of ironing the pants
+
+behavior __goal__():
+    body:
+        bind pants: item where:
+            is_clothes_pants(pants)
+        # Select the item that is a pair of pants
+
+        bind iron: item where:
+            is_iron(iron)
+        # Select the item that is an iron
+
+        bind ironing_board: item where:
+            is_ironing_board(ironing_board)
+        # Select the ironing board
+
+        iron_pants(pants, iron, ironing_board)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+
+behavior iron_pants(pants: item, iron: item, ironing_board: item):
+    body:
+        achieve plugged(iron)
+        # Ensure the iron is plugged in
+
+        achieve_once inhand(iron)
+        # Hold the iron
+
+        assert is_clothes(pants)
+        # Confirm that the item is a pair of clothes (pants)
+
+        achieve on(pants, ironing_board)
+        # Place the pants on the ironing board
+
+        achieve is_on(iron)
+        # Turn on the iron to iron the pants
+
+        # Begin the process of ironing the pants
+
+behavior __goal__():
+    body:
+        bind pants: item where:
+            is_clothes_pants(pants)
+        # Select the item that is a pair of pants
+
+        bind iron: item where:
+            is_iron(iron)
+        # Select the item that is an iron
+
+        bind ironing_board: item where:
+            is_ironing_board(ironing_board)
+        # Select the ironing board
+
+        iron_pants(pants, iron, ironing_board)
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(ironing_board_2099)exp(iron_2117, ironing_board_2099)walk_executor(iron_2117)plugin_executor(iron_2117)grab_executor(iron_2117)walk_executor(washing_machine_2041)open_executor(washing_machine_2041)exp(clothes_pants_2113, washing_machine_2041)walk_executor(clothes_pants_2113)grab_executor(clothes_pants_2113)walk_executor(ironing_board_2099)put_executor(clothes_pants_2113, ironing_board_2099)walk_executor(iron_2117)switchon_executor(iron_2117)
+##############################
+From agent.py
+walk_executor(ironing_board_2099)
+Find iron_2117. Robot is inside bedroom_220. Robot is close ironing_board_2099. Robot is no longer inside home_office_161.
+##############################
+From evaluation.py
+cdl_dataset/dataset/Iron_clothes/g2.txt
+Checking k1
+missed actions: walk_executor(clothes_pants_2113);wash_executor(clothes_pants_2113);
+missed action num: 2
+##############################
+From agent.py
+exp(iron_2117, ironing_board_2099)
+Find iron_2117. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(iron_2117)plugin_executor(iron_2117)grab_executor(iron_2117)walk_executor(washing_machine_2041)open_executor(washing_machine_2041)exp(clothes_pants_2113, washing_machine_2041)walk_executor(clothes_pants_2113)grab_executor(clothes_pants_2113)walk_executor(ironing_board_2099)put_executor(clothes_pants_2113, ironing_board_2099)walk_executor(iron_2117)switchon_executor(iron_2117)
+##############################
+From agent.py
+walk_executor(iron_2117)
+Robot is inside bedroom_220. Robot is close ironing_board_2099. Robot is close iron_2117. 
+##############################
+From evaluation.py
+cdl_dataset/dataset/Iron_clothes/g2.txt
+Checking k1
+missed actions: walk_executor(clothes_pants_2113);wash_executor(clothes_pants_2113);
+missed action num: 2
+##############################
+From agent.py
+plugin_executor(iron_2117)
+Robot is inside bedroom_220. Robot is close ironing_board_2099. Robot is close iron_2117. 
+##############################
+From evaluation.py
+cdl_dataset/dataset/Iron_clothes/g2.txt
+Checking k1
+missed actions: walk_executor(clothes_pants_2113);wash_executor(clothes_pants_2113);
+missed action num: 2
+##############################
+From agent.py
+grab_executor(iron_2117)
+Robot is inside bedroom_220. Robot is close ironing_board_2099. Robot is close iron_2117. Grabbing iron_2117 by right hand. 
+##############################
+From evaluation.py
+cdl_dataset/dataset/Iron_clothes/g2.txt
+Checking k1
+missed actions: walk_executor(clothes_pants_2113);wash_executor(clothes_pants_2113);
+missed action num: 2
+##############################
+From agent.py
+walk_executor(washing_machine_2041)
+Robot is inside bathroom_265. Robot is close iron_2117. Robot is close washing_machine_2041. Robot is no longer inside bedroom_220.Robot is no longer close ironing_board_2099.
+##############################
+From evaluation.py
+cdl_dataset/dataset/Iron_clothes/g2.txt
+Checking k1
+missed actions: walk_executor(clothes_pants_2113);wash_executor(clothes_pants_2113);
+missed action num: 2
+##############################
+From agent.py
+open_executor(washing_machine_2041)
+Robot is inside bathroom_265. Robot is close iron_2117. Robot is close washing_machine_2041. 
+##############################
+From evaluation.py
+cdl_dataset/dataset/Iron_clothes/g2.txt
+Checking k1
+missed actions: walk_executor(clothes_pants_2113);wash_executor(clothes_pants_2113);
+missed action num: 2
+##############################
+From agent.py
+exp(clothes_pants_2113, washing_machine_2041)
+Failed to find clothes_pants_2113 around washing_machine_2041. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(dresser_377)exp(clothes_pants_2113, dresser_377)walk_executor(clothes_pants_2113)grab_executor(clothes_pants_2113)walk_executor(ironing_board_2099)put_executor(clothes_pants_2113, ironing_board_2099)walk_executor(iron_2117)switchon_executor(iron_2117)
+##############################
+From agent.py
+walk_executor(dresser_377)
+Find novel_2010. Find pajamas_2039. Find drawing_387. Find drawing_388. Robot is inside bedroom_327. Robot is close iron_2117. Robot is close dresser_377. Robot is close novel_2010. Robot is close pajamas_2039. Robot is no longer inside bathroom_265.Robot is no longer close washing_machine_2041.
+##############################
+From evaluation.py
+cdl_dataset/dataset/Iron_clothes/g2.txt
+Checking k1
+missed actions: walk_executor(clothes_pants_2113);wash_executor(clothes_pants_2113);
+missed action num: 2
+##############################
+From agent.py
+exp(clothes_pants_2113, dresser_377)
+Failed to find clothes_pants_2113 around dresser_377. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(bench_125)exp(clothes_pants_2113, bench_125)walk_executor(clothes_pants_2113)grab_executor(clothes_pants_2113)walk_executor(ironing_board_2099)put_executor(clothes_pants_2113, ironing_board_2099)walk_executor(iron_2117)switchon_executor(iron_2117)
+##############################
+From agent.py
+walk_executor(bench_125)
+Find drawing_118. Find mat_115. Robot is inside dining_room_1. Robot is close iron_2117. Robot is close bench_125. Robot is no longer inside bedroom_327.Robot is no longer close dresser_377.Robot is no longer close novel_2010.Robot is no longer close pajamas_2039.
+##############################
+From evaluation.py
+cdl_dataset/dataset/Iron_clothes/g2.txt
+Checking k1
+missed actions: walk_executor(clothes_pants_2113);wash_executor(clothes_pants_2113);
+missed action num: 2
+##############################
+From agent.py
+exp(clothes_pants_2113, bench_125)
+Failed to find clothes_pants_2113 around bench_125. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(bench_124)exp(clothes_pants_2113, bench_124)walk_executor(clothes_pants_2113)grab_executor(clothes_pants_2113)walk_executor(ironing_board_2099)put_executor(clothes_pants_2113, ironing_board_2099)walk_executor(iron_2117)switchon_executor(iron_2117)
+##############################
+From agent.py
+walk_executor(bench_124)
+Find mat_114. Robot is inside dining_room_1. Robot is close iron_2117. Robot is close bench_124. Robot is no longer close bench_125.
+##############################
+From evaluation.py
+cdl_dataset/dataset/Iron_clothes/g2.txt
+Checking k1
+missed actions: walk_executor(clothes_pants_2113);wash_executor(clothes_pants_2113);
+missed action num: 2
+##############################
+From agent.py
+exp(clothes_pants_2113, bench_124)
+Failed to find clothes_pants_2113 around bench_124. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(cupboard_130)exp(clothes_pants_2113, cupboard_130)walk_executor(clothes_pants_2113)grab_executor(clothes_pants_2113)walk_executor(ironing_board_2099)put_executor(clothes_pants_2113, ironing_board_2099)walk_executor(iron_2117)switchon_executor(iron_2117)
+##############################
+From agent.py
+walk_executor(cupboard_130)
+Find blender_2032. Find tea_bag_2017. Find tray_142. Find pot_54. Robot is inside dining_room_1. Robot is close iron_2117. Robot is close blender_2032. Robot is close tea_bag_2017. Robot is close cupboard_130. Robot is no longer close bench_124.
+##############################
+From evaluation.py
+cdl_dataset/dataset/Iron_clothes/g2.txt
+Checking k1
+missed actions: walk_executor(clothes_pants_2113);wash_executor(clothes_pants_2113);
+missed action num: 2
+##############################
+From agent.py
+exp(clothes_pants_2113, cupboard_130)
+Failed to find clothes_pants_2113 around cupboard_130. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(cupboard_131)open_executor(cupboard_131)exp(clothes_pants_2113, cupboard_131)walk_executor(clothes_pants_2113)grab_executor(clothes_pants_2113)walk_executor(ironing_board_2099)put_executor(clothes_pants_2113, ironing_board_2099)walk_executor(iron_2117)switchon_executor(iron_2117)
+##############################
+From agent.py
+walk_executor(cupboard_131)
+Robot is inside dining_room_1. Robot is close iron_2117. Robot is close cupboard_131. Robot is no longer close blender_2032.Robot is no longer close tea_bag_2017.Robot is no longer close cupboard_130.
+##############################
+From evaluation.py
+cdl_dataset/dataset/Iron_clothes/g2.txt
+Checking k1
+missed actions: walk_executor(clothes_pants_2113);wash_executor(clothes_pants_2113);
+missed action num: 2
+##############################
+From agent.py
+open_executor(cupboard_131)
+Robot is inside dining_room_1. Robot is close iron_2117. Robot is close cupboard_131. 
+##############################
+From evaluation.py
+cdl_dataset/dataset/Iron_clothes/g2.txt
+Checking k1
+missed actions: walk_executor(clothes_pants_2113);wash_executor(clothes_pants_2113);
+missed action num: 2
+##############################
+From agent.py
+Record from func query_LLM_human in agent.py
+Question: Can you help me to find clothes_pants_2113 ?
+Answer: Robot, you can find clothes_pants_2113 inside the bathroom_265. They are located inside the basket_for_clothes_2040. Look for the basket in the bathroom, and you will find the pants inside it.
+Re-decompose: None
+
+##############################
+From agent.py
+Human Instruction: Robot, you can find clothes_pants_2113 inside the bathroom_265. They are located inside the basket_for_clothes_2040. Look for the basket in the bathroom, and you will find the pants inside it.
+
+The actions you have taken:
+Action 1: Walk to ironing_board_2099.
+Action 2: look for iron_2117 around ironing_board_2099.
+Action 3: Walk to iron_2117.
+Action 4: Plug in iron_2117.
+Action 5: Grab iron_2117.
+Action 6: Walk to washing_machine_2041.
+Action 7: Open washing_machine_2041.
+Action 8: look for clothes_pants_2113 around washing_machine_2041.
+Action 9: Walk to dresser_377.
+Action 10: look for clothes_pants_2113 around dresser_377.
+Action 11: Walk to bench_125.
+Action 12: look for clothes_pants_2113 around bench_125.
+Action 13: Walk to bench_124.
+Action 14: look for clothes_pants_2113 around bench_124.
+Action 15: Walk to cupboard_130.
+Action 16: look for clothes_pants_2113 around cupboard_130.
+Action 17: Walk to cupboard_131.
+Action 18: Open cupboard_131.
+
+##############################
+From agent.py
+exp(clothes_pants_2113, cupboard_131)
+Failed to find clothes_pants_2113 around cupboard_131. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(bathroom_counter_306)exp(clothes_pants_2113, bathroom_counter_306)walk_executor(clothes_pants_2113)grab_executor(clothes_pants_2113)walk_executor(ironing_board_2099)put_executor(clothes_pants_2113, ironing_board_2099)walk_executor(iron_2117)switchon_executor(iron_2117)
+##############################
+From agent.py
+walk_executor(bathroom_counter_306)
+Find drawing_296. Find towel_rack_298. Robot is inside bathroom_265. Robot is close iron_2117. Robot is close bathroom_counter_306. Robot is no longer inside dining_room_1.Robot is no longer close cupboard_131.
+##############################
+From evaluation.py
+cdl_dataset/dataset/Iron_clothes/g2.txt
+Checking k1
+missed actions: walk_executor(clothes_pants_2113);wash_executor(clothes_pants_2113);
+missed action num: 2
+##############################
+From agent.py
+exp(clothes_pants_2113, bathroom_counter_306)
+Failed to find clothes_pants_2113 around bathroom_counter_306. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(bathroom_cabinet_305)open_executor(bathroom_cabinet_305)exp(clothes_pants_2113, bathroom_cabinet_305)walk_executor(clothes_pants_2113)grab_executor(clothes_pants_2113)walk_executor(ironing_board_2099)put_executor(clothes_pants_2113, ironing_board_2099)walk_executor(iron_2117)switchon_executor(iron_2117)
+##############################
+From agent.py
+walk_executor(bathroom_cabinet_305)
+Find soap_2038. Robot is inside bathroom_265. Robot is close iron_2117. Robot is close bathroom_cabinet_305. Robot is close wall_269. Robot is close soap_2038. Robot is no longer close bathroom_counter_306.
+##############################
+From evaluation.py
+cdl_dataset/dataset/Iron_clothes/g2.txt
+Checking k1
+missed actions: walk_executor(clothes_pants_2113);wash_executor(clothes_pants_2113);
+missed action num: 2
+##############################
+From agent.py
+open_executor(bathroom_cabinet_305)
+Robot is inside bathroom_265. Robot is close iron_2117. Robot is close bathroom_cabinet_305. Robot is close wall_269. Robot is close soap_2038. 
+##############################
+From evaluation.py
+cdl_dataset/dataset/Iron_clothes/g2.txt
+Checking k1
+missed actions: walk_executor(clothes_pants_2113);wash_executor(clothes_pants_2113);
+missed action num: 2
+##############################
+From agent.py
+exp(clothes_pants_2113, bathroom_cabinet_305)
+Failed to find clothes_pants_2113 around bathroom_cabinet_305. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(towel_rack_298)exp(clothes_pants_2113, towel_rack_298)walk_executor(clothes_pants_2113)grab_executor(clothes_pants_2113)walk_executor(ironing_board_2099)put_executor(clothes_pants_2113, ironing_board_2099)walk_executor(iron_2117)switchon_executor(iron_2117)
+##############################
+From agent.py
+walk_executor(towel_rack_298)
+Find towel_2083. Robot is inside bathroom_265. Robot is close iron_2117. Robot is close towel_rack_298. Robot is no longer close bathroom_cabinet_305.Robot is no longer close wall_269.Robot is no longer close soap_2038.
+##############################
+From evaluation.py
+cdl_dataset/dataset/Iron_clothes/g2.txt
+Checking k1
+missed actions: walk_executor(clothes_pants_2113);wash_executor(clothes_pants_2113);
+missed action num: 2
+##############################
+From agent.py
+exp(clothes_pants_2113, towel_rack_298)
+Failed to find clothes_pants_2113 around towel_rack_298. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(bathtub_297)exp(clothes_pants_2113, bathtub_297)walk_executor(clothes_pants_2113)grab_executor(clothes_pants_2113)walk_executor(ironing_board_2099)put_executor(clothes_pants_2113, ironing_board_2099)walk_executor(iron_2117)switchon_executor(iron_2117)
+##############################
+From agent.py
+walk_executor(bathtub_297)
+Find towel_rack_299. Find towel_rack_300. Find basket_for_clothes_2040. Robot is inside bathroom_265. Robot is close iron_2117. Robot is close bathtub_297. Robot is no longer close towel_rack_298.
+##############################
+From evaluation.py
+cdl_dataset/dataset/Iron_clothes/g2.txt
+Checking k1
+missed actions: walk_executor(clothes_pants_2113);wash_executor(clothes_pants_2113);
+missed action num: 2
+##############################
+From agent.py
+exp(clothes_pants_2113, bathtub_297)
+Failed to find clothes_pants_2113 around bathtub_297. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(basket_for_clothes_2040)exp(clothes_pants_2113, basket_for_clothes_2040)walk_executor(clothes_pants_2113)grab_executor(clothes_pants_2113)walk_executor(ironing_board_2099)put_executor(clothes_pants_2113, ironing_board_2099)walk_executor(iron_2117)switchon_executor(iron_2117)
+##############################
+From agent.py
+walk_executor(basket_for_clothes_2040)
+Find clothes_pants_2113. Find clothes_shirt_2114. Find clothes_socks_2115. Find clothes_skirt_2116. Robot is inside bathroom_265. Robot is close iron_2117. Robot is close clothes_pants_2113. Robot is close clothes_shirt_2114. Robot is close clothes_socks_2115. Robot is close clothes_skirt_2116. Robot is close basket_for_clothes_2040. Robot is no longer close bathtub_297.
+##############################
+From evaluation.py
+cdl_dataset/dataset/Iron_clothes/g2.txt
+Checking k1
+missed actions: wash_executor(clothes_pants_2113);
+missed action num: 1
+##############################
+From agent.py
+exp(clothes_pants_2113, basket_for_clothes_2040)
+Find clothes_pants_2113. 
+##############################
+From agent.py-> find a plan in act()
+grab_executor(clothes_pants_2113)walk_executor(ironing_board_2099)put_executor(clothes_pants_2113, ironing_board_2099)walk_executor(iron_2117)switchon_executor(iron_2117)
+##############################
+From agent.py
+grab_executor(clothes_pants_2113)
+Robot is inside bathroom_265. Robot is close iron_2117. Robot is close clothes_pants_2113. Robot is close clothes_shirt_2114. Robot is close clothes_socks_2115. Robot is close clothes_skirt_2116. Robot is close basket_for_clothes_2040. Grabbing clothes_pants_2113 by left hand. 
+##############################
+From evaluation.py
+cdl_dataset/dataset/Iron_clothes/g2.txt
+Checking k1
+missed actions: walk_executor(cutting_board_2080);put_executor(clothes_pants_2113, cutting_board_2080);walk_executor(clothes_pants_2113);wash_executor(clothes_pants_2113);
+missed action num: 4
+##############################
+From agent.py
+walk_executor(ironing_board_2099)
+Robot is inside bedroom_220. Robot is close iron_2117. Robot is close clothes_pants_2113. Robot is close ironing_board_2099. Robot is no longer inside bathroom_265.Robot is no longer close clothes_shirt_2114.Robot is no longer close clothes_socks_2115.Robot is no longer close clothes_skirt_2116.Robot is no longer close basket_for_clothes_2040.
+##############################
+From evaluation.py
+cdl_dataset/dataset/Iron_clothes/g2.txt
+Checking k1
+missed actions: walk_executor(cutting_board_2080);put_executor(clothes_pants_2113, cutting_board_2080);walk_executor(clothes_pants_2113);wash_executor(clothes_pants_2113);
+missed action num: 4
+##############################
+From agent.py
+put_executor(clothes_pants_2113, ironing_board_2099)
+Robot is inside bedroom_220. Robot is close iron_2117. Robot is close clothes_pants_2113. Robot is close ironing_board_2099. clothes_pants_2113 released by left hand. 
+##############################
+From evaluation.py
+cdl_dataset/dataset/Iron_clothes/g2.txt
+Checking k1
+missed actions: wash_executor(clothes_pants_2113);
+missed action num: 1
+##############################
+From agent.py
+walk_executor(iron_2117)
+Robot is inside bathroom_265. Robot is close iron_2117. Robot is no longer inside bedroom_220.Robot is no longer close clothes_pants_2113.Robot is no longer close ironing_board_2099.
+##############################
+From evaluation.py
+cdl_dataset/dataset/Iron_clothes/g2.txt
+Checking k1
+missed actions: walk_executor(clothes_pants_2113);wash_executor(clothes_pants_2113);
+missed action num: 2
+##############################
+From agent.py
+switchon_executor(iron_2117)
+Robot is inside bathroom_265. Robot is close iron_2117. 
+##############################
+From evaluation.py
+cdl_dataset/dataset/Iron_clothes/g2.txt
+Checking k1
+missed actions: walk_executor(clothes_pants_2113);wash_executor(clothes_pants_2113);
+missed action num: 2
+##############################
+From agent.py
+Human Instruction: You need to return to the bedroom to pick up the iron and proceed to iron the pants now placed on the ironing board.
+
+The actions you have taken:
+Action 1: Walk to ironing_board_2099.
+Action 2: look for iron_2117 around ironing_board_2099.
+Action 3: Walk to iron_2117.
+Action 4: Plug in iron_2117.
+Action 5: Grab iron_2117.
+Action 6: Walk to washing_machine_2041.
+Action 7: Open washing_machine_2041.
+Action 8: look for clothes_pants_2113 around washing_machine_2041.
+Action 9: Walk to dresser_377.
+Action 10: look for clothes_pants_2113 around dresser_377.
+Action 11: Walk to bench_125.
+Action 12: look for clothes_pants_2113 around bench_125.
+Action 13: Walk to bench_124.
+Action 14: look for clothes_pants_2113 around bench_124.
+Action 15: Walk to cupboard_130.
+Action 16: look for clothes_pants_2113 around cupboard_130.
+Action 17: Walk to cupboard_131.
+Action 18: Open cupboard_131.
+Action 19: look for clothes_pants_2113 around cupboard_131.
+Action 20: Walk to bathroom_counter_306.
+Action 21: look for clothes_pants_2113 around bathroom_counter_306.
+Action 22: Walk to bathroom_cabinet_305.
+Action 23: Open bathroom_cabinet_305.
+Action 24: look for clothes_pants_2113 around bathroom_cabinet_305.
+Action 25: Walk to towel_rack_298.
+Action 26: look for clothes_pants_2113 around towel_rack_298.
+Action 27: Walk to bathtub_297.
+Action 28: look for clothes_pants_2113 around bathtub_297.
+Action 29: Walk to basket_for_clothes_2040.
+Action 30: look for clothes_pants_2113 around basket_for_clothes_2040.
+Action 31: Grab clothes_pants_2113.
+Action 32: Walk to ironing_board_2099.
+Action 33: Put clothes_pants_2113 on ironing_board_2099.
+Action 34: Walk to iron_2117.
+Action 35: Switch on iron_2117.
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_clothes_scarf_2079_around_towel_rack_299(clothes_scarf:item):
+    goal: not unknown(clothes_scarf)
+    body:
+        assert is_clothes_scarf(clothes_scarf)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==299
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(clothes_scarf,towel_rack_instance)
+        else:
+            exp(clothes_scarf,towel_rack_instance)
+    eff:
+        unknown[clothes_scarf]=False
+        close[clothes_scarf,towel_rack_instance]=True
+        close[towel_rack_instance,clothes_scarf]=True
+    
+
+behavior find_clothes_jacket_2078_around_bed_264(clothes_jacket:item):
+    goal: not unknown(clothes_jacket)
+    body:
+        assert is_clothes_jacket(clothes_jacket)
+        bind bed_instance:item where:
+            is_bed(bed_instance) and id[bed_instance]==264
+        achieve close_char(char,bed_instance)
+        if can_open(bed_instance):
+            achieve_once open(bed_instance)
+            exp(clothes_jacket,bed_instance)
+        else:
+            exp(clothes_jacket,bed_instance)
+    eff:
+        unknown[clothes_jacket]=False
+        close[clothes_jacket,bed_instance]=True
+        close[bed_instance,clothes_jacket]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior iron_pants(pants: item, iron: item):
+    body:
+        achieve on(pants, ironing_board_2099)
+        # Ensure the pants are on the ironing board
+
+        achieve is_on(iron)
+        # Ensure the iron is turned on
+
+behavior __goal__():
+    body:
+        bind pants: item where:
+            is_clothes_pants(pants) and on(pants, ironing_board_2099)
+        # Select pants that are on the ironing board
+
+        bind iron: item where:
+            is_iron(iron) and plugged(iron) and is_on(iron)
+        # Select the iron that is plugged in and turned on
+
+        iron_pants(pants, iron)
+        # Proceed to iron the pants on the ironing board
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "behavior_definition":
+
+Unknown variable: ironing_board_2099; available variables: [Variable<pants: item>, Variable<iron: item>].
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_clothes_dress_2075_around_bed_264(clothes_dress:item):
+    goal: not unknown(clothes_dress)
+    body:
+        assert is_clothes_dress(clothes_dress)
+        bind bed_instance:item where:
+            is_bed(bed_instance) and id[bed_instance]==264
+        achieve close_char(char,bed_instance)
+        if can_open(bed_instance):
+            achieve_once open(bed_instance)
+            exp(clothes_dress,bed_instance)
+        else:
+            exp(clothes_dress,bed_instance)
+    eff:
+        unknown[clothes_dress]=False
+        close[clothes_dress,bed_instance]=True
+        close[bed_instance,clothes_dress]=True
+    
+
+#goal_representation
+ 
+behavior iron_pants(pants: item, iron: item, ironing_board: item):
+    body:
+        achieve on(pants, ironing_board)
+        # Ensure the pants are on the ironing board
+
+        achieve is_on(iron)
+        # Ensure the iron is turned on
+
+behavior __goal__():
+    body:
+        bind ironing_board: item where:
+            is_ironing_board(ironing_board)
+        # Bind an item as the ironing board
+
+        bind pants: item where:
+            is_clothes_pants(pants) and on(pants, ironing_board)
+        # Select pants that are on the ironing board
+
+        bind iron: item where:
+            is_iron(iron) and plugged(iron) and is_on(iron)
+        # Select the iron that is plugged in and turned on
+
+        iron_pants(pants, iron, ironing_board)
+        # Proceed to iron the pants on the ironing board
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior plug_in_iron_and_prepare_pants(iron:item, pants:item, ironing_board:item):
+    body:
+        achieve plugged(iron)
+        # Plug in the iron
+        
+        achieve is_on(iron)
+        # Switch on the iron
+        
+        achieve on(pants, ironing_board)
+        # Ensure the pants are on the ironing board
+
+behavior __goal__():
+    body:
+        bind iron: item where:
+            is_iron(iron)
+        # Select the iron
+
+        bind pants: item where:
+            is_clothes_pants(pants)
+        # Select the pants
+
+        bind ironing_board: item where:
+            is_ironing_board(ironing_board)
+        # Select the ironing board
+
+        plug_in_iron_and_prepare_pants(iron, pants, ironing_board)
+
+#goal_representation_end
+
+##############################
+From agent.py
+Reset goals: The sub-goals are: 
+['Iron the pair of pants.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior iron_pants(pants: item, iron: item, board: item):
+    body:
+        achieve on(pants, board)
+        # Ensure the pants are on the ironing board
+
+        achieve is_on(iron)
+        # The iron must be on to start ironing
+
+        achieve close_char(char, board)
+        # Ensure that the character is close to the ironing board and pants
+
+behavior __goal__():
+    body:
+        bind pants: item where:
+            is_clothes_pants(pants)
+        # Select the item that is a pair of pants
+
+        bind iron: item where:
+            is_iron(iron) and is_on(iron)
+        # Select the iron which is turned on
+
+        bind board: item where:
+            is_ironing_board(board) and close_char(char, board)
+        # Select the ironing board which is close to character
+
+        iron_pants(pants, iron, board)
+        # Call the behavior to iron the pants
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_clothes_scarf_2079_around_bed_264(clothes_scarf:item):
+    goal: not unknown(clothes_scarf)
+    body:
+        assert is_clothes_scarf(clothes_scarf)
+        bind bed_instance:item where:
+            is_bed(bed_instance) and id[bed_instance]==264
+        achieve close_char(char,bed_instance)
+        if can_open(bed_instance):
+            achieve_once open(bed_instance)
+            exp(clothes_scarf,bed_instance)
+        else:
+            exp(clothes_scarf,bed_instance)
+    eff:
+        unknown[clothes_scarf]=False
+        close[clothes_scarf,bed_instance]=True
+        close[bed_instance,clothes_scarf]=True
+    
+
+behavior find_clothes_jacket_2078_around_bed_376(clothes_jacket:item):
+    goal: not unknown(clothes_jacket)
+    body:
+        assert is_clothes_jacket(clothes_jacket)
+        bind bed_instance:item where:
+            is_bed(bed_instance) and id[bed_instance]==376
+        achieve close_char(char,bed_instance)
+        if can_open(bed_instance):
+            achieve_once open(bed_instance)
+            exp(clothes_jacket,bed_instance)
+        else:
+            exp(clothes_jacket,bed_instance)
+    eff:
+        unknown[clothes_jacket]=False
+        close[clothes_jacket,bed_instance]=True
+        close[bed_instance,clothes_jacket]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior iron_pants(iron: item, pants: item, ironing_board: item):
+    body:
+        achieve close_char(char, ironing_board)
+        # Ensure you are close to the ironing board
+
+        achieve on(pants, ironing_board)
+        # Place the pants on the ironing board
+
+        achieve plugged(iron)
+        # Ensure the iron is plugged in
+
+        achieve is_on(iron)
+        # Ensure the iron is turned on
+
+        achieve_once inhand(iron)
+        # Hold the iron temporarily
+
+        achieve on(iron, pants)
+        # Use the iron on the pants to iron them
+
+behavior __goal__():
+    body:
+        bind pants: item where:
+            is_clothes_pants(pants)
+        # Select the pants that need to be ironed
+
+        bind ironing_board: item where:
+            is_ironing_board(ironing_board)
+        # Select the ironing board
+
+        bind iron: item where:
+            is_iron(iron)
+        # Select the iron
+
+        iron_pants(iron, pants, ironing_board)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+ 
+behavior iron_pants(iron: item, pants: item, ironing_board: item):
+    body:
+        achieve close_char(char, ironing_board)
+        # Ensure you are close to the ironing board
+
+        achieve on(pants, ironing_board)
+        # Place the pants on the ironing board
+
+        achieve plugged(iron)
+        # Ensure the iron is plugged in
+
+        achieve is_on(iron)
+        # Ensure the iron is turned on
+
+        achieve_once inhand(iron)
+        # Hold the iron temporarily
+
+        achieve on(iron, pants)
+        # Use the iron on the pants to iron them
+
+behavior __goal__():
+    body:
+        bind pants: item where:
+            is_clothes_pants(pants)
+        # Select the pants that need to be ironed
+
+        bind ironing_board: item where:
+            is_ironing_board(ironing_board)
+        # Select the ironing board
+
+        bind iron: item where:
+            is_iron(iron)
+        # Select the iron
+
+        iron_pants(iron, pants, ironing_board)
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(ironing_board_2099)put_executor(iron_2117, clothes_pants_2113)
+##############################
+From agent.py
+walk_executor(ironing_board_2099)
+Robot is inside bedroom_220. Robot is close iron_2117. Robot is close ironing_board_2099. Robot is no longer inside bathroom_265.
+##############################
+From evaluation.py
+cdl_dataset/dataset/Iron_clothes/g2.txt
+Checking k1
+missed actions: walk_executor(clothes_pants_2113);wash_executor(clothes_pants_2113);
+missed action num: 2
+##############################
+From agent.py
+put_executor(iron_2117, clothes_pants_2113)
+Robot is inside bedroom_220. Robot is close iron_2117. Robot is close ironing_board_2099. Robot is close clothes_pants_2113. iron_2117 released by right hand. 
+##############################
+From evaluation.py
+cdl_dataset/dataset/Iron_clothes/g2.txt
+Checking k1
+missed actions: wash_executor(clothes_pants_2113);
+missed action num: 1
+##############################
+From evaluation.py
+cdl_dataset/dataset/Iron_clothes/g2.txt
+Checking k1
+missed actions: wash_executor(clothes_pants_2113);
+missed action num: 1
+##############################
+From evaluation.py
+cdl_dataset/dataset/Iron_clothes/g2.txt
+Checking k1
+missed actions: wash_executor(clothes_pants_2113);
+missed action num: 1
+##############################
+From evaluation.py
+cdl_dataset/dataset/Iron_clothes/g2.txt
+Checking k2
+missed actions: 
+missed action num: 0
+##############################

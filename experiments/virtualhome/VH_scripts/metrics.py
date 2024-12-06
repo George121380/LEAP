@@ -194,7 +194,9 @@ def calculation(result_list):
 
 
 if __name__ == '__main__':
-    methods_experiments = find_csv_files('/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/log/main_with_guidance')
+    methods_experiments = find_csv_files('log/main_with_guidance')
+    # methods_experiments = find_csv_files('log/main_without_guidance')
+
     window_size = 50
 
     for experiments in methods_experiments:

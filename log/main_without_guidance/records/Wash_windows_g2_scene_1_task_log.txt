@@ -1,0 +1,462 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Identify all the windows in the house.', '2. Wipe each window using a towel.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_window_instance(w: item):
+    # Determine if the item is a window by checking its category
+    return is_window(w)
+
+behavior __goal__():
+    body:
+        foreach window: item:
+            if is_window_instance(window) and not visited(window):
+                observe(window, "Identify the window")
+                # Observe to identify the window in the house, marking it as visited
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+ 
+def is_window_instance(w: item):
+    # Determine if the item is a window by checking its category
+    return is_window(w)
+
+behavior __goal__():
+    body:
+        foreach window: item:
+            if is_window_instance(window) and not visited(window):
+                observe(window, "Identify the window")
+                # Observe to identify the window in the house, marking it as visited
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(window_2156)open_executor(window_2156)obs(window_2156, Identify the window)walk_executor(window_191)open_executor(window_191)obs(window_191, Identify the window)walk_executor(window_310)open_executor(window_310)obs(window_310, Identify the window)
+##############################
+From agent.py
+walk_executor(window_2156)
+Robot is inside bathroom_1. Robot is close window_2156. Robot is no longer inside dining_room_41.
+##############################
+From agent.py
+open_executor(window_2156)
+Robot is inside bathroom_1. Robot is close window_2156. 
+##############################
+From agent.py
+obs(window_2156, Identify the window)
+Get this information:  window_2156 is close to bathroom_1. window_2156 is close to character_240. window_2156 is inside bathroom_1. window_2156 is DIRTY. window_2156 is OPEN.
+##############################
+From agent.py
+walk_executor(window_191)
+Find mat_203. Find drawing_201. Robot is inside bedroom_162. Robot is close window_191. Robot is no longer inside bathroom_1.Robot is no longer close window_2156.
+##############################
+From agent.py
+open_executor(window_191)
+Robot is inside bedroom_162. Robot is close window_191. 
+##############################
+From agent.py
+obs(window_191, Identify the window)
+Get this information:  window_191 is inside bedroom_162. window_191 is facing drawing_201. window_191 is close to floor_167. window_191 is close to mat_203. window_191 is close to curtain_204. window_191 is close to curtain_205. window_191 is close to curtain_206. window_191 is close to wall_177. window_191 is close to wall_178. window_191 is close to wall_180. window_191 is close to ceiling_188. window_191 is close to character_240. window_191 is DIRTY. window_191 is OPEN.
+##############################
+From agent.py
+walk_executor(window_310)
+Find hanger_292. Find pillow_287. Find hanger_293. Find hanger_294. Find pillow_286. Robot is inside home_office_241. Robot is close window_310. Robot is no longer inside bedroom_162.Robot is no longer close window_191.
+##############################
+From agent.py
+open_executor(window_310)
+Find check_2075. Find keyboard_278. Find blow_dryer_2057. Find brush_2002. Find stamp_2043. Find phone_2147. Find headset_2131. Find mat_284. Find cd_2145. Find shampoo_2019. Find stamp_2022. Find cat_2069. Find chair_271. Find cd_player_2129. Find pencil_2014. Find shoes_2033. Find clothes_pants_2036. Find phone_2017. Find remote_control_2124. Find drawing_288. Find pencil_2020. Find mouse_280. Find headset_2146. Find dvd_player_2130. Robot is inside home_office_241. Robot is close window_310. 
+##############################
+From agent.py
+obs(window_310, Identify the window)
+Get this information:  window_310 is close to curtain_289. window_310 is close to curtain_290. window_310 is close to curtain_291. window_310 is close to hanger_292. window_310 is close to ceiling_257. window_310 is close to hanger_293. window_310 is close to hanger_294. window_310 is close to floor_267. window_310 is close to couch_269. window_310 is close to dresser_274. window_310 is close to wall_245. window_310 is close to wall_248. window_310 is close to wall_249. window_310 is close to pillow_286. window_310 is close to pillow_287. window_310 is close to character_240. window_310 is inside home_office_241. window_310 is DIRTY. window_310 is OPEN.
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_towel_2128_around_kitchen_counter_122(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==122
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(towel,kitchen_counter_instance)
+        else:
+            exp(towel,kitchen_counter_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,towel]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_towel(used_item: item):
+    # Define a function to check if an item is a towel
+    return is_towel(used_item)
+
+def check_if_dirty_and_washable(window: item):
+    # Check if a window is dirty and capable of being cleaned with a towel
+    symbol can_clean=exists towel_item: item : is_towel(towel_item) and dirty(window)
+    return can_clean
+
+behavior wipe_window_with_towel(window:item, towel:item):
+    body:
+        # Ensure you have the towel in hand
+        achieve_once inhand(towel) 
+        # Wipe the window using the towel
+        achieve clean(window)
+
+behavior __goal__():
+    body:
+        # Bind each unvisited and dirty window instance
+        foreach window: item:
+            if is_window(window) and not visited(window) and check_if_dirty_and_washable(window):
+                # Select a towel to use for cleaning
+                bind towel: item where:
+                    is_towel(towel)
+                    
+                # Observe the window to gather the current status
+                observe(window, "Determine if cleaning is necessary and how accessible it is")
+                
+                # Wipe each dirty window with a towel
+                wipe_window_with_towel(window, towel)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_towel_2128_around_doorjamb_308(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind doorjamb_instance:item where:
+            is_doorjamb(doorjamb_instance) and id[doorjamb_instance]==308
+        achieve close_char(char,doorjamb_instance)
+        if can_open(doorjamb_instance):
+            achieve_once open(doorjamb_instance)
+            exp(towel,doorjamb_instance)
+        else:
+            exp(towel,doorjamb_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,doorjamb_instance]=True
+        close[doorjamb_instance,towel]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_identified_window(window:item):
+    # Check if a window has been identified and visited
+    return visited(window) and is_window(window)
+    
+behavior wipe_window(window:item, towel:item):
+    body:
+        achieve_once inhand(towel) # Grasp the towel to wipe the window
+        achieve clean(window) # Ensure the window is clean
+
+behavior __goal__():
+    body:
+        bind towel: item where:
+            is_towel(towel)
+        # Select a towel
+
+        foreach window: item:
+            if is_window(window) and is_identified_window(window):
+                wipe_window(window, towel)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+def is_identified_window(window:item):
+    # Check if a window has been identified and visited
+    return visited(window) and is_window(window)
+    
+behavior wipe_window(window:item, towel:item):
+    body:
+        achieve_once inhand(towel) # Grasp the towel to wipe the window
+        achieve clean(window) # Ensure the window is clean
+
+behavior __goal__():
+    body:
+        bind towel: item where:
+            is_towel(towel)
+        # Select a towel
+
+        foreach window: item:
+            if is_window(window) and is_identified_window(window):
+                wipe_window(window, towel)
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_towel_2128_around_powersocket_72(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind powersocket_instance:item where:
+            is_powersocket(powersocket_instance) and id[powersocket_instance]==72
+        achieve close_char(char,powersocket_instance)
+        if can_open(powersocket_instance):
+            achieve_once open(powersocket_instance)
+            exp(towel,powersocket_instance)
+        else:
+            exp(towel,powersocket_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,powersocket_instance]=True
+        close[powersocket_instance,towel]=True
+    
+
+behavior find_rag_2025_around_curtain_291(rag:item):
+    goal: not unknown(rag)
+    body:
+        assert is_rag(rag)
+        bind curtain_instance:item where:
+            is_curtain(curtain_instance) and id[curtain_instance]==291
+        achieve close_char(char,curtain_instance)
+        if can_open(curtain_instance):
+            achieve_once open(curtain_instance)
+            exp(rag,curtain_instance)
+        else:
+            exp(rag,curtain_instance)
+    eff:
+        unknown[rag]=False
+        close[rag,curtain_instance]=True
+        close[curtain_instance,rag]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_window(item: item):
+    # Determine if an item is a window
+    return is_window(item)
+
+def is_window_dirty(window: item):
+    # Check if a window is dirty
+    return dirty(window)
+
+behavior wipe_window(window: item, towel: item):
+    body:
+        achieve_once inhand(towel)
+        # Ensure the towel is in hand
+        scrub(window) 
+        # Scrub the window with the towel to make it clean
+
+behavior __goal__():
+    body:
+        bind towel: item where:
+            is_towel(towel)
+        # Select an item that is a towel
+        
+        foreach window: item:
+            if is_window(window) and is_window_dirty(window):
+                wipe_window(window, towel)
+        # For each window, if it is dirty, wipe it using a towel
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+def is_window(item: item):
+    # Determine if an item is a window
+    return is_window(item)
+
+def is_window_dirty(window: item):
+    # Check if a window is dirty
+    return dirty(window)
+
+behavior wipe_window(window: item, towel: item):
+    body:
+        achieve_once inhand(towel)
+        # Ensure the towel is in hand
+        scrub(window) 
+        # Scrub the window with the towel to make it clean
+
+behavior __goal__():
+    body:
+        bind towel: item where:
+            is_towel(towel)
+        # Select an item that is a towel
+        
+        foreach window: item:
+            if is_window(window) and is_window_dirty(window):
+                wipe_window(window, towel)
+        # For each window, if it is dirty, wipe it using a towel
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(powersocket_72)exp(towel_2128, powersocket_72)walk_executor(towel_2128)grab_executor(towel_2128)walk_executor(window_2156)scrub_executor(window_2156)walk_executor(window_191)scrub_executor(window_191)walk_executor(window_310)scrub_executor(window_310)
+##############################
+From agent.py
+walk_executor(powersocket_72)
+Robot is inside dining_room_41. Robot is close powersocket_72. Robot is no longer inside home_office_241.Robot is no longer close window_310.
+##############################
+From agent.py
+exp(towel_2128, powersocket_72)
+Failed to find towel_2128 around powersocket_72. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(kitchen_counter_122)exp(towel_2128, kitchen_counter_122)walk_executor(towel_2128)grab_executor(towel_2128)walk_executor(window_2156)scrub_executor(window_2156)walk_executor(window_191)scrub_executor(window_191)walk_executor(window_310)scrub_executor(window_310)
+##############################
+From agent.py
+walk_executor(kitchen_counter_122)
+Find tray_128. Find spectacles_2153. Find fryingpan_2154. Find pot_78. Robot is inside dining_room_41. Robot is close kitchen_counter_122. Robot is no longer close powersocket_72.
+##############################
+From agent.py
+exp(towel_2128, kitchen_counter_122)
+Failed to find towel_2128 around kitchen_counter_122. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(kitchen_counter_123)exp(towel_2128, kitchen_counter_123)walk_executor(towel_2128)grab_executor(towel_2128)walk_executor(window_2156)scrub_executor(window_2156)walk_executor(window_191)scrub_executor(window_191)walk_executor(window_310)scrub_executor(window_310)
+##############################
+From agent.py
+walk_executor(kitchen_counter_123)
+Find oil_2149. Find knife_2035. Find food_kiwi_2054. Find food_orange_2027. Find tray_2068. Robot is inside dining_room_41. Robot is close kitchen_counter_123. Robot is close floor_45. Robot is no longer close kitchen_counter_122.
+##############################
+From agent.py
+exp(towel_2128, kitchen_counter_123)
+Failed to find towel_2128 around kitchen_counter_123. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(kitchen_counter_119)exp(towel_2128, kitchen_counter_119)walk_executor(towel_2128)grab_executor(towel_2128)walk_executor(window_2156)scrub_executor(window_2156)walk_executor(window_191)scrub_executor(window_191)walk_executor(window_310)scrub_executor(window_310)
+##############################
+From agent.py
+walk_executor(kitchen_counter_119)
+Find pot_2138. Find bowl_2141. Find plate_2152. Find cutting_board_2123. Find food_salt_2041. Find fork_2150. Find bowl_2140. Find bowl_2142. Find fork_2151. Robot is inside dining_room_41. Robot is close kitchen_counter_119. Robot is no longer close kitchen_counter_123.Robot is no longer close floor_45.
+##############################
+From agent.py
+exp(towel_2128, kitchen_counter_119)
+Failed to find towel_2128 around kitchen_counter_119. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(sink_120)exp(towel_2128, sink_120)walk_executor(towel_2128)grab_executor(towel_2128)walk_executor(window_2156)scrub_executor(window_2156)walk_executor(window_191)scrub_executor(window_191)walk_executor(window_310)scrub_executor(window_310)
+##############################
+From agent.py
+walk_executor(sink_120)
+Find basket_for_clothes_2078. Find soap_2010. Find ice_2024. Find soap_2126. Robot is inside dining_room_41. Robot is close kitchen_counter_119. Robot is close sink_120. 
+##############################
+From agent.py
+exp(towel_2128, sink_120)
+Failed to find towel_2128 around sink_120. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(bathroom_counter_18)exp(towel_2128, bathroom_counter_18)walk_executor(towel_2128)grab_executor(towel_2128)walk_executor(window_2156)scrub_executor(window_2156)walk_executor(window_191)scrub_executor(window_191)walk_executor(window_310)scrub_executor(window_310)
+##############################
+From agent.py
+walk_executor(bathroom_counter_18)
+Find drawing_33. Find mat_32. Find phone_2029. Robot is inside bathroom_1. Robot is close bathroom_counter_18. Robot is no longer inside dining_room_41.Robot is no longer close sink_120.Robot is no longer close kitchen_counter_119.
+##############################
+From agent.py
+Record from func query_LLM_human in agent.py
+Question: Can you help me to find towel_2128 ?
+Answer: Robot, go to bathroom_1. Inside bathroom_1, look for drawing_33. Towel_2128 is inside drawing_33. Retrieve towel_2128.
+Re-decompose: None
+
+##############################
+From agent.py
+Human Instruction: Robot, go to bathroom_1. Inside bathroom_1, look for drawing_33. Towel_2128 is inside drawing_33. Retrieve towel_2128.
+
+The actions you have taken:
+Action 1: Walk to window_2156.
+Action 2: Open window_2156.
+Action 3: Observe around window_2156 with the question of Identify the window.
+Action 4: Walk to window_191.
+Action 5: Open window_191.
+Action 6: Observe around window_191 with the question of Identify the window.
+Action 7: Walk to window_310.
+Action 8: Open window_310.
+Action 9: Observe around window_310 with the question of Identify the window.
+Action 10: Walk to powersocket_72.
+Action 11: look for towel_2128 around powersocket_72.
+Action 12: Walk to kitchen_counter_122.
+Action 13: look for towel_2128 around kitchen_counter_122.
+Action 14: Walk to kitchen_counter_123.
+Action 15: look for towel_2128 around kitchen_counter_123.
+Action 16: Walk to kitchen_counter_119.
+Action 17: look for towel_2128 around kitchen_counter_119.
+Action 18: Walk to sink_120.
+Action 19: look for towel_2128 around sink_120.
+Action 20: Walk to bathroom_counter_18.
+
+##############################
+From agent.py
+exp(towel_2128, bathroom_counter_18)
+Failed to find towel_2128 around bathroom_counter_18. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(drawing_33)exp(towel_2128, drawing_33)walk_executor(towel_2128)grab_executor(towel_2128)walk_executor(window_2156)scrub_executor(window_2156)walk_executor(window_191)scrub_executor(window_191)walk_executor(window_310)scrub_executor(window_310)
+##############################
+From agent.py
+walk_executor(drawing_33)
+Find towel_2128. Robot is inside bathroom_1. Robot is close drawing_33. Robot is no longer close bathroom_counter_18.
+##############################
+From agent.py
+exp(towel_2128, drawing_33)
+Find towel_2128. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(towel_2128)grab_executor(towel_2128)walk_executor(window_2156)scrub_executor(window_2156)walk_executor(window_191)scrub_executor(window_191)walk_executor(window_310)scrub_executor(window_310)
+##############################
+From agent.py
+walk_executor(towel_2128)
+Robot is inside bathroom_1. Robot is close drawing_33. Robot is close towel_2128. 
+##############################
+From agent.py
+grab_executor(towel_2128)
+Robot is inside bathroom_1. Robot is close drawing_33. Robot is close towel_2128. Grabbing towel_2128 by right hand. 
+##############################
+From agent.py
+walk_executor(window_2156)
+Robot is inside bathroom_1. Robot is close towel_2128. Robot is close window_2156. Robot is no longer close drawing_33.
+##############################
+From agent.py
+scrub_executor(window_2156)
+Robot is inside bathroom_1. Robot is close towel_2128. Robot is close window_2156. 
+##############################
+From agent.py
+walk_executor(window_191)
+Robot is inside bedroom_162. Robot is close towel_2128. Robot is close window_191. Robot is no longer inside bathroom_1.Robot is no longer close window_2156.
+##############################
+From agent.py
+scrub_executor(window_191)
+Robot is inside bedroom_162. Robot is close towel_2128. Robot is close window_191. 
+##############################
+From agent.py
+walk_executor(window_310)
+Robot is inside home_office_241. Robot is close towel_2128. Robot is close window_310. Robot is no longer inside bedroom_162.Robot is no longer close window_191.
+##############################
+From agent.py
+scrub_executor(window_310)
+Robot is inside home_office_241. Robot is close towel_2128. Robot is close window_310. 
+##############################
+From evaluation.py
+cdl_dataset/dataset/Wash_windows/g2.txt
+Checking k1
+missed actions: 
+missed action num: 0
+##############################

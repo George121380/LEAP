@@ -11,7 +11,7 @@ from env import VH_Env
 from environment import EnvironmentState, EnvironmentGraph
 import random
 import time
-from logger import setup_task_logger, setup_epoch_logger
+from logger import setup_task_logger, setup_epoch_logger, get_last_task_path_from_logger, filter_tasks
 from human import Human
 from evaluation import Evaluator
 random.seed(time.time())
@@ -20,6 +20,7 @@ import yaml
 import os
 from dataset import parse_file_to_json
 from tqdm import tqdm
+import shutil
 
 INIT_PATH_PO = "experiments/virtualhome/CDLs/init_scene_PO.cdl"
 INIT_PATH_NPO = "experiments/virtualhome/CDLs/init_scene_NPO.cdl"
@@ -53,17 +54,16 @@ def task_summary_record(epoch_logger, scene_id, goal, action_history, start_time
     time_info = f"Time consume: {time_elapsed} seconds\nExp_helper query times: {final_info['exp_helper_query_times']}\nGuidance query times: {final_info['guidance_query_times']}\nlibrary scale: {final_info['library_scale']}"
     epoch_logger.info(task_path, goal, action_history, time_info, complete_rate, f"Scene_id: {str(scene_id)}")
     
-def run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph):
+def run(args,epoch_logger,epoch_path,task_path,classes,init_scene_graph):
     """
     Execute a single task with the specified agent.
     """
     start_time = time.time()
     log_name = f"{os.path.basename(os.path.dirname(task_path))}_{os.path.basename(task_path).replace('.txt', '')}_scene_{args.scene.id}"
-    folder_path = f'log/epoch_{timestamp}/records'
-    epoch_path = f'log/epoch_{timestamp}'
+    folder_path = f'{epoch_path}/records'
 
     # Set the task logger
-    task_logger = setup_task_logger(folder_path,timestamp=None,task_name=log_name)
+    task_logger = setup_task_logger(folder_path,task_name=log_name)
 
     task_data=parse_file_to_json(task_path)
     evaluator=Evaluator(args,task_path,task_logger,epoch_path)
@@ -230,29 +230,47 @@ def evaluate_all(args): # main function
     epoch_logger.info('Evaluation Finished',end_time,'','','','')
 
 def evaluate_all_cross_scene(args): # main function
-    files=evaluation_task_loader(DATASET_FOLDER_PATH)
-    scenes=[0,1,2]
-    task_scene_pairs = [(task, scene) for task in files for scene in scenes]
-    random.shuffle(task_scene_pairs)
-    
+
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    if os.path.isdir(args.checkpoint.log_dir) and args.checkpoint.log_dir != '':
+        print('Continue training base on the checkpoint')
+        input("Press Enter to continue...")
+        epoch_path = f'{args.checkpoint.log_dir}_continue'
+        shutil.copytree(args.checkpoint.log_dir, epoch_path)
+        print(f"The continue folder is create at: {epoch_path}")
+        with open(f'{epoch_path}/shuffled_task_scene_pairs.json', 'r') as file:
+            task_scene_pairs = json.load(file)
+        epoch_logger = setup_epoch_logger(epoch_path)
+        csv_handler = epoch_logger.handlers[0]
+        last_task_path, last_task_scene_num = get_last_task_path_from_logger(csv_handler)
+        print()
+        print("Lastest Task Path:", last_task_path)
+        task_scene_pairs=filter_tasks(task_scene_pairs, last_task_path, last_task_scene_num)
 
-    # Set logger and save configs
-    epoch_logger = setup_epoch_logger(f'log/epoch_{timestamp}',timestamp=timestamp)
-    with open(f'log/epoch_{timestamp}/args.yaml', 'w') as file:
-        yaml.dump(namespace_to_dict(args), file)
+    
+    else:
+        # Create a new folder for the epoch
+        epoch_path = f'log/epoch_{timestamp}'
+        files=evaluation_task_loader(DATASET_FOLDER_PATH)
+        scenes=[0,1,2]
 
-    with open(f'log/epoch_{timestamp}/shuffled_task_scene_pairs.json', 'w') as file:
-        json.dump(task_scene_pairs, file, indent=4)
+        # Use a random order for the tasks
+        task_scene_pairs = [(task, scene) for task in files for scene in scenes]
+        random.shuffle(task_scene_pairs)
+        with open(f'{epoch_path}/args.yaml', 'w') as file:
+            yaml.dump(namespace_to_dict(args), file)
+        with open(f'{epoch_path}/shuffled_task_scene_pairs.json', 'w') as file:
+            json.dump(task_scene_pairs, file, indent=4)
+        epoch_logger = setup_epoch_logger(epoch_path)
+        
     
     task_scene_pairs = tqdm(task_scene_pairs, desc="Evaluating tasks")
 
     for task_scene_pair in task_scene_pairs:
-
         args.scene.id = task_scene_pair[1]
         classes,init_scene_graph=load_scene(args.scene.id)
         task_path=os.path.join(DATASET_FOLDER_PATH,task_scene_pair[0])
-        Debug=run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph)
+        Debug=run(args,epoch_logger,epoch_path,task_path,classes,init_scene_graph)
         
         if Debug==False:
             raise Exception('Error in evaluation')

@@ -56,9 +56,9 @@ class CsvHandler(logging.Handler):
         self.file.close()
         logging.Handler.close(self)
 
-def setup_epoch_logger(folder_path,timestamp=None,task_name=None):
+def setup_epoch_logger(folder_path,task_name=None):
 
-    logger_name = f'csv_logger_{task_name}' if task_name else f'csv_logger_{timestamp}'
+    logger_name = f'csv_logger_{task_name}'
     logger = logging.getLogger(logger_name)
     logger.setLevel(logging.INFO)
 
@@ -68,6 +68,39 @@ def setup_epoch_logger(folder_path,timestamp=None,task_name=None):
     logger.addHandler(handler)
 
     return logger
+
+def get_last_task_path_from_logger(logger_handler):
+    """
+    Return: The last task path in the logger file.
+    """
+    file_path = logger_handler.filepath
+
+    if not os.path.exists(file_path):
+        print("log file does not exist.")
+        return None
+
+    with open(file_path, 'r', encoding='utf-8') as file:
+        reader = csv.reader(file)
+        rows = list(reader)
+
+    if len(rows) <= 1:
+        print("log file is empty.")
+        return None
+
+    last_row = rows[-1]
+    task_path = last_row[0].replace('cdl_dataset/dataset/', '')
+    scene_num = int(last_row[-1].replace('Scene_id: ', ''))
+    return task_path, scene_num
+
+
+def filter_tasks(task_list, last_task_path, scene_num):
+    
+    for idx, task in enumerate(task_list):
+        if task[0] == last_task_path and task[1] == scene_num:
+            break
+    filtered_tasks = task_list[idx + 1:]
+
+    return filtered_tasks
 
 class TaskLoggerFormatter(logging.Formatter):
     def __init__(self):
@@ -102,8 +135,8 @@ class TaskLoggerHandler(logging.Handler):
         self.file.close()
         logging.Handler.close(self)
 
-def setup_task_logger(folder_path, timestamp=None, task_name=None):
-    logger_name = f'task_logger_{task_name}' if task_name else f'task_logger_{timestamp}'
+def setup_task_logger(folder_path, task_name=None):
+    logger_name = f'task_logger_{task_name}'
     logger = logging.getLogger(logger_name)
     logger.setLevel(logging.INFO)
 
