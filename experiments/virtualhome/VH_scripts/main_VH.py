@@ -201,8 +201,8 @@ def evaluate_single(args):
     args.scene.id = 2
     classes,init_scene_graph=load_scene(args.scene.id)
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    epoch_logger = setup_epoch_logger(f'log/epoch_{timestamp}',timestamp=timestamp)
-    task_path='/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/cdl_dataset/dataset/Wash_clothes/g4.txt'
+    epoch_logger = setup_epoch_logger(f'log/epoch_{timestamp}')
+    task_path='/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/cdl_dataset/dataset/Prepare_breakfast/g4.txt'
     run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph)
     # test_simulator(init_scene_graph)
     end_time = time.time()
@@ -293,12 +293,17 @@ def check_task_define_all(args):
         evaluator.left_action_counting_for_each_keystate()
 
 def check_task_define_single(args):
+
+    args.scene.id = 0
+
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     epoch_path=f'log/epoch_{timestamp}'
-    epoch_logger = setup_epoch_logger(f'log/epoch_{timestamp}',timestamp=timestamp)
+    epoch_logger = setup_epoch_logger(f'log/epoch_{timestamp}')
    
-    task_path='cdl_dataset/dataset/Drink/g2.txt'
+    task_path='/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/cdl_dataset/dataset/Prepare_breakfast/g4.txt'
     evaluator=Evaluator(args,task_path,epoch_logger,epoch_path)
+    # for action in action_list:
+    #     evaluator.updates(action)
     evaluator.left_action_counting_for_each_keystate()
 
 def case_study_easy2hard(args): # main function
@@ -325,7 +330,7 @@ def test_simulator(init_scene_graph):
     Give a list of actions, test the simulator
     """
     env=VH_Env(init_scene_graph)
-    Action_list=['walk_executor(cup_2063)','grab_executor(cup_2063)','walk_executor(clothes_pants_2085)','put_executor(cup_2063,clothes_pants_2085)']
+    Action_list=['walk_executor(window_2109)','open_executor(window_2109)']
 
     for action in Action_list:
         if 'put' in str(action):
@@ -335,8 +340,8 @@ def test_simulator(init_scene_graph):
         
 if __name__ == '__main__':
     args = load_config("experiments/virtualhome/VH_scripts/config.yaml")
-    evaluate_all_cross_scene(args)
-    # evaluate_single(args)
+    # evaluate_all_cross_scene(args)
+    evaluate_single(args)
     # evaluate_all(args)
     # check_task_define_all(args)
     # check_task_define_single(args)

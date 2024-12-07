@@ -23,8 +23,8 @@ class behavior_library_simple:
         self.args = args
         self.record_method = args.library.record_method # 'behavior' or 'actions'
         self.extract_method = args.library.extract_method # 'whole' or 'rag'
-        # self.source_path='experiments/virtualhome/resources/library_data.json'
-        self.source_path=os.path.join(epoch_path,'library_data.json')
+        self.source_path='log/main_with_guidance/library_data.json'
+        # self.source_path=os.path.join(epoch_path,'library_data.json')
         self.visualize_path = os.path.join(epoch_path, 'visual.txt')
         if not os.path.exists(self.source_path):
             os.makedirs(os.path.dirname(self.source_path), exist_ok=True)
@@ -74,12 +74,16 @@ class behavior_library_simple:
         self.save_library()
 
     def download_behaviors(self, sub_task_description: str):
+        count = 0
         if self.record_method == 'behavior':
             if self.extract_method == 'whole':
                 if len(self.metadata) == 0:
                     return ""
-                embeded_behaviors = '# Previous cases\n'
+                embeded_behaviors = '## Previous cases\n'
+                embeded_behaviors += f"Here are some success cases for your reference and learning."
                 for record in self.metadata:
+                    count += 1
+                    embeded_behaviors += f"\n# Case {count}:\n"
                     embeded_behaviors += f"When the sub-task is: {record['source_sub_task']}\n"
                     embeded_behaviors += f"A successful representation:\n"
                     embeded_behaviors += f"{record['cdl']}"
@@ -92,10 +96,13 @@ class behavior_library_simple:
             if self.extract_method == 'whole':
                 if len(self.metadata) == 0:
                     return ""
-                embeded_behaviors = '# Previous cases\n'
+                embeded_behaviors = '## Previous cases\n'
+                embeded_behaviors += f"Here are some success cases for your reference and learning."
                 for record in self.metadata:
+                    count += 1
+                    embeded_behaviors += f"\n# Case {count}:\n"
                     embeded_behaviors += f"When the sub-task is: {record['source_sub_task']}\n"
-                    embeded_behaviors += f"Actions:\n"
+                    embeded_behaviors += f"Successful actions:\n"
                     embeded_behaviors += f"{record['actions']}"
                 return embeded_behaviors
             elif self.extract_method == 'rag':

@@ -74,7 +74,7 @@ def run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph,guidance)
 
     folder_path = f'log/epoch_{timestamp}/records'
     epoch_path = f'log/epoch_{timestamp}'
-    logger = setup_task_logger(folder_path,timestamp=None,task_name=log_name)
+    logger = setup_task_logger(folder_path,task_name=log_name)
     task_data=parse_file_to_json(task_path)
     print('='*60)
     print("Task Path is: ",task_path)
@@ -100,13 +100,13 @@ def run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph,guidance)
                     print(observation)
                     raise Exception('Syntax Error')
                 evaluator.updates(observation) #Update evaluator's state
-    json.dump(result_dict,open('result.json','w'),indent=4)
+    json.dump(result_dict,open(f'result_{args.scene.id}.json','w'),indent=4)
        
 
 def counting(args):
     files=evaluation_task_loader(dataset_folder_path)
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    epoch_logger = setup_task_logger(f'log/epoch_{timestamp}',timestamp=timestamp)
+    epoch_logger = setup_task_logger(f'log/epoch_{timestamp}')
     files = tqdm(files, desc="Evaluating tasks")
     for task_file in files:
         _,classes,init_scene_graph,guidance=load_scene(args.scene.id)
@@ -117,8 +117,11 @@ def counting(args):
     print(result_dict)
         
 if __name__ == '__main__':
+    
     args = load_config("experiments/virtualhome/VH_scripts/config.yaml")
-    if os.path.exists('result.json'):
-        with open('result.json') as f:
+    args.scene.id = 0
+
+    if os.path.exists(f'result_{args.scene.id}.json'):
+        with open(f'result_{args.scene.id}.json') as f:
             result_dict=json.load(f)
     counting(args)

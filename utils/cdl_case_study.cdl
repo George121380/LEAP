@@ -5700,41 +5700,25 @@ behavior find_food_egg_2020_around_fridge_289(food_egg:item):
 
 #goal_representation
 
-def has_free_stove_pot_pot_with_water(pot:item, stove:item):
-    # Determine if the pot is a free stove pot with water
-    symbol has_water_and_on_stove = has_water(pot) and on(pot, stove)
-    return has_water_and_on_stove
-
-behavior boil_water(pot:item, stove:item):
-    body:
-        achieve is_on(stove)
-        # Ensure the stove is turned on
-
-behavior put_egg_in_water(egg:item, pot:item):
-    body:
-        achieve inside(egg, pot)
-        # Place the egg inside the pot
-
-behavior observe_item_status(item:item):
-    body:
-        observe(item, "Check the items status")
-        # Observe the items current status
+ 
+def has_chicken_or_pasta_in_area(area:item):
+    # Function to check if there is chicken or dry pasta in a specified area
+    symbol has_chicken_or_pasta=exists o: item : (is_food_chicken(o) or is_dry_pasta(o)) and close(o, area)
+    return has_chicken_or_pasta
 
 behavior __goal__():
     body:
-        bind egg: item where:
-            is_food_egg(egg)
-        # Identify an egg
+        if exists stove: item : is_stove(stove) and has_chicken_or_pasta_in_area(stove):
+            # If chicken or pasta is already in the stove area, proceed with cooking
+            bind stove: item where:
+                is_stove(stove) and has_chicken_or_pasta_in_area(stove)
+            achieve is_on(stove)
+            # Turn on the stove to cook chicken and pasta
 
-        bind stove: item where:
-            is_stove(stove)
-        # Identify a stove
+        if exists oven: item : is_oven(oven) and has_chicken_or_pasta_in_area(oven):
+            # If chicken or pasta is already in the oven area, inspect further
+            bind oven: item where:
+                is_oven(oven) and has_chicken_or_pasta_in_area(oven)
+            observe(oven, "Check if there is chicken or pasta in the oven area")
 
-        bind pot: item where:
-            is_pot(pot) and has_free_stove_pot_pot_with_water(pot, stove)
-        # Identify a pot that is on the stove and has water
 
-        boil_water(pot, stove)
-        put_egg_in_water(egg, pot)
-
-#goal_representation_end

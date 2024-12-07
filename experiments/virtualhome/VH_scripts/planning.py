@@ -29,6 +29,8 @@ def refinement_operation(goal_int:str,correct_times_limit:int,state_file:str,exe
     with open(state_file, "r") as file:
         original_content = file.read()
     combined_content = original_content + "\n#goal_representation\n" + goal_int+"\n#goal_representation_end\n"
+    with open('goal_int.cdl', "w") as file:
+        file.write(goal_int)
     new_file_path = execute_file
     with open(new_file_path, "w") as file:
         file.write(combined_content)
@@ -77,7 +79,7 @@ def refinement_operation(goal_int:str,correct_times_limit:int,state_file:str,exe
                             if '#goal_representation\n' in line:
                                 goal_start_line_num=line_number
                                 break
-                    goal_int=auto_debug(error_info,original_content,goal_int,current_subgoal,add_info,classes,goal_start_line_num,behavior_from_library,agent_type)
+                    goal_int=auto_debug(error_info,original_content,goal_int,long_horizon_goal,current_subgoal,prev_sub_goal_list,add_info,classes,goal_start_line_num,behavior_from_library,agent_type)
                     goal_int=remove_special_characters(goal_int)
 
                     if partial_observation:
@@ -91,7 +93,7 @@ def refinement_operation(goal_int:str,correct_times_limit:int,state_file:str,exe
                     logger.info("Goal representation after debugging in planning.py"+"\n#exp_behavior\n"+exploration_content+"\n#goal_representation\n" + goal_int+"\n#goal_representation_end\n")
                      
 
-                except AssertionError:
+                except Exception:
                     logger.info(f"Error is:\n{e}")
                     print(f"Error is:\n{e}")
                     print("e does not have an 'error' attribute. Directly resample")

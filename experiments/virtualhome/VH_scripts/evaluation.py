@@ -720,7 +720,7 @@ class Evaluator:
     )
         if len(plans) == 0:
             print("Evaluator failed to find a plan")
-            self.logger.info("From evaluation.py\n"+self.task_file_path+f"\nChecking {key_state}\n"+"Evaluator failed to find a plan")
+            # self.logger.info("From evaluation.py\n"+self.task_file_path+f"\nChecking {key_state}\n"+"Evaluator failed to find a plan")
             return 1e9
         
         print("State:",len(plans[0]),"steps left")
@@ -728,7 +728,7 @@ class Evaluator:
         for action in plans[0]:
             left_actions+=str(action)+';'
         print(key_state," missed actions:",left_actions)
-        self.logger.info("From evaluation.py\n"+self.task_file_path+f"\nChecking {key_state}\n"+f"missed actions: {left_actions}"+f'\nmissed action num: {len(plans[0])}')
+        # self.logger.info("From evaluation.py\n"+self.task_file_path+f"\nChecking {key_state}\n"+f"missed actions: {left_actions}"+f'\nmissed action num: {len(plans[0])}')
 
         # print("missed actions:",plans[0])
         return plans[0]
@@ -774,6 +774,7 @@ class Evaluator:
                 else:
                     result = len(self.check_single_keystate(keystate,self.wrapped_keystates_func[keystate]))
                     counting_dict[keystate]=result
+
             except Exception as e:
                 print(f"Error in checking keystate: {keystate}")
                 print(e)

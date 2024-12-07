@@ -1,5 +1,5 @@
 def get_planning_goal_inter_prompt(goal,cat_list=None,additional_information=None,long_horizon_task=None,previous_subtasks=None,behavior_from_library_embedding=None):
-    if additional_information==None or additional_information=='\n':
+    if additional_information==None or additional_information=='\n' or additional_information=='':
         additional_information="None"
     categories=""
     for cat in cat_list:
@@ -13,7 +13,7 @@ def get_planning_goal_inter_prompt(goal,cat_list=None,additional_information=Non
         completed_tasks="None, it is the first sub-task."
 
     prompt="""
-##Task Description: 
+## Task Description: 
 I have a long horizon task: """ + long_horizon_task + """ To approach this task effectively, I’ve divided it into several sub-tasks. The goal of the current sub-task is: """ + goal + """ The sub-tasks I have already completed include: """+completed_tasks+""" Additionally, I’ve gathered the following information to assist in completing this task: """ + additional_information + """.
 
 ## Instructions: 
@@ -37,7 +37,6 @@ Please note: The text following each hash symbol (#) is a comment and should not
 - clean(x: item) # The item is clean.
 - has_water(x: item) # The item has water inside or on it.
 - cut(x: item) # The item is cut.
-- sleeping(x: character) # The character is sleeping.
 - inhand(x: item) # A item is grasped by a character. Only use it when an item needs to be continuously held in your hand.
 - has_a_free_hand(x: character) # The character has a free hand.
 - visited(x: item) # The character has observed the item
@@ -51,9 +50,7 @@ Please note: The text following each hash symbol (#) is a comment and should not
 - inside_char(x: character, y: item) # character is inside item y (Character is you self. Any other animal like cat is an item)
 - close(x: item, y: item) # item x is close to item y
 - close_char(x: character, y: item) # character is close to item y (Character is you self. Any other animal like cat is an item)
-- facing(x: item, y: item) # item x is facing item y
-- facing_char(x: character, y: item) # character is facing item y (Character is you self. Any other animal like cat is an item)
-Important Usage Notes: In relationships with the '_char' suffix, the first parameter must always be a char. For example, 'on' and 'on_char', 'inside' and 'inside_char', 'close' and 'close_char', 'facing' and 'facing_char'.
+Important Usage Notes: In relationships with the '_char' suffix, the first parameter must always be a char. For example, 'on' and 'on_char', 'inside' and 'inside_char', 'close' and 'close_char'.
 
 ## Available Properties:
 Please note: The text following each hash symbol (#) is a comment and should not be included in the current sub-task goal representation.
@@ -92,19 +89,15 @@ The following behaviors can be directly invoked in the current sub-task goal rep
 - observe(obj:item,question:string) # observe is a special behavior used to inspect an object. You can specify the purpose of your inspection with a string. By calling observe, you can learn about the state of an object as well as its relationship with surrounding objects. After observing an item, it will be marked as visited. Note that the second parameter of observe is a string and must be enclosed in double quotes("").
 - wash(obj:item) # Wash an item by hand.
 - scrub(obj:item) # Scrub an item.
+- wipe(obj:item) # Wipe an item.
 - squeeze(obj:item) # Squeeze an item.
 - rinse(obj:item) # Rinse an item.
 - move(obj:item) # Move an item.
 - pull(obj:item) # Pull an item.
 - push(obj:item) # Push an item.
-- greet(person:item) # Greet a person.
-- look_at(obj:item) # Look at an item.
-- drink(obj: item) # Drink an item.
-- watch(obj:item) # Watch an item.
 - type(obj:item) # Type on an item.
 - touch(obj:item) # Touch an item.
 - read(obj:item) # Read an item.
-- water(obj:item) # Fill item with water.
 - sit_somewhere(location:item) # Sit at a specific location.
 - lie_somewhere(location:item) # Lie at a specific location.
 Important Note: Ensure that all parameters are properly defined before using them in the behaviors.
@@ -143,7 +136,7 @@ bind apple3: item where:
     is_apple(apple3) and apple1!=apple3 and apple2!=apple3
 
 # achieve
-# Usage: Specifies the state or relationship that needs to be achieved. Only states and relationships can follow 'achieve', not types, properties, or other immutable content. Do not call functions or behaviors after 'achieve'; instead, call functions directly without keywords. Note that 'achieve' cannot be used with the state 'inhand'.
+# Usage: Specifies the state or relationship that a behavior consistently aims to maintain from start to finish. Only states and relationships can follow 'achieve', not types, properties, or other immutable content. Do not call functions or behaviors after 'achieve'; instead, call functions directly without keywords. Note that 'achieve' cannot be used with the state 'inhand'. And note that 'achieve' must be followed by a single state or relationship, not a combination of states or relationships.
 Example: achieve is_on(light)
 
 # achieve_once
@@ -151,10 +144,11 @@ Example: achieve is_on(light)
 Example: achieve_once inhand(apple) #Please note that 'inhand' must be used with 'achieve_once.'
 
 # foreach
-# Usage: Iterates over all objects of a certain type. Do not use 'where' in a 'foreach' statement.
+# Usage: Iterates over all objects. Do not use 'where' in a 'foreach' statement.
 Correct example:
 foreach o: item:
-    achieve closed(o)
+    if can_open(o) and is_box(o):
+        achieve closed(o)
 
 Incorrect example:
 foreach o: item where:
@@ -173,29 +167,13 @@ foreach o: item where:
 # Usage: Asserts a condition that must be true for the behavior to succeed.
 Example: assert is_on(light)
 
-#assert_hold
+# assert_hold
 # Usage: Maintains a long-term constraint until the end of the containing behavior.
 Example: assert_hold closed(freezer)
 ensures that the freezer remains closed until all behaviors are completed.
-    
-# eff
-# Usage: Represents the effect of a behavior. In this section, perform a series of boolean assignments. Use '[]' instead of '()' here. This keyword is used only in transition models.
-Example Transition Model:
-When you have additional information like this: A vacuum cleaner is a great tool for cleaning floors. You can carry it around to clean the floor. Before using it, please make sure the vacuum cleaner is plugged in and turned on.
-You should include this transition model in your output:
-behavior clean_floow_with_vacuum(floor:item):
-    goal: clean(floor)
-    body:
-        bind vacuum: item where:
-            is_vacuum_cleaner(vacuum)
-        achieve_once inhand(vacuum)
-        achieve is_on(vacuum)
-        achieve walk(floor)
-    eff:
-        clean[floor]=True
 
 # if-else
-# Usage: Conditional statement for branching logic.
+# Usage: Conditional statement for branching logic. Only simple first-order logic or combinations of first-order logic are allowed after if-else. Note that elif is not supported.
 if condition:
     achieve closed(a)
 else:
@@ -208,35 +186,34 @@ Example: exists item1: item : holds_lh(char, item1)
 
 # symbol
 # Usage: Defines a symbol and binds it to the output of an expression. You can only use the symbol in the following manner:
-symbol l=exists item1: item : holds_lh(char, item1)
+symbol has_cutting_board=exists item1:item: is_cutting_board(item1)
 
 # def
 # Usage: Defines a function that can be used to check a condition. 
 
 ## Background Knowledge:
 In general, you only know part of the information in a given scenario. For example, you might know that a certain piece of clothing is in a particular basket, but you might not know what is in a certain basket. Therefore, many times, you need to first perform a goal conversion based on what you already know. When you lack some information, you can observe and obtain the information you want by using obs(target_item, information).
-For example,if you want to know if there any clothes in the basket_34, you can use:
+For example, if you want to know if there are clothes in the basket_34, you can use:
 bind basket: item where:
     is_basket(basket) and id[basket]==34
 observe(basket,"Check is there any clothes in the basket")
 
 If you want to know Is there any trash in the trash can in the dining room, you can use:
-def in_the_diining_room(trash_can:item):
-    symbol in_dining_room=exists room: item : is_dining_room(room) and inside(trash_can, room)
-    return in_dining_room
+
+bind dining_room: item where:
+    is_dining_room(dining_room)
 
 bind trash_can: item where:
-    is_trash_can(trash_can) and in_the_diining_room(trash_can)
+    is_trash_can(trash_can) and inside(trasn_can, dining_room)
 observe(trash_can,"Check is there any trash in the trash can")
 
 ## Examples:
-## Example-1-1:
+# Example-1-1:
 Current sub-task goal: 1. Find a table with food.
 The completed sub-tasks: None, it is the first sub-task.
 Additional information: None.
 Long-horizon task: Clean up the food on the table.
-Chain of thought: Your current sub-task goal is to find a table with food on it, which is the first step towards completing the long-horizon task: "Clean up the food on the table."
-According to the background knowledge, your first step should be to check if there is a known table with food on it. To do this, you need to determine whether there is food on a table. You can create a function called 'has_food_on_table(table:item)', which returns the result of the expression 'exists o: item : is_food(o) and on(o, table)'. This expression checks if there is an item classified as food that is on the table, according to your known information.
+Chain of thought: Your current sub-task goal is to find a table with food on it, which is the first step towards completing the long-horizon task. According to the background knowledge, your first step should be to check if there is a known table with food on it. To do this, you need to determine whether there is food on a table. You can create a function called 'has_food_on_table(table:item)', which returns the result of the expression 'exists o: item : is_food(o) and on(o, table)'. This expression checks if there is an item classified as food that is on the table, according to your known information.
 Next, you can use the expression 'exists table: item : is_table(table) and has_food_on_table(table)' to verify if there is a table with food on it in the known information. If such a table exists, there is no need to continue searching; you can immediately use 'achieve close_char(char, table)' to have the character approach the table with food.
 However, if your known information does not confirm the presence of a table with food on it, you will need to inspect all unvisited items in the scene categorized as tables. To do this, you should call the 'observe' behavior to check each table. The first parameter of the 'observe' behavior should be the table you intend to inspect, and the second parameter should be the purpose of the inspection. Remember, the second parameter must be a string enclosed in double quotes ("").
 
@@ -585,4 +562,6 @@ Try to avoid using the 'inhand(x:item)' state. In most cases, the program will a
 ## Output Requirements:
 You need to think step by step to give resonable output. However, you can only output content similar to the 'Output' in the 'Example'. Do not include any explanation or any other symbols.
 """
+    with open("instructions.txt", "w") as file:
+        file.write(prompt)
     return prompt
