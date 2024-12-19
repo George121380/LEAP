@@ -1,8 +1,15 @@
 from openai import OpenAI
 import time
 
-LLM_MODEL = "gpt-4o"
+Jiayuan_key="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"
+
+Taobao_key="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"
+
+Taobao_trans_key = "sk-ijWSBlLY9QqOxt1EFxhdMK0BTmhi8NsZsszKmPjVPBSzKVrg"
+
+# LLM_MODEL = "gpt-4o"
 # LLM_MODEL = "deepseek"
+LLM_MODEL = "thirdparty"
 
 def ask_GPT(system,content):
     while True:
@@ -10,7 +17,8 @@ def ask_GPT(system,content):
             if LLM_MODEL == "gpt-4o": # GPT-4o api
                 # with open("/Users/liupeiqi/workshop/Research/api_key.txt","r") as f:
                 #     api_key = f.read().strip()
-                client = OpenAI(api_key="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")
+                client = OpenAI(api_key=Taobao_key)
+                
                 completion = client.chat.completions.create(
                     model="gpt-4o",
                     messages=[
@@ -22,6 +30,16 @@ def ask_GPT(system,content):
                 client = OpenAI(api_key="sk-7eb58550af8a4042aca7d33d495ec2e0", base_url="https://api.deepseek.com")
                 completion = client.chat.completions.create(
                     model="deepseek-chat",
+                    messages=[
+                        {"role": "system", "content": system},
+                        {"role": "user", "content": content},
+                    ],
+                    stream=False
+                )
+            elif LLM_MODEL == "thirdparty": # Taobao
+                client = OpenAI(api_key=Taobao_trans_key, base_url="https://api.feidaapi.com/v1")
+                completion = client.chat.completions.create(
+                    model="gpt-4o",
                     messages=[
                         {"role": "system", "content": system},
                         {"role": "user", "content": content},

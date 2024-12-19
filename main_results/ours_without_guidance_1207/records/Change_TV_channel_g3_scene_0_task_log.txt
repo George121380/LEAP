@@ -1,0 +1,370 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Find a couch and sit on it.', '2. Locate the remote control and use it to turn on the TV.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior sit_on_couch(couch:item):
+    body:
+        achieve on_char(char, couch) # Sit on the couch
+
+behavior __goal__():
+    body:
+        bind couch: item where:
+            is_couch(couch) # Select a couch
+        sit_on_couch(couch)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+ 
+behavior sit_on_couch(couch:item):
+    body:
+        achieve on_char(char, couch) # Sit on the couch
+
+behavior __goal__():
+    body:
+        bind couch: item where:
+            is_couch(couch) # Select a couch
+        sit_on_couch(couch)
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(couch_352)sit_executor(couch_352)
+##############################
+From agent.py
+walk_executor(couch_352)
+Find mat_401. Find remote_control_2052. Find clothes_jacket_2047. Find cat_2055. Find pillow_405. Find drawing_400. Find pillow_406. Find hairbrush_2002. Find vacuum_cleaner_2070. Robot is inside home_office_319. Robot is close couch_352. Robot is close mat_401. Robot is no longer inside bathroom_1.
+##############################
+From agent.py
+sit_executor(couch_352)
+Find headset_2062. Find hanger_363. Find hanger_374. Find drawing_404. Find keyboard_415. Find headset_2076. Find hanger_369. Find hanger_361. Find spectacles_2082. Find drawing_402. Find hanger_372. Find chair_356. Find book_2066. Find phone_2077. Find mouse_413. Find hanger_375. Find pencil_2001. Find hanger_367. Find hanger_359. Find dvd_player_2061. Find drawing_403. Find hanger_365. Find book_2067. Find hanger_376. Robot is inside home_office_319. Robot is close couch_352. Robot is close mat_401. Robot is on couch_352. Robot is facing television_410. 
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_phone_2077_around_phone_2077(phone:item):
+    goal: not unknown(phone)
+    body:
+        assert is_phone(phone)
+        bind phone_instance:item where:
+            is_phone(phone_instance) and id[phone_instance]==2077
+        achieve close_char(char,phone_instance)
+        if can_open(phone_instance):
+            achieve_once open(phone_instance)
+            exp(phone,phone_instance)
+        else:
+            exp(phone,phone_instance)
+    eff:
+        unknown[phone]=False
+        close[phone,phone_instance]=True
+        close[phone_instance,phone]=True
+    
+
+behavior find_phone_247_around_phone_2077(phone:item):
+    goal: not unknown(phone)
+    body:
+        assert is_phone(phone)
+        bind phone_instance:item where:
+            is_phone(phone_instance) and id[phone_instance]==2077
+        achieve close_char(char,phone_instance)
+        if can_open(phone_instance):
+            achieve_once open(phone_instance)
+            exp(phone,phone_instance)
+        else:
+            exp(phone,phone_instance)
+    eff:
+        unknown[phone]=False
+        close[phone,phone_instance]=True
+        close[phone_instance,phone]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def has_remote_control_on_surface(surface:item):
+    # Function to check if there is a remote control on a specified surface
+    symbol has_remote_control=exists o: item : is_remote_control(o) and on(o, surface)
+    return has_remote_control
+
+def is_tv_has_switch(tv:item):
+    # Function to check if the TV has a switch
+    return has_switch(tv)
+
+behavior use_remote_control(remote:item, tv:item):
+    body:
+        achieve_once inhand(remote)
+        if is_tv_has_switch(tv):
+            achieve is_on(tv)
+
+behavior __goal__():
+    body:
+        if exists surface: item : surfaces(surface) and has_remote_control_on_surface(surface):
+            # Check if there is a surface with a remote control on it
+            bind surface: item where:
+                surfaces(surface) and has_remote_control_on_surface(surface)
+            # Select a surface that has a remote control
+            achieve close_char(char, surface)
+            # Move the character closer to the surface with the remote control
+            bind remote: item where:
+                is_remote_control(remote) and on(remote, surface)
+            # Select the remote control on the surface
+        else:
+            # If no surface with a remote control is found, initiate a search
+            foreach surface: item:
+                if surfaces(surface) and not visited(surface):
+                    observe(surface,"Check if there is any remote control on the surface")
+                    # Observe whether each surface has a remote control
+
+        if exists tv: item : is_television(tv):
+            # Check if there is a TV in the scene
+            bind tv: item where:
+                is_television(tv)
+            # Select the TV
+            use_remote_control(remote, tv)
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "behavior_definition":
+
+Unknown variable: remote; available variables: [].
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+#goal_representation
+ 
+def has_remote_control_on_surface(surface:item):
+    # Function to check if there is a remote control on a specified surface
+    symbol has_remote_control=exists o: item : is_remote_control(o) and on(o, surface)
+    return has_remote_control
+
+def is_tv_has_switch(tv:item):
+    # Function to check if the TV has a switch
+    return has_switch(tv)
+
+behavior use_remote_control(remote:item, tv:item):
+    body:
+        achieve_once inhand(remote)
+        if is_tv_has_switch(tv):
+            achieve is_on(tv)
+
+behavior __goal__():
+    body:
+        bind remote: item where:
+            is_remote_control(remote) # Declare the remote control variable
+
+        if exists surface: item : surfaces(surface) and has_remote_control_on_surface(surface):
+            # Check if there is a surface with a remote control on it
+            bind surface: item where:
+                surfaces(surface) and has_remote_control_on_surface(surface)
+            # Select a surface that has a remote control
+            achieve close_char(char, surface)
+            # Move the character closer to the surface with the remote control
+            bind remote: item where:
+                is_remote_control(remote) and on(remote, surface)
+            # Select the remote control on the surface
+        else:
+            # If no surface with a remote control is found, initiate a search
+            foreach surface: item:
+                if surfaces(surface) and not visited(surface):
+                    observe(surface,"Check if there is any remote control on the surface")
+                    # Observe whether each surface has a remote control
+
+        if exists tv: item : is_television(tv):
+            # Check if there is a TV in the scene
+            bind tv: item where:
+                is_television(tv)
+            # Select the TV
+            use_remote_control(remote, tv)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_phone_2077_around_phone_2077(phone:item):
+    goal: not unknown(phone)
+    body:
+        assert is_phone(phone)
+        bind phone_instance:item where:
+            is_phone(phone_instance) and id[phone_instance]==2077
+        achieve close_char(char,phone_instance)
+        if can_open(phone_instance):
+            achieve_once open(phone_instance)
+            exp(phone,phone_instance)
+        else:
+            exp(phone,phone_instance)
+    eff:
+        unknown[phone]=False
+        close[phone,phone_instance]=True
+        close[phone_instance,phone]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior locate_and_turn_on_tv(remote_control:item, television:item):
+    body:
+        achieve_once inhand(remote_control)
+        # Grasp the remote control first
+        achieve is_on(television)
+        # Turn on the television with the remote control
+
+behavior __goal__():
+    body:
+        bind remote_control: item where:
+            is_remote_control(remote_control)
+        # Select the remote control
+
+        bind television: item where:
+            is_television(television)
+        # Select the television
+        
+        locate_and_turn_on_tv(remote_control, television)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+behavior locate_and_turn_on_tv(remote_control:item, television:item):
+    body:
+        achieve_once inhand(remote_control)
+        # Grasp the remote control first
+        achieve is_on(television)
+        # Turn on the television with the remote control
+
+behavior __goal__():
+    body:
+        bind remote_control: item where:
+            is_remote_control(remote_control)
+        # Select the remote control
+
+        bind television: item where:
+            is_television(television)
+        # Select the television
+        
+        locate_and_turn_on_tv(remote_control, television)
+
+##############################
+From agent.py-> find a plan in act()
+standup_executor(char)walk_executor(remote_control_2052)grab_executor(remote_control_2052)standup_executor(char)walk_executor(television_248)switchon_executor(television_248)
+##############################
+From agent.py
+standup_executor(char)
+Robot is inside home_office_319. Robot is close couch_352. Robot is close mat_401. Robot is on couch_352. Robot is facing television_410. 
+##############################
+From agent.py
+walk_executor(remote_control_2052)
+Robot is inside home_office_319. Robot is close couch_352. Robot is close remote_control_2052. Robot is on couch_352. Robot is no longer close mat_401.Robot is no longer facing television_410.
+##############################
+From agent.py
+grab_executor(remote_control_2052)
+Robot is inside home_office_319. Robot is close couch_352. Robot is close remote_control_2052. Robot is on couch_352. Grabbing remote_control_2052 by right hand. 
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_mouse_413_around_mouse_413(mouse:item):
+    goal: not unknown(mouse)
+    body:
+        assert is_mouse(mouse)
+        bind mouse_instance:item where:
+            is_mouse(mouse_instance) and id[mouse_instance]==413
+        achieve close_char(char,mouse_instance)
+        if can_open(mouse_instance):
+            achieve_once open(mouse_instance)
+            exp(mouse,mouse_instance)
+        else:
+            exp(mouse,mouse_instance)
+    eff:
+        unknown[mouse]=False
+        close[mouse,mouse_instance]=True
+        close[mouse_instance,mouse]=True
+    
+
+behavior find_cd_player_2060_around_television_248(cd_player:item):
+    goal: not unknown(cd_player)
+    body:
+        assert is_cd_player(cd_player)
+        bind television_instance:item where:
+            is_television(television_instance) and id[television_instance]==248
+        achieve close_char(char,television_instance)
+        if can_open(television_instance):
+            achieve_once open(television_instance)
+            exp(cd_player,television_instance)
+        else:
+            exp(cd_player,television_instance)
+    eff:
+        unknown[cd_player]=False
+        close[cd_player,television_instance]=True
+        close[television_instance,cd_player]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior locate_remote_control_and_turn_on_tv(remote_control:item, tv:item):
+    body:
+        achieve_once inhand(remote_control) # Pick up the remote control
+        achieve is_on(tv) # Ensure the television is turned on
+
+behavior __goal__():
+    body:
+        bind remote_control: item where:
+            is_remote_control(remote_control) and id[remote_control]==2052
+        # Select the remote control with the given ID
+        bind tv: item where:
+            is_television(tv)
+        # Select the television
+        locate_remote_control_and_turn_on_tv(remote_control, tv)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+behavior locate_remote_control_and_turn_on_tv(remote_control:item, tv:item):
+    body:
+        achieve_once inhand(remote_control) # Pick up the remote control
+        achieve is_on(tv) # Ensure the television is turned on
+
+behavior __goal__():
+    body:
+        bind remote_control: item where:
+            is_remote_control(remote_control) and id[remote_control]==2052
+        # Select the remote control with the given ID
+        bind tv: item where:
+            is_television(tv)
+        # Select the television
+        locate_remote_control_and_turn_on_tv(remote_control, tv)
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(television_248)switchon_executor(television_248)
+##############################
+From agent.py
+walk_executor(television_248)
+Find mat_236. Find drawing_241. Find drawing_242. Find drawing_243. Find phone_247. Find cd_2075. Find cd_player_2060. Find wall_clock_249. Robot is inside dining_room_201. Robot is close remote_control_2052. Robot is close television_248. Robot is close tvstand_225. Robot is on couch_352. Robot is no longer inside home_office_319.Robot is no longer close couch_352.
+##############################
+From agent.py
+switchon_executor(television_248)
+Robot is inside dining_room_201. Robot is close remote_control_2052. Robot is close television_248. Robot is close tvstand_225. Robot is on couch_352. 
+##############################

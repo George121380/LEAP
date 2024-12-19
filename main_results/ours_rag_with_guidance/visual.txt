@@ -1,0 +1,4364 @@
+############################################################
+When the sub-task is: Cut the chicken into pieces, then put it back into the fridge.
+A successful representation:
+ 
+behavior cut_chicken(chicken:item, cutting_board:item):
+    body:
+        achieve cut(chicken) 
+        # Goal to cut the chicken into pieces
+
+behavior store_chicken_in_fridge(chicken:item, fridge:item):
+    body:
+        achieve inside(chicken, fridge)
+        # Store the chicken inside the fridge
+
+behavior __goal__():
+    body:
+        bind chicken: item where:
+            is_food_chicken(chicken)
+        # Select the chicken to be cut
+        
+        bind cutting_board: item where:
+            is_cutting_board(cutting_board)
+        # Select an available cutting board
+        
+        bind fridge: item where:
+            is_fridge(fridge)
+        # Select the fridge
+
+        cut_chicken(chicken, cutting_board)
+        store_chicken_in_fridge(chicken, fridge)
+
+############################################################
+When the sub-task is: 1. Fill a bowl with water and place it on the table in the home office.
+A successful representation:
+behavior move_bowl_to_home_office_table(bowl:item, table:item):
+    body:
+        achieve on(bowl, table)
+        # Move the bowl to the specified table in the home office
+
+behavior __goal__():
+    body:
+        bind bowl: item where:
+            is_bowl(bowl) and has_water(bowl)
+        # Select the bowl with water
+        
+        bind home_office: item where:
+            is_home_office(home_office)
+        # Define the home office
+
+        bind home_office_table: item where:
+            is_table(home_office_table) and inside(home_office_table, home_office)
+        # Select a table in the home office
+
+        bind dining_room_table: item where:
+            is_table(dining_room_table) and on(bowl, dining_room_table)
+        # Select the table in the dining room where the bowl is currently located
+
+        observe(home_office_table, "Find a suitable table in the home office")
+        move_bowl_to_home_office_table(bowl, home_office_table)
+############################################################
+When the sub-task is: 2. Find your cat and place it on the same table.
+A successful representation:
+ 
+behavior find_cat_and_place_on_table(cat:item, table:item):
+    body:
+        achieve on(cat, table)
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        # Select the cat with the ID 2069
+        
+        bind table: item where:
+            is_table(table) and id[table]==270
+        # Select the table with ID 270 in the home office
+
+        find_cat_and_place_on_table(cat, table)
+
+############################################################
+When the sub-task is: Clean the bathroom sink directly.
+A successful representation:
+ 
+behavior scrub_sink(sink:item):
+    body:
+        scrub(sink)
+
+behavior rinse_sink(sink:item):
+    body:
+        rinse(sink)
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and dirty(sink)
+        # Select the dirty sink
+
+        scrub_sink(sink)
+        # Scrub the sink to clean it
+
+        rinse_sink(sink)
+        # Rinse the sink after scrubbing to ensure cleanliness
+
+############################################################
+When the sub-task is: 1. Identify all rooms in the household.
+A successful representation:
+ 
+behavior identify_rooms():
+    body:
+        foreach room: item:
+            if is_room(room) and not visited(room):
+                # Identify all rooms by checking unvisited items categorized as rooms
+                observe(room, "Identify this as a room")
+
+behavior __goal__():
+    body:
+        identify_rooms()
+
+############################################################
+When the sub-task is: 2. Turn on at least one light in each room.
+A successful representation:
+ 
+behavior turn_on_light(light:item):
+    body:
+        achieve is_on(light)
+        # Turn on the light
+
+behavior ensure_light_in_room(room:item):
+    body:
+        foreach light: item:
+            if is_light(light) and inside(light, room):
+                turn_on_light(light)
+
+behavior __goal__():
+    body:
+        bind dining_room: item where:
+            is_dining_room(dining_room)
+        ensure_light_in_room(dining_room)
+
+        bind home_office: item where:
+            is_home_office(home_office)
+        ensure_light_in_room(home_office)
+
+        bind bedroom1: item where:
+            is_bedroom(bedroom1) and id[bedroom1] == 220
+        ensure_light_in_room(bedroom1)
+
+        bind bathroom: item where:
+            is_bathroom(bathroom)
+        ensure_light_in_room(bathroom)
+
+        bind bedroom2: item where:
+            is_bedroom(bedroom2) and id[bedroom2] == 327
+        ensure_light_in_room(bedroom2)
+
+############################################################
+When the sub-task is: Clean the bathroom sink directly.
+A successful representation:
+ 
+behavior scrub_sink(sink:item):
+    body:
+        scrub(sink)
+
+behavior rinse_sink(sink:item):
+    body:
+        rinse(sink)
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and dirty(sink)
+        # Select the dirty sink
+
+        scrub_sink(sink)
+        # Scrub the sink to clean it
+
+        rinse_sink(sink)
+        # Rinse the sink after scrubbing to ensure cleanliness
+
+############################################################
+When the sub-task is: 1. Grab a cup and get close to a faucet.
+A successful representation:
+ 
+behavior __goal__():
+    body:
+        bind cup: item where:
+            is_cup(cup)
+        # Select a cup to grab
+
+        bind faucet: item where:
+            is_faucet(faucet)
+        # Select a faucet to move close
+
+        achieve_once inhand(cup)
+        # Grab the cup
+
+        achieve close_char(char, faucet)
+        # Move close to the faucet
+ 
+############################################################
+When the sub-task is: 2. Turn on the faucet to fill the cup with water.
+A successful representation:
+ 
+behavior fill_cup_with_water(cup: item, faucet: item):
+    body:
+        achieve_once is_on(faucet)
+        # Turn on the faucet to fill the cup with water
+        achieve has_water(cup)
+        # Ensure the cup has water in it
+        achieve_once is_off(faucet)
+        # Turn off the faucet once the cup is filled
+
+behavior __goal__():
+    body:
+        bind cup: item where:
+            is_cup(cup) and close_char(char, cup)
+        # Ensure the cup is in hand or close proximity
+
+        bind faucet: item where:
+            is_faucet(faucet) and close_char(char, faucet)
+        # Ensure the character is close to a faucet
+
+        fill_cup_with_water(cup, faucet)
+
+############################################################
+When the sub-task is: Put the cup of water in the fridge.
+A successful representation:
+ 
+behavior put_cup_of_water_in_fridge(cup:item, fridge:item):
+    body:
+        achieve inside(cup, fridge)
+
+behavior adjust_for_fridge(cup:item, fridge:item):
+    body:
+        if exists char_holding: item : inhand(char_holding):
+            achieve_once has_a_free_hand(char)
+        put_cup_of_water_in_fridge(cup, fridge)
+
+behavior __goal__():
+    body:
+        bind cup: item where:
+            is_cup(cup) and has_water(cup)
+        # Select the cup with water
+
+        bind fridge: item where:
+            is_fridge(fridge)
+        # Select the fridge
+
+        observe(fridge, "Distinguish between freezer and fridge section")
+        adjust_for_fridge(cup, fridge)
+
+############################################################
+When the sub-task is: Boil the egg.
+A successful representation:
+ 
+behavior fill_pot_with_water(pot:item, faucet:item):
+    body:
+        achieve has_water(pot)
+        # Ensure the pot is filled with water
+
+behavior start_boiling(pot:item, stove:item):
+    body:
+        achieve on(pot, stove) 
+        # Place the pot on the stove 
+        achieve is_on(stove)
+        # Turn the stove on to boil the water
+
+behavior boil_egg(egg:item, pot:item):
+    body:
+        achieve inside(egg, pot)
+        # Ensure the egg is inside the pot
+
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot)
+        # Select a pot
+
+        bind egg: item where:
+            is_food_egg(egg)
+        # Select an egg
+
+        bind faucet: item where:
+            is_faucet(faucet)
+        # Select a faucet
+
+        bind stove: item where:
+            is_stove(stove)
+        # Select a stove
+
+        fill_pot_with_water(pot, faucet)
+        start_boiling(pot, stove)
+        boil_egg(egg, pot)
+
+############################################################
+When the sub-task is: 1. Find the book and put it on the coffee table in the home office.
+A successful representation:
+ 
+behavior find_and_place_book_on_table(book: item, table: item):
+    body:
+        achieve on(book, table)
+        # Place the book on the table in the home office
+
+behavior __goal__():
+    body:
+        bind book: item where:
+            is_book(book)
+        # Select the book to be placed
+
+        bind home_office: item where:
+            is_home_office(home_office)
+        # Define the home office
+
+        bind coffee_table: item where:
+            is_table(coffee_table) and inside(coffee_table, home_office)
+        # Select the coffee table in the home office
+
+        find_and_place_book_on_table(book, coffee_table)
+
+############################################################
+When the sub-task is: 2. Open the window in the home office.
+A successful representation:
+
+behavior open_window(window:item):
+    body:
+        achieve open(window)
+
+behavior __goal__():
+    body:
+        bind home_office: item where:
+            is_home_office(home_office)
+        # Define the home office
+
+        bind window: item where:
+            is_window(window) and inside(window, home_office)
+        # Select a window that is inside the home office
+
+        open_window(window)
+        # Execute the goal of opening the window in the home office
+
+############################################################
+When the sub-task is: 1. Identify all the rooms in the house.
+A successful representation:
+
+behavior identify_all_rooms():
+    body:
+        foreach room: item:
+            if is_room(room) and not visited(room):
+                # Identify all rooms by checking unvisited items categorized as rooms
+                observe(room, "Identify this as a room")
+
+behavior __goal__():
+    body:
+        identify_all_rooms()
+
+############################################################
+When the sub-task is: 2. Check if there is a light on in each room. If not, turn on a light in that room.
+A successful representation:
+ 
+behavior check_and_turn_on_light(room:item):
+    body:
+        bind light: item where:
+            is_light(light) and inside(light, room)
+        if not is_on(light):
+            achieve is_on(light)
+
+behavior __goal__():
+    body:
+        bind bathroom1: item where:
+            is_bathroom(bathroom1)
+        # Select the bathroom observed in action 1 and 2
+        check_and_turn_on_light(bathroom1)
+        
+        bind dining_room41: item where:
+            is_dining_room(dining_room41)
+        # Select the dining room observed in action 3 and 4
+        check_and_turn_on_light(dining_room41)
+        
+        bind bedroom162: item where:
+            is_bedroom(bedroom162)
+        # Select the bedroom observed in action 5 and 6
+        check_and_turn_on_light(bedroom162)
+        
+        bind home_office241: item where:
+            is_home_office(home_office241)
+        # Select the home office observed in action 7 and 8
+        check_and_turn_on_light(home_office241)
+
+############################################################
+When the sub-task is: 1. Locate the basket that contains clothes.
+A successful representation:
+ 
+behavior locate_basket(basket:item):
+    body:
+        achieve close_char(char, basket)
+        # Move close to the basket to locate it
+
+behavior __goal__():
+    body:
+        if exists basket: item : is_basket_for_clothes(basket):
+            # Check if there is any known basket for clothes
+            bind basket: item where:
+                is_basket_for_clothes(basket)
+            locate_basket(basket)
+        else:
+            # If no known basket, explore the area to locate one
+            foreach basket: item:
+                if is_basket_for_clothes(basket) and not visited(basket):
+                    observe(basket, "Locate the basket for clothes")
+
+############################################################
+When the sub-task is: 2. Put all the clothes from the basket into the washing machine.
+A successful representation:
+ 
+behavior put_clothes_in_washing_machine(clothes:item, washing_machine:item):
+    body:
+        achieve inside(clothes, washing_machine)
+        # Place the clothes inside the washing machine
+
+behavior __goal__():
+    body:
+        bind basket: item where:
+            is_basket_for_clothes(basket)
+        # Select the basket containing clothes
+
+        bind washing_machine: item where:
+            is_washing_machine(washing_machine)
+        # Select the washing machine
+
+        foreach clothes: item:
+            if is_clothes(clothes) and inside(clothes, basket):
+                put_clothes_in_washing_machine(clothes, washing_machine)
+                # Place all clothes from the basket into the washing machine
+
+############################################################
+When the sub-task is: 3. Start the washing machine to wash the clothes.
+A successful representation:
+ 
+behavior start_washing_machine(washing_machine:item):
+    body:
+        achieve is_on(washing_machine)
+
+behavior __goal__():
+    body:
+        bind washing_machine: item where:
+            is_washing_machine(washing_machine) and id[washing_machine]==2007
+        # Bind to the specific washing machine with ID 2007
+
+        start_washing_machine(washing_machine)
+
+############################################################
+When the sub-task is: Open the windows in the bathroom.
+A successful representation:
+ 
+behavior open_window(window:item):
+    body:
+        achieve open(window)
+
+behavior __goal__():
+    body:
+        bind bathroom: item where:
+            is_bathroom(bathroom)
+        # Select the bathroom
+
+        bind window: item where:
+            is_window(window) and inside(window, bathroom)
+        # Select the window inside the bathroom
+
+        open_window(window)
+        # Execute the goal of opening the window in the bathroom
+
+############################################################
+When the sub-task is: Wash the bowls and the plates using the dishwasher.
+A successful representation:
+
+behavior load_dishwasher(item:item, dishwasher:item):
+    body:
+        achieve inside(item, dishwasher)
+        # Load the item into the dishwasher
+
+behavior start_dishwasher(dishwasher:item):
+    body:
+        achieve closed(dishwasher) # Ensure the dishwasher is closed
+        achieve is_on(dishwasher) # Turn on the dishwasher to start cleaning
+
+behavior __goal__():
+    body:
+        bind dishwasher: item where:
+            is_dishwasher(dishwasher)
+        # Select a dishwasher
+
+        foreach item: item:
+            if is_plate(item) or is_bowl(item):
+                load_dishwasher(item, dishwasher)
+                # Load plates and bowls into the dishwasher
+
+        start_dishwasher(dishwasher)
+        # Start the dishwasher to wash the items
+
+############################################################
+When the sub-task is: 1. Locate the milk, turkey, egg, fish, and chicken.
+A successful representation:
+ 
+def has_milk_turkey_egg_fish_chicken(item: item):
+    # Function to check if there is milk, turkey, egg, fish, or chicken near the specified item
+    symbol found_item = exists o: item : (is_milk(o) or is_food_turkey(o) or is_food_egg(o) or is_food_fish(o) or is_food_chicken(o)) and close(o, item)
+    return found_item
+
+behavior __goal__():
+    body:
+        if exists item: item : has_milk_turkey_egg_fish_chicken(item):
+            # If we have already found items based on the available information
+            bind fridge: item where:
+                is_fridge(fridge)
+            observe(fridge,"Check if there are milk, turkey, egg, fish, or chicken close to the fridge")
+
+        else:
+            # Check around the scene for milk, turkey, egg, fish or chicken
+            foreach item: item:
+                if not visited(item):
+                    observe(item,"Look for milk, turkey, egg, fish, or chicken nearby")
+
+
+############################################################
+When the sub-task is: 2. Put the milk, turkey, egg, fish, and chicken on the table in the dining room.
+A successful representation:
+ 
+behavior place_on_table(item:item, table:item):
+    body:
+        achieve on(item, table)
+        # Place the item on the table in the dining room
+
+behavior __goal__():
+    body:
+        bind dining_room: item where:
+            is_dining_room(dining_room)
+        # Select the dining room
+
+        bind table: item where:
+            is_table(table) and inside(table, dining_room)
+        # Select a table inside the dining room
+        
+        bind milk: item where:
+            is_milk(milk)
+        # Select the milk
+
+        bind turkey: item where:
+            is_food_turkey(turkey)
+        # Select the turkey
+
+        bind egg: item where:
+            is_food_egg(egg)
+        # Select the egg
+
+        bind fish: item where:
+            is_food_fish(fish)
+        # Select the fish
+
+        bind chicken: item where:
+            is_food_chicken(chicken)
+        # Select the chicken
+
+        place_on_table(milk, table)
+        place_on_table(turkey, table)
+        place_on_table(egg, table)
+        place_on_table(fish, table)
+        place_on_table(chicken, table)
+
+############################################################
+When the sub-task is: Boil some rice in a pot.
+A successful representation:
+ 
+def has_water_in_pot(pot: item):
+    # Function to check if there is water in a specified pot
+    symbol has_water=has_water(pot)
+    return has_water
+
+behavior fill_pot_with_water(pot:item, faucet:item):
+    body:
+        achieve has_water(pot)
+        # Fill the pot with water using the faucet
+
+behavior boil_rice(pot:item, stove:item, rice:item):
+    body:
+        achieve on(pot, stove)
+        # Place the pot on the stove
+        achieve inside(rice, pot)
+        # Place the rice inside the pot
+        achieve is_on(stove)
+        # Turn the stove on to start boiling the rice
+
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot)
+        # Select a pot
+
+        bind rice: item where:
+            is_food_rice(rice)
+        # Select rice
+
+        bind faucet: item where:
+            is_faucet(faucet)
+        # Select a faucet
+
+        bind stove: item where:
+            is_stove(stove)
+        # Select a stove
+
+        if not has_water_in_pot(pot):
+            fill_pot_with_water(pot, faucet)
+        boil_rice(pot, stove, rice)
+
+############################################################
+When the sub-task is: Cut the chicken into pieces, then put it back in the fridge.
+A successful representation:
+
+behavior cut_chicken(chicken:item, cutting_board:item):
+    body:
+        achieve cut(chicken)
+
+behavior store_chicken_in_fridge(chicken:item, fridge:item):
+    body:
+        achieve inside(chicken, fridge)
+
+behavior __goal__():
+    body:
+        bind chicken: item where:
+            is_food_chicken(chicken)
+        # Select the chicken to be cut
+
+        bind cutting_board: item where:
+            is_cutting_board(cutting_board)
+        # Select an available cutting board
+
+        bind fridge: item where:
+            is_fridge(fridge)
+        # Select the fridge
+
+        cut_chicken(chicken, cutting_board)
+        store_chicken_in_fridge(chicken, fridge)
+
+############################################################
+When the sub-task is: 1. Grab a cup and get close to a faucet.
+A successful representation:
+ 
+behavior __goal__():
+    body:
+        bind cup: item where:
+            is_cup(cup)
+        # Select a cup to grab
+
+        bind dining_room: item where:
+            is_dining_room(dining_room)
+        # Select a dining room
+        
+        bind table: item where:
+            is_table(table) and inside(table, dining_room)
+        # Select a table inside the dining room
+
+        bind faucet: item where:
+            is_faucet(faucet)
+        # Select a faucet
+
+        achieve_once inhand(cup)
+        # Grab the cup
+
+        observe(dining_room, "Identify dining room details for guidance")
+        observe(table, "Locate the cup on the table")
+        achieve close_char(char, faucet)
+        # Move close to the faucet
+
+############################################################
+When the sub-task is: Turn on the lights in the bedroom. Then turn on the lights in the bathroom.
+A successful representation:
+ 
+behavior ensure_light_in_bedroom(light:item):
+    body:
+        achieve is_on(light)
+        # Turn on the light in the bedroom
+
+behavior ensure_light_in_bathroom(light:item):
+    body:
+        achieve is_on(light)
+        # Turn on the light in the bathroom
+
+behavior __goal__():
+    body:
+        bind bedroom: item where:
+            is_bedroom(bedroom)
+        # Bind to the bedroom
+
+        bind bathroom: item where:
+            is_bathroom(bathroom)
+        # Bind to the bathroom
+
+        bind bedroom_light: item where:
+            is_light(bedroom_light) and inside(bedroom_light, bedroom)
+        # Bind to the light in the bedroom
+        ensure_light_in_bedroom(bedroom_light)
+
+        bind bathroom_light: item where:
+            is_light(bathroom_light) and inside(bathroom_light, bathroom)
+        # Bind to the light in the bathroom
+        ensure_light_in_bathroom(bathroom_light)
+
+############################################################
+When the sub-task is: 1. Find the spectacles and put them on the coffee table in the home office.  
+A successful representation:
+ 
+behavior find_and_place_spectacles_on_table(spectacles: item, table: item):
+    body:
+        achieve on(spectacles, table)
+        # Place the spectacles on the table in the home office
+
+behavior __goal__():
+    body:
+        bind spectacles: item where:
+            is_spectacles(spectacles)
+        # Select the spectacles to be placed
+
+        bind home_office: item where:
+            is_home_office(home_office)
+        # Define the home office
+
+        bind coffee_table: item where:
+            is_coffee_table(coffee_table) and inside(coffee_table, home_office)
+        # Select the coffee table in the home office
+
+        find_and_place_spectacles_on_table(spectacles, coffee_table)
+
+############################################################
+When the sub-task is: 2. Find the book and put it on the coffee table in the home office.
+A successful representation:
+ 
+behavior find_and_place_book_on_table(book: item, table: item):
+    body:
+        achieve on(book, table)
+        # Place the book on the coffee table in the home office
+
+behavior __goal__():
+    body:
+        bind book: item where:
+            is_book(book)
+        # Select the book to be placed
+
+        bind home_office: item where:
+            is_home_office(home_office)
+        # Define the home office
+
+        bind coffee_table: item where:
+            is_coffee_table(coffee_table) and inside(coffee_table, home_office)
+        # Select the coffee table in the home office
+
+        find_and_place_book_on_table(book, coffee_table)
+
+############################################################
+When the sub-task is: Cut the bread and put it in the toaster.
+A successful representation:
+behavior cut_bread(bread:item, cutting_board:item):
+    body:
+        achieve cut(bread)
+        # Goal to cut the bread into slices
+
+behavior place_bread_in_toaster(bread:item, toaster:item):
+    body:
+        achieve inside(bread, toaster)
+        # Place the bread inside the toaster
+
+behavior __goal__():
+    body:
+        bind bread: item where:
+            is_food_bread(bread)
+        # Select the bread to be cut
+
+        bind cutting_board: item where:
+            is_cutting_board(cutting_board)
+        # Select an available cutting board
+
+        bind toaster: item where:
+            is_toaster(toaster)
+        # Select a toaster
+
+        observe(toaster, "Check if the toaster is plugged in")
+        cut_bread(bread, cutting_board)
+        place_bread_in_toaster(bread, toaster)
+############################################################
+When the sub-task is: 1. Find the book and place it on the coffee table in the home office.
+A successful representation:
+ 
+behavior find_and_place_book_on_table(book: item, table: item):
+    body:
+        achieve on(book, table)
+        # Place the book on the table in the home office
+
+behavior __goal__():
+    body:
+        bind book: item where:
+            is_book(book)
+        # Select the book to be placed
+
+        bind home_office: item where:
+            is_home_office(home_office)
+        # Define the home office
+
+        bind coffee_table: item where:
+            is_coffee_table(coffee_table) and inside(coffee_table, home_office)
+        # Select the coffee table in the home office
+
+        find_and_place_book_on_table(book, coffee_table)
+
+############################################################
+When the sub-task is: 2. Open the window in the home office.
+A successful representation:
+ 
+behavior open_window(window: item):
+    body:
+        achieve open(window)
+
+behavior __goal__():
+    body:
+        bind home_office: item where:
+            is_home_office(home_office)
+        # Define the home office
+
+        bind window: item where:
+            is_window(window) and inside(window, home_office)
+        # Select a window that is inside the home office
+
+        open_window(window)
+        # Execute the goal of opening the window in the home office
+
+############################################################
+When the sub-task is: Get a cup and fill it with water.
+A successful representation:
+ 
+behavior fetch_cup(cup:item):
+    body:
+        achieve_once inhand(cup)
+
+behavior fill_cup_with_water(cup:item, faucet:item):
+    body:
+        achieve_once is_on(faucet)
+        achieve has_water(cup)
+        achieve_once is_off(faucet)
+
+behavior __goal__():
+    body:
+        bind cup: item where:
+            is_cup(cup)
+        # Select a cup to fetch
+
+        fetch_cup(cup)
+
+        bind faucet: item where:
+            is_faucet(faucet)
+        # Select a faucet to fill the cup
+
+        achieve close_char(char, faucet)
+        # Move close to the faucet
+
+        fill_cup_with_water(cup, faucet)
+
+############################################################
+When the sub-task is: 1. Get close to the computer in the home office.
+A successful representation:
+ 
+behavior __goal__():
+    body:
+        bind home_office: item where:
+            is_home_office(home_office)
+        # Define the home office
+
+        bind computer: item where:
+            is_computer(computer) and inside(computer, home_office)
+        # Select the computer inside the home office
+
+        achieve close_char(char, computer)
+        # Move the character close to the computer
+
+############################################################
+When the sub-task is: 2. Sit on the chair in front of the computer.
+A successful representation:
+ 
+behavior sit_on_chair(chair:item):
+    body:
+        achieve on_char(char, chair)
+        # Sit on the chair
+
+behavior __goal__():
+    body:
+        bind computer: item where:
+            is_computer(computer) and id[computer]==417
+        # Select the computer with this specific identifier
+
+        bind chair: item where:
+            is_chair(chair) and close(chair, computer)
+        # Select the chair close to the specified computer
+        
+        sit_on_chair(chair)
+
+############################################################
+When the sub-task is: 3. Touch the mouse to turn on the computer.
+A successful representation:
+ 
+behavior turn_on_computer_by_touching_mouse(mouse:item, computer:item):
+    body:
+        achieve is_on(computer)
+        touch(mouse)
+
+behavior __goal__():
+    body:
+        bind computer: item where:
+            is_computer(computer) and id[computer] == 417
+        # Select the computer with ID 417
+
+        bind mouse: item where:
+            is_mouse(mouse) and close(mouse, computer)
+        # Select a mouse close to the computer
+
+        turn_on_computer_by_touching_mouse(mouse, computer)
+ 
+############################################################
+When the sub-task is: 4. Type on the keyboard to send an email.
+A successful representation:
+ 
+behavior type_email_on_keyboard(keyboard:item, computer:item):
+    body:
+        achieve is_on(computer)
+        # Ensure the computer is on before typing
+        type(keyboard)
+        # Type on the keyboard to send an email
+
+behavior __goal__():
+    body:
+        bind keyboard: item where:
+            is_keyboard(keyboard)
+        # Select a keyboard
+
+        bind computer: item where:
+            is_computer(computer) and id[computer] == 417
+        # Select computer_417
+
+        type_email_on_keyboard(keyboard, computer)
+
+############################################################
+When the sub-task is: 1. Identify all the rooms in the household.
+A successful representation:
+ 
+behavior identify_rooms():
+    body:
+        foreach room: item:
+            if is_room(room) and not visited(room):
+                # Identify all rooms by checking unvisited items categorized as rooms
+                observe(room, "Identify this as a room")
+
+behavior __goal__():
+    body:
+        identify_rooms()
+
+############################################################
+When the sub-task is: 2. Check each room to ensure at least one light is on.
+A successful representation:
+behavior check_light_in_room(room:item):
+    body:
+        foreach light: item:
+            if is_light(light) and inside(light, room):
+                if not is_on(light):
+                    achieve is_on(light)
+
+behavior __goal__():
+    body:
+        bind bathroom_1: item where:
+            is_bathroom(bathroom_1)
+        # Select bathroom_1 identified in action 1 and 2
+        check_light_in_room(bathroom_1)
+        
+        bind bedroom_67: item where:
+            is_bedroom(bedroom_67)
+        # Select bedroom_67 identified in action 3 and 4
+        check_light_in_room(bedroom_67)
+        
+        bind dining_room_201: item where:
+            is_dining_room(dining_room_201)
+        # Select dining_room_201 identified in action 5 and 6
+        check_light_in_room(dining_room_201)
+        
+        bind home_office_319: item where:
+            is_home_office(home_office_319)
+        # Select home_office_319 identified in action 7 and 8
+        check_light_in_room(home_office_319)
+############################################################
+When the sub-task is: 1. Identify the basket that contains clothes.
+A successful representation:
+ 
+behavior locate_basket(basket: item):
+    body:
+        achieve close_char(char, basket)
+        # Move close to the basket to locate it
+
+behavior __goal__():
+    body:
+        if exists basket: item : is_basket_for_clothes(basket):
+            # Check if there is any known basket for clothes
+            bind basket: item where:
+                is_basket_for_clothes(basket)
+            locate_basket(basket)
+        else:
+            # If no known basket, explore the area to locate one
+            bind bathroom: item where:
+                is_bathroom(bathroom)
+            foreach basket: item:
+                if is_basket_for_clothes(basket) and inside(basket, bathroom) and not visited(basket):
+                    observe(basket, "Locate the basket for clothes")
+
+############################################################
+When the sub-task is: 2. Use the washing machine to wash the clothes.
+A successful representation:
+behavior load_clothes_into_washing_machine(clothes:item, washing_machine:item):
+    body:
+        achieve inside(clothes, washing_machine)
+
+behavior start_washing_machine(washing_machine:item):
+    body:
+        achieve is_on(washing_machine)
+
+behavior __goal__():
+    body:
+        bind basket: item where:
+            is_basket_for_clothes(basket) and id[basket] == 2040
+        # Select the basket with clothes with a specified ID
+
+        bind washing_machine: item where:
+            is_washing_machine(washing_machine)
+        # Select a washing machine
+        
+        foreach clothes: item:
+            if is_clothes(clothes) and inside(clothes, basket):
+                load_clothes_into_washing_machine(clothes, washing_machine)
+                # Place all clothes from the basket into the washing machine
+
+        start_washing_machine(washing_machine)
+        # Start the washing machine to wash the clothes
+############################################################
+When the sub-task is: Open the windows in the bathroom.
+A successful representation:
+behavior open_window(window:item):
+    body:
+        achieve open(window)
+
+behavior __goal__():
+    body:
+        bind bathroom: item where:
+            is_bathroom(bathroom)
+        # Select the bathroom
+
+        bind window: item where:
+            is_window(window) and inside(window, bathroom)
+        # Select the window inside the bathroom
+
+        open_window(window)
+        # Execute the goal of opening the window in the bathroom
+############################################################
+When the sub-task is: Boil the vegetables using a pot on the stove.
+A successful representation:
+ 
+behavior fill_pot_with_water(pot: item, faucet: item):
+    body:
+        achieve has_water(pot)
+        # Fill the pot with water using the faucet
+
+behavior start_boiling(pot: item, stove: item):
+    body:
+        achieve on(pot, stove)
+        # Place the pot on the stove
+        achieve is_on(stove)
+        # Turn on the stove to start boiling
+
+behavior add_vegetables_to_pot(vegetables: item, pot: item):
+    body:
+        achieve inside(vegetables, pot)
+        # Place the vegetables inside the pot
+
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot)
+        # Select a pot
+
+        bind vegetables: item where:
+            is_food_vegetable(vegetables)
+        # Select vegetables
+
+        bind faucet: item where:
+            is_faucet(faucet)
+        # Select a faucet
+
+        bind stove: item where:
+            is_stove(stove)
+        # Select a stove
+
+        fill_pot_with_water(pot, faucet)
+        start_boiling(pot, stove)
+        add_vegetables_to_pot(vegetables, pot)
+
+############################################################
+When the sub-task is: 1. Load the bowls and plates into the dishwasher and start it.
+A successful representation:
+ 
+behavior load_dishwasher(item:item, dishwasher:item):
+    body:
+        achieve inside(item, dishwasher)
+        # Load the item into the dishwasher
+
+behavior start_dishwasher(dishwasher:item):
+    body:
+        achieve closed(dishwasher) # Ensure the dishwasher is closed
+        achieve is_on(dishwasher) # Turn on the dishwasher to start cleaning
+
+behavior __goal__():
+    body:
+        bind dishwasher: item where:
+            is_dishwasher(dishwasher)
+        # Select a dishwasher
+
+        foreach item: item:
+            if is_plate(item) or is_bowl(item):
+                load_dishwasher(item, dishwasher)
+                # Load plates and bowls into the dishwasher
+
+        start_dishwasher(dishwasher)
+        # Start the dishwasher to wash the items
+
+############################################################
+When the sub-task is: 1. Slice some chicken.
+A successful representation:
+behavior cut_chicken(chicken:item, cutting_board:item):
+    body:
+        achieve cut(chicken)
+        # Goal to cut the chicken into slices
+
+behavior __goal__():
+    body:
+        bind chicken: item where:
+            is_food_chicken(chicken)
+        # Select the chicken
+
+        bind cutting_board: item where:
+            is_cutting_board(cutting_board)
+        # Select an available cutting board
+
+        cut_chicken(chicken, cutting_board)
+        # Cut the chicken using the cutting board
+############################################################
+When the sub-task is: 2. Give the sliced chicken to the cat.
+A successful representation:
+ 
+behavior give_chicken_to_cat(chicken:item, cat:item):
+    body:
+        achieve close(chicken, cat)
+        # Bring the chicken close to the cat
+        
+behavior __goal__():
+    body:
+        bind sliced_chicken: item where:
+            is_food_chicken(sliced_chicken) and cut(sliced_chicken)
+        # Select the sliced chicken
+
+        bind cat: item where:
+            is_cat(cat)
+        # Select the cat
+
+        give_chicken_to_cat(sliced_chicken, cat)
+        # Give the sliced chicken to the cat
+
+############################################################
+When the sub-task is: 1. Cut the chicken into slices.
+A successful representation:
+behavior cut_chicken(chicken:item, cutting_board:item):
+    body:
+        achieve cut(chicken)
+        # Goal to cut the chicken into slices
+
+behavior __goal__():
+    body:
+        bind chicken: item where:
+            is_food_chicken(chicken)
+        # Select the chicken
+
+        bind cutting_board: item where:
+            is_cutting_board(cutting_board)
+        # Select an available cutting board
+
+        cut_chicken(chicken, cutting_board)
+        # Cut the chicken using the cutting board
+############################################################
+When the sub-task is: 2. Put the sliced chicken close to the cat.
+A successful representation:
+ 
+behavior place_chicken_close_to_cat(chicken:item, cat:item):
+    body:
+        achieve close(chicken, cat)
+
+behavior __goal__():
+    body:
+        bind sliced_chicken: item where:
+            is_food_chicken(sliced_chicken) and cut(sliced_chicken)
+        # Select the sliced chicken
+
+        bind cat: item where:
+            is_cat(cat)
+        # Select the cat
+
+        place_chicken_close_to_cat(sliced_chicken, cat)
+        # Place the sliced chicken close to the cat
+
+############################################################
+When the sub-task is: 1. Find your spectacles and put them on the coffee table in the home office.
+A successful representation:
+ 
+behavior find_and_place_spectacles_on_table(spectacles: item, table: item):
+    body:
+        achieve on(spectacles, table)
+        # Place the spectacles on the table in the home office
+
+behavior __goal__():
+    body:
+        bind spectacles: item where:
+            is_spectacles(spectacles)
+        # Select the spectacles to be placed
+
+        bind home_office: item where:
+            is_home_office(home_office)
+        # Define the home office
+
+        bind coffee_table: item where:
+            is_table(coffee_table) and inside(coffee_table, home_office)
+        # Select the coffee table in the home office
+
+        find_and_place_spectacles_on_table(spectacles, coffee_table)
+
+############################################################
+When the sub-task is: 2. Find the book and put it on the coffee table in the home office.
+A successful representation:
+ 
+behavior find_and_place_book_on_table(book: item, table: item):
+    body:
+        achieve on(book, table)
+        # Place the book on the coffee table in the home office
+
+behavior __goal__():
+    body:
+        bind book: item where:
+            is_book(book)
+        # Select the book to be placed
+
+        bind home_office: item where:
+            is_home_office(home_office)
+        # Define the home office
+
+        bind coffee_table: item where:
+            is_table(coffee_table) and inside(coffee_table, home_office)
+        # Select the coffee table in the home office
+
+        find_and_place_book_on_table(book, coffee_table)
+
+############################################################
+When the sub-task is: 1. Find the couch and sit on it.
+A successful representation:
+ 
+behavior find_and_sit_on_couch(couch: item):
+    body:
+        achieve on_char(char, couch)
+        # Sit on the couch
+
+behavior __goal__():
+    body:
+        if exists couch: item : is_couch(couch):
+            # Check if there is any known couch
+            bind couch: item where:
+                is_couch(couch)
+            find_and_sit_on_couch(couch)
+        else:
+            # If no known couch, explore the area to locate one
+            foreach couch: item:
+                if is_couch(couch) and not visited(couch):
+                    observe(couch, "Check if this is a suitable couch to sit on")
+
+############################################################
+When the sub-task is: Boil some water using a pot.
+A successful representation:
+ 
+behavior fill_pot_with_water(pot: item, faucet: item):
+    body:
+        achieve has_water(pot)
+        # Fill the pot with water using the faucet
+
+behavior place_pot_on_stove(pot: item, stove: item):
+    body:
+        achieve on(pot, stove)
+        # Place the pot on the stove
+
+behavior start_boiling_water(pot: item, stove: item):
+    body:
+        achieve is_on(stove)
+        # Turn on the stove to start boiling the water
+
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot)
+        # Select a pot
+
+        bind faucet: item where:
+            is_faucet(faucet)
+        # Select a faucet to fill the pot
+
+        bind stove: item where:
+            is_stove(stove)
+        # Select a stove
+
+        fill_pot_with_water(pot, faucet)
+        place_pot_on_stove(pot, stove)
+        start_boiling_water(pot, stove)
+
+############################################################
+When the sub-task is: 1. Get close to the computer in the home office.
+A successful representation:
+ 
+behavior __goal__():
+    body:
+        bind home_office: item where:
+            is_home_office(home_office)
+        # Define the home office
+
+        bind computer: item where:
+            is_computer(computer) and inside(computer, home_office)
+        # Select the computer inside the home office
+
+        achieve close_char(char, computer)
+        # Move the character close to the computer
+
+############################################################
+When the sub-task is: 2. Sit on the chair in front of the computer.
+A successful representation:
+ 
+behavior sit_on_chair(chair:item):
+    body:
+        achieve on_char(char, chair)
+        # Sit on the chair
+
+behavior __goal__():
+    body:
+        bind computer: item where:
+            is_computer(computer) and id[computer]==2110
+        # Select the computer with the specific identifier 2110
+
+        bind chair: item where:
+            is_chair(chair) and close(chair, computer)
+        # Select the chair close to the specified computer
+
+        sit_on_chair(chair)
+
+############################################################
+When the sub-task is: 3. Touch the mouse to turn on the computer.
+A successful representation:
+ 
+behavior turn_on_computer_by_touching_mouse(mouse:item, computer:item):
+    body:
+        achieve is_on(computer)
+        touch(mouse)
+
+behavior __goal__():
+    body:
+        bind computer: item where:
+            is_computer(computer)
+        # Select the computer
+
+        bind mouse: item where:
+            is_mouse(mouse) and close(mouse, computer)
+        # Select the mouse close to the computer
+
+        turn_on_computer_by_touching_mouse(mouse, computer)
+
+############################################################
+When the sub-task is: 1. Load the bowls and plates into the dishwasher and start it.
+A successful representation:
+behavior load_dishwasher(item:item, dishwasher:item):
+    body:
+        achieve inside(item, dishwasher)
+        # Load the item into the dishwasher
+
+behavior start_dishwasher(dishwasher:item):
+    body:
+        achieve closed(dishwasher) # Ensure the dishwasher is closed
+        achieve is_on(dishwasher) # Turn on the dishwasher to start cleaning
+
+behavior __goal__():
+    body:
+        bind dishwasher: item where:
+            is_dishwasher(dishwasher)
+        # Select a dishwasher
+
+        foreach item: item:
+            if is_plate(item) or is_bowl(item):
+                load_dishwasher(item, dishwasher)
+                # Load plates and bowls into the dishwasher
+
+        start_dishwasher(dishwasher)
+        # Start the dishwasher to wash the items
+############################################################
+When the sub-task is: 2. Wash the forks by hand.
+A successful representation:
+ 
+behavior wash_fork_by_hand(fork:item):
+    body:
+        wash(fork)
+        # Wash the fork by hand
+
+behavior __goal__():
+    body:
+        bind fork: item where:
+            is_fork(fork)
+        # Select a fork to wash
+
+        wash_fork_by_hand(fork)
+        # Execute washing the fork by hand
+
+############################################################
+When the sub-task is: 1. Find the cat.
+A successful representation:
+ 
+behavior locate_cat(cat:item):
+    body:
+        achieve close_char(char, cat)
+        # Move close to the cat to locate it
+
+behavior __goal__():
+    body:
+        if exists cat: item : is_cat(cat):
+            # Check if there is any known cat
+            bind cat: item where:
+                is_cat(cat)
+            locate_cat(cat)
+        else:
+            # If no known cat, explore the area to locate one
+            foreach cat: item:
+                if is_cat(cat) and not visited(cat):
+                    observe(cat, "Check if this is the cat you are looking for")
+ 
+############################################################
+When the sub-task is: 2. Locate a suitable sink for washing the cat.
+A successful representation:
+ 
+behavior clean_sink(sink:item):
+    body:
+        scrub(sink)
+        # Scrub the sink to clean it
+
+        rinse(sink)
+        # Rinse the sink after scrubbing to ensure cleanliness
+
+behavior find_suitable_sink():
+    body:
+        foreach sink: item:
+            if is_sink(sink) and not visited(sink):
+                observe(sink, "Check if the sink is clean and has a functioning faucet")
+
+behavior __goal__():
+    body:
+        symbol sink_suitable=exists sink: item : is_sink(sink) and clean(sink) and not dirty(sink)
+        
+        if sink_suitable:
+            bind sink: item where:
+                is_sink(sink) and clean(sink) and not dirty(sink)
+            achieve close_char(char, sink)
+        
+        else:
+            bind sink_19: item where:
+                is_sink(sink_19) and id[sink_19]==19
+                
+            bind sink_120: item where:
+                is_sink(sink_120) and id[sink_120]==120
+
+            if not clean(sink_19):
+                clean_sink(sink_19)
+            
+            if not clean(sink_120):
+                clean_sink(sink_120)
+            
+            find_suitable_sink()
+
+############################################################
+When the sub-task is: 3. Wash the cat in the sink.
+A successful representation:
+ 
+behavior wash_cat_in_sink(cat:item, sink:item, faucet:item):
+    body:
+        achieve_once inside(cat, sink)
+        # Place the cat into the sink for washing
+
+        achieve_once is_on(faucet)
+        # Turn on the faucet
+
+        wash(cat)
+        # Wash the cat using the water from the faucet
+
+        achieve_once is_off(faucet)
+        # Ensure the faucet is turned off after washing
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat) and id[cat] == 2069
+        # Select the cat with ID 2069
+
+        bind sink: item where:
+            is_sink(sink) and id[sink] == 19
+        # Select the sink with ID 19
+
+        bind faucet: item where:
+            is_faucet(faucet) and close(faucet, sink)
+        # Select the faucet close to sink ID 19
+
+        wash_cat_in_sink(cat, sink, faucet)
+
+############################################################
+When the sub-task is: 1. Find the bathroom sink.  
+A successful representation:
+ 
+behavior find_bathroom_sink(sink:item):
+    body:
+        achieve close_char(char, sink)
+        # Move close to the bathroom sink
+
+behavior __goal__():
+    body:
+        bind bathroom: item where:
+            is_bathroom(bathroom)
+        if exists sink: item : is_sink(sink) and inside(sink, bathroom):
+            # Check if there is any known bathroom sink
+            bind sink: item where:
+                is_sink(sink) and inside(sink, bathroom)
+            find_bathroom_sink(sink)
+        else:
+            # If no known bathroom sink, explore the area to locate one
+            foreach sink: item:
+                if is_sink(sink) and inside(sink, bathroom) and not visited(sink):
+                    observe(sink, "Locate the bathroom sink")
+
+############################################################
+When the sub-task is: 2. Fill the sink with water and add soap to make it soapy.
+A successful representation:
+ 
+def has_faucet(sink:item):
+    # Determine whether a sink has a faucet
+    symbol has_a_faucet = exists faucet: item: is_faucet(faucet) and close(faucet, sink)
+    return has_a_faucet
+
+behavior prepare_soapy_water(sink: item, soap: item):
+    body:
+        achieve_once inside(soap, sink)
+        # Place soap inside the sink
+
+        if has_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_on(faucet)
+            # Turn the faucet on to fill the sink with water
+
+            achieve has_water(sink)
+            # Ensure the sink is filled with water
+
+            achieve_once is_off(faucet)
+            # Turn the faucet off after the sink is filled
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and id[sink] == 19
+        # Select the sink with ID 19
+
+        bind soap: item where:
+            is_soap(soap)
+        # Select an item categorized as soap
+
+        prepare_soapy_water(sink, soap)
+
+############################################################
+When the sub-task is: 1. Make a cup of coffee using the coffee maker.
+A successful representation:
+ 
+behavior make_coffee(coffe_maker: item, cup: item):
+    body:
+        achieve inside(cup, coffe_maker)
+        # Ensure the cup is positioned to receive the coffee
+
+        achieve is_on(coffe_maker)
+        # Turn on the coffee maker
+
+behavior __goal__():
+    body:
+        bind coffe_maker: item where:
+            is_coffe_maker(coffe_maker)
+        # Select the coffee maker
+
+        bind cup: item where:
+            is_cup(cup)
+        # Select a cup to use
+        
+        make_coffee(coffe_maker, cup)
+        # Execute making the coffee using the coffee maker
+ 
+############################################################
+When the sub-task is: 2. Add milk and sugar to the coffee.
+A successful representation:
+ 
+behavior add_milk_and_sugar_to_coffee(milk: item, sugar: item, cup: item):
+    body:
+        achieve inside(milk, cup)
+        # Add milk to the coffee
+        achieve inside(sugar, cup)
+        # Add sugar to the coffee
+
+behavior __goal__():
+    body:
+        bind cup: item where:
+            is_cup(cup)
+        # Select the cup with the coffee
+
+        bind milk: item where:
+            is_milk(milk)
+        # Select the milk
+
+        bind sugar: item where:
+            is_food_sugar(sugar)
+        # Select the sugar
+
+        add_milk_and_sugar_to_coffee(milk, sugar, cup)
+
+############################################################
+When the sub-task is: Slice some chicken and give it to the cat.
+A successful representation:
+ 
+behavior slice_and_give_chicken(chicken:item, cat:item, cutting_board:item):
+    body:
+        achieve cut(chicken)
+        # Slice the chicken
+
+        achieve close(chicken, cat)
+        # Bring the sliced chicken close to the cat
+
+behavior __goal__():
+    body:
+        bind chicken: item where:
+            is_food_chicken(chicken)
+        # Select the chicken
+
+        bind cat: item where:
+            is_cat(cat)
+        # Select the cat
+
+        bind cutting_board: item where:
+            is_cutting_board(cutting_board)
+        # Select a cutting board
+
+        slice_and_give_chicken(chicken, cat, cutting_board)
+
+############################################################
+When the sub-task is: Turn on the lights in the bathroom.
+A successful representation:
+ 
+behavior ensure_light_in_bathroom(light:item):
+    body:
+        achieve is_on(light)
+        # Turn on the light in the bathroom
+
+behavior __goal__():
+    body:
+        bind bathroom: item where:
+            is_bathroom(bathroom)
+        # Bind to the bathroom
+
+        bind bathroom_light: item where:
+            is_light(bathroom_light) and inside(bathroom_light, bathroom)
+        # Bind to the light in the bathroom
+        ensure_light_in_bathroom(bathroom_light)
+
+############################################################
+When the sub-task is: Make a cup of coffee using the coffee maker.
+A successful representation:
+ 
+behavior make_coffee(coffe_maker: item, cup: item):
+    body:
+        achieve inside(cup, coffe_maker)
+        # Ensure the cup is positioned to receive the coffee
+
+        achieve is_on(coffe_maker)
+        # Turn on the coffee maker
+
+behavior __goal__():
+    body:
+        bind coffe_maker: item where:
+            is_coffe_maker(coffe_maker)
+        # Select the coffee maker
+
+        bind cup: item where:
+            is_cup(cup)
+        # Select a cup to use
+        
+        make_coffee(coffe_maker, cup)
+        # Execute making the coffee using the coffee maker
+
+############################################################
+When the sub-task is: Prepare a sink of soapy water in the bathroom.
+A successful representation:
+ 
+def has_faucet(sink:item):
+    # Determine whether this sink has a faucet
+    symbol has_faucet=exists faucet:item: is_faucet(faucet) and close(faucet,sink)
+    return has_faucet
+
+behavior prepare_sink_of_soapy_water(sink:item, soap:item, faucet:item):
+    body:
+        achieve_once inside(soap, sink)
+        # Place the soap inside the sink
+
+        achieve close_char(char, faucet)
+        # Move close to the faucet
+
+        achieve_once is_on(faucet)
+        # Turn on the faucet to fill the sink with water
+
+        achieve has_water(sink)
+        # Ensure the sink is filled with water
+
+        achieve_once is_off(faucet)
+        # Turn off the faucet after the sink is filled
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and id[sink]==307
+        # Select the sink with ID 307
+
+        bind soap: item where:
+            is_soap(soap) and id[soap]==2037
+        # Select the soap with ID 2037
+
+        bind faucet: item where:
+            is_faucet(faucet) and id[faucet]==308
+        # Select the faucet with ID 308
+
+        prepare_sink_of_soapy_water(sink, soap, faucet)
+
+############################################################
+When the sub-task is: 1. Get a cup and fill it with water.
+A successful representation:
+ 
+behavior fetch_cup(cup:item):
+    body:
+        achieve_once inhand(cup)
+
+behavior fill_cup_with_water(cup:item, faucet:item):
+    body:
+        achieve_once is_on(faucet)
+        achieve has_water(cup)
+        achieve_once is_off(faucet)
+
+behavior __goal__():
+    body:
+        bind cup: item where:
+            is_cup(cup)
+        # Select a cup to fetch
+
+        fetch_cup(cup)
+
+        bind faucet: item where:
+            is_faucet(faucet)
+        # Select a faucet to fill the cup
+
+        achieve close_char(char, faucet)
+        # Move close to the faucet
+
+        fill_cup_with_water(cup, faucet)
+
+############################################################
+When the sub-task is: 2. Find kiwi and slice it, then add the slices into the cup.
+A successful representation:
+ 
+behavior slice_kiwi(kiwi: item, cutting_board: item, knife: item):
+    body:
+        achieve cut(kiwi)
+
+behavior place_slices_in_cup(kiwi: item, cup: item):
+    body:
+        achieve inside(kiwi, cup)
+
+behavior __goal__():
+    body:
+        bind food_kiwi: item where:
+            is_food_kiwi(food_kiwi) and cuttable(food_kiwi)
+        # Select the kiwi that can be sliced
+
+        bind cutting_board: item where:
+            is_cutting_board(cutting_board)
+        # Select a cutting board
+
+        bind knife: item where:
+            is_knife(knife)
+        # Select a knife
+
+        bind cup: item where:
+            is_cup(cup) and has_water(cup)
+        # Select the cup with water to place kiwi slices
+
+        slice_kiwi(food_kiwi, cutting_board, knife)
+        place_slices_in_cup(food_kiwi, cup)
+
+############################################################
+When the sub-task is: 3. Cool the boiled vegetables in a bowl.
+A successful representation:
+ 
+behavior cool_boiled_vegetables_in_bowl(vegetables:item, bowl:item):
+    body:
+        achieve inside(vegetables, bowl)
+        # Place the boiled vegetables inside the bowl
+
+behavior __goal__():
+    body:
+        bind vegetables: item where:
+            is_food_vegetable(vegetables) and id[vegetables] == 2113
+        # Select the boiled vegetables with ID 2113
+
+        bind bowl: item where:
+            is_bowl(bowl)
+        # Select a bowl for cooling the vegetables
+
+        cool_boiled_vegetables_in_bowl(vegetables, bowl)
+
+############################################################
+When the sub-task is: 1. Turn on the lights in the bedroom.  
+A successful representation:
+behavior ensure_light_in_bedroom(light:item):
+    body:
+        achieve is_on(light)
+        # Turn on the light in the bedroom
+
+behavior __goal__():
+    body:
+        bind bedroom: item where:
+            is_bedroom(bedroom)
+        # Bind to the bedroom
+
+        bind bedroom_light: item where:
+            is_light(bedroom_light) and inside(bedroom_light, bedroom)
+        # Bind to the light in the bedroom
+
+        ensure_light_in_bedroom(bedroom_light)
+############################################################
+When the sub-task is: 2. Turn on the lights in the bathroom.
+A successful representation:
+ 
+behavior ensure_light_in_bathroom(light:item):
+    body:
+        achieve is_on(light)
+        # Turn on the light in the bathroom
+
+behavior __goal__():
+    body:
+        bind bathroom: item where:
+            is_bathroom(bathroom)
+        # Bind to the bathroom
+
+        bind bathroom_light: item where:
+            is_light(bathroom_light) and inside(bathroom_light, bathroom)
+        # Bind to the light in the bathroom
+        ensure_light_in_bathroom(bathroom_light)
+
+############################################################
+When the sub-task is: Slice the chicken.
+A successful representation:
+ 
+behavior cut_chicken(chicken:item, cutting_board:item):
+    body:
+        achieve cut(chicken)
+        # Goal to cut the chicken into slices
+
+behavior __goal__():
+    body:
+        bind chicken: item where:
+            is_food_chicken(chicken)
+        # Select the chicken
+
+        bind cutting_board: item where:
+            is_cutting_board(cutting_board)
+        # Select an available cutting board
+
+        cut_chicken(chicken, cutting_board)
+        # Cut the chicken using the cutting board
+
+############################################################
+When the sub-task is: 1. Hand wash the jacket.
+A successful representation:
+ 
+behavior wash_jacket_by_hand(jacket:item, sink:item):
+    body:
+        achieve_once inside(jacket, sink)
+        # Ensure the jacket is placed inside the sink for washing
+
+        achieve has_water(sink)
+        # Ensure there is water in the sink
+
+        wash(jacket)
+        # Wash the jacket by hand
+
+behavior __goal__():
+    body:
+        bind jacket: item where:
+            is_clothes_jacket(jacket)
+        # Select the jacket to be hand washed
+
+        bind sink: item where:
+            is_sink(sink)
+        # Select a sink
+
+        observe(sink, "Check if the sink has water before washing")
+        wash_jacket_by_hand(jacket, sink)
+
+############################################################
+When the sub-task is: 2. Wash the jacket using the washing machine.
+A successful representation:
+behavior start_washing_machine(jacket:item, washing_machine:item):
+    body:
+        achieve inside(jacket, washing_machine)
+        # Place the jacket inside the washing machine
+
+        achieve is_on(washing_machine)
+        # Turn on the washing machine to start washing the jacket
+
+behavior __goal__():
+    body:
+        bind jacket: item where:
+            is_clothes_jacket(jacket) and id[jacket]==2119
+        # Select the jacket with ID 2119
+
+        bind washing_machine: item where:
+            is_washing_machine(washing_machine)
+        # Select the washing machine
+
+        start_washing_machine(jacket, washing_machine)
+        # Execute the behavior to wash the jacket using the washing machine
+############################################################
+When the sub-task is: Use a pot to boil some water.
+A successful representation:
+behavior fill_pot_with_water(pot: item, faucet: item):
+    body:
+        achieve has_water(pot)
+        # Fill the pot with water using the faucet
+
+behavior place_pot_on_stove(pot: item, stove: item):
+    body:
+        achieve on(pot, stove)
+        # Place the pot on the stove
+
+behavior start_boiling_water(pot: item, stove: item):
+    body:
+        achieve is_on(stove)
+        # Turn on the stove to start boiling the water
+
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot)
+        # Select a pot
+
+        bind faucet: item where:
+            is_faucet(faucet)
+        # Select a faucet to fill the pot
+
+        bind stove: item where:
+            is_stove(stove)
+        # Select a stove
+
+        fill_pot_with_water(pot, faucet)
+        place_pot_on_stove(pot, stove)
+        start_boiling_water(pot, stove)
+############################################################
+When the sub-task is: Wash the bowls and the plates using the dishwasher.
+A successful representation:
+
+behavior load_dishwasher(item:item, dishwasher:item):
+    body:
+        achieve inside(item, dishwasher)
+        # Load the item into the dishwasher
+
+behavior start_dishwasher(dishwasher:item):
+    body:
+        achieve closed(dishwasher) # Ensure the dishwasher is closed
+        achieve is_on(dishwasher) # Turn on the dishwasher to start cleaning
+
+behavior __goal__():
+    body:
+        bind dishwasher: item where:
+            is_dishwasher(dishwasher)
+        # Select a dishwasher
+
+        foreach item: item:
+            if is_plate(item) or is_bowl(item):
+                load_dishwasher(item, dishwasher)
+                # Load plates and bowls into the dishwasher
+
+        start_dishwasher(dishwasher)
+        # Start the dishwasher to wash the items
+
+############################################################
+When the sub-task is: 1. Find a cup and fill it with milk.
+A successful representation:
+ 
+behavior fetch_cup(cup:item):
+    body:
+        achieve_once inhand(cup)
+
+behavior fill_cup_with_milk(cup:item, milk:item):
+    body:
+        achieve inside(milk, cup)
+
+behavior __goal__():
+    body:
+        bind cup: item where:
+            is_cup(cup)
+        # Select a cup to fetch
+
+        fetch_cup(cup)
+
+        bind milk: item where:
+            is_milk(milk)
+        # Select milk to fill the cup
+
+        fill_cup_with_milk(cup, milk)
+ 
+############################################################
+When the sub-task is: 2. Heat the cup of milk in the microwave.
+A successful representation:
+ 
+behavior heat_milk_in_microwave(cup:item, microwave:item):
+    body:
+        achieve inside(cup, microwave)
+        # Place the cup of milk inside the microwave
+        achieve is_on(microwave)
+        # Turn on the microwave to heat the milk
+
+behavior __goal__():
+    body:
+        bind cup: item where:
+            is_cup(cup) and id[cup] == 2087
+        # Select the cup with ID 2087, which contains the milk
+
+        bind microwave: item where:
+            is_microwave(microwave)
+        # Select a microwave
+
+        heat_milk_in_microwave(cup, microwave)
+        # Execute heating the milk in the microwave
+
+############################################################
+When the sub-task is: 1. Identify all the windows in the house.  
+A successful representation:
+ 
+def is_window_item(window:item):
+    # Function to determine if an item is a window
+    symbol is_windowItem = is_window(window)
+    return is_windowItem
+
+behavior identify_all_windows():
+    body:
+        foreach window: item:
+            if is_window(window) and not visited(window):
+                # Identify all windows by checking unvisited items categorized as windows
+                observe(window, "Identify this as a window")
+
+behavior __goal__():
+    body:
+        identify_all_windows()
+
+############################################################
+When the sub-task is: 2. Wipe each window with a towel.
+A successful representation:
+ 
+behavior wipe_window(window:item, towel:item):
+    body:
+        achieve_once inhand(towel)
+        # Hold the towel in hand to wipe the window
+        wipe(window)
+        # Wipe the window to clean it
+
+behavior __goal__():
+    body:
+        foreach window: item:
+            if is_window(window) and dirty(window):
+                bind towel: item where:
+                    is_towel(towel) and inhand(towel)
+                # Ensure the towel is in hand
+                wipe_window(window, towel)
+
+############################################################
+When the sub-task is: 1. Locate the book.
+A successful representation:
+behavior locate_book(book: item):
+    body:
+        achieve close_char(char, book)
+        # Move close to the book to locate it
+
+behavior __goal__():
+    body:
+        if exists book: item : is_book(book):
+            # Check if there is any known book
+            bind book: item where:
+                is_book(book)
+            locate_book(book)
+        else:
+            # If no known book, explore the area to locate one
+            foreach book: item:
+                if is_book(book) and not visited(book):
+                    observe(book, "Check if this is the book you are looking for")
+############################################################
+When the sub-task is: 2. Place the book on the coffee table in the home office.
+A successful representation:
+
+behavior place_book_on_coffee_table(book:item, coffee_table:item):
+    body:
+        achieve on(book, coffee_table)
+        # Place the book on the coffee table in the home office
+
+behavior __goal__():
+    body:
+        bind book: item where:
+            is_book(book)
+        # Select the book to be placed
+
+        bind home_office: item where:
+            is_home_office(home_office)
+        # Define the home office
+
+        bind coffee_table: item where:
+            is_coffee_table(coffee_table) and inside(coffee_table, home_office)
+        # Select the coffee table in the home office
+
+        place_book_on_coffee_table(book, coffee_table)
+
+############################################################
+When the sub-task is: Use the coffee maker to make a cup of coffee.
+A successful representation:
+ 
+behavior make_coffee(coffe_maker: item, cup: item):
+    body:
+        achieve inside(cup, coffe_maker)
+        # Ensure the cup is positioned to receive the coffee
+
+        achieve is_on(coffe_maker)
+        # Turn on the coffee maker
+
+behavior __goal__():
+    body:
+        bind coffe_maker: item where:
+            is_coffe_maker(coffe_maker)
+        # Select the coffee maker
+
+        bind cup: item where:
+            is_cup(cup)
+        # Select a cup to use
+        
+        make_coffee(coffe_maker, cup)
+        # Execute making the coffee using the coffee maker
+
+############################################################
+When the sub-task is: Prepare a sink of soapy water in the bathroom.
+A successful representation:
+ 
+def has_faucet(sink:item):
+    # Determine whether the sink has a faucet nearby
+    symbol has_faucet=exists faucet:item: is_faucet(faucet) and close(faucet, sink)
+    return has_faucet
+
+behavior prepare_sink_of_soapy_water(sink:item, soap:item):
+    body:
+        achieve_once inside(soap, sink)
+        # Place the soap inside the sink
+
+        if has_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_on(faucet)
+            # Turn on the faucet to fill the sink with water
+
+            achieve has_water(sink)
+            # Ensure the sink is filled with water
+
+            achieve_once is_off(faucet)
+            # Turn off the faucet after filling the sink
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink)
+        # Select a sink
+
+        bind soap: item where:
+            is_soap(soap)
+        # Select soap
+
+        prepare_sink_of_soapy_water(sink, soap)
+
+############################################################
+When the sub-task is: 1. Locate the basket that contains clothes.
+A successful representation:
+ 
+behavior locate_basket(basket:item):
+    body:
+        achieve close_char(char, basket)
+        # Move close to the basket to locate it
+
+behavior __goal__():
+    body:
+        if exists basket: item : is_basket_for_clothes(basket):
+            # Check if there is any known basket for clothes
+            bind basket: item where:
+                is_basket_for_clothes(basket)
+            locate_basket(basket)
+        else:
+            # If no known basket, explore the area to locate one
+            foreach basket: item:
+                if is_basket_for_clothes(basket) and not visited(basket):
+                    observe(basket, "Locate the basket for clothes")
+
+############################################################
+When the sub-task is: 2. Add the clothes to the washing machine.
+A successful representation:
+
+behavior put_clothes_in_washing_machine(clothes:item, washing_machine:item):
+    body:
+        achieve inside(clothes, washing_machine)
+        # Place the clothes inside the washing machine
+
+behavior __goal__():
+    body:
+        bind basket: item where:
+            is_basket_for_clothes(basket)
+        # Select the basket containing clothes
+
+        bind washing_machine: item where:
+            is_washing_machine(washing_machine)
+        # Select the washing machine
+
+        foreach clothes: item:
+            if is_clothes(clothes) and inside(clothes, basket):
+                put_clothes_in_washing_machine(clothes, washing_machine)
+                # Place all clothes from the basket into the washing machine
+
+############################################################
+When the sub-task is: 3. Add soap to the washing machine and run it.
+A successful representation:
+ 
+behavior add_soap_and_run_washing_machine(soap:item, washing_machine:item):
+    body:
+        achieve inside(soap, washing_machine)
+        # Add soap to the washing machine
+        achieve is_on(washing_machine)
+        # Start the washing machine
+
+behavior __goal__():
+    body:
+        bind soap: item where:
+            is_soap(soap) and id[soap] == 2053
+        # Select the soap with ID 2053
+        
+        bind washing_machine: item where:
+            is_washing_machine(washing_machine) and id[washing_machine] == 2007
+        # Select the washing machine with ID 2007
+
+        add_soap_and_run_washing_machine(soap, washing_machine)
+
+############################################################
+When the sub-task is: 1. Put cleaning solution in the dishwasher.
+A successful representation:
+ 
+behavior add_solution_to_dishwasher(solution:item, dishwasher:item):
+    body:
+        achieve inside(solution, dishwasher)
+
+behavior __goal__():
+    body:
+        bind cleaning_solution: item where:
+            is_cleaning_solution(cleaning_solution)
+        # Select the cleaning solution
+
+        bind dishwasher: item where:
+            is_dishwasher(dishwasher)
+        # Select the dishwasher
+
+        add_solution_to_dishwasher(cleaning_solution, dishwasher)
+
+############################################################
+When the sub-task is: 2. Wash the bowls and plates using the dishwasher.
+A successful representation:
+ 
+behavior load_dishwasher(item:item, dishwasher:item):
+    body:
+        achieve inside(item, dishwasher)
+        # Load the item into the dishwasher
+
+behavior start_dishwasher(dishwasher:item):
+    body:
+        achieve closed(dishwasher) # Ensure the dishwasher is closed
+        achieve is_on(dishwasher) # Turn on the dishwasher to start cleaning
+
+behavior __goal__():
+    body:
+        bind dishwasher: item where:
+            is_dishwasher(dishwasher)
+        # Select a dishwasher
+
+        foreach item: item:
+            if is_plate(item) or is_bowl(item):
+                load_dishwasher(item, dishwasher)
+                # Load plates and bowls into the dishwasher
+
+        start_dishwasher(dishwasher)
+        # Start the dishwasher to wash the items
+
+############################################################
+When the sub-task is: Make a cup of coffee using the coffee maker.
+A successful representation:
+ 
+behavior make_coffee(coffe_maker: item, cup: item):
+    body:
+        achieve inside(cup, coffe_maker)
+        # Ensure the cup is positioned to receive the coffee
+
+        achieve is_on(coffe_maker)
+        # Turn on the coffee maker
+
+behavior __goal__():
+    body:
+        bind coffe_maker: item where:
+            is_coffe_maker(coffe_maker)
+        # Select the coffee maker
+
+        bind cup: item where:
+            is_cup(cup)
+        # Select a cup to use
+
+        make_coffee(coffe_maker, cup)
+        # Execute making the coffee using the coffee maker
+
+############################################################
+When the sub-task is: 1. Put the milk and egg on the table in the dining room.
+A successful representation:
+ 
+behavior place_on_table(item:item, table:item):
+    body:
+        achieve on(item, table)
+        # Place the item on the table in the dining room
+
+behavior __goal__():
+    body:
+        bind dining_room: item where:
+            is_dining_room(dining_room)
+        # Select the dining room
+
+        bind table: item where:
+            is_table(table) and inside(table, dining_room)
+        # Select a table inside the dining room
+        
+        bind milk: item where:
+            is_milk(milk)
+        # Select the milk
+
+        bind egg: item where:
+            is_food_egg(egg)
+        # Select the egg
+
+        place_on_table(milk, table)
+        place_on_table(egg, table)
+
+############################################################
+When the sub-task is: 2. Throw all the items in the fridge to the trashcan.
+A successful representation:
+ 
+behavior throw_items_in_trash(fridge:item, trashcan:item):
+    body:
+        foreach item: item:
+            if inside(item, fridge):
+                achieve inside(item, trashcan)
+
+behavior close_fridge(fridge:item):
+    body:
+        achieve closed(fridge)
+
+behavior __goal__():
+    body:
+        bind fridge: item where:
+            is_fridge(fridge) and id[fridge] == 126
+        # Select the fridge with ID 126
+
+        bind trashcan: item where:
+            is_trashcan(trashcan) and id[trashcan] == 99
+        # Select the trash can with ID 99
+
+        throw_items_in_trash(fridge, trashcan)
+        close_fridge(fridge)
+
+############################################################
+When the sub-task is: 3. Put the milk and egg back in the fridge.
+A successful representation:
+ 
+behavior place_in_fridge(item:item, fridge:item):
+    body:
+        achieve inside(item, fridge)
+        # Place the item inside the fridge
+
+behavior close_fridge_door(fridge:item):
+    body:
+        achieve closed(fridge)
+        # Ensure the fridge door is closed
+
+behavior __goal__():
+    body:
+        bind table: item where:
+            is_table(table) and id[table] == 114
+        # Select the dining room table with ID 114
+
+        bind milk: item where:
+            is_milk(milk) and on(milk, table)
+        # Select the milk on the table
+
+        bind food_egg: item where:
+            is_food_egg(food_egg) and on(food_egg, table)
+        # Select the egg on the table
+
+        bind fridge: item where:
+            is_fridge(fridge)
+        # Select the fridge
+
+        place_in_fridge(milk, fridge)
+        place_in_fridge(food_egg, fridge)
+        close_fridge_door(fridge)
+
+############################################################
+When the sub-task is: 1. Identify all windows in the house.
+A successful representation:
+behavior identify_all_windows():
+    body:
+        foreach window: item:
+            if is_window(window) and not visited(window):
+                # Identify all windows by checking unvisited items categorized as windows
+                observe(window, "Identify this as a window")
+
+behavior __goal__():
+    body:
+        identify_all_windows()
+############################################################
+When the sub-task is: 2. Wipe each window with a towel.
+A successful representation:
+behavior wipe_window(window:item, towel:item):
+    body:
+        achieve_once inhand(towel)
+        # Hold the towel in hand to wipe the window
+        wipe(window)
+        # Wipe the window to clean it
+
+behavior __goal__():
+    body:
+        foreach window: item:
+            if is_window(window) and dirty(window):
+                bind towel: item where:
+                    is_towel(towel)
+                wipe_window(window, towel)
+############################################################
+When the sub-task is: 1. Put the milk and eggs on the table in the dining room.
+A successful representation:
+ 
+behavior place_on_table(item:item, table:item):
+    body:
+        achieve on(item, table)
+        # Place the item on the table in the dining room
+
+behavior __goal__():
+    body:
+        bind dining_room: item where:
+            is_dining_room(dining_room)
+        # Select the dining room
+
+        bind table: item where:
+            is_table(table) and inside(table, dining_room)
+        # Select a table inside the dining room
+        
+        bind milk: item where:
+            is_milk(milk)
+        # Select the milk
+
+        bind egg: item where:
+            is_food_egg(egg)
+        # Select the egg
+
+        place_on_table(milk, table)
+        place_on_table(egg, table)
+
+############################################################
+When the sub-task is: 2. Throw all the items in the fridge into the trashcan.
+A successful representation:
+ 
+behavior throw_items_in_trash(fridge:item, trashcan:item):
+    body:
+        foreach item: item:
+            if inside(item, fridge):
+                achieve inside(item, trashcan)
+
+behavior close_fridge(fridge:item):
+    body:
+        achieve closed(fridge)
+
+behavior __goal__():
+    body:
+        bind fridge: item where:
+            is_fridge(fridge) and id[fridge] == 289
+        # Select the fridge with ID 289
+
+        bind trashcan: item where:
+            is_trashcan(trashcan)
+        # Select the trash can
+
+        throw_items_in_trash(fridge, trashcan)
+        close_fridge(fridge)
+
+############################################################
+When the sub-task is: 3. Put the milk and eggs back in the fridge.
+A successful representation:
+ 
+behavior place_in_fridge(item:item, fridge:item):
+    body:
+        achieve inside(item, fridge)
+        # Place the item inside the fridge
+
+behavior close_fridge_door(fridge:item):
+    body:
+        achieve closed(fridge)
+        # Ensure the fridge door is closed
+
+behavior __goal__():
+    body:
+        bind milk: item where:
+            is_milk(milk)
+        # Select the milk
+
+        bind egg: item where:
+            is_food_egg(egg)
+        # Select the egg
+
+        bind fridge: item where:
+            is_fridge(fridge)
+        # Select the fridge
+
+        place_in_fridge(milk, fridge)
+        place_in_fridge(egg, fridge)
+        close_fridge_door(fridge)
+
+############################################################
+When the sub-task is: 1. Load the bowls and plates into the dishwasher and start the washing cycle.
+A successful representation:
+ 
+behavior load_dishwasher(item:item, dishwasher:item):
+    body:
+        achieve inside(item, dishwasher)
+        # Load the item into the dishwasher
+
+behavior start_dishwasher(dishwasher:item):
+    body:
+        achieve closed(dishwasher) # Ensure the dishwasher is closed
+        achieve is_on(dishwasher) # Turn on the dishwasher to start cleaning
+
+behavior __goal__():
+    body:
+        bind dishwasher: item where:
+            is_dishwasher(dishwasher)
+        # Select a dishwasher
+
+        foreach item: item:
+            if is_plate(item) or is_bowl(item):
+                load_dishwasher(item, dishwasher)
+                # Load plates and bowls into the dishwasher
+
+        start_dishwasher(dishwasher)
+        # Start the dishwasher to wash the items
+
+############################################################
+When the sub-task is: 2. Wash the forks by hand.
+A successful representation:
+ 
+behavior wash_fork_by_hand(fork:item):
+    body:
+        wash(fork)
+        # Wash the fork by hand
+
+behavior __goal__():
+    body:
+        bind fork: item where:
+            is_fork(fork) and id[fork] == 2151
+        # Select the specific fork with ID 2151 to wash
+
+        wash_fork_by_hand(fork)
+        # Execute washing the fork by hand
+
+############################################################
+When the sub-task is: Touch the remote control to turn on the TV.
+A successful representation:
+ 
+behavior touch_remote_to_turn_on_tv(remote_control:item, television:item):
+    body:
+        achieve is_on(television)
+        touch(remote_control)
+
+behavior __goal__():
+    body:
+        bind remote_control: item where:
+            is_remote_control(remote_control)
+        # Select the remote control
+
+        bind television: item where:
+            is_television(television) and id[television] == 281
+        # Select the television with ID 281
+
+        touch_remote_to_turn_on_tv(remote_control, television)
+
+############################################################
+When the sub-task is: Boil rice in a pot.
+A successful representation:
+
+behavior fill_pot_with_water(pot: item, faucet: item):
+    body:
+        achieve has_water(pot)
+        # Fill the pot with water using the faucet
+
+behavior place_pot_on_stove(pot: item, stove: item):
+    body:
+        achieve on(pot, stove)
+        # Place the pot on the stove
+
+behavior boil_rice(pot: item, stove: item, rice: item):
+    body:
+        achieve inside(rice, pot)
+        # Place the rice inside the pot
+        achieve is_on(stove)
+        # Turn the stove on to start boiling the rice
+
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot)
+        # Select a pot
+
+        bind rice: item where:
+            is_food_rice(rice)
+        # Select rice
+
+        bind faucet: item where:
+            is_faucet(faucet)
+        # Select a faucet
+
+        bind stove: item where:
+            is_stove(stove)
+        # Select a stove
+
+        fill_pot_with_water(pot, faucet)
+        place_pot_on_stove(pot, stove)
+        boil_rice(pot, stove, rice)
+
+############################################################
+When the sub-task is: 1. Find the spectacles and place them on the coffee table in the home office.  
+A successful representation:
+behavior find_and_place_spectacles_on_table(spectacles: item, table: item):
+    body:
+        achieve on(spectacles, table)
+        # Place the spectacles on the coffee table in the home office
+
+behavior __goal__():
+    body:
+        bind spectacles: item where:
+            is_spectacles(spectacles)
+        # Select the spectacles to be placed
+
+        bind home_office: item where:
+            is_home_office(home_office)
+        # Define the home office
+
+        bind coffee_table: item where:
+            is_table(coffee_table) and inside(coffee_table, home_office)
+        # Select the coffee table in the home office
+
+        find_and_place_spectacles_on_table(spectacles, coffee_table)
+############################################################
+When the sub-task is: 2. Find the book and place it on the coffee table in the home office.
+A successful representation:
+ 
+behavior find_and_place_book_on_table(book: item, table: item):
+    body:
+        achieve on(book, table)
+        # Place the book on the coffee table in the home office
+
+behavior __goal__():
+    body:
+        bind book: item where:
+            is_book(book)
+        # Select the book to be placed
+
+        bind home_office: item where:
+            is_home_office(home_office)
+        # Define the home office
+
+        bind coffee_table: item where:
+            is_table(coffee_table) and inside(coffee_table, home_office)
+        # Select the coffee table in the home office
+
+        find_and_place_book_on_table(book, coffee_table)
+
+############################################################
+When the sub-task is: 1. Put milk and egg on the table in the dining room.
+A successful representation:
+behavior place_on_table(item:item, table:item):
+    body:
+        achieve on(item, table)
+        # Place the item on the table in the dining room
+
+behavior __goal__():
+    body:
+        bind dining_room: item where:
+            is_dining_room(dining_room)
+        # Select the dining room
+
+        bind table: item where:
+            is_table(table) and inside(table, dining_room)
+        # Select a table inside the dining room
+        
+        bind milk: item where:
+            is_milk(milk)
+        # Select the milk
+
+        bind egg: item where:
+            is_food_egg(egg)
+        # Select the egg
+
+        place_on_table(milk, table)
+        place_on_table(egg, table)
+############################################################
+When the sub-task is: 2. Throw all the items in the fridge into the trashcan.
+A successful representation:
+ 
+behavior throw_items_in_trash(fridge:item, trashcan:item):
+    body:
+        foreach item: item:
+            if inside(item, fridge):
+                achieve inside(item, trashcan)
+
+behavior close_fridge(fridge:item):
+    body:
+        achieve closed(fridge)
+
+behavior __goal__():
+    body:
+        bind fridge: item where:
+            is_fridge(fridge) and id[fridge] == 140
+        # Select the fridge with ID 140
+
+        bind trashcan: item where:
+            is_trashcan(trashcan)
+        # Select the trash can
+
+        throw_items_in_trash(fridge, trashcan)
+        close_fridge(fridge)
+
+############################################################
+When the sub-task is: 3. Put milk and eggs back in the fridge.
+A successful representation:
+behavior place_in_fridge(item:item, fridge:item):
+    body:
+        achieve inside(item, fridge)
+        # Place the item inside the fridge
+
+behavior close_fridge_door(fridge:item):
+    body:
+        achieve closed(fridge)
+        # Ensure the fridge door is closed
+
+behavior __goal__():
+    body:
+        bind milk: item where:
+            is_milk(milk)
+        # Select the milk
+
+        bind egg: item where:
+            is_food_egg(egg)
+        # Select the egg
+
+        bind fridge: item where:
+            is_fridge(fridge)
+        # Select the fridge
+
+        place_in_fridge(milk, fridge)
+        place_in_fridge(egg, fridge)
+        close_fridge_door(fridge)
+############################################################
+When the sub-task is: 1. Get close to the computer in the home office.
+A successful representation:
+ 
+behavior __goal__():
+    body:
+        bind home_office: item where:
+            is_home_office(home_office)
+        # Define the home office
+
+        bind computer: item where:
+            is_computer(computer) and inside(computer, home_office)
+        # Select the computer inside the home office
+
+        achieve close_char(char, computer)
+        # Move the character close to the computer
+
+############################################################
+When the sub-task is: 2. Sit on the chair in front of the computer and touch the mouse near the computer to turn it on.
+A successful representation:
+ 
+behavior sit_on_chair(chair:item):
+    body:
+        achieve on_char(char, chair)
+        # Sit on the chair in front of the computer
+
+behavior turn_on_computer_by_touching_mouse(mouse:item, computer:item):
+    body:
+        achieve is_on(computer)
+        touch(mouse)
+
+behavior __goal__():
+    body:
+        bind computer: item where:
+            is_computer(computer) and id[computer] == 417
+        # Select the computer with ID 417
+
+        bind chair: item where:
+            is_chair(chair) and close(chair, computer)
+        # Select the chair close to the specified computer
+
+        bind mouse: item where:
+            is_mouse(mouse) and close(mouse, computer)
+        # Select the mouse close to the computer
+
+        sit_on_chair(chair)
+        turn_on_computer_by_touching_mouse(mouse, computer)
+
+
+############################################################
+When the sub-task is: 1. Approach the computer in the home office.
+A successful representation:
+ 
+behavior __goal__():
+    body:
+        bind home_office: item where:
+            is_home_office(home_office)
+        # Define the home office
+
+        bind computer: item where:
+            is_computer(computer) and inside(computer, home_office)
+        # Select the computer inside the home office
+
+        achieve close_char(char, computer)
+        # Move the character close to the computer
+
+############################################################
+When the sub-task is: 2. Sit on the chair in front of the computer.
+A successful representation:
+ 
+behavior sit_on_chair(chair:item):
+    body:
+        achieve on_char(char, chair)
+        # Sit on the chair
+
+behavior __goal__():
+    body:
+        bind computer: item where:
+            is_computer(computer) and id[computer] == 276
+        # Select the computer with a specific identifier
+
+        bind chair: item where:
+            is_chair(chair) and close(chair, computer)
+        # Select the chair close to the specified computer
+        
+        sit_on_chair(chair)
+
+############################################################
+When the sub-task is: 3. Touch the mouse to turn on the computer.
+A successful representation:
+
+behavior turn_on_computer_by_touching_mouse(mouse:item, computer:item):
+    body:
+        achieve is_on(computer)
+        touch(mouse)
+
+behavior __goal__():
+    body:
+        bind computer: item where:
+            is_computer(computer)
+        # Select the computer
+
+        bind mouse: item where:
+            is_mouse(mouse) and close(mouse, computer)
+        # Select the mouse close to the computer
+
+        turn_on_computer_by_touching_mouse(mouse, computer)
+
+############################################################
+When the sub-task is: 4. Type on the keyboard to send an email.
+A successful representation:
+ 
+behavior type_email_on_keyboard(keyboard:item, computer:item):
+    body:
+        achieve is_on(computer)
+        # Ensure the computer is on before typing
+        type(keyboard)
+        # Type on the keyboard to send an email
+
+behavior __goal__():
+    body:
+        bind keyboard: item where:
+            is_keyboard(keyboard)
+        # Select a keyboard
+
+        bind computer: item where:
+            is_computer(computer) and id[computer] == 276
+        # Select computer_276
+
+        type_email_on_keyboard(keyboard, computer)
+
+############################################################
+When the sub-task is: Cut the chicken into pieces, then put it back in the fridge.
+A successful representation:
+
+behavior cut_chicken(chicken:item, cutting_board:item):
+    body:
+        achieve cut(chicken)
+
+behavior store_chicken_in_fridge(chicken:item, fridge:item):
+    body:
+        achieve inside(chicken, fridge)
+
+behavior __goal__():
+    body:
+        bind chicken: item where:
+            is_food_chicken(chicken)
+        # Select the chicken to be cut
+
+        bind cutting_board: item where:
+            is_cutting_board(cutting_board)
+        # Select an available cutting board
+
+        bind fridge: item where:
+            is_fridge(fridge)
+        # Select the fridge
+
+        cut_chicken(chicken, cutting_board)
+        store_chicken_in_fridge(chicken, fridge)
+
+############################################################
+When the sub-task is: 2. Put the bowl on the table in the home office.
+A successful representation:
+ 
+behavior move_bowl_to_table(bowl: item, table: item):
+    body:
+        achieve on(bowl, table)
+        # Move the bowl to the specified table
+
+behavior __goal__():
+    body:
+        bind bowl: item where:
+            is_bowl(bowl) and has_water(bowl)
+        # Select the bowl with water
+
+        bind home_office: item where:
+            is_home_office(home_office)
+        # Define the home office
+
+        bind home_office_table: item where:
+            is_table(home_office_table) and inside(home_office_table, home_office)
+        # Select a table in the home office
+
+        move_bowl_to_table(bowl, home_office_table)
+
+############################################################
+When the sub-task is: 3. Find your cat and put it on the table in the home office.
+A successful representation:
+
+behavior find_cat_and_place_on_table(cat:item, table:item):
+    body:
+        achieve on(cat, table)
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        # Select the cat
+
+        bind home_office: item where:
+            is_home_office(home_office)
+        # Define the home office
+
+        bind table: item where:
+            is_table(table) and inside(table, home_office)
+        # Select the table in the home office
+
+        find_cat_and_place_on_table(cat, table)
+
+############################################################
+When the sub-task is: 1. Identify the basket containing clothes for washing.
+A successful representation:
+ 
+behavior locate_basket(basket:item):
+    body:
+        achieve close_char(char, basket)
+        # Move close to the basket to locate it
+
+behavior __goal__():
+    body:
+        if exists basket: item : is_basket_for_clothes(basket):
+            # Check if there is any known basket for clothes
+            bind basket: item where:
+                is_basket_for_clothes(basket)
+            locate_basket(basket)
+        else:
+            # If no known basket, explore the area to locate one
+            foreach basket: item:
+                if is_basket_for_clothes(basket) and not visited(basket):
+                    observe(basket, "Locate the basket for clothes")
+
+############################################################
+When the sub-task is: 2. Load the clothes into the washing machine.
+A successful representation:
+ 
+behavior put_clothes_in_washing_machine(clothes:item, washing_machine:item):
+    body:
+        achieve inside(clothes, washing_machine)
+        # Place the clothes inside the washing machine
+
+behavior __goal__():
+    body:
+        bind basket: item where:
+            is_basket_for_clothes(basket) and id[basket]==2078
+        # Select the basket containing clothes
+
+        bind washing_machine: item where:
+            is_washing_machine(washing_machine) and id[washing_machine]==2079
+        # Select the washing machine
+
+        foreach clothes: item:
+            if is_clothes(clothes) and inside(clothes, basket):
+                put_clothes_in_washing_machine(clothes, washing_machine)
+                # Place all clothes from the basket into the washing machine
+
+############################################################
+When the sub-task is: 3. Start the washing machine.
+A successful representation:
+ 
+behavior start_washing_machine(washing_machine:item):
+    body:
+        achieve is_on(washing_machine)
+
+behavior __goal__():
+    body:
+        bind washing_machine: item where:
+            is_washing_machine(washing_machine) and id[washing_machine]==2079
+        start_washing_machine(washing_machine)
+
+############################################################
+When the sub-task is: Turn on the lights in the bathroom.
+A successful representation:
+ 
+behavior ensure_light_in_bathroom(light:item):
+    body:
+        achieve is_on(light)
+        # Turn on the light in the bathroom
+
+behavior __goal__():
+    body:
+        bind bathroom: item where:
+            is_bathroom(bathroom)
+        # Bind to the bathroom
+
+        bind bathroom_light: item where:
+            is_light(bathroom_light) and inside(bathroom_light, bathroom)
+        # Bind to the light in the bathroom
+        ensure_light_in_bathroom(bathroom_light)
+
+############################################################
+When the sub-task is: 1. Find the book and put it on the coffee table in the home office.
+A successful representation:
+ 
+behavior find_and_place_book_on_table(book: item, table: item):
+    body:
+        achieve on(book, table)
+        # Place the book on the coffee table in the home office
+
+behavior __goal__():
+    body:
+        bind book: item where:
+            is_book(book)
+        # Select the book to be placed
+
+        bind home_office: item where:
+            is_home_office(home_office)
+        # Define the home office
+
+        bind coffee_table: item where:
+            is_table(coffee_table) and inside(coffee_table, home_office)
+        # Select the coffee table in the home office
+
+        find_and_place_book_on_table(book, coffee_table)
+
+############################################################
+When the sub-task is: 2. Prepare a cup of hot milk and put it on the same table.
+A successful representation:
+behavior prepare_hot_milk(milk:item, cup:item, microwave:item):
+    body:
+        achieve inside(milk, cup)
+        # Pour milk into the cup
+
+        achieve inside(cup, microwave)
+        # Place the cup with milk inside the microwave
+
+        achieve is_on(microwave)
+        # Turn on the microwave to heat the milk
+
+behavior __goal__():
+    body:
+        bind milk: item where:
+            is_milk(milk)
+        # Select the milk
+
+        bind cup: item where:
+            is_cup(cup)
+        # Select a cup for the milk
+
+        bind microwave: item where:
+            is_microwave(microwave)
+        # Select a microwave to heat the milk
+
+        prepare_hot_milk(milk, cup, microwave)
+
+        bind home_office: item where:
+            is_home_office(home_office)
+        # Define the home office
+
+        bind coffee_table: item where:
+            is_table(coffee_table) and inside(coffee_table, home_office)
+        # Select the coffee table in the home office
+
+        achieve on(cup, coffee_table)
+        # Place the hot milk on the coffee table in the home office
+############################################################
+When the sub-task is: Wash the bowls and the plates using the dishwasher.
+A successful representation:
+ 
+behavior load_dishwasher(item:item, dishwasher:item):
+    body:
+        achieve inside(item, dishwasher)
+        # Load the item into the dishwasher
+
+behavior start_dishwasher(dishwasher:item):
+    body:
+        achieve closed(dishwasher) # Ensure the dishwasher is closed
+        achieve is_on(dishwasher) # Turn on the dishwasher to start cleaning
+
+behavior __goal__():
+    body:
+        bind dishwasher: item where:
+            is_dishwasher(dishwasher)
+        # Select a dishwasher
+
+        foreach item: item:
+            if is_plate(item) or is_bowl(item):
+                load_dishwasher(item, dishwasher)
+                # Load plates and bowls into the dishwasher
+
+        start_dishwasher(dishwasher)
+        # Start the dishwasher to wash the items
+
+############################################################
+When the sub-task is: Turn on the lights in the bathroom.
+A successful representation:
+behavior ensure_light_in_bathroom(light:item):
+    body:
+        achieve is_on(light)
+        # Turn on the light in the bathroom
+
+behavior __goal__():
+    body:
+        bind bathroom: item where:
+            is_bathroom(bathroom)
+        # Bind to the bathroom
+
+        bind bathroom_light: item where:
+            is_light(bathroom_light) and inside(bathroom_light, bathroom)
+        # Bind to the light in the bathroom
+        ensure_light_in_bathroom(bathroom_light)
+############################################################
+When the sub-task is: Put the chicken and onion in the oven to roast.
+A successful representation:
+ 
+behavior put_in_oven(chicken:item, onion:item, oven:item):
+    body:
+        achieve inside(chicken, oven)
+        # Place the chicken inside the oven
+        achieve inside(onion, oven)
+        # Place the onion inside the oven
+
+behavior turn_on_oven(oven:item):
+    body:
+        achieve is_on(oven)
+        # Turn on the oven
+
+behavior __goal__():
+    body:
+        bind chicken: item where:
+            is_food_chicken(chicken)
+        # Select the chicken
+
+        bind onion: item where:
+            is_food_onion(onion)
+        # Select the onion
+
+        bind oven: item where:
+            is_oven(oven) and id[oven] == 295
+        # Select the oven with ID 295
+
+        put_in_oven(chicken, onion, oven)
+        turn_on_oven(oven)
+
+############################################################
+When the sub-task is: 1. Locate the book and place it on the coffee table in the home office.
+A successful representation:
+ 
+behavior find_and_place_book_on_table(book: item, table: item):
+    body:
+        achieve on(book, table)
+        # Place the book on the coffee table in the home office
+
+behavior __goal__():
+    body:
+        bind book: item where:
+            is_book(book)
+        # Select the book to be placed
+
+        bind home_office: item where:
+            is_home_office(home_office)
+        # Define the home office
+
+        bind coffee_table: item where:
+            is_table(coffee_table) and inside(coffee_table, home_office)
+        # Select the coffee table in the home office
+
+        find_and_place_book_on_table(book, coffee_table)
+
+############################################################
+When the sub-task is: 2. Prepare a cup of hot milk and place it on the table.
+A successful representation:
+ 
+behavior prepare_hot_milk(milk:item, cup:item, microwave:item):
+    body:
+        achieve inside(milk, cup)
+        # Pour milk into the cup
+
+        achieve inside(cup, microwave)
+        # Place the cup with milk inside the microwave
+
+        achieve is_on(microwave)
+        # Turn on the microwave to heat the milk
+
+behavior __goal__():
+    body:
+        bind milk: item where:
+            is_milk(milk)
+        # Select the milk
+
+        bind cup: item where:
+            is_cup(cup)
+        # Select a cup for the milk
+
+        bind microwave: item where:
+            is_microwave(microwave)
+        # Select a microwave to heat the milk
+
+        prepare_hot_milk(milk, cup, microwave)
+
+        bind home_office: item where:
+            is_home_office(home_office)
+        # Define the home office
+
+        bind coffee_table: item where:
+            is_table(coffee_table) and inside(coffee_table, home_office)
+        # Select the coffee table in the home office
+
+        achieve on(cup, coffee_table)
+        # Place the hot milk on the coffee table in the home office
+
+############################################################
+When the sub-task is: Boil some rice in a pot.
+A successful representation:
+behavior fill_pot_with_water(pot: item, faucet: item):
+    body:
+        achieve has_water(pot)
+        # Fill the pot with water using the faucet
+
+behavior boil_rice(pot: item, stove: item, rice: item):
+    body:
+        achieve on(pot, stove)
+        # Place the pot on the stove
+        achieve inside(rice, pot)
+        # Place the rice inside the pot
+        achieve is_on(stove)
+        # Turn the stove on to start boiling the rice
+
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot)
+        # Select a pot
+
+        bind rice: item where:
+            is_food_rice(rice)
+        # Select rice
+
+        bind faucet: item where:
+            is_faucet(faucet)
+        # Select a faucet
+
+        bind stove: item where:
+            is_stove(stove)
+        # Select a stove
+
+        fill_pot_with_water(pot, faucet)
+        boil_rice(pot, stove, rice)
+############################################################
+When the sub-task is: Put the chicken and onion in the oven, then turn on the oven.
+A successful representation:
+ 
+behavior put_in_oven(chicken:item, onion:item, oven:item):
+    body:
+        achieve inside(chicken, oven)
+        # Place the chicken inside the oven
+        achieve inside(onion, oven)
+        # Place the onion inside the oven
+
+behavior turn_on_oven(oven:item):
+    body:
+        achieve is_on(oven)
+        # Turn on the oven
+
+behavior __goal__():
+    body:
+        bind chicken: item where:
+            is_food_chicken(chicken)
+        # Select the chicken
+
+        bind onion: item where:
+            is_food_onion(onion)
+        # Select the onion
+
+        bind oven: item where:
+            is_oven(oven)
+        # Select the oven
+
+        put_in_oven(chicken, onion, oven)
+        turn_on_oven(oven)
+
+############################################################
+When the sub-task is: 1. Identify the sink where you will wash the cat.  
+A successful representation:
+
+behavior identify_sink_for_cat_washing(sink: item):
+    body:
+        achieve close_char(char, sink)
+
+behavior __goal__():
+    body:
+        if exists sink: item : is_sink(sink):
+            # Check if there is any known sink
+            bind sink: item where:
+                is_sink(sink)
+            identify_sink_for_cat_washing(sink)
+        else:
+            # If no known sink, explore the area to locate one
+            foreach sink: item:
+                if is_sink(sink) and not visited(sink):
+                    observe(sink, "Identify a sink suitable for washing the cat")
+
+############################################################
+When the sub-task is: 2. Wash the cat in the identified sink.
+A successful representation:
+ 
+behavior wash_cat_in_sink(cat:item, sink:item, faucet:item):
+    body:
+        achieve_once inside(cat, sink)
+        # Place the cat into the sink for washing
+
+        achieve_once is_on(faucet)
+        # Turn on the faucet
+
+        wash(cat)
+        # Wash the cat using the water from the faucet
+
+        achieve_once is_off(faucet)
+        # Ensure the faucet is turned off after washing
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        # Select the cat
+
+        bind sink: item where:
+            is_sink(sink) and id[sink] == 42
+        # Select the identified sink (sink_42)
+
+        bind faucet: item where:
+            is_faucet(faucet) and close(faucet, sink)
+        # Select the faucet close to sink_42
+
+        wash_cat_in_sink(cat, sink, faucet)
+
+############################################################
+When the sub-task is: Boil the vegetables using a pot on the stove.
+A successful representation:
+ 
+behavior fill_pot_with_water(pot: item, faucet: item):
+    body:
+        achieve has_water(pot)
+        # Fill the pot with water using the faucet
+
+behavior start_boiling(pot: item, stove: item):
+    body:
+        achieve on(pot, stove)
+        # Place the pot on the stove
+        achieve is_on(stove)
+        # Turn on the stove to boil the water
+
+behavior add_vegetables_to_pot(vegetables: item, pot: item):
+    body:
+        achieve inside(vegetables, pot)
+        # Place the vegetables inside the pot
+
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot)
+        # Select a pot
+
+        bind vegetables: item where:
+            is_food_vegetable(vegetables)
+        # Select vegetables
+
+        bind faucet: item where:
+            is_faucet(faucet)
+        # Select a faucet
+
+        bind stove: item where:
+            is_stove(stove)
+        # Select a stove
+
+        fill_pot_with_water(pot, faucet)
+        start_boiling(pot, stove)
+        add_vegetables_to_pot(vegetables, pot)
+
+############################################################
+When the sub-task is: 1. Locate the book you need to find.
+A successful representation:
+ 
+behavior locate_book(book: item):
+    body:
+        achieve close_char(char, book)
+        # Move close to the book to locate it
+
+behavior __goal__():
+    body:
+        if exists book: item : is_book(book):
+            # Check if there is any known book
+            bind book: item where:
+                is_book(book)
+            locate_book(book)
+        else:
+            # If no known book, explore the area to locate one
+            foreach book: item:
+                if is_book(book) and not visited(book):
+                    observe(book, "Check if this is the book you are looking for")
+
+############################################################
+When the sub-task is: 2. Place the book on the coffee table in the home office.
+A successful representation:
+ 
+behavior place_book_on_coffee_table(book:item, coffee_table:item):
+    body:
+        achieve on(book, coffee_table)
+        # Place the book on the coffee table in the home office
+
+behavior __goal__():
+    body:
+        bind book: item where:
+            is_book(book)
+        # Select the book to be placed
+
+        bind home_office: item where:
+            is_home_office(home_office)
+        # Define the home office
+
+        bind coffee_table: item where:
+            is_table(coffee_table) and inside(coffee_table, home_office)
+        # Select the coffee table in the home office
+
+        place_book_on_coffee_table(book, coffee_table)
+
+############################################################
+When the sub-task is: 1. Make a cup of coffee using the coffee maker.
+A successful representation:
+ 
+behavior make_coffee(coffe_maker: item, cup: item):
+    body:
+        achieve inside(cup, coffe_maker)
+        # Ensure the cup is positioned to receive the coffee
+
+        achieve is_on(coffe_maker)
+        # Turn on the coffee maker
+
+behavior __goal__():
+    body:
+        bind coffe_maker: item where:
+            is_coffe_maker(coffe_maker)
+        # Select the coffee maker
+
+        bind cup: item where:
+            is_cup(cup)
+        # Select a cup to use
+
+        make_coffee(coffe_maker, cup)
+        # Execute making the coffee using the coffee maker
+
+############################################################
+When the sub-task is: 2. Add milk and sugar to the coffee.
+A successful representation:
+behavior add_milk_and_sugar_to_coffee(milk: item, sugar: item, cup: item):
+    body:
+        achieve inside(milk, cup)
+        # Add milk to the coffee
+        achieve inside(sugar, cup)
+        # Add sugar to the coffee
+
+behavior __goal__():
+    body:
+        bind cup: item where:
+            is_cup(cup) and id[cup] == 2087
+        # Select the cup with coffee
+
+        bind milk: item where:
+            is_milk(milk)
+        # Select the milk
+
+        bind sugar: item where:
+            is_food_sugar(sugar)
+        # Select the sugar
+
+        add_milk_and_sugar_to_coffee(milk, sugar, cup)
+############################################################
+When the sub-task is: Slice the bread and toast it.
+A successful representation:
+behavior slice_bread(bread:item, cutting_board:item):
+    body:
+        achieve cut(bread)
+        # Cut the bread into slices
+
+behavior place_bread_in_toaster(bread:item, toaster:item):
+    body:
+        achieve inside(bread, toaster)
+        # Place the bread slices inside the toaster
+
+behavior start_toaster(toaster:item):
+    body:
+        achieve is_on(toaster)
+        # Turn on the toaster to toast the bread
+
+behavior __goal__():
+    body:
+        bind bread: item where:
+            is_food_bread(bread)
+        # Select the bread
+
+        bind cutting_board: item where:
+            is_cutting_board(cutting_board)
+        # Select a cutting board
+
+        bind toaster: item where:
+            is_toaster(toaster)
+        # Select a toaster
+
+        slice_bread(bread, cutting_board)
+        place_bread_in_toaster(bread, toaster)
+        start_toaster(toaster)
+############################################################
+When the sub-task is: Open the windows in the bathroom.
+A successful representation:
+ 
+behavior open_window(window:item):
+    body:
+        achieve open(window)
+
+behavior __goal__():
+    body:
+        bind bathroom: item where:
+            is_bathroom(bathroom)
+        # Select the bathroom
+
+        bind window: item where:
+            is_window(window) and inside(window, bathroom)
+        # Select the window inside the bathroom
+
+        open_window(window)
+        # Execute the goal of opening the window in the bathroom
+
+############################################################
+When the sub-task is: 1. Identify the book you need to find.
+A successful representation:
+
+behavior locate_book(book: item):
+    body:
+        achieve close_char(char, book)
+        # Move close to the book to locate it
+
+behavior __goal__():
+    body:
+        if exists book: item : is_book(book):
+            # Check if there is any known book
+            bind book: item where:
+                is_book(book)
+            locate_book(book)
+        else:
+            # If no known book, explore the area to locate one
+            foreach book: item:
+                if is_book(book) and not visited(book):
+                    observe(book, "Check if this is the book you are looking for")
+
+############################################################
+When the sub-task is: 2. Place the book on the coffee table in the home office.
+A successful representation:
+behavior place_book_on_coffee_table(book:item, coffee_table:item):
+    body:
+        achieve on(book, coffee_table)
+        # Place the book on the coffee table in the home office
+
+behavior __goal__():
+    body:
+        bind book: item where:
+            is_book(book)
+        # Select the book to be placed
+
+        bind home_office: item where:
+            is_home_office(home_office)
+        # Define the home office
+
+        bind coffee_table: item where:
+            is_table(coffee_table) and inside(coffee_table, home_office)
+        # Select the coffee table in the home office
+
+        place_book_on_coffee_table(book, coffee_table)
+############################################################
+When the sub-task is: Wash the cat in a sink.
+A successful representation:
+ 
+behavior wash_cat_in_sink(cat: item, sink: item, faucet: item):
+    body:
+        achieve_once inside(cat, sink)
+        # Place the cat into the sink for washing
+
+        achieve_once is_on(faucet)
+        # Turn on the faucet
+
+        wash(cat)
+        # Wash the cat using the water from the faucet
+
+        achieve_once is_off(faucet)
+        # Ensure the faucet is turned off after washing
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        # Select the cat
+
+        bind sink: item where:
+            is_sink(sink)
+        # Select a sink
+
+        bind faucet: item where:
+            is_faucet(faucet) and close(faucet, sink)
+        # Select the faucet close to the sink
+
+        wash_cat_in_sink(cat, sink, faucet)
+
+############################################################
+When the sub-task is: 1. Locate milk, turkey, egg, fish, and chicken within the kitchen.
+A successful representation:
+def has_milk_turkey_egg_fish_chicken(item: item):
+    # Function to check if there is milk, turkey, egg, fish, or chicken near the specified item
+    symbol found_item = exists o: item : (is_milk(o) or is_food_turkey(o) or is_food_egg(o) or is_food_fish(o) or is_food_chicken(o)) and close(o, item)
+    return found_item
+
+behavior __goal__():
+    body:
+        if exists item: item : has_milk_turkey_egg_fish_chicken(item):
+            # If we have already found items based on the available information
+            bind fridge: item where:
+                is_fridge(fridge)
+            observe(fridge, "Check if there are milk, turkey, egg, fish, or chicken close to the fridge")
+
+        else:
+            # Check around the scene for milk, turkey, egg, fish or chicken
+            foreach item: item:
+                if not visited(item):
+                    observe(item, "Look for milk, turkey, egg, fish, or chicken nearby")
+############################################################
+When the sub-task is: 2. Place milk, turkey, egg, fish, and chicken on the dining room table.
+A successful representation:
+ 
+behavior place_on_table(item:item, table:item):
+    body:
+        achieve on(item, table)
+        # Place the item on the table in the dining room
+
+behavior __goal__():
+    body:
+        bind dining_room: item where:
+            is_dining_room(dining_room)
+        # Select the dining room
+
+        bind table: item where:
+            is_table(table) and inside(table, dining_room)
+        # Select a table inside the dining room
+        
+        bind milk: item where:
+            is_milk(milk)
+        # Select the milk
+
+        bind turkey: item where:
+            is_food_turkey(turkey)
+        # Select the turkey
+
+        bind egg: item where:
+            is_food_egg(egg)
+        # Select the egg
+
+        bind fish: item where:
+            is_food_fish(fish)
+        # Select the fish
+
+        bind chicken: item where:
+            is_food_chicken(chicken)
+        # Select the chicken
+
+        place_on_table(milk, table)
+        place_on_table(turkey, table)
+        place_on_table(egg, table)
+        place_on_table(fish, table)
+        place_on_table(chicken, table)
+
+############################################################
+When the sub-task is: Slice some chicken.
+A successful representation:
+ 
+behavior cut_chicken(chicken:item, cutting_board:item):
+    body:
+        achieve cut(chicken)
+        # Goal to cut the chicken into slices
+
+behavior __goal__():
+    body:
+        bind chicken: item where:
+            is_food_chicken(chicken)
+        # Select the chicken
+
+        bind cutting_board: item where:
+            is_cutting_board(cutting_board)
+        # Select an available cutting board
+
+        cut_chicken(chicken, cutting_board)
+        # Cut the chicken using the cutting board
+
+############################################################
+When the sub-task is: 1. Get a cup and fill it with water.
+A successful representation:
+ 
+behavior fetch_cup(cup:item):
+    body:
+        achieve_once inhand(cup)
+
+behavior fill_cup_with_water(cup:item, faucet:item):
+    body:
+        achieve_once is_on(faucet)
+        achieve has_water(cup)
+        achieve_once is_off(faucet)
+
+behavior __goal__():
+    body:
+        bind cup: item where:
+            is_cup(cup)
+        # Select a cup to fetch
+
+        fetch_cup(cup)
+
+        bind faucet: item where:
+            is_faucet(faucet)
+        # Select a faucet to fill the cup
+
+        achieve close_char(char, faucet)
+        # Move close to the faucet
+
+        fill_cup_with_water(cup, faucet)
+
+
+############################################################
+When the sub-task is: 2. Slice the kiwi and add it to the water.
+A successful representation:
+ 
+behavior slice_kiwi(kiwi:item, cutting_board:item, knife:item):
+    body:
+        achieve cut(kiwi)
+
+behavior place_slices_in_cup(kiwi:item, cup:item):
+    body:
+        achieve inside(kiwi, cup)
+
+behavior __goal__():
+    body:
+        bind food_kiwi: item where:
+            is_food_kiwi(food_kiwi) and cuttable(food_kiwi)
+        # Select the kiwi that can be sliced
+
+        bind cutting_board: item where:
+            is_cutting_board(cutting_board)
+        # Select a cutting board
+
+        bind knife: item where:
+            is_knife(knife)
+        # Select a knife
+
+        bind cup: item where:
+            is_cup(cup) and has_water(cup)
+        # Select the cup with water to place kiwi slices
+
+        slice_kiwi(food_kiwi, cutting_board, knife)
+        place_slices_in_cup(food_kiwi, cup)
+
+############################################################
+When the sub-task is: 1. Find a cup and pour milk into it.
+A successful representation:
+ 
+behavior find_and_fill_cup_with_milk(cup: item, milk: item):
+    body:
+        achieve inside(milk, cup)
+        # Pour milk into the cup
+
+behavior __goal__():
+    body:
+        bind cup: item where:
+            is_cup(cup)
+        # Select a cup
+        
+        bind milk: item where:
+            is_milk(milk)
+        # Select milk
+            
+        find_and_fill_cup_with_milk(cup, milk)
+
+############################################################
+When the sub-task is: 2. Put the cup of milk in the microwave and heat it.
+A successful representation:
+behavior heat_milk_in_microwave(cup:item, microwave:item):
+    body:
+        achieve inside(cup, microwave)
+        # Place the cup of milk inside the microwave
+        achieve is_on(microwave)
+        # Turn on the microwave to heat the milk
+
+behavior __goal__():
+    body:
+        bind cup: item where:
+            is_cup(cup) and id[cup] == 2132
+        # Select the cup with ID 2132, which contains the milk
+
+        bind microwave: item where:
+            is_microwave(microwave)
+        # Select a microwave
+
+        heat_milk_in_microwave(cup, microwave)
+        # Execute heating the milk in the microwave
+############################################################
+When the sub-task is: 1. Get close to the computer in the home office.
+A successful representation:
+ 
+behavior __goal__():
+    body:
+        bind home_office: item where:
+            is_home_office(home_office)
+        # Define the home office
+
+        bind computer: item where:
+            is_computer(computer) and inside(computer, home_office)
+        # Select the computer inside the home office
+
+        achieve close_char(char, computer)
+        # Move the character close to the computer
+
+############################################################
+When the sub-task is: 2. Sit on the chair in front of the computer.
+A successful representation:
+ 
+behavior sit_on_chair(chair:item):
+    body:
+        achieve on_char(char, chair)
+        # Sit on the chair
+
+behavior __goal__():
+    body:
+        bind computer: item where:
+            is_computer(computer) and id[computer]==2110
+        # Select the computer with the specific identifier 2110
+
+        bind chair: item where:
+            is_chair(chair) and close(chair, computer)
+        # Select the chair close to the specified computer
+
+        sit_on_chair(chair)
+
+############################################################
+When the sub-task is: 3. Touch the mouse near the computer to turn it on.
+A successful representation:
+behavior turn_on_computer_by_touching_mouse(mouse:item, computer:item):
+    body:
+        achieve is_on(computer)
+        touch(mouse)
+
+behavior __goal__():
+    body:
+        bind computer: item where:
+            is_computer(computer) and id[computer] == 2110
+        # Select the computer with ID 2110
+
+        bind mouse: item where:
+            is_mouse(mouse) and close(mouse, computer)
+        # Select the mouse close to the computer
+
+        turn_on_computer_by_touching_mouse(mouse, computer)
+############################################################
+When the sub-task is: 4. Type on the keyboard to send an e-mail.
+A successful representation:
+ 
+behavior type_email_on_keyboard(keyboard:item, computer:item):
+    body:
+        achieve is_on(computer)
+        # Ensure the computer is on before typing
+        type(keyboard)
+        # Type on the keyboard to send an email
+
+behavior __goal__():
+    body:
+        bind keyboard: item where:
+            is_keyboard(keyboard)
+        # Select a keyboard
+
+        bind computer: item where:
+            is_computer(computer) and id[computer] == 2110
+        # Select computer_2110
+
+        type_email_on_keyboard(keyboard, computer)
+
+############################################################
+When the sub-task is: 1. Identify the basket containing clothes.
+A successful representation:
+ 
+behavior locate_basket(basket: item):
+    body:
+        achieve close_char(char, basket)
+        # Move close to the basket to locate it
+
+behavior __goal__():
+    body:
+        if exists basket: item : is_basket_for_clothes(basket):
+            # Check if there is any known basket for clothes
+            bind basket: item where:
+                is_basket_for_clothes(basket)
+            locate_basket(basket)
+        else:
+            # If no known basket, explore the area to locate one
+            foreach basket: item:
+                if is_basket_for_clothes(basket) and not visited(basket):
+                    observe(basket, "Locate the basket for clothes")
+
+############################################################
+When the sub-task is: 2. Add soap to the washing machine.
+A successful representation:
+ 
+behavior add_soap_to_washing_machine(soap:item, washing_machine:item):
+    body:
+        achieve inside(soap, washing_machine)
+        # Ensure the soap is added inside the washing machine
+
+behavior __goal__():
+    body:
+        bind washing_machine: item where:
+            is_washing_machine(washing_machine) and id[washing_machine]==2079
+        # Bind to the washing machine with ID 2079
+        
+        bind soap: item where:
+            is_soap(soap)
+        # Select the soap item
+        
+        add_soap_to_washing_machine(soap, washing_machine)
+        # Execute adding soap to the washing machine
+
+############################################################
+When the sub-task is: 3. Run the washing machine with the clothes from the basket.
+A successful representation:
+ 
+behavior run_washing_machine(washing_machine:item):
+    body:
+        achieve is_on(washing_machine)
+
+behavior __goal__():
+    body:
+        bind basket: item where:
+            is_basket_for_clothes(basket) and id[basket]==2078
+        # Select the basket containing clothes with ID 2078
+        
+        bind washing_machine: item where:
+            is_washing_machine(washing_machine) and id[washing_machine]==2079
+        # Select the washing machine with ID 2079
+
+        foreach clothes: item:
+            if is_clothes(clothes) and inside(clothes, basket):
+                achieve inside(clothes, washing_machine)
+                # Move all clothes from the basket into the washing machine
+
+        run_washing_machine(washing_machine)
+        # Start the washing machine
+
+############################################################
+When the sub-task is: 1. Put the cleaning solution in the dishwasher.
+A successful representation:
+ 
+behavior add_solution_to_dishwasher(cleaning_solution:item, dishwasher:item):
+    body:
+        achieve inside(cleaning_solution, dishwasher)
+
+behavior __goal__():
+    body:
+        bind cleaning_solution: item where:
+            is_cleaning_solution(cleaning_solution)
+        # Select the cleaning solution
+
+        bind dishwasher: item where:
+            is_dishwasher(dishwasher)
+        # Select the dishwasher
+
+        add_solution_to_dishwasher(cleaning_solution, dishwasher)
+
+############################################################
+When the sub-task is: 2. Wash the bowls and plates with the dishwasher.
+A successful representation:
+ 
+behavior load_dishwasher(item:item, dishwasher:item):
+    body:
+        achieve inside(item, dishwasher)
+        # Load the item into the dishwasher
+
+behavior start_dishwasher(dishwasher:item):
+    body:
+        achieve closed(dishwasher) # Ensure the dishwasher is closed
+        achieve is_on(dishwasher) # Turn on the dishwasher to start cleaning
+
+behavior __goal__():
+    body:
+        bind dishwasher: item where:
+            is_dishwasher(dishwasher)
+        # Select a dishwasher
+
+        foreach item: item:
+            if is_plate(item) or is_bowl(item):
+                load_dishwasher(item, dishwasher)
+                # Load plates and bowls into the dishwasher
+
+        start_dishwasher(dishwasher)
+        # Start the dishwasher to wash the items
+
+############################################################
+When the sub-task is: 1. Hand wash the jacket.
+A successful representation:
+ 
+behavior wash_jacket_by_hand(jacket:item, sink:item):
+    body:
+        achieve_once inside(jacket, sink)
+        # Ensure the jacket is placed inside the sink for washing
+
+        achieve has_water(sink)
+        # Ensure there is water in the sink
+
+        wash(jacket)
+        # Wash the jacket by hand
+
+behavior __goal__():
+    body:
+        bind jacket: item where:
+            is_clothes_jacket(jacket)
+        # Select the jacket to be hand washed
+
+        bind sink: item where:
+            is_sink(sink)
+        # Select a sink
+
+        observe(sink, "Check if the sink has water before washing")
+        wash_jacket_by_hand(jacket, sink)
+
+############################################################
+When the sub-task is: 2. Use the washing machine to wash the jacket.
+A successful representation:
+ 
+behavior use_washing_machine_for_jacket(jacket:item, washing_machine:item):
+    body:
+        achieve inside(jacket, washing_machine)
+        # Place the jacket inside the washing machine
+
+        achieve is_on(washing_machine)
+        # Start the washing machine
+
+behavior __goal__():
+    body:
+        bind jacket: item where:
+            is_clothes_jacket(jacket) and id[jacket] == 2047
+        # Select the specific jacket with ID 2047
+
+        bind washing_machine: item where:
+            is_washing_machine(washing_machine)
+        # Select the washing machine
+
+        use_washing_machine_for_jacket(jacket, washing_machine)
+        # Execute the behavior to wash the jacket using the washing machine
+
+############################################################
+When the sub-task is: 1. Find the book and place it on the coffee table in the home office.
+A successful representation:
+ 
+behavior find_and_place_book_on_table(book: item, coffee_table: item):
+    body:
+        achieve on(book, coffee_table)
+        # Place the book on the coffee table in the home office
+
+behavior __goal__():
+    body:
+        bind book: item where:
+            is_book(book)
+        # Select the book to be placed
+
+        bind home_office: item where:
+            is_home_office(home_office)
+
+        bind coffee_table: item where:
+            is_table(coffee_table) and inside(coffee_table, home_office)
+        # Select the coffee table in the home office
+
+        find_and_place_book_on_table(book, coffee_table)
+
+############################################################
+When the sub-task is: 2. Open the window in the home office.
+A successful representation:
+ 
+behavior open_window(window: item):
+    body:
+        achieve open(window)
+
+behavior __goal__():
+    body:
+        bind home_office: item where:
+            is_home_office(home_office)
+        # Define the home office
+
+        bind window: item where:
+            is_window(window) and inside(window, home_office)
+        # Select a window that is inside the home office
+
+        open_window(window)
+        # Execute the goal of opening the window in the home office
+
+############################################################
+When the sub-task is: 1. Sit on the couch.
+A successful representation:
+
+behavior sit_on_couch(couch: item):
+    body:
+        achieve on_char(char, couch)
+        # Sit on the couch
+
+behavior __goal__():
+    body:
+        if exists couch: item : is_couch(couch):
+            # Check for the presence of a couch
+            bind couch: item where:
+                is_couch(couch)
+            sit_on_couch(couch)
+        else:
+            # Explore to locate a couch if it is not known
+            foreach couch: item:
+                if is_couch(couch) and not visited(couch):
+                    observe(couch, "Check if this is a suitable couch to sit on")
+
+############################################################
+When the sub-task is: 1. Wash all the vegetables.
+A successful representation:
+ 
+behavior wash_vegetable(vegetable:item):
+    body:
+        wash(vegetable)
+        # Wash the vegetable
+
+behavior __goal__():
+    body:
+        foreach vegetable: item:
+            if is_food_vegetable(vegetable):
+                wash_vegetable(vegetable)
+        # Execute washing all the vegetables
+
+############################################################
+When the sub-task is: 2. Put the vegetables in a pot and boil them on the stove.
+A successful representation:
+ 
+behavior fill_pot_with_water(pot: item, faucet: item):
+    body:
+        achieve has_water(pot)
+        # Fill the pot with water using the faucet
+
+behavior place_pot_on_stove(pot: item, stove: item):
+    body:
+        achieve on(pot, stove)
+        # Place the pot on the stove
+
+behavior start_boiling(pot: item, stove: item):
+    body:
+        achieve is_on(stove)
+        # Turn on the stove to start boiling the pot of vegetables
+
+behavior add_vegetables_to_pot(vegetables: item, pot: item):
+    body:
+        achieve inside(vegetables, pot)
+        # Place the washed vegetables inside the pot
+
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot)
+        # Select a pot
+
+        bind vegetables: item where:
+            is_food_vegetable(vegetables)
+        # Select vegetables
+
+        bind faucet: item where:
+            is_faucet(faucet)
+        # Select a faucet
+
+        bind stove: item where:
+            is_stove(stove)
+        # Select a stove
+
+        fill_pot_with_water(pot, faucet)
+        add_vegetables_to_pot(vegetables, pot)
+        place_pot_on_stove(pot, stove)
+        start_boiling(pot, stove)
+
+############################################################
+When the sub-task is: 3. Store the whole pot in the fridge.
+A successful representation:
+ 
+behavior store_pot_in_fridge(pot:item, fridge:item):
+    body:
+        achieve inside(pot, fridge)
+        # Place the pot inside the fridge
+
+behavior close_fridge(fridge:item):
+    body:
+        achieve closed(fridge)
+        # Ensure the fridge door is closed
+
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot) and id[pot] == 2138
+        # Select the pot with ID 2138
+
+        bind fridge: item where:
+            is_fridge(fridge) and id[fridge] == 126
+        # Select the fridge with ID 126
+
+        store_pot_in_fridge(pot, fridge)
+        close_fridge(fridge)
+
+############################################################
+When the sub-task is: 2. Use the washing machine to wash the jacket.
+A successful representation:
+behavior load_jacket_into_washing_machine(jacket:item, washing_machine:item):
+    body:
+        achieve inside(jacket, washing_machine)
+        # Load the jacket into the washing machine
+
+behavior start_washing_machine(washing_machine:item):
+    body:
+        achieve is_on(washing_machine)
+        # Turn on the washing machine
+
+behavior __goal__():
+    body:
+        bind jacket: item where:
+            is_clothes_jacket(jacket) and id[jacket] == 2078
+        # Select the jacket with ID 2078
+
+        bind washing_machine: item where:
+            is_washing_machine(washing_machine)
+        # Select the washing machine
+
+        load_jacket_into_washing_machine(jacket, washing_machine)
+        # Load the jacket into the washing machine
+
+        start_washing_machine(washing_machine)
+        # Start the washing machine to wash the jacket
+############################################################
+When the sub-task is: Slice the chicken.
+A successful representation:
+ 
+behavior cut_chicken(chicken:item, cutting_board:item):
+    body:
+        achieve cut(chicken)
+        # Goal to cut the chicken into slices
+
+behavior __goal__():
+    body:
+        bind chicken: item where:
+            is_food_chicken(chicken)
+        # Select the chicken
+
+        bind cutting_board: item where:
+            is_cutting_board(cutting_board)
+        # Select an available cutting board
+
+        cut_chicken(chicken, cutting_board)
+        # Cut the chicken using the cutting board
+

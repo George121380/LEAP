@@ -1,0 +1,478 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['Cook the bacon.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_fryingpan_2107_around_cupboard_131(fryingpan:item):
+    goal: not unknown(fryingpan)
+    body:
+        assert is_fryingpan(fryingpan)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==131
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(fryingpan,cupboard_instance)
+        else:
+            exp(fryingpan,cupboard_instance)
+    eff:
+        unknown[fryingpan]=False
+        close[fryingpan,cupboard_instance]=True
+        close[cupboard_instance,fryingpan]=True
+    
+
+behavior find_food_bacon_2044_around_fridge_140(food_bacon:item):
+    goal: not unknown(food_bacon)
+    body:
+        assert is_food_bacon(food_bacon)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==140
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_bacon,fridge_instance)
+        else:
+            exp(food_bacon,fridge_instance)
+    eff:
+        unknown[food_bacon]=False
+        close[food_bacon,fridge_instance]=True
+        close[fridge_instance,food_bacon]=True
+    
+
+behavior find_sauce_2101_around_fridge_140(sauce:item):
+    goal: not unknown(sauce)
+    body:
+        assert is_sauce(sauce)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==140
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(sauce,fridge_instance)
+        else:
+            exp(sauce,fridge_instance)
+    eff:
+        unknown[sauce]=False
+        close[sauce,fridge_instance]=True
+        close[fridge_instance,sauce]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def has_bacon_on_pans(pan:item):
+    # Function to check if there is bacon on a specified pan
+    symbol has_bacon=exists o: item : is_food_bacon(o) and on(o, pan)
+    return has_bacon
+
+behavior cook_bacon(pan:item, bacon:item, stove:item):
+    body:
+        achieve inside(bacon, pan)
+        # Place bacon inside the pan
+        achieve on(pan, stove)
+        # Place the pan on the stove
+        achieve is_on(stove)
+        # Turn on the stove to cook bacon
+
+behavior __goal__():
+    body:
+        bind bacon: item where:
+            is_food_bacon(bacon)
+        # Select an instance of bacon
+
+        bind pan: item where:
+            is_fryingpan(pan) and has_bacon_on_pans(pan)
+        # Select a pan that has bacon on it
+
+        bind stove: item where:
+            is_stove(stove)
+        # Select an instance of a stove
+
+        cook_bacon(pan, bacon, stove)
+        # Execute the behavior to cook the bacon
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_sauce_2101_around_cupboard_131(sauce:item):
+    goal: not unknown(sauce)
+    body:
+        assert is_sauce(sauce)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==131
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(sauce,cupboard_instance)
+        else:
+            exp(sauce,cupboard_instance)
+    eff:
+        unknown[sauce]=False
+        close[sauce,cupboard_instance]=True
+        close[cupboard_instance,sauce]=True
+    
+
+behavior find_fryingpan_2107_around_kitchen_counter_129(fryingpan:item):
+    goal: not unknown(fryingpan)
+    body:
+        assert is_fryingpan(fryingpan)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==129
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(fryingpan,kitchen_counter_instance)
+        else:
+            exp(fryingpan,kitchen_counter_instance)
+    eff:
+        unknown[fryingpan]=False
+        close[fryingpan,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,fryingpan]=True
+    
+
+behavior find_food_bacon_2044_around_fridge_140(food_bacon:item):
+    goal: not unknown(food_bacon)
+    body:
+        assert is_food_bacon(food_bacon)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==140
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_bacon,fridge_instance)
+        else:
+            exp(food_bacon,fridge_instance)
+    eff:
+        unknown[food_bacon]=False
+        close[food_bacon,fridge_instance]=True
+        close[fridge_instance,food_bacon]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_stove_available(stove:item):
+    # Function to check if a stove is available
+    return is_stove(stove) and has_switch(stove)
+
+def is_bacon_ready(bacon:item, fryingpan:item):
+    # Function to check if bacon is ready to be cooked
+    return is_food_bacon(bacon) and inside(bacon, fryingpan)
+
+behavior cook_bacon(stove:item, fryingpan:item, bacon:item):
+    body:
+        achieve close_char(char, stove)
+        # Move character close to the stove
+
+        if is_stove_available(stove):
+            achieve_once is_on(stove)
+            # Turn on the stove if it is available
+
+        assert is_bacon_ready(bacon, fryingpan)
+        # Ensure the bacon is in the frying pan and ready to be cooked
+
+        achieve on(fryingpan, stove)
+        # Place the frying pan on the stove
+
+behavior __goal__():
+    body:
+        bind stove: item where:
+            is_stove(stove)
+        # Select an instance of a stove
+
+        bind fryingpan: item where:
+            is_fryingpan(fryingpan)
+        # Select an instance of a frying pan
+
+        bind bacon: item where:
+            is_food_bacon(bacon)
+        # Select an instance of bacon
+
+        cook_bacon(stove, fryingpan, bacon)
+        # Execute the behavior to cook the bacon
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+Fail to generate the goal representation
+##############################
+From agent.py
+Record from func query_LLM_human in agent.py
+Question: Can you teach me how to "cook the bacon." ?
+Answer: Put the bacon in the frying pan, then put oil in the pan. Put the pan on the stove and turn on the stove.
+Re-decompose: True
+
+##############################
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Put the bacon in the frying pan and add oil.', '2. Place the pan on the stove and turn on the stove.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_fryingpan_2107_around_kitchen_counter_129(fryingpan:item):
+    goal: not unknown(fryingpan)
+    body:
+        assert is_fryingpan(fryingpan)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==129
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(fryingpan,kitchen_counter_instance)
+        else:
+            exp(fryingpan,kitchen_counter_instance)
+    eff:
+        unknown[fryingpan]=False
+        close[fryingpan,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,fryingpan]=True
+    
+
+behavior find_oil_2102_around_kitchen_counter_129(oil:item):
+    goal: not unknown(oil)
+    body:
+        assert is_oil(oil)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==129
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(oil,kitchen_counter_instance)
+        else:
+            exp(oil,kitchen_counter_instance)
+    eff:
+        unknown[oil]=False
+        close[oil,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,oil]=True
+    
+
+behavior find_food_bacon_2044_around_fridge_140(food_bacon:item):
+    goal: not unknown(food_bacon)
+    body:
+        assert is_food_bacon(food_bacon)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==140
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_bacon,fridge_instance)
+        else:
+            exp(food_bacon,fridge_instance)
+    eff:
+        unknown[food_bacon]=False
+        close[food_bacon,fridge_instance]=True
+        close[fridge_instance,food_bacon]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior place_bacon_in_pan(bacon:item, fryingpan:item):
+    body:
+        achieve on(bacon, fryingpan)
+        # Ensure the bacon is placed on the frying pan
+
+behavior add_oil_to_pan(oil:item, fryingpan:item):
+    body:
+        achieve on(oil, fryingpan)
+        # Ensure the oil is added to the frying pan
+
+behavior __goal__():
+    body:
+        bind bacon: item where:
+            is_food_bacon(bacon)
+        # Select an instance of bacon
+
+        bind fryingpan: item where:
+            is_fryingpan(fryingpan)
+        # Select a frying pan instance
+
+        bind oil: item where:
+            is_oil(oil)
+        # Select an instance of oil
+
+        place_bacon_in_pan(bacon, fryingpan)
+        # Place the bacon in the frying pan
+
+        add_oil_to_pan(oil, fryingpan)
+        # Add oil to the frying pan
+
+#goal_representation_end
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(kitchen_counter_129)exp(fryingpan_2107, kitchen_counter_129)walk_executor(fridge_140)switchoff_executor(fridge_140)open_executor(fridge_140)exp(food_bacon_2044, fridge_140)walk_executor(food_bacon_2044)grab_executor(food_bacon_2044)walk_executor(fryingpan_2107)put_executor(food_bacon_2044, fryingpan_2107)walk_executor(kitchen_counter_129)exp(oil_2102, kitchen_counter_129)walk_executor(oil_2102)grab_executor(oil_2102)walk_executor(fryingpan_2107)put_executor(oil_2102, fryingpan_2107)
+##############################
+From agent.py
+walk_executor(kitchen_counter_129)
+Find pot_54. Find pot_2093. Find tray_142. Find oil_2102. Find fryingpan_2107. Robot is inside dining_room_1. Robot is close kitchen_counter_129. Robot is no longer inside home_office_161.
+##############################
+From agent.py
+exp(fryingpan_2107, kitchen_counter_129)
+Find fryingpan_2107. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(fridge_140)switchoff_executor(fridge_140)open_executor(fridge_140)exp(food_bacon_2044, fridge_140)walk_executor(food_bacon_2044)grab_executor(food_bacon_2044)walk_executor(fryingpan_2107)put_executor(food_bacon_2044, fryingpan_2107)walk_executor(oil_2102)grab_executor(oil_2102)walk_executor(fryingpan_2107)put_executor(oil_2102, fryingpan_2107)
+##############################
+From agent.py
+walk_executor(fridge_140)
+Find food_cereal_2048. Find food_cheese_2049. Find food_chicken_2050. Find food_dessert_2051. Find food_donut_2052. Find food_egg_2053. Find food_fish_2054. Find food_food_2055. Find food_fruit_2056. Find food_hamburger_2057. Find food_ice_cream_2058. Find food_jam_2059. Find food_kiwi_2060. Find food_lemon_2061. Find food_noodles_2062. Find food_oatmeal_2063. Find food_peanut_butter_2064. Find food_pizza_2065. Find food_potato_2066. Find food_rice_2067. Find food_salt_2068. Find food_snack_2069. Find food_sugar_2070. Find food_turkey_2071. Find food_vegetable_2072. Find dry_pasta_2073. Find milk_2074. Find sauce_2101. Find food_steak_2042. Find food_apple_2043. Find food_bacon_2044. Find food_banana_2045. Find food_cake_2046. Find food_carrot_2047. Find chair_138. Robot is inside dining_room_1. Robot is close food_cereal_2048. Robot is close food_cheese_2049. Robot is close food_chicken_2050. Robot is close food_dessert_2051. Robot is close food_donut_2052. Robot is close food_egg_2053. Robot is close food_fish_2054. Robot is close food_food_2055. Robot is close food_fruit_2056. Robot is close food_hamburger_2057. Robot is close food_ice_cream_2058. Robot is close food_jam_2059. Robot is close fridge_140. Robot is close food_kiwi_2060. Robot is close food_lemon_2061. Robot is close food_noodles_2062. Robot is close food_oatmeal_2063. Robot is close food_peanut_butter_2064. Robot is close food_pizza_2065. Robot is close food_potato_2066. Robot is close food_rice_2067. Robot is close food_salt_2068. Robot is close food_snack_2069. Robot is close food_sugar_2070. Robot is close food_turkey_2071. Robot is close food_vegetable_2072. Robot is close dry_pasta_2073. Robot is close milk_2074. Robot is close floor_22. Robot is close sauce_2101. Robot is close food_steak_2042. Robot is close food_apple_2043. Robot is close food_bacon_2044. Robot is close food_banana_2045. Robot is close food_cake_2046. Robot is close food_carrot_2047. Robot is no longer close kitchen_counter_129.
+##############################
+From agent.py
+switchoff_executor(fridge_140)
+Robot is inside dining_room_1. Robot is close food_cereal_2048. Robot is close food_cheese_2049. Robot is close food_chicken_2050. Robot is close food_dessert_2051. Robot is close food_donut_2052. Robot is close food_egg_2053. Robot is close food_fish_2054. Robot is close food_food_2055. Robot is close food_fruit_2056. Robot is close food_hamburger_2057. Robot is close food_ice_cream_2058. Robot is close food_jam_2059. Robot is close fridge_140. Robot is close food_kiwi_2060. Robot is close food_lemon_2061. Robot is close food_noodles_2062. Robot is close food_oatmeal_2063. Robot is close food_peanut_butter_2064. Robot is close food_pizza_2065. Robot is close food_potato_2066. Robot is close food_rice_2067. Robot is close food_salt_2068. Robot is close food_snack_2069. Robot is close food_sugar_2070. Robot is close food_turkey_2071. Robot is close food_vegetable_2072. Robot is close dry_pasta_2073. Robot is close milk_2074. Robot is close floor_22. Robot is close sauce_2101. Robot is close food_steak_2042. Robot is close food_apple_2043. Robot is close food_bacon_2044. Robot is close food_banana_2045. Robot is close food_cake_2046. Robot is close food_carrot_2047. 
+##############################
+From agent.py
+open_executor(fridge_140)
+Robot is inside dining_room_1. Robot is close food_cereal_2048. Robot is close food_cheese_2049. Robot is close food_chicken_2050. Robot is close food_dessert_2051. Robot is close food_donut_2052. Robot is close food_egg_2053. Robot is close food_fish_2054. Robot is close food_food_2055. Robot is close food_fruit_2056. Robot is close food_hamburger_2057. Robot is close food_ice_cream_2058. Robot is close food_jam_2059. Robot is close fridge_140. Robot is close food_kiwi_2060. Robot is close food_lemon_2061. Robot is close food_noodles_2062. Robot is close food_oatmeal_2063. Robot is close food_peanut_butter_2064. Robot is close food_pizza_2065. Robot is close food_potato_2066. Robot is close food_rice_2067. Robot is close food_salt_2068. Robot is close food_snack_2069. Robot is close food_sugar_2070. Robot is close food_turkey_2071. Robot is close food_vegetable_2072. Robot is close dry_pasta_2073. Robot is close milk_2074. Robot is close floor_22. Robot is close sauce_2101. Robot is close food_steak_2042. Robot is close food_apple_2043. Robot is close food_bacon_2044. Robot is close food_banana_2045. Robot is close food_cake_2046. Robot is close food_carrot_2047. 
+##############################
+From agent.py
+exp(food_bacon_2044, fridge_140)
+Find food_bacon_2044. 
+##############################
+From agent.py-> find a plan in act()
+grab_executor(food_bacon_2044)walk_executor(fryingpan_2107)put_executor(food_bacon_2044, fryingpan_2107)walk_executor(oil_2102)grab_executor(oil_2102)walk_executor(fryingpan_2107)put_executor(oil_2102, fryingpan_2107)
+##############################
+From agent.py
+grab_executor(food_bacon_2044)
+Robot is inside dining_room_1. Robot is close food_cereal_2048. Robot is close food_cheese_2049. Robot is close food_chicken_2050. Robot is close food_dessert_2051. Robot is close food_donut_2052. Robot is close food_egg_2053. Robot is close food_fish_2054. Robot is close food_food_2055. Robot is close food_fruit_2056. Robot is close food_hamburger_2057. Robot is close food_ice_cream_2058. Robot is close food_jam_2059. Robot is close fridge_140. Robot is close food_kiwi_2060. Robot is close food_lemon_2061. Robot is close food_noodles_2062. Robot is close food_oatmeal_2063. Robot is close food_peanut_butter_2064. Robot is close food_pizza_2065. Robot is close food_potato_2066. Robot is close food_rice_2067. Robot is close food_salt_2068. Robot is close food_snack_2069. Robot is close food_sugar_2070. Robot is close food_turkey_2071. Robot is close food_vegetable_2072. Robot is close dry_pasta_2073. Robot is close milk_2074. Robot is close floor_22. Robot is close sauce_2101. Robot is close food_steak_2042. Robot is close food_apple_2043. Robot is close food_bacon_2044. Robot is close food_banana_2045. Robot is close food_cake_2046. Robot is close food_carrot_2047. Grabbing food_bacon_2044 by right hand. 
+##############################
+From agent.py
+walk_executor(fryingpan_2107)
+Robot is inside dining_room_1. Robot is close food_bacon_2044. Robot is close kitchen_counter_129. Robot is close fryingpan_2107. Robot is no longer close food_cereal_2048.Robot is no longer close food_cheese_2049.Robot is no longer close food_chicken_2050.Robot is no longer close food_dessert_2051.Robot is no longer close food_donut_2052.Robot is no longer close food_egg_2053.Robot is no longer close food_fish_2054.Robot is no longer close food_food_2055.Robot is no longer close food_fruit_2056.Robot is no longer close food_hamburger_2057.Robot is no longer close food_ice_cream_2058.Robot is no longer close food_jam_2059.Robot is no longer close food_kiwi_2060.Robot is no longer close food_lemon_2061.Robot is no longer close food_noodles_2062.Robot is no longer close food_oatmeal_2063.Robot is no longer close food_peanut_butter_2064.Robot is no longer close food_pizza_2065.Robot is no longer close food_potato_2066.Robot is no longer close food_rice_2067.Robot is no longer close food_salt_2068.Robot is no longer close food_snack_2069.Robot is no longer close food_sugar_2070.Robot is no longer close food_turkey_2071.Robot is no longer close food_vegetable_2072.Robot is no longer close dry_pasta_2073.Robot is no longer close milk_2074.Robot is no longer close floor_22.Robot is no longer close sauce_2101.Robot is no longer close fridge_140.Robot is no longer close food_steak_2042.Robot is no longer close food_apple_2043.Robot is no longer close food_banana_2045.Robot is no longer close food_cake_2046.Robot is no longer close food_carrot_2047.
+##############################
+From agent.py
+put_executor(food_bacon_2044, fryingpan_2107)
+Robot is inside dining_room_1. Robot is close food_bacon_2044. Robot is close kitchen_counter_129. Robot is close fryingpan_2107. food_bacon_2044 released by right hand. 
+##############################
+From agent.py
+walk_executor(oil_2102)
+Robot is inside dining_room_1. Robot is close kitchen_counter_129. Robot is close oil_2102. Robot is no longer close fryingpan_2107.Robot is no longer close food_bacon_2044.
+##############################
+From agent.py
+grab_executor(oil_2102)
+Robot is inside dining_room_1. Robot is close kitchen_counter_129. Robot is close oil_2102. Grabbing oil_2102 by right hand. 
+##############################
+From agent.py
+walk_executor(fryingpan_2107)
+Robot is inside dining_room_1. Robot is close kitchen_counter_129. Robot is close oil_2102. Robot is close fryingpan_2107. 
+##############################
+From agent.py
+put_executor(oil_2102, fryingpan_2107)
+Robot is inside dining_room_1. Robot is close kitchen_counter_129. Robot is close oil_2102. Robot is close fryingpan_2107. oil_2102 released by right hand. 
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_clothes_scarf_2079_around_home_office_161(clothes_scarf:item):
+    goal: not unknown(clothes_scarf)
+    body:
+        assert is_clothes_scarf(clothes_scarf)
+        bind home_office_instance:item where:
+            is_home_office(home_office_instance) and id[home_office_instance]==161
+        achieve close_char(char,home_office_instance)
+        if can_open(home_office_instance):
+            achieve_once open(home_office_instance)
+            exp(clothes_scarf,home_office_instance)
+        else:
+            exp(clothes_scarf,home_office_instance)
+    eff:
+        unknown[clothes_scarf]=False
+        close[clothes_scarf,home_office_instance]=True
+        close[home_office_instance,clothes_scarf]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior place_pan_on_stove(pan:item, stove:item):
+    body:
+        achieve on(pan, stove)
+        # Place the pan on the stove
+
+behavior turn_on_stove(stove:item):
+    body:
+        achieve is_on(stove)
+        # Turn on the stove
+
+behavior __goal__():
+    body:
+        bind stove: item where:
+            is_stove(stove)
+        # Select the stove instance
+
+        bind pan: item where:
+            is_fryingpan(pan)
+        # Select the frying pan instance
+
+        place_pan_on_stove(pan, stove)
+        # Execute the behavior to place the pan on the stove
+
+        turn_on_stove(stove)
+        # Execute the behavior to turn on the stove
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+behavior place_pan_on_stove(pan:item, stove:item):
+    body:
+        achieve on(pan, stove)
+        # Place the pan on the stove
+
+behavior turn_on_stove(stove:item):
+    body:
+        achieve is_on(stove)
+        # Turn on the stove
+
+behavior __goal__():
+    body:
+        bind stove: item where:
+            is_stove(stove)
+        # Select the stove instance
+
+        bind pan: item where:
+            is_fryingpan(pan)
+        # Select the frying pan instance
+
+        place_pan_on_stove(pan, stove)
+        # Execute the behavior to place the pan on the stove
+
+        turn_on_stove(stove)
+        # Execute the behavior to turn on the stove
+
+##############################
+From agent.py-> find a plan in act()
+grab_executor(fryingpan_2107)walk_executor(stove_2090)put_executor(fryingpan_2107, stove_2090)switchon_executor(stove_2090)
+##############################
+From agent.py
+grab_executor(fryingpan_2107)
+Robot is inside dining_room_1. Robot is close kitchen_counter_129. Robot is close oil_2102. Robot is close fryingpan_2107. Grabbing fryingpan_2107 by right hand. 
+##############################
+From agent.py
+walk_executor(stove_2090)
+Robot is inside dining_room_1. Robot is close kitchen_counter_129. Robot is close fryingpan_2107. Robot is close stove_2090. Robot is no longer close oil_2102.
+##############################
+From agent.py
+put_executor(fryingpan_2107, stove_2090)
+Robot is inside dining_room_1. Robot is close kitchen_counter_129. Robot is close fryingpan_2107. Robot is close stove_2090. fryingpan_2107 released by right hand. 
+##############################
+From agent.py
+switchon_executor(stove_2090)
+Robot is inside dining_room_1. Robot is close kitchen_counter_129. Robot is close fryingpan_2107. Robot is close stove_2090. 
+##############################

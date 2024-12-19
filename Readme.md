@@ -6,6 +6,7 @@
 
 # Debug:
 - [ ] Name Conflict while planning (obj_name_cdl==instance_name)
+- [ ] Annotation for has_water "or"->"+" 
 
 
 

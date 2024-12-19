@@ -1,0 +1,450 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['Cook the bacon.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_bacon_2044_around_fridge_140(food_bacon:item):
+    goal: not unknown(food_bacon)
+    body:
+        assert is_food_bacon(food_bacon)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==140
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_bacon,fridge_instance)
+        else:
+            exp(food_bacon,fridge_instance)
+    eff:
+        unknown[food_bacon]=False
+        close[food_bacon,fridge_instance]=True
+        close[fridge_instance,food_bacon]=True
+    
+
+behavior find_book_2092_around_bookshelf_372(book:item):
+    goal: not unknown(book)
+    body:
+        assert is_book(book)
+        bind bookshelf_instance:item where:
+            is_bookshelf(bookshelf_instance) and id[bookshelf_instance]==372
+        achieve close_char(char,bookshelf_instance)
+        if can_open(bookshelf_instance):
+            achieve_once open(bookshelf_instance)
+            exp(book,bookshelf_instance)
+        else:
+            exp(book,bookshelf_instance)
+    eff:
+        unknown[book]=False
+        close[book,bookshelf_instance]=True
+        close[bookshelf_instance,book]=True
+    
+
+behavior find_fryingpan_2107_around_kitchen_counter_132(fryingpan:item):
+    goal: not unknown(fryingpan)
+    body:
+        assert is_fryingpan(fryingpan)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==132
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(fryingpan,kitchen_counter_instance)
+        else:
+            exp(fryingpan,kitchen_counter_instance)
+    eff:
+        unknown[fryingpan]=False
+        close[fryingpan,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,fryingpan]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior cook_bacon(bacon:item, stove:item, fryingpan:item):
+    body:
+        achieve inside(bacon, fryingpan)
+        # Place the bacon inside the frying pan
+        achieve on(fryingpan, stove)
+        # Place the frying pan on the stove
+        if is_stovefan(stove):
+            bind stovefan: item where:
+                is_stovefan(stovefan) and close(stovefan, stove)
+            achieve_once plugged(stovefan)
+            achieve_once is_on(stovefan)
+            # Turn on the stove fan if available
+
+        achieve is_on(stove)
+        # Turn on the stove to start cooking the bacon
+        
+        achieve is_off(stove)
+        # After the bacon is cooked, turn off the stove
+        
+        if is_stovefan(stove):
+            bind stovefan: item where:
+                is_stovefan(stovefan) and close(stovefan, stove)
+            achieve_once is_off(stovefan)
+            achieve_once unplugged(stovefan)
+            # Turn off and unplug the stove fan if it was used
+
+behavior __goal__():
+    body:
+        bind bacon: item where:
+            is_food_bacon(bacon)
+        # Select the bacon to be cooked
+        bind fryingpan: item where:
+            is_fryingpan(fryingpan)
+        # Select a frying pan
+        bind stove: item where:
+            is_stove(stove)
+        # Select a stove
+        cook_bacon(bacon, stove, fryingpan)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_bacon_2044_around_fridge_140(food_bacon:item):
+    goal: not unknown(food_bacon)
+    body:
+        assert is_food_bacon(food_bacon)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==140
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_bacon,fridge_instance)
+        else:
+            exp(food_bacon,fridge_instance)
+    eff:
+        unknown[food_bacon]=False
+        close[food_bacon,fridge_instance]=True
+        close[fridge_instance,food_bacon]=True
+    
+
+behavior find_book_2091_around_bookshelf_372(book:item):
+    goal: not unknown(book)
+    body:
+        assert is_book(book)
+        bind bookshelf_instance:item where:
+            is_bookshelf(bookshelf_instance) and id[bookshelf_instance]==372
+        achieve close_char(char,bookshelf_instance)
+        if can_open(bookshelf_instance):
+            achieve_once open(bookshelf_instance)
+            exp(book,bookshelf_instance)
+        else:
+            exp(book,bookshelf_instance)
+    eff:
+        unknown[book]=False
+        close[book,bookshelf_instance]=True
+        close[bookshelf_instance,book]=True
+    
+
+behavior find_fryingpan_2107_around_kitchen_counter_132(fryingpan:item):
+    goal: not unknown(fryingpan)
+    body:
+        assert is_fryingpan(fryingpan)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==132
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(fryingpan,kitchen_counter_instance)
+        else:
+            exp(fryingpan,kitchen_counter_instance)
+    eff:
+        unknown[fryingpan]=False
+        close[fryingpan,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,fryingpan]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_stove_ready(stove:item):
+    # Determine if the stove is in a ready state to cook
+    symbol ready=plugged(stove) and is_on(stove)
+    return ready
+
+behavior cook_bacon(bacon:item, frying_pan:item, stove:item):
+    body:
+        achieve on(bacon, frying_pan)
+        achieve on(frying_pan, stove)
+
+behavior monitor_bacon_cooking(bacon:item):
+    body:
+        # Placeholder for the behavior to monitor bacon cooking progress
+
+behavior __goal__():
+    body:
+        bind bacon: item where:
+            is_food_bacon(bacon)
+        # Bind the bacon to cook
+        bind frying_pan: item where:
+            is_fryingpan(frying_pan)
+        # Bind the frying pan to use
+        bind stove: item where:
+            is_stove(stove)
+        # Bind a stove
+        
+        if not is_stove_ready(stove):
+            # If the stove is not ready, ensure it is plugged and turned on
+            achieve plugged(stove)
+            achieve is_on(stove)
+        
+        cook_bacon(bacon, frying_pan, stove)
+        monitor_bacon_cooking(bacon)
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Unexpected token Token('_DEDENT', '') at line 5910, column 10.
+Expected one of: 
+	* _INDENT
+
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_food_bacon_2044_around_fridge_140(food_bacon:item):
+    goal: not unknown(food_bacon)
+    body:
+        assert is_food_bacon(food_bacon)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==140
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_bacon,fridge_instance)
+        else:
+            exp(food_bacon,fridge_instance)
+    eff:
+        unknown[food_bacon]=False
+        close[food_bacon,fridge_instance]=True
+        close[fridge_instance,food_bacon]=True
+    
+
+behavior find_soap_2037_around_bathroom_cabinet_305(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind bathroom_cabinet_instance:item where:
+            is_bathroom_cabinet(bathroom_cabinet_instance) and id[bathroom_cabinet_instance]==305
+        achieve close_char(char,bathroom_cabinet_instance)
+        if can_open(bathroom_cabinet_instance):
+            achieve_once open(bathroom_cabinet_instance)
+            exp(soap,bathroom_cabinet_instance)
+        else:
+            exp(soap,bathroom_cabinet_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,bathroom_cabinet_instance]=True
+        close[bathroom_cabinet_instance,soap]=True
+    
+
+behavior find_book_2091_around_bookshelf_372(book:item):
+    goal: not unknown(book)
+    body:
+        assert is_book(book)
+        bind bookshelf_instance:item where:
+            is_bookshelf(bookshelf_instance) and id[bookshelf_instance]==372
+        achieve close_char(char,bookshelf_instance)
+        if can_open(bookshelf_instance):
+            achieve_once open(bookshelf_instance)
+            exp(book,bookshelf_instance)
+        else:
+            exp(book,bookshelf_instance)
+    eff:
+        unknown[book]=False
+        close[book,bookshelf_instance]=True
+        close[bookshelf_instance,book]=True
+    
+
+behavior find_fryingpan_2107_around_kitchen_counter_132(fryingpan:item):
+    goal: not unknown(fryingpan)
+    body:
+        assert is_fryingpan(fryingpan)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==132
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(fryingpan,kitchen_counter_instance)
+        else:
+            exp(fryingpan,kitchen_counter_instance)
+    eff:
+        unknown[fryingpan]=False
+        close[fryingpan,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,fryingpan]=True
+    
+
+#goal_representation
+ 
+def is_stove_ready(stove:item):
+    # Determine if the stove is in a ready state to cook
+    symbol ready=plugged(stove) and is_on(stove)
+    return ready
+
+behavior cook_bacon(bacon:item, frying_pan:item, stove:item):
+    body:
+        achieve on(bacon, frying_pan)
+        achieve on(frying_pan, stove)
+
+behavior monitor_bacon_cooking(bacon:item):
+    body:
+        # Placeholder for the behavior to monitor bacon cooking progress
+
+behavior __goal__():
+    body:
+        bind bacon: item where:
+            is_food_bacon(bacon)
+        # Bind the bacon to cook
+        bind frying_pan: item where:
+            is_fryingpan(frying_pan)
+        # Bind the frying pan to use
+        bind stove: item where:
+            is_stove(stove)
+        # Bind a stove
+        
+        if not is_stove_ready(stove):
+            # If the stove is not ready, ensure it is plugged and turned on
+            achieve plugged(stove)
+            achieve is_on(stove)
+        
+        cook_bacon(bacon, frying_pan, stove)
+        monitor_bacon_cooking(bacon)
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Unexpected token Token('_DEDENT', '') at line 5928, column 10.
+Expected one of: 
+	* _INDENT
+
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_food_bacon_2044_around_fridge_140(food_bacon:item):
+    goal: not unknown(food_bacon)
+    body:
+        assert is_food_bacon(food_bacon)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==140
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_bacon,fridge_instance)
+        else:
+            exp(food_bacon,fridge_instance)
+    eff:
+        unknown[food_bacon]=False
+        close[food_bacon,fridge_instance]=True
+        close[fridge_instance,food_bacon]=True
+    
+
+behavior find_soap_2038_around_bathroom_cabinet_305(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind bathroom_cabinet_instance:item where:
+            is_bathroom_cabinet(bathroom_cabinet_instance) and id[bathroom_cabinet_instance]==305
+        achieve close_char(char,bathroom_cabinet_instance)
+        if can_open(bathroom_cabinet_instance):
+            achieve_once open(bathroom_cabinet_instance)
+            exp(soap,bathroom_cabinet_instance)
+        else:
+            exp(soap,bathroom_cabinet_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,bathroom_cabinet_instance]=True
+        close[bathroom_cabinet_instance,soap]=True
+    
+
+behavior find_book_2092_around_bookshelf_372(book:item):
+    goal: not unknown(book)
+    body:
+        assert is_book(book)
+        bind bookshelf_instance:item where:
+            is_bookshelf(bookshelf_instance) and id[bookshelf_instance]==372
+        achieve close_char(char,bookshelf_instance)
+        if can_open(bookshelf_instance):
+            achieve_once open(bookshelf_instance)
+            exp(book,bookshelf_instance)
+        else:
+            exp(book,bookshelf_instance)
+    eff:
+        unknown[book]=False
+        close[book,bookshelf_instance]=True
+        close[bookshelf_instance,book]=True
+    
+
+behavior find_fryingpan_2107_around_kitchen_counter_132(fryingpan:item):
+    goal: not unknown(fryingpan)
+    body:
+        assert is_fryingpan(fryingpan)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==132
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(fryingpan,kitchen_counter_instance)
+        else:
+            exp(fryingpan,kitchen_counter_instance)
+    eff:
+        unknown[fryingpan]=False
+        close[fryingpan,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,fryingpan]=True
+    
+
+#goal_representation
+ 
+def is_stove_ready(stove:item):
+    # Determine if the stove is in a ready state to cook
+    symbol ready=plugged(stove) and is_on(stove)
+    return ready
+
+behavior cook_bacon(bacon:item, frying_pan:item, stove:item):
+    body:
+        achieve on(bacon, frying_pan)
+        achieve on(frying_pan, stove)
+
+behavior monitor_bacon_cooking(bacon:item):
+    body:
+        # Placeholder for the behavior to monitor bacon cooking progress
+
+behavior __goal__():
+    body:
+        bind bacon: item where:
+            is_food_bacon(bacon)
+        # Bind the bacon to cook
+        bind frying_pan: item where:
+            is_fryingpan(frying_pan)
+        # Bind the frying pan to use
+        bind stove: item where:
+            is_stove(stove)
+        # Bind a stove
+        
+        if not is_stove_ready(stove):
+            # If the stove is not ready, ensure it is plugged and turned on
+            achieve plugged(stove)
+            achieve is_on(stove)
+        
+        cook_bacon(bacon, frying_pan, stove)
+        monitor_bacon_cooking(bacon)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+Failed to generate the goal representation
+##############################

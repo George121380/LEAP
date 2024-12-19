@@ -23,6 +23,7 @@ def remove_special_characters(input_string):
     remove_s = re.sub(pattern, r'\1"\2"\3', remove_s)
     remove_s=remove_s.replace("plaintext","")
     remove_s=remove_s.replace("'''","")
+    remove_s.replace(' achieve once ',' achieve_once ')
     return remove_s
 
 def refinement_operation(goal_int:str,correct_times_limit:int,state_file:str,execute_file:str,current_subgoal:str,add_info:str,long_horizon_goal:str,prev_sub_goal_list:list,classes,checked_items,behavior_from_library,partial_observation=True, agent_type="Planning", refinement=True,loop_feedback=False,logger=None):
@@ -128,7 +129,7 @@ def VH_pipeline(state_file:str,execute_file:str,current_subgoal:str,add_info:str
         goal_int=goal_interpretation(current_subgoal,add_info,long_horizon_goal,classes,prev_sub_goal_list,behavior_from_library, agent_type)
         goal_int=remove_special_characters(goal_int)
 
-        if refinement and correct_time<correct_times_limit:
+        if correct_time<correct_times_limit:
             correct_time+=1
             plan,goal_int,exploration_content=refinement_operation(goal_int,correct_times_limit,state_file,execute_file,current_subgoal,add_info,long_horizon_goal,prev_sub_goal_list,classes,checked_items,behavior_from_library,partial_observation, agent_type, refinement,loop_feedback,logger)
             if plan is not None:

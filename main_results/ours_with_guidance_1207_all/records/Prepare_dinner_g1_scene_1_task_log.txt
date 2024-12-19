@@ -1,0 +1,382 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['Boil the rice in a pot.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_rice_2108_around_cupboard_118(food_rice:item):
+    goal: not unknown(food_rice)
+    body:
+        assert is_food_rice(food_rice)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==118
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(food_rice,cupboard_instance)
+        else:
+            exp(food_rice,cupboard_instance)
+    eff:
+        unknown[food_rice]=False
+        close[food_rice,cupboard_instance]=True
+        close[cupboard_instance,food_rice]=True
+    
+
+behavior find_pot_2040_around_cupboard_118(pot:item):
+    goal: not unknown(pot)
+    body:
+        assert is_pot(pot)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==118
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(pot,cupboard_instance)
+        else:
+            exp(pot,cupboard_instance)
+    eff:
+        unknown[pot]=False
+        close[pot,cupboard_instance]=True
+        close[cupboard_instance,pot]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def pot_on_stove(pot: item, stove: item):
+    symbol pot_on_stove = on(pot, stove)
+    return pot_on_stove
+
+behavior fill_pot_with_water(pot: item, sink: item):
+    body:
+        achieve_once inside(pot, sink)
+        # Place the pot inside the sink
+
+        if has_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_on(faucet)
+            # Turn on the faucet to fill the pot with water
+
+        achieve has_water(pot)
+        # Ensure the pot is filled with water
+
+        if has_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_off(faucet)
+            # Turn off the faucet after filling the pot
+
+behavior place_pot_on_stove(pot:item, stove:item):
+    body:
+        achieve on(pot, stove)
+        # Place the pot on the stove
+
+behavior start_stove(stove:item):
+    body:
+        achieve is_on(stove)
+        # Turn on the stove to start boiling
+
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot)
+        # Select an instance of a pot
+
+        bind sink: item where:
+            is_sink(sink)
+        # Select an instance of a sink
+
+        bind stove: item where:
+            is_stove(stove)
+        # Select the stove
+
+        fill_pot_with_water(pot, sink)
+        # Fill the pot with water
+
+        if not pot_on_stove(pot, stove):
+            place_pot_on_stove(pot, stove)
+        # Place the pot on the stove
+
+        start_stove(stove)
+        # Turn on the stove to boil the water
+  
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "behavior_definition":
+
+'Function has_faucet not found. Note that recursive function calls are not supported in the current version.'
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_food_rice_2108_around_cupboard_118(food_rice:item):
+    goal: not unknown(food_rice)
+    body:
+        assert is_food_rice(food_rice)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==118
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(food_rice,cupboard_instance)
+        else:
+            exp(food_rice,cupboard_instance)
+    eff:
+        unknown[food_rice]=False
+        close[food_rice,cupboard_instance]=True
+        close[cupboard_instance,food_rice]=True
+    
+
+behavior find_pot_2138_around_cupboard_118(pot:item):
+    goal: not unknown(pot)
+    body:
+        assert is_pot(pot)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==118
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(pot,cupboard_instance)
+        else:
+            exp(pot,cupboard_instance)
+    eff:
+        unknown[pot]=False
+        close[pot,cupboard_instance]=True
+        close[cupboard_instance,pot]=True
+    
+
+#goal_representation
+ 
+def has_faucet(sink:item):
+    # Determine whether this sink has a faucet
+    symbol has_faucet=exists faucet: item : is_faucet(faucet) and close(faucet, sink)
+    return has_faucet
+
+behavior fill_pot_with_water(pot: item, sink: item):
+    body:
+        achieve_once inside(pot, sink)
+        # Place the pot inside the sink
+
+        if has_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_on(faucet)
+            # Turn on the faucet to fill the pot with water
+
+        achieve has_water(pot)
+        # Ensure the pot is filled with water
+
+        if has_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_off(faucet)
+            # Turn off the faucet after filling the pot
+
+behavior place_pot_on_stove(pot:item, stove:item):
+    body:
+        achieve on(pot, stove)
+        # Place the pot on the stove
+
+behavior start_stove(stove:item):
+    body:
+        achieve is_on(stove)
+        # Turn on the stove to start boiling
+
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot)
+        # Select an instance of a pot
+
+        bind sink: item where:
+            is_sink(sink)
+        # Select an instance of a sink
+
+        bind stove: item where:
+            is_stove(stove)
+        # Select the stove
+
+        fill_pot_with_water(pot, sink)
+        # Fill the pot with water
+
+        if not on(pot, stove):
+            place_pot_on_stove(pot, stove)
+        # Place the pot on the stove
+
+        start_stove(stove)
+        # Turn on the stove to boil the water
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+ 
+def has_faucet(sink:item):
+    # Determine whether this sink has a faucet
+    symbol has_faucet=exists faucet: item : is_faucet(faucet) and close(faucet, sink)
+    return has_faucet
+
+behavior fill_pot_with_water(pot: item, sink: item):
+    body:
+        achieve_once inside(pot, sink)
+        # Place the pot inside the sink
+
+        if has_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_on(faucet)
+            # Turn on the faucet to fill the pot with water
+
+        achieve has_water(pot)
+        # Ensure the pot is filled with water
+
+        if has_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_off(faucet)
+            # Turn off the faucet after filling the pot
+
+behavior place_pot_on_stove(pot:item, stove:item):
+    body:
+        achieve on(pot, stove)
+        # Place the pot on the stove
+
+behavior start_stove(stove:item):
+    body:
+        achieve is_on(stove)
+        # Turn on the stove to start boiling
+
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot)
+        # Select an instance of a pot
+
+        bind sink: item where:
+            is_sink(sink)
+        # Select an instance of a sink
+
+        bind stove: item where:
+            is_stove(stove)
+        # Select the stove
+
+        fill_pot_with_water(pot, sink)
+        # Fill the pot with water
+
+        if not on(pot, stove):
+            place_pot_on_stove(pot, stove)
+        # Place the pot on the stove
+
+        start_stove(stove)
+        # Turn on the stove to boil the water
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(cupboard_118)open_executor(cupboard_118)exp(pot_2138, cupboard_118)walk_executor(pot_2138)grab_executor(pot_2138)walk_executor(sink_19)putin_executor(pot_2138, sink_19)walk_executor(faucet_20)switchon_executor(faucet_20)walk_executor(pot_2138)grab_executor(pot_2138)walk_executor(faucet_20)switchoff_executor(faucet_20)walk_executor(stove_2135)put_executor(pot_2138, stove_2135)switchon_executor(stove_2135)
+##############################
+From agent.py
+walk_executor(cupboard_118)
+Find tea_2066. Find knife_2037. Find food_peanut_butter_2077. Find tray_128. Find pot_78. Robot is inside dining_room_41. Robot is close wall_68. Robot is close tea_2066. Robot is close knife_2037. Robot is close cupboard_118. Robot is close food_peanut_butter_2077. 
+##############################
+From agent.py
+open_executor(cupboard_118)
+Robot is inside dining_room_41. Robot is close wall_68. Robot is close tea_2066. Robot is close knife_2037. Robot is close cupboard_118. Robot is close food_peanut_butter_2077. 
+##############################
+From agent.py
+exp(pot_2138, cupboard_118)
+Fail to find pot_2138 around cupboard_118. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(cupboard_117)exp(pot_2138, cupboard_117)walk_executor(pot_2138)grab_executor(pot_2138)walk_executor(sink_19)putin_executor(pot_2138, sink_19)walk_executor(faucet_20)switchon_executor(faucet_20)walk_executor(pot_2138)grab_executor(pot_2138)walk_executor(faucet_20)switchoff_executor(faucet_20)walk_executor(stove_2135)put_executor(pot_2138, stove_2135)switchon_executor(stove_2135)
+##############################
+From agent.py
+walk_executor(cupboard_117)
+Find coffee_filter_2053. Robot is inside dining_room_41. Robot is close coffee_filter_2053. Robot is close wall_67. Robot is close cupboard_117. Robot is no longer close wall_68.Robot is no longer close tea_2066.Robot is no longer close knife_2037.Robot is no longer close cupboard_118.Robot is no longer close food_peanut_butter_2077.
+##############################
+From agent.py
+exp(pot_2138, cupboard_117)
+Fail to find pot_2138 around cupboard_117. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(kitchen_counter_123)exp(pot_2138, kitchen_counter_123)walk_executor(pot_2138)grab_executor(pot_2138)walk_executor(sink_19)putin_executor(pot_2138, sink_19)walk_executor(faucet_20)switchon_executor(faucet_20)walk_executor(pot_2138)grab_executor(pot_2138)walk_executor(faucet_20)switchoff_executor(faucet_20)walk_executor(stove_2135)put_executor(pot_2138, stove_2135)switchon_executor(stove_2135)
+##############################
+From agent.py
+walk_executor(kitchen_counter_123)
+Find oil_2149. Find knife_2035. Find food_kiwi_2054. Find food_orange_2027. Find tray_2068. Robot is inside dining_room_41. Robot is close kitchen_counter_123. Robot is close floor_45. Robot is no longer close coffee_filter_2053.Robot is no longer close wall_67.Robot is no longer close cupboard_117.
+##############################
+From agent.py
+exp(pot_2138, kitchen_counter_123)
+Fail to find pot_2138 around kitchen_counter_123. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(kitchen_counter_119)exp(pot_2138, kitchen_counter_119)walk_executor(pot_2138)grab_executor(pot_2138)walk_executor(sink_19)putin_executor(pot_2138, sink_19)walk_executor(faucet_20)switchon_executor(faucet_20)walk_executor(pot_2138)grab_executor(pot_2138)walk_executor(faucet_20)switchoff_executor(faucet_20)walk_executor(stove_2135)put_executor(pot_2138, stove_2135)switchon_executor(stove_2135)
+##############################
+From agent.py
+walk_executor(kitchen_counter_119)
+Find pot_2138. Find bowl_2141. Find plate_2152. Find cutting_board_2123. Find food_salt_2041. Find fork_2150. Find bowl_2140. Find bowl_2142. Find fork_2151. Robot is inside dining_room_41. Robot is close kitchen_counter_119. Robot is no longer close kitchen_counter_123.Robot is no longer close floor_45.
+##############################
+From agent.py
+exp(pot_2138, kitchen_counter_119)
+Find pot_2138. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(pot_2138)grab_executor(pot_2138)walk_executor(sink_19)putin_executor(pot_2138, sink_19)walk_executor(faucet_20)switchon_executor(faucet_20)walk_executor(pot_2138)grab_executor(pot_2138)walk_executor(faucet_20)switchoff_executor(faucet_20)walk_executor(stove_2135)put_executor(pot_2138, stove_2135)switchon_executor(stove_2135)
+##############################
+From agent.py
+walk_executor(pot_2138)
+Robot is inside dining_room_41. Robot is close kitchen_counter_119. Robot is close pot_2138. 
+##############################
+From agent.py
+grab_executor(pot_2138)
+Robot is inside dining_room_41. Robot is close kitchen_counter_119. Robot is close pot_2138. Grabbing pot_2138 by right hand. 
+##############################
+From agent.py
+walk_executor(sink_19)
+Find mat_32. Find detergent_2155. Find soap_2125. Find after_shave_2063. Find cleaning_solution_2143. Find drawing_33. Find phone_2029. Robot is inside bathroom_1. Robot is close pot_2138. Robot is close bathroom_counter_18. Robot is close sink_19. Robot is no longer inside dining_room_41.Robot is no longer close kitchen_counter_119.
+##############################
+From agent.py
+putin_executor(pot_2138, sink_19)
+Robot is inside bathroom_1. Robot is close pot_2138. Robot is close bathroom_counter_18. Robot is close sink_19. pot_2138 released by right hand. 
+##############################
+From agent.py
+walk_executor(faucet_20)
+Robot is inside bathroom_1. Robot is close bathroom_counter_18. Robot is close faucet_20. Robot is no longer close sink_19.Robot is no longer close pot_2138.
+##############################
+From agent.py
+switchon_executor(faucet_20)
+Robot is inside bathroom_1. Robot is close bathroom_counter_18. Robot is close faucet_20. 
+##############################
+From agent.py
+walk_executor(pot_2138)
+Robot is inside dining_room_41. Robot is close pot_2138. Robot is close sink_19. Robot is no longer inside bathroom_1.Robot is no longer close bathroom_counter_18.Robot is no longer close faucet_20.
+##############################
+From agent.py
+grab_executor(pot_2138)
+Robot is inside dining_room_41. Robot is close pot_2138. Robot is close sink_19. Grabbing pot_2138 by right hand. 
+##############################
+From agent.py
+walk_executor(faucet_20)
+Robot is inside bathroom_1. Robot is close pot_2138. Robot is close bathroom_counter_18. Robot is close faucet_20. Robot is no longer inside dining_room_41.Robot is no longer close sink_19.
+##############################
+From agent.py
+switchoff_executor(faucet_20)
+Robot is inside bathroom_1. Robot is close pot_2138. Robot is close bathroom_counter_18. Robot is close faucet_20. 
+##############################
+From agent.py
+walk_executor(stove_2135)
+Robot is inside dining_room_41. Robot is close pot_2138. Robot is close kitchen_counter_119. Robot is close stove_2135. Robot is no longer inside bathroom_1.Robot is no longer close bathroom_counter_18.Robot is no longer close faucet_20.
+##############################
+From agent.py
+put_executor(pot_2138, stove_2135)
+Robot is inside dining_room_41. Robot is close pot_2138. Robot is close kitchen_counter_119. Robot is close stove_2135. pot_2138 released by right hand. 
+##############################
+From agent.py
+switchon_executor(stove_2135)
+Robot is inside dining_room_41. Robot is close pot_2138. Robot is close kitchen_counter_119. Robot is close stove_2135. 
+##############################

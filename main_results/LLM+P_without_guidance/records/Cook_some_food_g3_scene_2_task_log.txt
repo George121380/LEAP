@@ -1,0 +1,576 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['Wash all the vegetables, then put them in a pot and boil them on the stove. Then cool them in a bowl.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_food_2055_around_fridge_140(food_food:item):
+    goal: not unknown(food_food)
+    body:
+        assert is_food_food(food_food)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==140
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_food,fridge_instance)
+        else:
+            exp(food_food,fridge_instance)
+    eff:
+        unknown[food_food]=False
+        close[food_food,fridge_instance]=True
+        close[fridge_instance,food_food]=True
+    
+
+behavior find_food_vegetable_2072_around_kitchen_counter_129(food_vegetable:item):
+    goal: not unknown(food_vegetable)
+    body:
+        assert is_food_vegetable(food_vegetable)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==129
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_vegetable,kitchen_counter_instance)
+        else:
+            exp(food_vegetable,kitchen_counter_instance)
+    eff:
+        unknown[food_vegetable]=False
+        close[food_vegetable,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_vegetable]=True
+    
+
+behavior find_bowl_2096_around_cupboard_130(bowl:item):
+    goal: not unknown(bowl)
+    body:
+        assert is_bowl(bowl)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==130
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(bowl,cupboard_instance)
+        else:
+            exp(bowl,cupboard_instance)
+    eff:
+        unknown[bowl]=False
+        close[bowl,cupboard_instance]=True
+        close[cupboard_instance,bowl]=True
+    
+
+behavior find_food_carrot_2047_around_fridge_140(food_carrot:item):
+    goal: not unknown(food_carrot)
+    body:
+        assert is_food_carrot(food_carrot)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==140
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_carrot,fridge_instance)
+        else:
+            exp(food_carrot,fridge_instance)
+    eff:
+        unknown[food_carrot]=False
+        close[food_carrot,fridge_instance]=True
+        close[fridge_instance,food_carrot]=True
+    
+
+behavior find_pot_54_around_cupboard_130(pot:item):
+    goal: not unknown(pot)
+    body:
+        assert is_pot(pot)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==130
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(pot,cupboard_instance)
+        else:
+            exp(pot,cupboard_instance)
+    eff:
+        unknown[pot]=False
+        close[pot,cupboard_instance]=True
+        close[cupboard_instance,pot]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior wash_vegetables(vegetable: item, sink: item):
+    body:
+        achieve inside(vegetable, sink)
+        # Place the vegetable inside the sink
+
+        wash(vegetable)
+        # Wash the vegetable
+
+behavior place_vegetables_in_pot(vegetable: item, pot: item):
+    body:
+        achieve inside(vegetable, pot)
+        # Place the vegetables inside the pot
+
+behavior fill_pot_with_water(pot: item):
+    body:
+        achieve has_water(pot)
+        # Ensure the pot is filled with water
+
+behavior place_pot_on_stove(pot: item, stove: item):
+    body:
+        achieve on(pot, stove)
+        # Place the pot on the stove
+
+behavior turn_on_stove(stove: item):
+    body:
+        achieve is_on(stove)
+        # Turn on the stove to boil the water
+
+behavior cool_vegetables_in_bowl(vegetable: item, bowl: item):
+    body:
+        achieve inside(vegetable, bowl)
+        # Place the boiled vegetables in a bowl to cool
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink)
+        # Select a sink
+
+        foreach vegetable: item:
+            if is_food_vegetable(vegetable):
+                wash_vegetables(vegetable, sink)
+                
+        bind pot: item where:
+            is_pot(pot)
+        # Select a pot
+
+        bind stove: item where:
+            is_stove(stove)
+        # Select a stove
+
+        foreach vegetable: item:
+            if is_food_vegetable(vegetable) and not inside(vegetable, pot):
+                place_vegetables_in_pot(vegetable, pot)
+
+        fill_pot_with_water(pot)
+        place_pot_on_stove(pot, stove)
+        turn_on_stove(stove)
+        
+        bind bowl: item where:
+            is_bowl(bowl)
+        # Select a bowl
+
+        foreach vegetable: item:
+            if is_food_vegetable(vegetable) and inside(vegetable, pot):
+                cool_vegetables_in_bowl(vegetable, bowl)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+ 
+behavior wash_vegetables(vegetable: item, sink: item):
+    body:
+        achieve inside(vegetable, sink)
+        # Place the vegetable inside the sink
+
+        wash(vegetable)
+        # Wash the vegetable
+
+behavior place_vegetables_in_pot(vegetable: item, pot: item):
+    body:
+        achieve inside(vegetable, pot)
+        # Place the vegetables inside the pot
+
+behavior fill_pot_with_water(pot: item):
+    body:
+        achieve has_water(pot)
+        # Ensure the pot is filled with water
+
+behavior place_pot_on_stove(pot: item, stove: item):
+    body:
+        achieve on(pot, stove)
+        # Place the pot on the stove
+
+behavior turn_on_stove(stove: item):
+    body:
+        achieve is_on(stove)
+        # Turn on the stove to boil the water
+
+behavior cool_vegetables_in_bowl(vegetable: item, bowl: item):
+    body:
+        achieve inside(vegetable, bowl)
+        # Place the boiled vegetables in a bowl to cool
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink)
+        # Select a sink
+
+        foreach vegetable: item:
+            if is_food_vegetable(vegetable):
+                wash_vegetables(vegetable, sink)
+                
+        bind pot: item where:
+            is_pot(pot)
+        # Select a pot
+
+        bind stove: item where:
+            is_stove(stove)
+        # Select a stove
+
+        foreach vegetable: item:
+            if is_food_vegetable(vegetable) and not inside(vegetable, pot):
+                place_vegetables_in_pot(vegetable, pot)
+
+        fill_pot_with_water(pot)
+        place_pot_on_stove(pot, stove)
+        turn_on_stove(stove)
+        
+        bind bowl: item where:
+            is_bowl(bowl)
+        # Select a bowl
+
+        foreach vegetable: item:
+            if is_food_vegetable(vegetable) and inside(vegetable, pot):
+                cool_vegetables_in_bowl(vegetable, bowl)
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(kitchen_counter_129)exp(food_vegetable_2072, kitchen_counter_129)walk_executor(food_vegetable_2072)grab_executor(food_vegetable_2072)walk_executor(sink_133)putin_executor(food_vegetable_2072, sink_133)walk_executor(food_vegetable_2072)wash_executor(food_vegetable_2072)walk_executor(cupboard_130)exp(pot_2093, cupboard_130)walk_executor(pot_2093)open_executor(pot_2093)walk_executor(food_vegetable_2072)grab_executor(food_vegetable_2072)walk_executor(pot_2093)putin_executor(food_vegetable_2072, pot_2093)grab_executor(pot_2093)walk_executor(faucet_134)switchoff_executor(faucet_134)walk_executor(stove_2090)put_executor(pot_2093, stove_2090)switchon_executor(stove_2090)walk_executor(cupboard_130)exp(bowl_2095, cupboard_130)walk_executor(food_vegetable_2072)grab_executor(food_vegetable_2072)walk_executor(bowl_2095)putin_executor(food_vegetable_2072, bowl_2095)
+##############################
+From agent.py
+walk_executor(kitchen_counter_129)
+Find pot_54. Find pot_2093. Find tray_142. Find oil_2102. Find fryingpan_2107. Robot is inside dining_room_1. Robot is close kitchen_counter_129. Robot is no longer inside home_office_161.
+##############################
+From agent.py
+exp(food_vegetable_2072, kitchen_counter_129)
+Fail to find food_vegetable_2072 around kitchen_counter_129. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(kitchen_counter_128)exp(food_vegetable_2072, kitchen_counter_128)walk_executor(food_vegetable_2072)grab_executor(food_vegetable_2072)walk_executor(sink_133)putin_executor(food_vegetable_2072, sink_133)walk_executor(food_vegetable_2072)wash_executor(food_vegetable_2072)walk_executor(pot_2093)open_executor(pot_2093)walk_executor(food_vegetable_2072)grab_executor(food_vegetable_2072)walk_executor(pot_2093)putin_executor(food_vegetable_2072, pot_2093)grab_executor(pot_2093)walk_executor(faucet_134)switchoff_executor(faucet_134)walk_executor(stove_2090)put_executor(pot_2093, stove_2090)switchon_executor(stove_2090)walk_executor(dishwasher_143)open_executor(dishwasher_143)exp(bowl_2095, dishwasher_143)walk_executor(food_vegetable_2072)grab_executor(food_vegetable_2072)walk_executor(bowl_2095)putin_executor(food_vegetable_2072, bowl_2095)
+##############################
+From agent.py
+walk_executor(kitchen_counter_128)
+Find spectacles_2106. Find cutting_board_2080. Find food_orange_2008. Robot is inside dining_room_1. Robot is close kitchen_counter_128. Robot is close floor_15. Robot is no longer close kitchen_counter_129.
+##############################
+From agent.py
+exp(food_vegetable_2072, kitchen_counter_128)
+Fail to find food_vegetable_2072 around kitchen_counter_128. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(kitchen_counter_132)exp(food_vegetable_2072, kitchen_counter_132)walk_executor(food_vegetable_2072)grab_executor(food_vegetable_2072)walk_executor(sink_133)putin_executor(food_vegetable_2072, sink_133)walk_executor(food_vegetable_2072)wash_executor(food_vegetable_2072)walk_executor(pot_2093)open_executor(pot_2093)walk_executor(food_vegetable_2072)grab_executor(food_vegetable_2072)walk_executor(pot_2093)putin_executor(food_vegetable_2072, pot_2093)grab_executor(pot_2093)walk_executor(faucet_134)switchoff_executor(faucet_134)walk_executor(stove_2090)put_executor(pot_2093, stove_2090)switchon_executor(stove_2090)walk_executor(cupboard_130)exp(bowl_2095, cupboard_130)walk_executor(food_vegetable_2072)grab_executor(food_vegetable_2072)walk_executor(bowl_2095)putin_executor(food_vegetable_2072, bowl_2095)
+##############################
+From agent.py
+walk_executor(kitchen_counter_132)
+Robot is inside dining_room_1. Robot is close kitchen_counter_132. Robot is no longer close kitchen_counter_128.Robot is no longer close floor_15.
+##############################
+From agent.py
+exp(food_vegetable_2072, kitchen_counter_132)
+Fail to find food_vegetable_2072 around kitchen_counter_132. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(cupboard_130)exp(food_vegetable_2072, cupboard_130)walk_executor(food_vegetable_2072)grab_executor(food_vegetable_2072)walk_executor(sink_133)putin_executor(food_vegetable_2072, sink_133)walk_executor(food_vegetable_2072)wash_executor(food_vegetable_2072)walk_executor(pot_2093)open_executor(pot_2093)walk_executor(food_vegetable_2072)grab_executor(food_vegetable_2072)walk_executor(pot_2093)putin_executor(food_vegetable_2072, pot_2093)grab_executor(pot_2093)walk_executor(faucet_134)switchoff_executor(faucet_134)walk_executor(stove_2090)put_executor(pot_2093, stove_2090)switchon_executor(stove_2090)walk_executor(cupboard_130)exp(bowl_2095, cupboard_130)walk_executor(food_vegetable_2072)grab_executor(food_vegetable_2072)walk_executor(bowl_2095)putin_executor(food_vegetable_2072, bowl_2095)
+##############################
+From agent.py
+walk_executor(cupboard_130)
+Find blender_2032. Find tea_bag_2017. Robot is inside dining_room_1. Robot is close blender_2032. Robot is close tea_bag_2017. Robot is close cupboard_130. Robot is no longer close kitchen_counter_132.
+##############################
+From agent.py
+exp(food_vegetable_2072, cupboard_130)
+Fail to find food_vegetable_2072 around cupboard_130. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(cupboard_131)open_executor(cupboard_131)exp(food_vegetable_2072, cupboard_131)walk_executor(food_vegetable_2072)grab_executor(food_vegetable_2072)walk_executor(sink_133)putin_executor(food_vegetable_2072, sink_133)walk_executor(food_vegetable_2072)wash_executor(food_vegetable_2072)walk_executor(pot_2093)open_executor(pot_2093)walk_executor(food_vegetable_2072)grab_executor(food_vegetable_2072)walk_executor(pot_2093)putin_executor(food_vegetable_2072, pot_2093)grab_executor(pot_2093)walk_executor(faucet_134)switchoff_executor(faucet_134)walk_executor(stove_2090)put_executor(pot_2093, stove_2090)switchon_executor(stove_2090)walk_executor(cupboard_131)exp(bowl_2095, cupboard_131)walk_executor(food_vegetable_2072)grab_executor(food_vegetable_2072)walk_executor(bowl_2095)putin_executor(food_vegetable_2072, bowl_2095)
+##############################
+From agent.py
+walk_executor(cupboard_131)
+Robot is inside dining_room_1. Robot is close cupboard_131. Robot is no longer close blender_2032.Robot is no longer close tea_bag_2017.Robot is no longer close cupboard_130.
+##############################
+From agent.py
+open_executor(cupboard_131)
+Robot is inside dining_room_1. Robot is close cupboard_131. 
+##############################
+From agent.py
+exp(food_vegetable_2072, cupboard_131)
+Fail to find food_vegetable_2072 around cupboard_131. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(fridge_140)switchoff_executor(fridge_140)open_executor(fridge_140)exp(food_vegetable_2072, fridge_140)walk_executor(food_vegetable_2072)grab_executor(food_vegetable_2072)walk_executor(sink_133)putin_executor(food_vegetable_2072, sink_133)walk_executor(food_vegetable_2072)wash_executor(food_vegetable_2072)walk_executor(pot_2093)open_executor(pot_2093)walk_executor(food_vegetable_2072)grab_executor(food_vegetable_2072)walk_executor(pot_2093)putin_executor(food_vegetable_2072, pot_2093)grab_executor(pot_2093)walk_executor(faucet_134)switchoff_executor(faucet_134)walk_executor(stove_2090)put_executor(pot_2093, stove_2090)switchon_executor(stove_2090)walk_executor(washing_machine_2041)open_executor(washing_machine_2041)exp(bowl_2095, washing_machine_2041)walk_executor(food_vegetable_2072)grab_executor(food_vegetable_2072)walk_executor(bowl_2095)putin_executor(food_vegetable_2072, bowl_2095)
+##############################
+From agent.py
+walk_executor(fridge_140)
+Find food_cereal_2048. Find food_cheese_2049. Find food_chicken_2050. Find food_dessert_2051. Find food_donut_2052. Find food_egg_2053. Find food_fish_2054. Find food_food_2055. Find food_fruit_2056. Find food_hamburger_2057. Find food_ice_cream_2058. Find food_jam_2059. Find food_kiwi_2060. Find food_lemon_2061. Find food_noodles_2062. Find food_oatmeal_2063. Find food_peanut_butter_2064. Find food_pizza_2065. Find food_potato_2066. Find food_rice_2067. Find food_salt_2068. Find food_snack_2069. Find food_sugar_2070. Find food_turkey_2071. Find food_vegetable_2072. Find dry_pasta_2073. Find milk_2074. Find sauce_2101. Find food_steak_2042. Find food_apple_2043. Find food_bacon_2044. Find food_banana_2045. Find food_cake_2046. Find food_carrot_2047. Find chair_138. Robot is inside dining_room_1. Robot is close food_cereal_2048. Robot is close food_cheese_2049. Robot is close food_chicken_2050. Robot is close food_dessert_2051. Robot is close food_donut_2052. Robot is close food_egg_2053. Robot is close food_fish_2054. Robot is close food_food_2055. Robot is close food_fruit_2056. Robot is close food_hamburger_2057. Robot is close food_ice_cream_2058. Robot is close food_jam_2059. Robot is close fridge_140. Robot is close food_kiwi_2060. Robot is close food_lemon_2061. Robot is close food_noodles_2062. Robot is close food_oatmeal_2063. Robot is close food_peanut_butter_2064. Robot is close food_pizza_2065. Robot is close food_potato_2066. Robot is close food_rice_2067. Robot is close food_salt_2068. Robot is close food_snack_2069. Robot is close food_sugar_2070. Robot is close food_turkey_2071. Robot is close food_vegetable_2072. Robot is close dry_pasta_2073. Robot is close milk_2074. Robot is close floor_22. Robot is close sauce_2101. Robot is close food_steak_2042. Robot is close food_apple_2043. Robot is close food_bacon_2044. Robot is close food_banana_2045. Robot is close food_cake_2046. Robot is close food_carrot_2047. Robot is no longer close cupboard_131.
+##############################
+From agent.py
+switchoff_executor(fridge_140)
+Robot is inside dining_room_1. Robot is close food_cereal_2048. Robot is close food_cheese_2049. Robot is close food_chicken_2050. Robot is close food_dessert_2051. Robot is close food_donut_2052. Robot is close food_egg_2053. Robot is close food_fish_2054. Robot is close food_food_2055. Robot is close food_fruit_2056. Robot is close food_hamburger_2057. Robot is close food_ice_cream_2058. Robot is close food_jam_2059. Robot is close fridge_140. Robot is close food_kiwi_2060. Robot is close food_lemon_2061. Robot is close food_noodles_2062. Robot is close food_oatmeal_2063. Robot is close food_peanut_butter_2064. Robot is close food_pizza_2065. Robot is close food_potato_2066. Robot is close food_rice_2067. Robot is close food_salt_2068. Robot is close food_snack_2069. Robot is close food_sugar_2070. Robot is close food_turkey_2071. Robot is close food_vegetable_2072. Robot is close dry_pasta_2073. Robot is close milk_2074. Robot is close floor_22. Robot is close sauce_2101. Robot is close food_steak_2042. Robot is close food_apple_2043. Robot is close food_bacon_2044. Robot is close food_banana_2045. Robot is close food_cake_2046. Robot is close food_carrot_2047. 
+##############################
+From agent.py
+open_executor(fridge_140)
+Robot is inside dining_room_1. Robot is close food_cereal_2048. Robot is close food_cheese_2049. Robot is close food_chicken_2050. Robot is close food_dessert_2051. Robot is close food_donut_2052. Robot is close food_egg_2053. Robot is close food_fish_2054. Robot is close food_food_2055. Robot is close food_fruit_2056. Robot is close food_hamburger_2057. Robot is close food_ice_cream_2058. Robot is close food_jam_2059. Robot is close fridge_140. Robot is close food_kiwi_2060. Robot is close food_lemon_2061. Robot is close food_noodles_2062. Robot is close food_oatmeal_2063. Robot is close food_peanut_butter_2064. Robot is close food_pizza_2065. Robot is close food_potato_2066. Robot is close food_rice_2067. Robot is close food_salt_2068. Robot is close food_snack_2069. Robot is close food_sugar_2070. Robot is close food_turkey_2071. Robot is close food_vegetable_2072. Robot is close dry_pasta_2073. Robot is close milk_2074. Robot is close floor_22. Robot is close sauce_2101. Robot is close food_steak_2042. Robot is close food_apple_2043. Robot is close food_bacon_2044. Robot is close food_banana_2045. Robot is close food_cake_2046. Robot is close food_carrot_2047. 
+##############################
+From agent.py
+exp(food_vegetable_2072, fridge_140)
+Find food_vegetable_2072. 
+##############################
+From agent.py-> find a plan in act()
+grab_executor(food_vegetable_2072)walk_executor(sink_133)putin_executor(food_vegetable_2072, sink_133)walk_executor(food_vegetable_2072)wash_executor(food_vegetable_2072)walk_executor(pot_2093)open_executor(pot_2093)walk_executor(food_vegetable_2072)grab_executor(food_vegetable_2072)walk_executor(pot_2093)putin_executor(food_vegetable_2072, pot_2093)grab_executor(pot_2093)walk_executor(faucet_134)switchoff_executor(faucet_134)walk_executor(stove_2090)put_executor(pot_2093, stove_2090)switchon_executor(stove_2090)walk_executor(washing_machine_2041)open_executor(washing_machine_2041)exp(bowl_2095, washing_machine_2041)walk_executor(food_vegetable_2072)grab_executor(food_vegetable_2072)walk_executor(bowl_2095)putin_executor(food_vegetable_2072, bowl_2095)
+##############################
+From agent.py
+grab_executor(food_vegetable_2072)
+Robot is inside dining_room_1. Robot is close food_cereal_2048. Robot is close food_cheese_2049. Robot is close food_chicken_2050. Robot is close food_dessert_2051. Robot is close food_donut_2052. Robot is close food_egg_2053. Robot is close food_fish_2054. Robot is close food_food_2055. Robot is close food_fruit_2056. Robot is close food_hamburger_2057. Robot is close food_ice_cream_2058. Robot is close food_jam_2059. Robot is close fridge_140. Robot is close food_kiwi_2060. Robot is close food_lemon_2061. Robot is close food_noodles_2062. Robot is close food_oatmeal_2063. Robot is close food_peanut_butter_2064. Robot is close food_pizza_2065. Robot is close food_potato_2066. Robot is close food_rice_2067. Robot is close food_salt_2068. Robot is close food_snack_2069. Robot is close food_sugar_2070. Robot is close food_turkey_2071. Robot is close food_vegetable_2072. Robot is close dry_pasta_2073. Robot is close milk_2074. Robot is close floor_22. Robot is close sauce_2101. Robot is close food_steak_2042. Robot is close food_apple_2043. Robot is close food_bacon_2044. Robot is close food_banana_2045. Robot is close food_cake_2046. Robot is close food_carrot_2047. Grabbing food_vegetable_2072 by right hand. 
+##############################
+From agent.py
+walk_executor(sink_133)
+Find juice_2034. Find after_shave_2029. Find cleaning_solution_2098. Robot is inside dining_room_1. Robot is close food_vegetable_2072. Robot is close kitchen_counter_132. Robot is close sink_133. Robot is no longer close food_cereal_2048.Robot is no longer close food_cheese_2049.Robot is no longer close food_chicken_2050.Robot is no longer close food_dessert_2051.Robot is no longer close food_donut_2052.Robot is no longer close food_egg_2053.Robot is no longer close food_fish_2054.Robot is no longer close food_food_2055.Robot is no longer close food_fruit_2056.Robot is no longer close food_hamburger_2057.Robot is no longer close food_ice_cream_2058.Robot is no longer close food_jam_2059.Robot is no longer close food_kiwi_2060.Robot is no longer close food_lemon_2061.Robot is no longer close food_noodles_2062.Robot is no longer close food_oatmeal_2063.Robot is no longer close food_peanut_butter_2064.Robot is no longer close food_pizza_2065.Robot is no longer close food_potato_2066.Robot is no longer close food_rice_2067.Robot is no longer close food_salt_2068.Robot is no longer close food_snack_2069.Robot is no longer close food_sugar_2070.Robot is no longer close food_turkey_2071.Robot is no longer close dry_pasta_2073.Robot is no longer close milk_2074.Robot is no longer close floor_22.Robot is no longer close sauce_2101.Robot is no longer close fridge_140.Robot is no longer close food_steak_2042.Robot is no longer close food_apple_2043.Robot is no longer close food_bacon_2044.Robot is no longer close food_banana_2045.Robot is no longer close food_cake_2046.Robot is no longer close food_carrot_2047.
+##############################
+From agent.py
+putin_executor(food_vegetable_2072, sink_133)
+Robot is inside dining_room_1. Robot is close food_vegetable_2072. Robot is close kitchen_counter_132. Robot is close sink_133. food_vegetable_2072 released by right hand. 
+##############################
+From agent.py
+walk_executor(food_vegetable_2072)
+Robot is inside dining_room_1. Robot is close food_vegetable_2072. Robot is close sink_133. Robot is no longer close kitchen_counter_132.
+##############################
+From agent.py
+wash_executor(food_vegetable_2072)
+Robot is inside dining_room_1. Robot is close food_vegetable_2072. Robot is close sink_133. 
+##############################
+From agent.py
+walk_executor(pot_2093)
+Robot is inside dining_room_1. Robot is close kitchen_counter_129. Robot is close pot_2093. Robot is no longer close food_vegetable_2072.Robot is no longer close sink_133.
+##############################
+From agent.py
+open_executor(pot_2093)
+Robot is inside dining_room_1. Robot is close kitchen_counter_129. Robot is close pot_2093. 
+##############################
+From agent.py
+walk_executor(food_vegetable_2072)
+Robot is inside dining_room_1. Robot is close food_vegetable_2072. Robot is close sink_133. Robot is no longer close kitchen_counter_129.Robot is no longer close pot_2093.
+##############################
+From agent.py
+grab_executor(food_vegetable_2072)
+Robot is inside dining_room_1. Robot is close food_vegetable_2072. Robot is close sink_133. Grabbing food_vegetable_2072 by right hand. 
+##############################
+From agent.py
+walk_executor(pot_2093)
+Robot is inside dining_room_1. Robot is close food_vegetable_2072. Robot is close kitchen_counter_129. Robot is close pot_2093. Robot is no longer close sink_133.
+##############################
+From agent.py
+putin_executor(food_vegetable_2072, pot_2093)
+Robot is inside dining_room_1. Robot is close food_vegetable_2072. Robot is close kitchen_counter_129. Robot is close pot_2093. food_vegetable_2072 released by right hand. 
+##############################
+From agent.py
+grab_executor(pot_2093)
+Robot is inside dining_room_1. Robot is close food_vegetable_2072. Robot is close kitchen_counter_129. Robot is close pot_2093. Grabbing pot_2093 by right hand. 
+##############################
+From agent.py
+walk_executor(faucet_134)
+Robot is inside dining_room_1. Robot is close pot_2093. Robot is close kitchen_counter_132. Robot is close faucet_134. Robot is no longer close food_vegetable_2072.Robot is no longer close kitchen_counter_129.
+##############################
+From agent.py
+switchoff_executor(faucet_134)
+Robot is inside dining_room_1. Robot is close pot_2093. Robot is close kitchen_counter_132. Robot is close faucet_134. 
+##############################
+From agent.py
+walk_executor(stove_2090)
+Robot is inside dining_room_1. Robot is close pot_2093. Robot is close kitchen_counter_129. Robot is close stove_2090. Robot is no longer close kitchen_counter_132.Robot is no longer close faucet_134.
+##############################
+From agent.py
+put_executor(pot_2093, stove_2090)
+Robot is inside dining_room_1. Robot is close pot_2093. Robot is close kitchen_counter_129. Robot is close stove_2090. pot_2093 released by right hand. 
+##############################
+From agent.py
+switchon_executor(stove_2090)
+Robot is inside dining_room_1. Robot is close pot_2093. Robot is close kitchen_counter_129. Robot is close stove_2090. 
+##############################
+From agent.py
+walk_executor(washing_machine_2041)
+Robot is inside bathroom_265. Robot is close washing_machine_2041. Robot is no longer inside dining_room_1.Robot is no longer close kitchen_counter_129.Robot is no longer close stove_2090.Robot is no longer close pot_2093.
+##############################
+From agent.py
+open_executor(washing_machine_2041)
+Robot is inside bathroom_265. Robot is close washing_machine_2041. 
+##############################
+From agent.py
+Record from func query_LLM_human in agent.py
+Question: Can you help me to find bowl_2095 ?
+Answer: Go to dining_room_1 and locate table_123. You will find bowl_2095 positioned on top of table_123.
+Re-decompose: None
+
+##############################
+From agent.py
+Human Instruction: Go to dining_room_1 and locate table_123. You will find bowl_2095 positioned on top of table_123.
+
+The actions you have taken:
+Action 1: Walk to kitchen_counter_129.
+Action 2: look for food_vegetable_2072 around kitchen_counter_129.
+Action 3: Walk to kitchen_counter_128.
+Action 4: look for food_vegetable_2072 around kitchen_counter_128.
+Action 5: Walk to kitchen_counter_132.
+Action 6: look for food_vegetable_2072 around kitchen_counter_132.
+Action 7: Walk to cupboard_130.
+Action 8: look for food_vegetable_2072 around cupboard_130.
+Action 9: Walk to cupboard_131.
+Action 10: Open cupboard_131.
+Action 11: look for food_vegetable_2072 around cupboard_131.
+Action 12: Walk to fridge_140.
+Action 13: Switch off fridge_140.
+Action 14: Open fridge_140.
+Action 15: look for food_vegetable_2072 around fridge_140.
+Action 16: Grab food_vegetable_2072.
+Action 17: Walk to sink_133.
+Action 18: Put food_vegetable_2072 into sink_133.
+Action 19: Walk to food_vegetable_2072.
+Action 20: Wash food_vegetable_2072.
+Action 21: Walk to pot_2093.
+Action 22: Open pot_2093.
+Action 23: Walk to food_vegetable_2072.
+Action 24: Grab food_vegetable_2072.
+Action 25: Walk to pot_2093.
+Action 26: Put food_vegetable_2072 into pot_2093.
+Action 27: Grab pot_2093.
+Action 28: Walk to faucet_134.
+Action 29: Switch off faucet_134.
+Action 30: Walk to stove_2090.
+Action 31: Put pot_2093 on stove_2090.
+Action 32: Switch on stove_2090.
+Action 33: Walk to washing_machine_2041.
+Action 34: Open washing_machine_2041.
+
+##############################
+From agent.py
+exp(bowl_2095, washing_machine_2041)
+Fail to find bowl_2095 around washing_machine_2041. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(food_vegetable_2072)grab_executor(food_vegetable_2072)walk_executor(sink_133)putin_executor(food_vegetable_2072, sink_133)walk_executor(food_vegetable_2072)wash_executor(food_vegetable_2072)grab_executor(food_vegetable_2072)walk_executor(pot_2093)putin_executor(food_vegetable_2072, pot_2093)grab_executor(pot_2093)walk_executor(faucet_134)switchon_executor(faucet_134)switchoff_executor(faucet_134)walk_executor(stove_2090)put_executor(pot_2093, stove_2090)walk_executor(table_123)exp(bowl_2095, table_123)walk_executor(food_vegetable_2072)grab_executor(food_vegetable_2072)walk_executor(bowl_2095)putin_executor(food_vegetable_2072, bowl_2095)
+##############################
+From agent.py
+walk_executor(food_vegetable_2072)
+Robot is inside dining_room_1. Robot is close food_vegetable_2072. Robot is close pot_2093. Robot is no longer inside bathroom_265.Robot is no longer close washing_machine_2041.
+##############################
+From agent.py
+grab_executor(food_vegetable_2072)
+Robot is inside dining_room_1. Robot is close food_vegetable_2072. Robot is close pot_2093. Grabbing food_vegetable_2072 by right hand. 
+##############################
+From agent.py
+walk_executor(sink_133)
+Robot is inside dining_room_1. Robot is close food_vegetable_2072. Robot is close kitchen_counter_132. Robot is close sink_133. Robot is no longer close pot_2093.
+##############################
+From agent.py
+putin_executor(food_vegetable_2072, sink_133)
+Robot is inside dining_room_1. Robot is close food_vegetable_2072. Robot is close kitchen_counter_132. Robot is close sink_133. food_vegetable_2072 released by right hand. 
+##############################
+From agent.py
+walk_executor(food_vegetable_2072)
+Robot is inside dining_room_1. Robot is close food_vegetable_2072. Robot is close sink_133. Robot is no longer close kitchen_counter_132.
+##############################
+From agent.py
+wash_executor(food_vegetable_2072)
+Robot is inside dining_room_1. Robot is close food_vegetable_2072. Robot is close sink_133. 
+##############################
+From agent.py
+grab_executor(food_vegetable_2072)
+Robot is inside dining_room_1. Robot is close food_vegetable_2072. Robot is close sink_133. Grabbing food_vegetable_2072 by right hand. 
+##############################
+From agent.py
+walk_executor(pot_2093)
+Robot is inside dining_room_1. Robot is close food_vegetable_2072. Robot is close stove_2090. Robot is close pot_2093. Robot is no longer close sink_133.
+##############################
+From agent.py
+putin_executor(food_vegetable_2072, pot_2093)
+Robot is inside dining_room_1. Robot is close food_vegetable_2072. Robot is close stove_2090. Robot is close pot_2093. food_vegetable_2072 released by right hand. 
+##############################
+From agent.py
+grab_executor(pot_2093)
+Robot is inside dining_room_1. Robot is close food_vegetable_2072. Robot is close stove_2090. Robot is close pot_2093. Grabbing pot_2093 by right hand. 
+##############################
+From agent.py
+walk_executor(faucet_134)
+Robot is inside dining_room_1. Robot is close pot_2093. Robot is close kitchen_counter_132. Robot is close faucet_134. Robot is no longer close food_vegetable_2072.Robot is no longer close stove_2090.
+##############################
+From agent.py
+switchon_executor(faucet_134)
+Robot is inside dining_room_1. Robot is close pot_2093. Robot is close kitchen_counter_132. Robot is close faucet_134. 
+##############################
+From agent.py
+switchoff_executor(faucet_134)
+Robot is inside dining_room_1. Robot is close pot_2093. Robot is close kitchen_counter_132. Robot is close faucet_134. 
+##############################
+From agent.py
+walk_executor(stove_2090)
+Robot is inside dining_room_1. Robot is close pot_2093. Robot is close kitchen_counter_129. Robot is close stove_2090. Robot is no longer close kitchen_counter_132.Robot is no longer close faucet_134.
+##############################
+From agent.py
+put_executor(pot_2093, stove_2090)
+Robot is inside dining_room_1. Robot is close pot_2093. Robot is close kitchen_counter_129. Robot is close stove_2090. pot_2093 released by right hand. 
+##############################
+From agent.py
+walk_executor(table_123)
+Find mat_114. Find drawing_118. Find laptop_2015. Find fork_2103. Find bowl_2095. Find cup_2087. Find cup_2088. Find mouse_2003. Find homework_2011. Find shoes_2001. Robot is inside dining_room_1. Robot is close floor_17. Robot is close mat_114. Robot is close table_123. Robot is no longer close kitchen_counter_129.Robot is no longer close stove_2090.Robot is no longer close pot_2093.
+##############################
+From agent.py
+exp(bowl_2095, table_123)
+Find bowl_2095. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(food_vegetable_2072)grab_executor(food_vegetable_2072)walk_executor(sink_133)putin_executor(food_vegetable_2072, sink_133)walk_executor(food_vegetable_2072)wash_executor(food_vegetable_2072)grab_executor(food_vegetable_2072)walk_executor(pot_2093)putin_executor(food_vegetable_2072, pot_2093)walk_executor(food_vegetable_2072)grab_executor(food_vegetable_2072)walk_executor(bowl_2095)putin_executor(food_vegetable_2072, bowl_2095)
+##############################
+From agent.py
+walk_executor(food_vegetable_2072)
+Robot is inside dining_room_1. Robot is close food_vegetable_2072. Robot is close pot_2093. Robot is no longer close floor_17.Robot is no longer close mat_114.Robot is no longer close table_123.
+##############################
+From agent.py
+grab_executor(food_vegetable_2072)
+Robot is inside dining_room_1. Robot is close food_vegetable_2072. Robot is close pot_2093. Grabbing food_vegetable_2072 by right hand. 
+##############################
+From agent.py
+walk_executor(sink_133)
+Robot is inside dining_room_1. Robot is close food_vegetable_2072. Robot is close kitchen_counter_132. Robot is close sink_133. Robot is no longer close pot_2093.
+##############################
+From agent.py
+putin_executor(food_vegetable_2072, sink_133)
+Robot is inside dining_room_1. Robot is close food_vegetable_2072. Robot is close kitchen_counter_132. Robot is close sink_133. food_vegetable_2072 released by right hand. 
+##############################
+From agent.py
+walk_executor(food_vegetable_2072)
+Robot is inside dining_room_1. Robot is close food_vegetable_2072. Robot is close sink_133. Robot is no longer close kitchen_counter_132.
+##############################
+From agent.py
+wash_executor(food_vegetable_2072)
+Robot is inside dining_room_1. Robot is close food_vegetable_2072. Robot is close sink_133. 
+##############################
+From agent.py
+grab_executor(food_vegetable_2072)
+Robot is inside dining_room_1. Robot is close food_vegetable_2072. Robot is close sink_133. Grabbing food_vegetable_2072 by right hand. 
+##############################
+From agent.py
+walk_executor(pot_2093)
+Robot is inside dining_room_1. Robot is close food_vegetable_2072. Robot is close stove_2090. Robot is close pot_2093. Robot is no longer close sink_133.
+##############################
+From agent.py
+putin_executor(food_vegetable_2072, pot_2093)
+Robot is inside dining_room_1. Robot is close food_vegetable_2072. Robot is close stove_2090. Robot is close pot_2093. food_vegetable_2072 released by right hand. 
+##############################
+From agent.py
+walk_executor(food_vegetable_2072)
+Robot is inside dining_room_1. Robot is close food_vegetable_2072. Robot is close pot_2093. Robot is no longer close stove_2090.
+##############################
+From agent.py
+grab_executor(food_vegetable_2072)
+Robot is inside dining_room_1. Robot is close food_vegetable_2072. Robot is close pot_2093. Grabbing food_vegetable_2072 by right hand. 
+##############################
+From agent.py
+walk_executor(bowl_2095)
+Robot is inside dining_room_1. Robot is close food_vegetable_2072. Robot is close table_123. Robot is close bowl_2095. Robot is no longer close pot_2093.
+##############################
+From agent.py
+putin_executor(food_vegetable_2072, bowl_2095)
+Robot is inside dining_room_1. Robot is close food_vegetable_2072. Robot is close table_123. Robot is close bowl_2095. food_vegetable_2072 released by right hand. 
+##############################

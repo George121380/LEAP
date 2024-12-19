@@ -1,0 +1,148 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['Turn on the TV with the remote control.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_remote_control_2052_around_television_248(remote_control:item):
+    goal: not unknown(remote_control)
+    body:
+        assert is_remote_control(remote_control)
+        bind television_instance:item where:
+            is_television(television_instance) and id[television_instance]==248
+        achieve close_char(char,television_instance)
+        if can_open(television_instance):
+            achieve_once open(television_instance)
+            exp(remote_control,television_instance)
+        else:
+            exp(remote_control,television_instance)
+    eff:
+        unknown[remote_control]=False
+        close[remote_control,television_instance]=True
+        close[television_instance,remote_control]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior use_remote_to_turn_on_tv(tv:item, remote_control:item):
+    body:
+        achieve is_on(tv)
+
+behavior __goal__():
+    body:
+        bind tv: item where:
+            is_television(tv)
+        # Select the television
+        
+        bind remote_control: item where:
+            is_remote_control(remote_control)
+        # Select the remote control
+        
+        use_remote_to_turn_on_tv(tv, remote_control)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+ 
+behavior use_remote_to_turn_on_tv(tv:item, remote_control:item):
+    body:
+        achieve is_on(tv)
+
+behavior __goal__():
+    body:
+        bind tv: item where:
+            is_television(tv)
+        # Select the television
+        
+        bind remote_control: item where:
+            is_remote_control(remote_control)
+        # Select the remote control
+        
+        use_remote_to_turn_on_tv(tv, remote_control)
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(television_248)switchon_executor(television_248)
+##############################
+From agent.py
+walk_executor(television_248)
+Find mat_236. Find drawing_241. Find drawing_242. Find drawing_243. Find phone_247. Find cd_2075. Find cd_player_2060. Find wall_clock_249. Robot is inside dining_room_201. Robot is close television_248. Robot is close tvstand_225. Robot is no longer inside bathroom_1.
+##############################
+From agent.py
+switchon_executor(television_248)
+Robot is inside dining_room_201. Robot is close television_248. Robot is close tvstand_225. 
+##############################
+From agent.py
+Human Instruction: You need to locate and use the remote control to turn on the television, as switching on the TV directly does not fulfill the goal of turning it on with the remote control.
+
+The actions you have taken:
+Action 1: Walk to television_248.
+Action 2: Switch on television_248.
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_remote_control_2052_around_tvstand_353(remote_control:item):
+    goal: not unknown(remote_control)
+    body:
+        assert is_remote_control(remote_control)
+        bind tvstand_instance:item where:
+            is_tvstand(tvstand_instance) and id[tvstand_instance]==353
+        achieve close_char(char,tvstand_instance)
+        if can_open(tvstand_instance):
+            achieve_once open(tvstand_instance)
+            exp(remote_control,tvstand_instance)
+        else:
+            exp(remote_control,tvstand_instance)
+    eff:
+        unknown[remote_control]=False
+        close[remote_control,tvstand_instance]=True
+        close[tvstand_instance,remote_control]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior find_remote_control():
+    body:
+        foreach remote: item:
+            if is_remote_control(remote) and not visited(remote):
+                observe(remote, "Locate the remote control")
+
+behavior turn_on_tv_with_remote(tv:item, remote:item):
+    body:
+        achieve close_char(char, remote)
+        # Approach the remote control
+        
+        achieve_once inhand(remote)
+        # Temporarily hold the remote control
+        
+        achieve is_on(tv)
+        # Turn on the television using the remote control
+
+behavior __goal__():
+    body:
+        bind tv: item where:
+            is_television(tv) and id[tv] == 248
+        # Select the television with ID 248
+        
+        if not exists remote: item : is_remote_control(remote) and visited(remote):
+            # Search for the remote control if it hasnt been found yet
+            find_remote_control()
+        
+        bind remote: item where:
+            is_remote_control(remote) and visited(remote)
+        
+        turn_on_tv_with_remote(tv, remote)
+
+#goal_representation_end
+
+##############################

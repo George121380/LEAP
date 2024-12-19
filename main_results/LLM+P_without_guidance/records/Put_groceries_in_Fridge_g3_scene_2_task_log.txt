@@ -1,0 +1,99 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['Put milk and egg on the table in dining room. Throw all the items in the fridge to the trashcan. Then put milk and eggs back in the fridge.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_milk_2074_around_fridge_140(milk:item):
+    goal: not unknown(milk)
+    body:
+        assert is_milk(milk)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==140
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(milk,fridge_instance)
+        else:
+            exp(milk,fridge_instance)
+    eff:
+        unknown[milk]=False
+        close[milk,fridge_instance]=True
+        close[fridge_instance,milk]=True
+    
+
+behavior find_food_egg_2053_around_fridge_140(food_egg:item):
+    goal: not unknown(food_egg)
+    body:
+        assert is_food_egg(food_egg)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==140
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_egg,fridge_instance)
+        else:
+            exp(food_egg,fridge_instance)
+    eff:
+        unknown[food_egg]=False
+        close[food_egg,fridge_instance]=True
+        close[fridge_instance,food_egg]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior put_milk_and_egg_on_table(milk:item, egg:item, table:item):
+    body:
+        achieve on(milk, table)
+        # Ensure milk is on the table
+        achieve on(egg, table)
+        # Ensure egg is on the table
+
+behavior throw_items_in_trashcan(trashcan:item, fridge:item):
+    body:
+        foreach item: item:
+            if inside(item, fridge) and not (is_milk(item) or is_food_egg(item)):
+                achieve inside(item, trashcan)
+                # Throw item into the trash can
+
+behavior return_milk_and_egg_to_fridge(milk:item, egg:item, fridge:item):
+    body:
+        achieve inside(milk, fridge)
+        # Return milk to fridge
+        achieve inside(egg, fridge)
+        # Return egg to fridge
+
+        achieve closed(fridge)
+        # Ensure the fridge is closed
+
+behavior __goal__():
+    body:
+        bind table: item where:
+            is_table(table) and inside(table, is_dining_room)
+
+        bind milk: item where:
+            is_milk(milk)
+
+        bind egg: item where:
+            is_food_egg(egg)
+
+        bind fridge: item where:
+            is_fridge(fridge)
+
+        bind trashcan: item where:
+            is_trashcan(trashcan)
+
+        put_milk_and_egg_on_table(milk, egg, table)
+        throw_items_in_trashcan(trashcan, fridge)
+        return_milk_and_egg_to_fridge(milk, egg, fridge)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+Fail to generate the goal representation
+##############################

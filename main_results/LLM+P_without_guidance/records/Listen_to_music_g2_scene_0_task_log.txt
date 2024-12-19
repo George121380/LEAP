@@ -1,0 +1,597 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['Turn on the dvd player with remote control.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_dvd_player_2061_around_tvstand_353(dvd_player:item):
+    goal: not unknown(dvd_player)
+    body:
+        assert is_dvd_player(dvd_player)
+        bind tvstand_instance:item where:
+            is_tvstand(tvstand_instance) and id[tvstand_instance]==353
+        achieve close_char(char,tvstand_instance)
+        if can_open(tvstand_instance):
+            achieve_once open(tvstand_instance)
+            exp(dvd_player,tvstand_instance)
+        else:
+            exp(dvd_player,tvstand_instance)
+    eff:
+        unknown[dvd_player]=False
+        close[dvd_player,tvstand_instance]=True
+        close[tvstand_instance,dvd_player]=True
+    
+
+behavior find_remote_control_2052_around_coffee_table_2068(remote_control:item):
+    goal: not unknown(remote_control)
+    body:
+        assert is_remote_control(remote_control)
+        bind coffee_table_instance:item where:
+            is_coffee_table(coffee_table_instance) and id[coffee_table_instance]==2068
+        achieve close_char(char,coffee_table_instance)
+        if can_open(coffee_table_instance):
+            achieve_once open(coffee_table_instance)
+            exp(remote_control,coffee_table_instance)
+        else:
+            exp(remote_control,coffee_table_instance)
+    eff:
+        unknown[remote_control]=False
+        close[remote_control,coffee_table_instance]=True
+        close[coffee_table_instance,remote_control]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def has_switch(remote_control:item):
+    # Function to check if the remote control has a switch
+    symbol has_switch=exists switch: item: has_switch(switch) and close(switch, remote_control)
+    return has_switch
+
+behavior turn_on_dvd(dvd_player:item, remote_control:item):
+    body:
+        if has_switch(remote_control):
+            bind switch: item where:
+                has_switch(switch) and close(switch, remote_control)
+            achieve_once is_on(switch)
+            # Turn on the switch on the remote control to activate the DVD player
+
+behavior __goal__():
+    body:
+        bind dvd_player: item where:
+            is_dvd_player(dvd_player)
+        # Select the DVD player
+        bind remote_control: item where:
+            is_remote_control(remote_control)
+        # Select the remote control for the DVD player
+        turn_on_dvd(dvd_player, remote_control)
+        # Turn on the DVD player using the remote control
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+Fail to generate the goal representation
+##############################
+From agent.py
+Reset goals: The sub-goals are: 
+['Turn on the dvd player with remote control.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_dvd_player_2061_around_tvstand_353(dvd_player:item):
+    goal: not unknown(dvd_player)
+    body:
+        assert is_dvd_player(dvd_player)
+        bind tvstand_instance:item where:
+            is_tvstand(tvstand_instance) and id[tvstand_instance]==353
+        achieve close_char(char,tvstand_instance)
+        if can_open(tvstand_instance):
+            achieve_once open(tvstand_instance)
+            exp(dvd_player,tvstand_instance)
+        else:
+            exp(dvd_player,tvstand_instance)
+    eff:
+        unknown[dvd_player]=False
+        close[dvd_player,tvstand_instance]=True
+        close[tvstand_instance,dvd_player]=True
+    
+
+behavior find_remote_control_2052_around_coffee_table_2068(remote_control:item):
+    goal: not unknown(remote_control)
+    body:
+        assert is_remote_control(remote_control)
+        bind coffee_table_instance:item where:
+            is_coffee_table(coffee_table_instance) and id[coffee_table_instance]==2068
+        achieve close_char(char,coffee_table_instance)
+        if can_open(coffee_table_instance):
+            achieve_once open(coffee_table_instance)
+            exp(remote_control,coffee_table_instance)
+        else:
+            exp(remote_control,coffee_table_instance)
+    eff:
+        unknown[remote_control]=False
+        close[remote_control,coffee_table_instance]=True
+        close[coffee_table_instance,remote_control]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def has_remote_control_in_room(room:item):
+    # Function to check if there is a remote control in a specified room
+    symbol has_remote_control=exists o: item : is_remote_control(o) and inside(o, room)
+    return has_remote_control
+
+behavior turn_on_dvd_player(remote_control:item, dvd_player:item):
+    body:
+        assert is_remote_control(remote_control) and is_dvd_player(dvd_player)
+        # Ensure the remote control and DVD player are properly identified
+        achieve is_on(dvd_player)
+        # Goal is to turn the DVD player on
+
+behavior __goal__():
+    body:
+        if exists room: item : has_remote_control_in_room(room):
+            # Check if there is a remote control in any room based on the available information
+            bind room: item where:
+                has_remote_control_in_room(room)
+            bind remote_control: item where:
+                is_remote_control(remote_control) and inside(remote_control, room)
+            bind dvd_player: item where:
+                is_dvd_player(dvd_player) and inside(dvd_player, room)
+            # Select a DVD player and a remote control from the same room
+            turn_on_dvd_player(remote_control, dvd_player)
+            # Attempt to turn on the DVD player
+
+        else:
+            # If no remote control is found, initiate exploration to locate one
+            foreach remote_control: item:
+                if is_remote_control(remote_control) and not visited(remote_control):
+                    observe(remote_control, "Check if it is in close proximity to a DVD player")
+                    # Observe whether the remote control is near a DVD player
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+ 
+def has_remote_control_in_room(room:item):
+    # Function to check if there is a remote control in a specified room
+    symbol has_remote_control=exists o: item : is_remote_control(o) and inside(o, room)
+    return has_remote_control
+
+behavior turn_on_dvd_player(remote_control:item, dvd_player:item):
+    body:
+        assert is_remote_control(remote_control) and is_dvd_player(dvd_player)
+        # Ensure the remote control and DVD player are properly identified
+        achieve is_on(dvd_player)
+        # Goal is to turn the DVD player on
+
+behavior __goal__():
+    body:
+        if exists room: item : has_remote_control_in_room(room):
+            # Check if there is a remote control in any room based on the available information
+            bind room: item where:
+                has_remote_control_in_room(room)
+            bind remote_control: item where:
+                is_remote_control(remote_control) and inside(remote_control, room)
+            bind dvd_player: item where:
+                is_dvd_player(dvd_player) and inside(dvd_player, room)
+            # Select a DVD player and a remote control from the same room
+            turn_on_dvd_player(remote_control, dvd_player)
+            # Attempt to turn on the DVD player
+
+        else:
+            # If no remote control is found, initiate exploration to locate one
+            foreach remote_control: item:
+                if is_remote_control(remote_control) and not visited(remote_control):
+                    observe(remote_control, "Check if it is in close proximity to a DVD player")
+                    # Observe whether the remote control is near a DVD player
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(coffee_table_2068)exp(remote_control_2052, coffee_table_2068)walk_executor(remote_control_2052)obs(remote_control_2052, Check if it is in close proximity to a DVD player)
+##############################
+From agent.py
+walk_executor(coffee_table_2068)
+Robot is inside home_office_319. Robot is close coffee_table_2068. Robot is no longer inside bathroom_1.
+##############################
+From agent.py
+exp(remote_control_2052, coffee_table_2068)
+Find remote_control_2052. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(remote_control_2052)obs(remote_control_2052, Check if it is in close proximity to a DVD player)
+##############################
+From agent.py
+walk_executor(remote_control_2052)
+Robot is inside home_office_319. Robot is close couch_352. Robot is close remote_control_2052. Robot is no longer close coffee_table_2068.
+##############################
+From agent.py
+obs(remote_control_2052, Check if it is in close proximity to a DVD player)
+Get this information:  remote_control_2052 is close to couch_352. remote_control_2052 is close to character_65. remote_control_2052 is inside home_office_319. remote_control_2052 is on couch_352. remote_control_2052 is OFF.
+##############################
+From agent.py
+Human Instruction: You need to verify if the remote control can interact with a DVD player, ensuring it is in proximity to a DVD player. Then, use the remote control to turn on the DVD player.
+
+The actions you have taken:
+Action 1: Walk to coffee_table_2068.
+Action 2: look for remote_control_2052 around coffee_table_2068.
+Action 3: Walk to remote_control_2052.
+Action 4: Observe around remote_control_2052 with the question of Check if it is in close proximity to a DVD player.
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_cd_player_2060_around_bookshelf_354(cd_player:item):
+    goal: not unknown(cd_player)
+    body:
+        assert is_cd_player(cd_player)
+        bind bookshelf_instance:item where:
+            is_bookshelf(bookshelf_instance) and id[bookshelf_instance]==354
+        achieve close_char(char,bookshelf_instance)
+        if can_open(bookshelf_instance):
+            achieve_once open(bookshelf_instance)
+            exp(cd_player,bookshelf_instance)
+        else:
+            exp(cd_player,bookshelf_instance)
+    eff:
+        unknown[cd_player]=False
+        close[cd_player,bookshelf_instance]=True
+        close[bookshelf_instance,cd_player]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def can_control_dvd_with_remote(remote_control:item):
+    # Function to check if a remote control can interact with a DVD player
+    symbol can_control=exists dvd_player: item : is_dvd_player(dvd_player) and close(remote_control, dvd_player)
+    return can_control
+
+behavior turn_on_dvd(dvd_player:item, remote_control:item):
+    body:
+        achieve is_on(dvd_player)
+        # Turn on the DVD player using the remote control
+
+behavior __goal__():
+    body:
+        bind remote_control: item where:
+            is_remote_control(remote_control) and visited(remote_control)
+        
+        if can_control_dvd_with_remote(remote_control):
+            bind dvd_player: item where:
+                is_dvd_player(dvd_player) and close(remote_control, dvd_player)
+            turn_on_dvd(dvd_player, remote_control)
+        
+        else:
+            observe(remote_control, "Check if it is in close proximity to a DVD player")
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+def can_control_dvd_with_remote(remote_control:item):
+    # Function to check if a remote control can interact with a DVD player
+    symbol can_control=exists dvd_player: item : is_dvd_player(dvd_player) and close(remote_control, dvd_player)
+    return can_control
+
+behavior turn_on_dvd(dvd_player:item, remote_control:item):
+    body:
+        achieve is_on(dvd_player)
+        # Turn on the DVD player using the remote control
+
+behavior __goal__():
+    body:
+        bind remote_control: item where:
+            is_remote_control(remote_control) and visited(remote_control)
+        
+        if can_control_dvd_with_remote(remote_control):
+            bind dvd_player: item where:
+                is_dvd_player(dvd_player) and close(remote_control, dvd_player)
+            turn_on_dvd(dvd_player, remote_control)
+        
+        else:
+            observe(remote_control, "Check if it is in close proximity to a DVD player")
+
+##############################
+From agent.py
+Reset goals: The sub-goals are: 
+['Turn on the dvd player with remote control.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_cd_player_2060_around_tvstand_353(cd_player:item):
+    goal: not unknown(cd_player)
+    body:
+        assert is_cd_player(cd_player)
+        bind tvstand_instance:item where:
+            is_tvstand(tvstand_instance) and id[tvstand_instance]==353
+        achieve close_char(char,tvstand_instance)
+        if can_open(tvstand_instance):
+            achieve_once open(tvstand_instance)
+            exp(cd_player,tvstand_instance)
+        else:
+            exp(cd_player,tvstand_instance)
+    eff:
+        unknown[cd_player]=False
+        close[cd_player,tvstand_instance]=True
+        close[tvstand_instance,cd_player]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def remote_control_near_dvd_player(remote_control:item):
+    # Check if the remote control is close to a DVD player
+    symbol close_to_dvd_player=exists dvd_player: item : is_dvd_player(dvd_player) and close(remote_control, dvd_player)
+    return close_to_dvd_player
+
+behavior turn_on_dvd_player(remote_control:item, dvd_player:item):
+    body:
+        if has_switch(dvd_player):
+            achieve is_on(dvd_player)
+
+behavior __goal__():
+    body:
+        bind remote_control: item where:
+            is_remote_control(remote_control)
+        # Select the remote control
+        
+        if remote_control_near_dvd_player(remote_control):
+            bind dvd_player: item where:
+                is_dvd_player(dvd_player) and close(remote_control, dvd_player)
+            # Select a DVD player close to the remote control
+            turn_on_dvd_player(remote_control, dvd_player)
+        else:
+            # If the DVD player and remote control are not close, observe to find a suitable configuration
+            observe(remote_control, "Check if it is in close proximity to a DVD player")
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+ 
+def remote_control_near_dvd_player(remote_control:item):
+    # Check if the remote control is close to a DVD player
+    symbol close_to_dvd_player=exists dvd_player: item : is_dvd_player(dvd_player) and close(remote_control, dvd_player)
+    return close_to_dvd_player
+
+behavior turn_on_dvd_player(remote_control:item, dvd_player:item):
+    body:
+        if has_switch(dvd_player):
+            achieve is_on(dvd_player)
+
+behavior __goal__():
+    body:
+        bind remote_control: item where:
+            is_remote_control(remote_control)
+        # Select the remote control
+        
+        if remote_control_near_dvd_player(remote_control):
+            bind dvd_player: item where:
+                is_dvd_player(dvd_player) and close(remote_control, dvd_player)
+            # Select a DVD player close to the remote control
+            turn_on_dvd_player(remote_control, dvd_player)
+        else:
+            # If the DVD player and remote control are not close, observe to find a suitable configuration
+            observe(remote_control, "Check if it is in close proximity to a DVD player")
+
+##############################
+From agent.py-> find a plan in act()
+obs(remote_control_2052, Check if it is in close proximity to a DVD player)
+##############################
+From agent.py
+obs(remote_control_2052, Check if it is in close proximity to a DVD player)
+Get this information:  remote_control_2052 is close to couch_352. remote_control_2052 is close to character_65. remote_control_2052 is inside home_office_319. remote_control_2052 is on couch_352. remote_control_2052 is OFF.
+##############################
+From agent.py
+Human Instruction: You need to verify that the remote_control_2052 is close to a DVD player and then use it to turn on the DVD player. So far, there is no evidence that the remote control is near a DVD player. Continue observing to confirm if a DVD player is in proximity to the remote control, or adjust positions until the remote control is close to a DVD player.
+
+The actions you have taken:
+Action 1: Walk to coffee_table_2068.
+Action 2: look for remote_control_2052 around coffee_table_2068.
+Action 3: Walk to remote_control_2052.
+Action 4: Observe around remote_control_2052 with the question of Check if it is in close proximity to a DVD player.
+Action 5: Observe around remote_control_2052 with the question of Check if it is in close proximity to a DVD player.
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_cd_2075_around_closetdrawer_119(cd:item):
+    goal: not unknown(cd)
+    body:
+        assert is_cd(cd)
+        bind closetdrawer_instance:item where:
+            is_closetdrawer(closetdrawer_instance) and id[closetdrawer_instance]==119
+        achieve close_char(char,closetdrawer_instance)
+        if can_open(closetdrawer_instance):
+            achieve_once open(closetdrawer_instance)
+            exp(cd,closetdrawer_instance)
+        else:
+            exp(cd,closetdrawer_instance)
+    eff:
+        unknown[cd]=False
+        close[cd,closetdrawer_instance]=True
+        close[closetdrawer_instance,cd]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+
+behavior observe_environment(remote_control:item, dvd_player:item):
+    body:
+        if not visited(dvd_player):
+            observe(dvd_player, "Verify proximity to remote control")
+        
+behavior activate_dvd_player(remote_control:item, dvd_player:item):
+    body:
+        achieve is_on(dvd_player)
+
+behavior __goal__():
+    body:
+        bind remote_control: item where:
+            is_remote_control(remote_control) and id[remote_control]==2052
+        bind dvd_player: item where:
+            is_dvd_player(dvd_player)
+        
+        observe_environment(remote_control, dvd_player)
+        
+        if close(remote_control, dvd_player):
+            activate_dvd_player(remote_control, dvd_player)
+        
+        else:
+            foreach item: item:
+                if is_dvd_player(item) and not visited(item):
+                    observe(item, "Check if close to remote control")
+                    if close(remote_control, item):
+                        bind dvd_player: item where:
+                            is_dvd_player(item) and close(remote_control, item)
+                        activate_dvd_player(remote_control, dvd_player)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+
+behavior observe_environment(remote_control:item, dvd_player:item):
+    body:
+        if not visited(dvd_player):
+            observe(dvd_player, "Verify proximity to remote control")
+        
+behavior activate_dvd_player(remote_control:item, dvd_player:item):
+    body:
+        achieve is_on(dvd_player)
+
+behavior __goal__():
+    body:
+        bind remote_control: item where:
+            is_remote_control(remote_control) and id[remote_control]==2052
+        bind dvd_player: item where:
+            is_dvd_player(dvd_player)
+        
+        observe_environment(remote_control, dvd_player)
+        
+        if close(remote_control, dvd_player):
+            activate_dvd_player(remote_control, dvd_player)
+        
+        else:
+            foreach item: item:
+                if is_dvd_player(item) and not visited(item):
+                    observe(item, "Check if close to remote control")
+                    if close(remote_control, item):
+                        bind dvd_player: item where:
+                            is_dvd_player(item) and close(remote_control, item)
+                        activate_dvd_player(remote_control, dvd_player)
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(dvd_player_2061)open_executor(dvd_player_2061)obs(dvd_player_2061, Verify proximity to remote control)
+##############################
+From agent.py
+walk_executor(dvd_player_2061)
+Robot is inside home_office_319. Robot is close tvstand_353. Robot is close dvd_player_2061. Robot is no longer close couch_352.Robot is no longer close remote_control_2052.
+##############################
+From agent.py
+open_executor(dvd_player_2061)
+Robot is inside home_office_319. Robot is close tvstand_353. Robot is close dvd_player_2061. 
+##############################
+From agent.py
+obs(dvd_player_2061, Verify proximity to remote control)
+Get this information:  dvd_player_2061 is on tvstand_353. dvd_player_2061 is close to tvstand_353. dvd_player_2061 is close to character_65. dvd_player_2061 is inside home_office_319. dvd_player_2061 is PLUGGED_OUT. dvd_player_2061 is OFF. dvd_player_2061 is OPEN.
+##############################
+From agent.py
+Human Instruction: The remote_control_2052 and the dvd_player_2061 need to be in close proximity to each other to turn on the DVD player. You should either move the remote control closer to the DVD player or confirm their proximity before attempting to activate the DVD player. Additionally, ensure that the DVD player is plugged in.
+
+The actions you have taken:
+Action 1: Walk to coffee_table_2068.
+Action 2: look for remote_control_2052 around coffee_table_2068.
+Action 3: Walk to remote_control_2052.
+Action 4: Observe around remote_control_2052 with the question of Check if it is in close proximity to a DVD player.
+Action 5: Observe around remote_control_2052 with the question of Check if it is in close proximity to a DVD player.
+Action 6: Walk to dvd_player_2061.
+Action 7: Open dvd_player_2061.
+Action 8: Observe around dvd_player_2061 with the question of Verify proximity to remote control.
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_cd_2075_around_tvstand_225(cd:item):
+    goal: not unknown(cd)
+    body:
+        assert is_cd(cd)
+        bind tvstand_instance:item where:
+            is_tvstand(tvstand_instance) and id[tvstand_instance]==225
+        achieve close_char(char,tvstand_instance)
+        if can_open(tvstand_instance):
+            achieve_once open(tvstand_instance)
+            exp(cd,tvstand_instance)
+        else:
+            exp(cd,tvstand_instance)
+    eff:
+        unknown[cd]=False
+        close[cd,tvstand_instance]=True
+        close[tvstand_instance,cd]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def close_to_each_other(x:item, y:item):
+    # Check if two items are in close proximity to each other
+    symbol close_to_each_other=close(x, y)
+    return close_to_each_other
+
+behavior verify_dvd_remote_proximity(remote:item, dvd:item):
+    body:
+        if not close_to_each_other(remote, dvd):
+            move(remote)
+            # Move the remote control closer to the DVD player to ensure they are in close proximity
+
+behavior turn_on_dvd_player(remote:item):
+    body:
+        # Ensure the remote is close to the DVD player before turning it on has already been verified
+        achieve is_on(dvd_player_2061)
+
+behavior __goal__():
+    body:
+        bind remote_control: item where:
+            is_remote_control(remote_control) and id[remote_control]==2052
+        # Identify the remote control with ID 2052
+
+        bind dvd_player: item where:
+            is_dvd_player(dvd_player) and id[dvd_player]==2061
+        # Identify the DVD player with ID 2061
+
+        verify_dvd_remote_proximity(remote_control, dvd_player)
+        # Verify their proximity before turning on the DVD player
+        
+        observe(dvd_player, "Check if the DVD player is plugged")
+        # Ensure that the DVD player is plugged in
+
+        turn_on_dvd_player(remote_control)
+        # Turn on the DVD player using the remote control
+
+#goal_representation_end
+
+##############################

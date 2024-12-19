@@ -1,0 +1,520 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Iron the shirt.', '2. Put the shirt on the bed.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_clothes_shirt_2114_around_dresser_377(clothes_shirt:item):
+    goal: not unknown(clothes_shirt)
+    body:
+        assert is_clothes_shirt(clothes_shirt)
+        bind dresser_instance:item where:
+            is_dresser(dresser_instance) and id[dresser_instance]==377
+        achieve close_char(char,dresser_instance)
+        if can_open(dresser_instance):
+            achieve_once open(dresser_instance)
+            exp(clothes_shirt,dresser_instance)
+        else:
+            exp(clothes_shirt,dresser_instance)
+    eff:
+        unknown[clothes_shirt]=False
+        close[clothes_shirt,dresser_instance]=True
+        close[dresser_instance,clothes_shirt]=True
+    
+
+behavior find_iron_2117_around_ironing_board_2099(iron:item):
+    goal: not unknown(iron)
+    body:
+        assert is_iron(iron)
+        bind ironing_board_instance:item where:
+            is_ironing_board(ironing_board_instance) and id[ironing_board_instance]==2099
+        achieve close_char(char,ironing_board_instance)
+        if can_open(ironing_board_instance):
+            achieve_once open(ironing_board_instance)
+            exp(iron,ironing_board_instance)
+        else:
+            exp(iron,ironing_board_instance)
+    eff:
+        unknown[iron]=False
+        close[iron,ironing_board_instance]=True
+        close[ironing_board_instance,iron]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def iron_with(ironing_board: item):
+    # Behavior to set up for ironing
+    body:
+        bind iron: item where:
+            is_iron(iron)
+        achieve is_on(iron)
+        # Turn on the iron for use
+        achieve plugged(iron)
+        # Ensure the iron is plugged in
+        achieve on(ironing_board, iron)
+        # Place the iron on the ironing board
+
+behavior iron_shirt(shirt: item, ironing_board: item):
+    body:
+        achieve clean(shirt)
+        # Ensure the shirt is clean before ironing
+        achieve_once inhand(shirt)
+        # Pick up the shirt to iron
+
+behavior __goal__():
+    body:
+        bind shirt: item where:
+            is_clothes_shirt(shirt)
+        # Select the shirt to iron
+
+        bind ironing_board: item where:
+            is_ironing_board(ironing_board)
+        # Select the ironing board
+
+        iron_with(ironing_board)
+        iron_shirt(shirt, ironing_board)
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Unexpected token Token('COLON', ':') at line 5883, column 9.
+Expected one of: 
+	* PERCENT
+	* __ANON_4
+	* LESSTHAN
+	* GREATER_EQ
+	* FLOORDIV
+	* _NEWLINE
+	* __ANON_6
+	* __ANON_7
+	* MORETHAN
+	* __ANON_1
+	* STAR
+	* COMMA
+	* LSHIFT
+	* AMPERSAND
+	* RSHIFT
+	* __ANON_2
+	* __ANON_3
+	* DOUBLE_EQUAL
+	* __ANON_8
+	* MINUS
+	* __ANON_5
+	* PLUS
+	* VBAR
+	* __ANON_0
+	* NOT_EQ
+	* SLASH
+	* IF
+	* LESS_EQ
+	* OR
+	* AT
+	* CIRCUMFLEX
+	* EQUAL
+	* AND
+	* SEMICOLON
+
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_clothes_shirt_2114_around_dresser_377(clothes_shirt:item):
+    goal: not unknown(clothes_shirt)
+    body:
+        assert is_clothes_shirt(clothes_shirt)
+        bind dresser_instance:item where:
+            is_dresser(dresser_instance) and id[dresser_instance]==377
+        achieve close_char(char,dresser_instance)
+        if can_open(dresser_instance):
+            achieve_once open(dresser_instance)
+            exp(clothes_shirt,dresser_instance)
+        else:
+            exp(clothes_shirt,dresser_instance)
+    eff:
+        unknown[clothes_shirt]=False
+        close[clothes_shirt,dresser_instance]=True
+        close[dresser_instance,clothes_shirt]=True
+    
+
+behavior find_iron_2117_around_ironing_board_2099(iron:item):
+    goal: not unknown(iron)
+    body:
+        assert is_iron(iron)
+        bind ironing_board_instance:item where:
+            is_ironing_board(ironing_board_instance) and id[ironing_board_instance]==2099
+        achieve close_char(char,ironing_board_instance)
+        if can_open(ironing_board_instance):
+            achieve_once open(ironing_board_instance)
+            exp(iron,ironing_board_instance)
+        else:
+            exp(iron,ironing_board_instance)
+    eff:
+        unknown[iron]=False
+        close[iron,ironing_board_instance]=True
+        close[ironing_board_instance,iron]=True
+    
+
+#goal_representation
+ 
+behavior iron_with(ironing_board: item, iron: item):
+    body:
+        achieve plugged(iron)
+        # Ensure the iron is plugged in
+        achieve is_on(iron)
+        # Turn on the iron for use
+        achieve on(iron, ironing_board)
+        # Place the iron on the ironing board
+
+behavior iron_shirt(shirt: item, ironing_board: item, iron: item):
+    body:
+        achieve clean(shirt)
+        # Ensure the shirt is clean before ironing
+        achieve_once inhand(shirt)
+        # Pick up the shirt to iron
+        # Assumes the shirt is ironed once on the board with an active iron
+        achieve on(shirt, ironing_board)
+        # Place the shirt on the ironing board
+
+behavior __goal__():
+    body:
+        bind shirt: item where:
+            is_clothes_shirt(shirt)
+        # Select the shirt to iron
+
+        bind ironing_board: item where:
+            is_ironing_board(ironing_board)
+        # Select the ironing board
+
+        bind iron: item where:
+            is_iron(iron)
+        # Select the iron
+
+        iron_with(ironing_board, iron)
+        iron_shirt(shirt, ironing_board, iron)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+ 
+behavior iron_with(ironing_board: item, iron: item):
+    body:
+        achieve plugged(iron)
+        # Ensure the iron is plugged in
+        achieve is_on(iron)
+        # Turn on the iron for use
+        achieve on(iron, ironing_board)
+        # Place the iron on the ironing board
+
+behavior iron_shirt(shirt: item, ironing_board: item, iron: item):
+    body:
+        achieve clean(shirt)
+        # Ensure the shirt is clean before ironing
+        achieve_once inhand(shirt)
+        # Pick up the shirt to iron
+        # Assumes the shirt is ironed once on the board with an active iron
+        achieve on(shirt, ironing_board)
+        # Place the shirt on the ironing board
+
+behavior __goal__():
+    body:
+        bind shirt: item where:
+            is_clothes_shirt(shirt)
+        # Select the shirt to iron
+
+        bind ironing_board: item where:
+            is_ironing_board(ironing_board)
+        # Select the ironing board
+
+        bind iron: item where:
+            is_iron(iron)
+        # Select the iron
+
+        iron_with(ironing_board, iron)
+        iron_shirt(shirt, ironing_board, iron)
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(ironing_board_2099)exp(iron_2117, ironing_board_2099)walk_executor(iron_2117)plugin_executor(iron_2117)switchon_executor(iron_2117)grab_executor(iron_2117)walk_executor(ironing_board_2099)put_executor(iron_2117, ironing_board_2099)walk_executor(dresser_377)exp(clothes_shirt_2114, dresser_377)walk_executor(clothes_shirt_2114)wash_executor(clothes_shirt_2114)grab_executor(clothes_shirt_2114)walk_executor(ironing_board_2099)put_executor(clothes_shirt_2114, ironing_board_2099)
+##############################
+From agent.py
+walk_executor(ironing_board_2099)
+Find iron_2117. Robot is inside bedroom_220. Robot is close ironing_board_2099. Robot is no longer inside home_office_161.
+##############################
+From agent.py
+exp(iron_2117, ironing_board_2099)
+Find iron_2117. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(iron_2117)plugin_executor(iron_2117)switchon_executor(iron_2117)walk_executor(dresser_377)exp(clothes_shirt_2114, dresser_377)walk_executor(clothes_shirt_2114)wash_executor(clothes_shirt_2114)grab_executor(clothes_shirt_2114)walk_executor(ironing_board_2099)put_executor(clothes_shirt_2114, ironing_board_2099)
+##############################
+From agent.py
+walk_executor(iron_2117)
+Robot is inside bedroom_220. Robot is close ironing_board_2099. Robot is close iron_2117. 
+##############################
+From agent.py
+plugin_executor(iron_2117)
+Robot is inside bedroom_220. Robot is close ironing_board_2099. Robot is close iron_2117. 
+##############################
+From agent.py
+switchon_executor(iron_2117)
+Robot is inside bedroom_220. Robot is close ironing_board_2099. Robot is close iron_2117. 
+##############################
+From agent.py
+walk_executor(dresser_377)
+Find novel_2010. Find pajamas_2039. Find drawing_387. Find drawing_388. Robot is inside bedroom_327. Robot is close dresser_377. Robot is close novel_2010. Robot is close pajamas_2039. Robot is no longer inside bedroom_220.Robot is no longer close ironing_board_2099.Robot is no longer close iron_2117.
+##############################
+From agent.py
+exp(clothes_shirt_2114, dresser_377)
+Fail to find clothes_shirt_2114 around dresser_377. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(bed_376)exp(clothes_shirt_2114, bed_376)walk_executor(clothes_shirt_2114)wash_executor(clothes_shirt_2114)grab_executor(clothes_shirt_2114)walk_executor(ironing_board_2099)put_executor(clothes_shirt_2114, ironing_board_2099)
+##############################
+From agent.py
+walk_executor(bed_376)
+Find mat_386. Find drawing_389. Find pillow_368. Find pillow_370. Robot is inside bedroom_327. Robot is close bed_376. Robot is close floor_330. Robot is close mat_386. Robot is no longer close dresser_377.Robot is no longer close novel_2010.Robot is no longer close pajamas_2039.
+##############################
+From agent.py
+exp(clothes_shirt_2114, bed_376)
+Fail to find clothes_shirt_2114 around bed_376. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(filing_cabinet_378)exp(clothes_shirt_2114, filing_cabinet_378)walk_executor(clothes_shirt_2114)wash_executor(clothes_shirt_2114)grab_executor(clothes_shirt_2114)walk_executor(ironing_board_2099)put_executor(clothes_shirt_2114, ironing_board_2099)
+##############################
+From agent.py
+walk_executor(filing_cabinet_378)
+Find food_bread_2016. Find crayon_2020. Find needle_2024. Find check_2033. Find alcohol_2002. Find coffee_filter_2035. Find soap_2037. Find bills_2009. Robot is inside bedroom_327. Robot is close food_bread_2016. Robot is close crayon_2020. Robot is close needle_2024. Robot is close floor_335. Robot is close check_2033. Robot is close alcohol_2002. Robot is close coffee_filter_2035. Robot is close soap_2037. Robot is close bills_2009. Robot is close filing_cabinet_378. Robot is no longer close bed_376.Robot is no longer close floor_330.Robot is no longer close mat_386.
+##############################
+From agent.py
+exp(clothes_shirt_2114, filing_cabinet_378)
+Fail to find clothes_shirt_2114 around filing_cabinet_378. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(nightstand_373)exp(clothes_shirt_2114, nightstand_373)walk_executor(clothes_shirt_2114)wash_executor(clothes_shirt_2114)grab_executor(clothes_shirt_2114)walk_executor(ironing_board_2099)put_executor(clothes_shirt_2114, ironing_board_2099)
+##############################
+From agent.py
+walk_executor(nightstand_373)
+Find coin_2004. Robot is inside bedroom_327. Robot is close floor_330. Robot is close nightstand_373. Robot is no longer close food_bread_2016.Robot is no longer close crayon_2020.Robot is no longer close needle_2024.Robot is no longer close floor_335.Robot is no longer close check_2033.Robot is no longer close alcohol_2002.Robot is no longer close coffee_filter_2035.Robot is no longer close soap_2037.Robot is no longer close bills_2009.Robot is no longer close filing_cabinet_378.
+##############################
+From agent.py
+exp(clothes_shirt_2114, nightstand_373)
+Fail to find clothes_shirt_2114 around nightstand_373. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(toilet_302)open_executor(toilet_302)exp(clothes_shirt_2114, toilet_302)walk_executor(clothes_shirt_2114)wash_executor(clothes_shirt_2114)grab_executor(clothes_shirt_2114)walk_executor(ironing_board_2099)put_executor(clothes_shirt_2114, ironing_board_2099)
+##############################
+From agent.py
+walk_executor(toilet_302)
+Robot is inside bathroom_265. Robot is close toilet_302. Robot is no longer inside bedroom_327.Robot is no longer close floor_330.Robot is no longer close nightstand_373.
+##############################
+From agent.py
+open_executor(toilet_302)
+Robot is inside bathroom_265. Robot is close toilet_302. 
+##############################
+From agent.py
+exp(clothes_shirt_2114, toilet_302)
+Fail to find clothes_shirt_2114 around toilet_302. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(bookshelf_372)open_executor(bookshelf_372)exp(clothes_shirt_2114, bookshelf_372)walk_executor(clothes_shirt_2114)wash_executor(clothes_shirt_2114)grab_executor(clothes_shirt_2114)walk_executor(ironing_board_2099)put_executor(clothes_shirt_2114, ironing_board_2099)
+##############################
+From agent.py
+walk_executor(bookshelf_372)
+Find stamp_2031. Robot is inside bedroom_327. Robot is close floor_331. Robot is close bookshelf_372. Robot is no longer inside bathroom_265.Robot is no longer close toilet_302.
+##############################
+From agent.py
+open_executor(bookshelf_372)
+Find towel_rack_298. Find drawing_296. Robot is inside bedroom_327. Robot is close floor_331. Robot is close bookshelf_372. 
+##############################
+From agent.py
+Record from func query_LLM_human in agent.py
+Question: Can you help me to find clothes_shirt_2114 ?
+Answer: The target item, clothes_shirt_2114, is located inside the basket_for_clothes_2040. You will find this basket inside the bathroom_265. Look for the basket and you'll find the shirt inside it.
+Re-decompose: None
+
+##############################
+From agent.py
+Human Instruction: The target item, clothes_shirt_2114, is located inside the basket_for_clothes_2040. You will find this basket inside the bathroom_265. Look for the basket and you'll find the shirt inside it.
+
+The actions you have taken:
+Action 1: Walk to ironing_board_2099.
+Action 2: look for iron_2117 around ironing_board_2099.
+Action 3: Walk to iron_2117.
+Action 4: Plug in iron_2117.
+Action 5: Switch on iron_2117.
+Action 6: Walk to dresser_377.
+Action 7: look for clothes_shirt_2114 around dresser_377.
+Action 8: Walk to bed_376.
+Action 9: look for clothes_shirt_2114 around bed_376.
+Action 10: Walk to filing_cabinet_378.
+Action 11: look for clothes_shirt_2114 around filing_cabinet_378.
+Action 12: Walk to nightstand_373.
+Action 13: look for clothes_shirt_2114 around nightstand_373.
+Action 14: Walk to toilet_302.
+Action 15: Open toilet_302.
+Action 16: look for clothes_shirt_2114 around toilet_302.
+Action 17: Walk to bookshelf_372.
+Action 18: Open bookshelf_372.
+
+##############################
+From agent.py
+exp(clothes_shirt_2114, bookshelf_372)
+Fail to find clothes_shirt_2114 around bookshelf_372. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(bathroom_counter_306)exp(clothes_shirt_2114, bathroom_counter_306)walk_executor(clothes_shirt_2114)wash_executor(clothes_shirt_2114)grab_executor(clothes_shirt_2114)walk_executor(ironing_board_2099)put_executor(clothes_shirt_2114, ironing_board_2099)
+##############################
+From agent.py
+walk_executor(bathroom_counter_306)
+Robot is inside bathroom_265. Robot is close bathroom_counter_306. Robot is no longer inside bedroom_327.Robot is no longer close floor_331.Robot is no longer close bookshelf_372.
+##############################
+From agent.py
+exp(clothes_shirt_2114, bathroom_counter_306)
+Fail to find clothes_shirt_2114 around bathroom_counter_306. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(washing_machine_2041)open_executor(washing_machine_2041)exp(clothes_shirt_2114, washing_machine_2041)walk_executor(clothes_shirt_2114)wash_executor(clothes_shirt_2114)grab_executor(clothes_shirt_2114)walk_executor(ironing_board_2099)put_executor(clothes_shirt_2114, ironing_board_2099)
+##############################
+From agent.py
+walk_executor(washing_machine_2041)
+Robot is inside bathroom_265. Robot is close washing_machine_2041. Robot is no longer close bathroom_counter_306.
+##############################
+From agent.py
+open_executor(washing_machine_2041)
+Robot is inside bathroom_265. Robot is close washing_machine_2041. 
+##############################
+From agent.py
+exp(clothes_shirt_2114, washing_machine_2041)
+Fail to find clothes_shirt_2114 around washing_machine_2041. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(bathroom_cabinet_305)open_executor(bathroom_cabinet_305)exp(clothes_shirt_2114, bathroom_cabinet_305)walk_executor(clothes_shirt_2114)wash_executor(clothes_shirt_2114)grab_executor(clothes_shirt_2114)walk_executor(ironing_board_2099)put_executor(clothes_shirt_2114, ironing_board_2099)
+##############################
+From agent.py
+walk_executor(bathroom_cabinet_305)
+Find soap_2038. Robot is inside bathroom_265. Robot is close bathroom_cabinet_305. Robot is close wall_269. Robot is close soap_2038. Robot is no longer close washing_machine_2041.
+##############################
+From agent.py
+open_executor(bathroom_cabinet_305)
+Robot is inside bathroom_265. Robot is close bathroom_cabinet_305. Robot is close wall_269. Robot is close soap_2038. 
+##############################
+From agent.py
+exp(clothes_shirt_2114, bathroom_cabinet_305)
+Fail to find clothes_shirt_2114 around bathroom_cabinet_305. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(photoframe_246)exp(clothes_shirt_2114, photoframe_246)walk_executor(clothes_shirt_2114)wash_executor(clothes_shirt_2114)grab_executor(clothes_shirt_2114)walk_executor(ironing_board_2099)put_executor(clothes_shirt_2114, ironing_board_2099)
+##############################
+From agent.py
+walk_executor(photoframe_246)
+Find mat_237. Find drawing_238. Find chair_263. Robot is inside bedroom_220. Robot is close bookshelf_260. Robot is close photoframe_246. Robot is no longer inside bathroom_265.Robot is no longer close bathroom_cabinet_305.Robot is no longer close wall_269.Robot is no longer close soap_2038.
+##############################
+From agent.py
+exp(clothes_shirt_2114, photoframe_246)
+Fail to find clothes_shirt_2114 around photoframe_246. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(bench_125)exp(clothes_shirt_2114, bench_125)walk_executor(clothes_shirt_2114)wash_executor(clothes_shirt_2114)grab_executor(clothes_shirt_2114)walk_executor(ironing_board_2099)put_executor(clothes_shirt_2114, ironing_board_2099)
+##############################
+From agent.py
+walk_executor(bench_125)
+Find mat_115. Robot is inside dining_room_1. Robot is close bench_125. Robot is no longer inside bedroom_220.Robot is no longer close bookshelf_260.Robot is no longer close photoframe_246.
+##############################
+From agent.py
+Record from func query_LLM_human in agent.py
+Question: Can you help me to find clothes_shirt_2114 ?
+Answer: The target item, clothes_shirt_2114, is inside the basket_for_clothes_2040, which is located inside bathroom_265. Please go to bathroom_265 and look inside the basket_for_clothes_2040 to find clothes_shirt_2114.
+Re-decompose: None
+
+##############################
+From agent.py
+Human Instruction: The target item, clothes_shirt_2114, is located inside the basket_for_clothes_2040. You will find this basket inside the bathroom_265. Look for the basket and you'll find the shirt inside it.
+The target item, clothes_shirt_2114, is inside the basket_for_clothes_2040, which is located inside bathroom_265. Please go to bathroom_265 and look inside the basket_for_clothes_2040 to find clothes_shirt_2114.
+
+The actions you have taken:
+Action 1: Walk to ironing_board_2099.
+Action 2: look for iron_2117 around ironing_board_2099.
+Action 3: Walk to iron_2117.
+Action 4: Plug in iron_2117.
+Action 5: Switch on iron_2117.
+Action 6: Walk to dresser_377.
+Action 7: look for clothes_shirt_2114 around dresser_377.
+Action 8: Walk to bed_376.
+Action 9: look for clothes_shirt_2114 around bed_376.
+Action 10: Walk to filing_cabinet_378.
+Action 11: look for clothes_shirt_2114 around filing_cabinet_378.
+Action 12: Walk to nightstand_373.
+Action 13: look for clothes_shirt_2114 around nightstand_373.
+Action 14: Walk to toilet_302.
+Action 15: Open toilet_302.
+Action 16: look for clothes_shirt_2114 around toilet_302.
+Action 17: Walk to bookshelf_372.
+Action 18: Open bookshelf_372.
+Action 19: look for clothes_shirt_2114 around bookshelf_372.
+Action 20: Walk to bathroom_counter_306.
+Action 21: look for clothes_shirt_2114 around bathroom_counter_306.
+Action 22: Walk to washing_machine_2041.
+Action 23: Open washing_machine_2041.
+Action 24: look for clothes_shirt_2114 around washing_machine_2041.
+Action 25: Walk to bathroom_cabinet_305.
+Action 26: Open bathroom_cabinet_305.
+Action 27: look for clothes_shirt_2114 around bathroom_cabinet_305.
+Action 28: Walk to photoframe_246.
+Action 29: look for clothes_shirt_2114 around photoframe_246.
+Action 30: Walk to bench_125.
+
+##############################
+From agent.py
+exp(clothes_shirt_2114, bench_125)
+Fail to find clothes_shirt_2114 around bench_125. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(desk_261)exp(clothes_shirt_2114, desk_261)walk_executor(clothes_shirt_2114)wash_executor(clothes_shirt_2114)grab_executor(clothes_shirt_2114)walk_executor(ironing_board_2099)put_executor(clothes_shirt_2114, ironing_board_2099)
+##############################
+From agent.py
+walk_executor(desk_261)
+Robot is inside bedroom_220. Robot is close desk_261. Robot is close floor_223. Robot is no longer inside dining_room_1.Robot is no longer close bench_125.
+##############################
+From agent.py
+exp(clothes_shirt_2114, desk_261)
+Fail to find clothes_shirt_2114 around desk_261. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(mat_115)exp(clothes_shirt_2114, mat_115)walk_executor(clothes_shirt_2114)wash_executor(clothes_shirt_2114)grab_executor(clothes_shirt_2114)walk_executor(ironing_board_2099)put_executor(clothes_shirt_2114, ironing_board_2099)
+##############################
+From agent.py
+walk_executor(mat_115)
+Robot is inside dining_room_1. Robot is close mat_115. Robot is close floor_20. Robot is no longer inside bedroom_220.Robot is no longer close desk_261.Robot is no longer close floor_223.
+##############################
+From agent.py
+exp(clothes_shirt_2114, mat_115)
+Fail to find clothes_shirt_2114 around mat_115. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(curtain_120)open_executor(curtain_120)exp(clothes_shirt_2114, curtain_120)walk_executor(clothes_shirt_2114)wash_executor(clothes_shirt_2114)grab_executor(clothes_shirt_2114)walk_executor(ironing_board_2099)put_executor(clothes_shirt_2114, ironing_board_2099)
+##############################
+From agent.py
+walk_executor(curtain_120)
+Robot is inside dining_room_1. Robot is close curtain_120. Robot is close curtain_119. Robot is no longer close mat_115.Robot is no longer close floor_20.
+##############################
+From agent.py
+open_executor(curtain_120)
+Robot is inside dining_room_1. Robot is close curtain_120. Robot is close curtain_119. 
+##############################
+From agent.py
+exp(clothes_shirt_2114, curtain_120)
+Fail to find clothes_shirt_2114 around curtain_120. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(towel_rack_298)exp(clothes_shirt_2114, towel_rack_298)walk_executor(clothes_shirt_2114)wash_executor(clothes_shirt_2114)grab_executor(clothes_shirt_2114)walk_executor(ironing_board_2099)put_executor(clothes_shirt_2114, ironing_board_2099)
+##############################
+From agent.py
+walk_executor(towel_rack_298)
+Find towel_2083. Robot is inside bathroom_265. Robot is close towel_rack_298. Robot is no longer inside dining_room_1.Robot is no longer close curtain_120.Robot is no longer close curtain_119.
+##############################

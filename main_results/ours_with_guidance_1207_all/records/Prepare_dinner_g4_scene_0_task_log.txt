@@ -1,0 +1,2228 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Gather the necessary ingredients: rice and eggs, and any desired seasonings.', '2. Cook the rice if it is not pre-cooked.', '3. Scramble the eggs.', '4. Stir-fry the rice and scrambled eggs together, adding any desired seasonings.', '5. Serve the fried rice with egg on a plate.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_rice_2036_around_kitchen_counter_230(food_rice:item):
+    goal: not unknown(food_rice)
+    body:
+        assert is_food_rice(food_rice)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==230
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_rice,kitchen_counter_instance)
+        else:
+            exp(food_rice,kitchen_counter_instance)
+    eff:
+        unknown[food_rice]=False
+        close[food_rice,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_rice]=True
+    
+
+behavior find_food_egg_2020_around_fridge_289(food_egg:item):
+    goal: not unknown(food_egg)
+    body:
+        assert is_food_egg(food_egg)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_egg,fridge_instance)
+        else:
+            exp(food_egg,fridge_instance)
+    eff:
+        unknown[food_egg]=False
+        close[food_egg,fridge_instance]=True
+        close[fridge_instance,food_egg]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def has_food_rice_or_egg(food:item):
+    # Function to check if there is rice or eggs categorized as food
+    symbol has_food=exists i: item : (is_food_rice(i) or is_food_egg(i)) and inside(i, food)
+    return has_food
+
+behavior gather_ingredients():
+    body:
+        foreach ingredient: item:
+            # Loop through all items to find rice and eggs
+            if (is_food_rice(ingredient) or is_food_egg(ingredient)) and not visited(ingredient):
+                observe(ingredient, "Check if this is rice or eggs required for the dish")
+
+behavior __goal__():
+    body:
+        if exists ingredient: item : is_food_rice_or_egg(ingredient):
+            # If rice or eggs are found in the known information
+            bind ingredient: item where:
+                is_food_rice_or_egg(ingredient)
+            achieve close_char(char, ingredient)
+        else:
+            # Search for any unvisited rice or eggs in the scene
+            gather_ingredients()
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "behavior_definition":
+
+'Function is_food_rice_or_egg not found. Note that recursive function calls are not supported in the current version.'
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_food_rice_2036_around_kitchen_counter_230(food_rice:item):
+    goal: not unknown(food_rice)
+    body:
+        assert is_food_rice(food_rice)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==230
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_rice,kitchen_counter_instance)
+        else:
+            exp(food_rice,kitchen_counter_instance)
+    eff:
+        unknown[food_rice]=False
+        close[food_rice,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_rice]=True
+    
+
+behavior find_food_egg_2020_around_fridge_289(food_egg:item):
+    goal: not unknown(food_egg)
+    body:
+        assert is_food_egg(food_egg)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_egg,fridge_instance)
+        else:
+            exp(food_egg,fridge_instance)
+    eff:
+        unknown[food_egg]=False
+        close[food_egg,fridge_instance]=True
+        close[fridge_instance,food_egg]=True
+    
+
+#goal_representation
+ 
+def has_food_rice_or_egg(food:item):
+    # Function to check if there is rice or eggs categorized as food
+    symbol has_food=exists i: item : (is_food_rice(i) or is_food_egg(i)) and inside(i, food)
+    return has_food
+
+behavior gather_ingredients():
+    body:
+        foreach ingredient: item:
+            # Loop through all items to find rice and eggs
+            if (is_food_rice(ingredient) or is_food_egg(ingredient)) and not visited(ingredient):
+                observe(ingredient, "Check if this is rice or eggs required for the dish")
+
+behavior __goal__():
+    body:
+        if exists ingredient: item : (is_food_rice(ingredient) or is_food_egg(ingredient)):
+            # If rice or eggs are found in the known information
+            bind ingredient: item where:
+                is_food_rice(ingredient) or is_food_egg(ingredient)
+            achieve close_char(char, ingredient)
+        else:
+            # Search for any unvisited rice or eggs in the scene
+            gather_ingredients()
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+ 
+def has_food_rice_or_egg(food:item):
+    # Function to check if there is rice or eggs categorized as food
+    symbol has_food=exists i: item : (is_food_rice(i) or is_food_egg(i)) and inside(i, food)
+    return has_food
+
+behavior gather_ingredients():
+    body:
+        foreach ingredient: item:
+            # Loop through all items to find rice and eggs
+            if (is_food_rice(ingredient) or is_food_egg(ingredient)) and not visited(ingredient):
+                observe(ingredient, "Check if this is rice or eggs required for the dish")
+
+behavior __goal__():
+    body:
+        if exists ingredient: item : (is_food_rice(ingredient) or is_food_egg(ingredient)):
+            # If rice or eggs are found in the known information
+            bind ingredient: item where:
+                is_food_rice(ingredient) or is_food_egg(ingredient)
+            achieve close_char(char, ingredient)
+        else:
+            # Search for any unvisited rice or eggs in the scene
+            gather_ingredients()
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(fridge_289)switchoff_executor(fridge_289)open_executor(fridge_289)exp(food_egg_2020, fridge_289)walk_executor(food_egg_2020)
+##############################
+From agent.py
+walk_executor(fridge_289)
+Find sauce_2078. Find food_steak_2008. Find food_apple_2009. Find food_bacon_2010. Find food_banana_2011. Find food_bread_2012. Find food_cake_2013. Find food_carrot_2014. Find food_cereal_2015. Find food_cheese_2016. Find food_chicken_2017. Find food_dessert_2018. Find food_donut_2019. Find food_egg_2020. Find food_fish_2021. Find food_food_2022. Find food_fruit_2023. Find food_hamburger_2024. Find food_ice_cream_2025. Find food_jam_2026. Find food_kiwi_2027. Find food_lemon_2028. Find food_noodles_2029. Find food_oatmeal_2030. Find food_orange_2031. Find food_onion_2032. Find food_peanut_butter_2033. Find food_pizza_2034. Find food_potato_2035. Find food_rice_2036. Find food_salt_2037. Find food_snack_2038. Find food_sugar_2039. Find food_turkey_2040. Find food_vegetable_2041. Find dry_pasta_2042. Find milk_2043. Find drawing_239. Find drawing_240. Robot is inside dining_room_201. Robot is close sauce_2078. Robot is close fridge_289. Robot is close floor_202. Robot is close floor_203. Robot is close food_steak_2008. Robot is close food_apple_2009. Robot is close food_bacon_2010. Robot is close food_banana_2011. Robot is close food_bread_2012. Robot is close food_cake_2013. Robot is close food_carrot_2014. Robot is close food_cereal_2015. Robot is close food_cheese_2016. Robot is close food_chicken_2017. Robot is close food_dessert_2018. Robot is close food_donut_2019. Robot is close food_egg_2020. Robot is close food_fish_2021. Robot is close food_food_2022. Robot is close food_fruit_2023. Robot is close food_hamburger_2024. Robot is close food_ice_cream_2025. Robot is close food_jam_2026. Robot is close food_kiwi_2027. Robot is close food_lemon_2028. Robot is close food_noodles_2029. Robot is close food_oatmeal_2030. Robot is close food_orange_2031. Robot is close food_onion_2032. Robot is close food_peanut_butter_2033. Robot is close food_pizza_2034. Robot is close food_potato_2035. Robot is close food_rice_2036. Robot is close food_salt_2037. Robot is close food_snack_2038. Robot is close food_sugar_2039. Robot is close food_turkey_2040. Robot is close food_vegetable_2041. Robot is close dry_pasta_2042. Robot is close milk_2043. Robot is no longer inside bathroom_1.
+##############################
+From agent.py
+switchoff_executor(fridge_289)
+Find mat_22. Find drawing_174. Robot is inside dining_room_201. Robot is close sauce_2078. Robot is close fridge_289. Robot is close floor_202. Robot is close floor_203. Robot is close food_steak_2008. Robot is close food_apple_2009. Robot is close food_bacon_2010. Robot is close food_banana_2011. Robot is close food_bread_2012. Robot is close food_cake_2013. Robot is close food_carrot_2014. Robot is close food_cereal_2015. Robot is close food_cheese_2016. Robot is close food_chicken_2017. Robot is close food_dessert_2018. Robot is close food_donut_2019. Robot is close food_egg_2020. Robot is close food_fish_2021. Robot is close food_food_2022. Robot is close food_fruit_2023. Robot is close food_hamburger_2024. Robot is close food_ice_cream_2025. Robot is close food_jam_2026. Robot is close food_kiwi_2027. Robot is close food_lemon_2028. Robot is close food_noodles_2029. Robot is close food_oatmeal_2030. Robot is close food_orange_2031. Robot is close food_onion_2032. Robot is close food_peanut_butter_2033. Robot is close food_pizza_2034. Robot is close food_potato_2035. Robot is close food_rice_2036. Robot is close food_salt_2037. Robot is close food_snack_2038. Robot is close food_sugar_2039. Robot is close food_turkey_2040. Robot is close food_vegetable_2041. Robot is close dry_pasta_2042. Robot is close milk_2043. 
+##############################
+From agent.py
+open_executor(fridge_289)
+Robot is inside dining_room_201. Robot is close sauce_2078. Robot is close fridge_289. Robot is close floor_202. Robot is close floor_203. Robot is close food_steak_2008. Robot is close food_apple_2009. Robot is close food_bacon_2010. Robot is close food_banana_2011. Robot is close food_bread_2012. Robot is close food_cake_2013. Robot is close food_carrot_2014. Robot is close food_cereal_2015. Robot is close food_cheese_2016. Robot is close food_chicken_2017. Robot is close food_dessert_2018. Robot is close food_donut_2019. Robot is close food_egg_2020. Robot is close food_fish_2021. Robot is close food_food_2022. Robot is close food_fruit_2023. Robot is close food_hamburger_2024. Robot is close food_ice_cream_2025. Robot is close food_jam_2026. Robot is close food_kiwi_2027. Robot is close food_lemon_2028. Robot is close food_noodles_2029. Robot is close food_oatmeal_2030. Robot is close food_orange_2031. Robot is close food_onion_2032. Robot is close food_peanut_butter_2033. Robot is close food_pizza_2034. Robot is close food_potato_2035. Robot is close food_rice_2036. Robot is close food_salt_2037. Robot is close food_snack_2038. Robot is close food_sugar_2039. Robot is close food_turkey_2040. Robot is close food_vegetable_2041. Robot is close dry_pasta_2042. Robot is close milk_2043. 
+##############################
+From agent.py
+exp(food_egg_2020, fridge_289)
+Find food_egg_2020. 
+##############################
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Find and crack the eggs, then beat them in a bowl.  ', '2. Fry the eggs in a pan.  ', '3. Add rice to the pan and stir-fry it with the eggs.  ', '4. Serve the fried rice with egg.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_bowl_2071_around_cupboard_229(bowl:item):
+    goal: not unknown(bowl)
+    body:
+        assert is_bowl(bowl)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==229
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(bowl,cupboard_instance)
+        else:
+            exp(bowl,cupboard_instance)
+    eff:
+        unknown[bowl]=False
+        close[bowl,cupboard_instance]=True
+        close[cupboard_instance,bowl]=True
+    
+
+behavior find_bowl_2072_around_kitchen_counter_230(bowl:item):
+    goal: not unknown(bowl)
+    body:
+        assert is_bowl(bowl)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==230
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(bowl,kitchen_counter_instance)
+        else:
+            exp(bowl,kitchen_counter_instance)
+    eff:
+        unknown[bowl]=False
+        close[bowl,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,bowl]=True
+    
+
+behavior find_knife_2050_around_kitchen_counter_230(knife:item):
+    goal: not unknown(knife)
+    body:
+        assert is_knife(knife)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==230
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(knife,kitchen_counter_instance)
+        else:
+            exp(knife,kitchen_counter_instance)
+    eff:
+        unknown[knife]=False
+        close[knife,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,knife]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def find_egg(egg: item):
+    # Attempt to find the egg for the task of making fried rice
+    observe(egg, "Ensure this is food_egg_2020")
+
+behavior crack_and_beat_egg(egg: item, bowl: item):
+    body:
+        achieve cut(egg)
+        # Crack the egg
+
+        achieve inside(egg, bowl)
+        # Beat the egg inside the bowl
+
+behavior __goal__():
+    body:
+        bind fridge: item where:
+            is_fridge(fridge) and id[fridge] == 289
+        # Select fridge with ID 289
+
+        bind egg: item where:
+            is_food_egg(egg) and id[egg] == 2020
+        # Select the egg with ID 2020
+
+        bind bowl: item where:
+            is_bowl(bowl)
+        # Select an instance of a bowl
+
+        if not visited(fridge):
+            observe(fridge, "Check for any food inside")
+
+        if not visited(egg):
+            find_egg(egg)
+
+        crack_and_beat_egg(egg, bowl)
+        # Execute the behavior to crack and beat the egg
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "function_definition":
+
+Behavior body statements are not allowed in the current mode: SymbolicExecutionMode.DERIVED
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_bowl_2071_around_cupboard_229(bowl:item):
+    goal: not unknown(bowl)
+    body:
+        assert is_bowl(bowl)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==229
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(bowl,cupboard_instance)
+        else:
+            exp(bowl,cupboard_instance)
+    eff:
+        unknown[bowl]=False
+        close[bowl,cupboard_instance]=True
+        close[cupboard_instance,bowl]=True
+    
+
+behavior find_bowl_2072_around_kitchen_counter_230(bowl:item):
+    goal: not unknown(bowl)
+    body:
+        assert is_bowl(bowl)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==230
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(bowl,kitchen_counter_instance)
+        else:
+            exp(bowl,kitchen_counter_instance)
+    eff:
+        unknown[bowl]=False
+        close[bowl,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,bowl]=True
+    
+
+behavior find_knife_2050_around_kitchen_counter_230(knife:item):
+    goal: not unknown(knife)
+    body:
+        assert is_knife(knife)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==230
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(knife,kitchen_counter_instance)
+        else:
+            exp(knife,kitchen_counter_instance)
+    eff:
+        unknown[knife]=False
+        close[knife,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,knife]=True
+    
+
+#goal_representation
+ 
+def find_egg(egg: item):
+    # Attempt to find the egg for the task of making fried rice
+    observe(egg, "Ensure this is food_egg_2020")
+
+behavior crack_and_beat_egg(egg: item, bowl: item):
+    body:
+        achieve cut(egg)
+        # Crack the egg
+
+        achieve inside(egg, bowl)
+        # Beat the egg inside the bowl
+
+behavior __goal__():
+    body:
+        bind fridge: item where:
+            is_fridge(fridge) and id[fridge] == 289
+        # Select fridge with ID 289
+
+        bind egg: item where:
+            is_food_egg(egg) and id[egg] == 2020
+        # Select the egg with ID 2020
+
+        bind bowl: item where:
+            is_bowl(bowl)
+        # Select an instance of a bowl
+
+        if not visited(fridge):
+            observe(fridge, "Check for any food inside")
+
+        if not visited(egg):
+            find_egg(egg)
+
+        crack_and_beat_egg(egg, bowl)
+        # Execute the behavior to crack and beat the egg
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "function_definition":
+
+Behavior body statements are not allowed in the current mode: SymbolicExecutionMode.DERIVED
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_knife_2050_around_kitchen_counter_230(knife:item):
+    goal: not unknown(knife)
+    body:
+        assert is_knife(knife)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==230
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(knife,kitchen_counter_instance)
+        else:
+            exp(knife,kitchen_counter_instance)
+    eff:
+        unknown[knife]=False
+        close[knife,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,knife]=True
+    
+
+behavior find_bowl_2072_around_kitchen_counter_230(bowl:item):
+    goal: not unknown(bowl)
+    body:
+        assert is_bowl(bowl)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==230
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(bowl,kitchen_counter_instance)
+        else:
+            exp(bowl,kitchen_counter_instance)
+    eff:
+        unknown[bowl]=False
+        close[bowl,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,bowl]=True
+    
+
+#goal_representation
+ 
+def find_egg(egg: item):
+    # Attempt to find the egg for the task of making fried rice
+    observe(egg, "Ensure this is food_egg_2020")
+
+behavior crack_and_beat_egg(egg: item, bowl: item):
+    body:
+        achieve cut(egg)
+        # Crack the egg
+
+        achieve inside(egg, bowl)
+        # Beat the egg inside the bowl
+
+behavior __goal__():
+    body:
+        bind fridge: item where:
+            is_fridge(fridge) and id[fridge] == 289
+        # Select fridge with ID 289
+
+        bind egg: item where:
+            is_food_egg(egg) and id[egg] == 2020
+        # Select the egg with ID 2020
+
+        bind bowl: item where:
+            is_bowl(bowl)
+        # Select an instance of a bowl
+
+        if not visited(fridge):
+            observe(fridge, "Check for any food inside")
+
+        if not visited(egg):
+            find_egg(egg)
+
+        crack_and_beat_egg(egg, bowl)
+        # Execute the behavior to crack and beat the egg
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_bowl_2071_around_wallshelf_235(bowl:item):
+    goal: not unknown(bowl)
+    body:
+        assert is_bowl(bowl)
+        bind wallshelf_instance:item where:
+            is_wallshelf(wallshelf_instance) and id[wallshelf_instance]==235
+        achieve close_char(char,wallshelf_instance)
+        if can_open(wallshelf_instance):
+            achieve_once open(wallshelf_instance)
+            exp(bowl,wallshelf_instance)
+        else:
+            exp(bowl,wallshelf_instance)
+    eff:
+        unknown[bowl]=False
+        close[bowl,wallshelf_instance]=True
+        close[wallshelf_instance,bowl]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior find_and_crack_eggs(egg: item, bowl: item):
+    body:
+        achieve_once inhand(egg)
+        # Temporarily hold the egg
+
+behavior beat_eggs(egg: item, bowl: item):
+    body:
+        achieve on(egg, bowl)
+        # Place the cracked egg into the bowl
+
+        touch(bowl)
+        # Beat the eggs in the bowl
+
+behavior __goal__():
+    body:
+        bind egg: item where:
+            is_food_egg(egg) and id[egg] == 2020
+        # Select the egg with ID 2020
+
+        bind bowl: item where:
+            is_bowl(bowl)
+        # Select a bowl
+
+        find_and_crack_eggs(egg, bowl)
+        # Find and crack the eggs
+
+        beat_eggs(egg, bowl)
+        # Beat the eggs in the bowl
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+ 
+behavior find_and_crack_eggs(egg: item, bowl: item):
+    body:
+        achieve_once inhand(egg)
+        # Temporarily hold the egg
+
+behavior beat_eggs(egg: item, bowl: item):
+    body:
+        achieve on(egg, bowl)
+        # Place the cracked egg into the bowl
+
+        touch(bowl)
+        # Beat the eggs in the bowl
+
+behavior __goal__():
+    body:
+        bind egg: item where:
+            is_food_egg(egg) and id[egg] == 2020
+        # Select the egg with ID 2020
+
+        bind bowl: item where:
+            is_bowl(bowl)
+        # Select a bowl
+
+        find_and_crack_eggs(egg, bowl)
+        # Find and crack the eggs
+
+        beat_eggs(egg, bowl)
+        # Beat the eggs in the bowl
+
+##############################
+From agent.py-> find a plan in act()
+grab_executor(food_egg_2020)walk_executor(wallshelf_235)exp(bowl_2071, wallshelf_235)walk_executor(bowl_2071)put_executor(food_egg_2020, bowl_2071)touch_executor(bowl_2071)
+##############################
+From agent.py
+grab_executor(food_egg_2020)
+Robot is inside dining_room_201. Robot is close sauce_2078. Robot is close fridge_289. Robot is close floor_202. Robot is close floor_203. Robot is close food_steak_2008. Robot is close food_apple_2009. Robot is close food_bacon_2010. Robot is close food_banana_2011. Robot is close food_bread_2012. Robot is close food_cake_2013. Robot is close food_carrot_2014. Robot is close food_cereal_2015. Robot is close food_cheese_2016. Robot is close food_chicken_2017. Robot is close food_dessert_2018. Robot is close food_donut_2019. Robot is close food_egg_2020. Robot is close food_fish_2021. Robot is close food_food_2022. Robot is close food_fruit_2023. Robot is close food_hamburger_2024. Robot is close food_ice_cream_2025. Robot is close food_jam_2026. Robot is close food_kiwi_2027. Robot is close food_lemon_2028. Robot is close food_noodles_2029. Robot is close food_oatmeal_2030. Robot is close food_orange_2031. Robot is close food_onion_2032. Robot is close food_peanut_butter_2033. Robot is close food_pizza_2034. Robot is close food_potato_2035. Robot is close food_rice_2036. Robot is close food_salt_2037. Robot is close food_snack_2038. Robot is close food_sugar_2039. Robot is close food_turkey_2040. Robot is close food_vegetable_2041. Robot is close dry_pasta_2042. Robot is close milk_2043. Grabbing food_egg_2020 by right hand. 
+##############################
+From agent.py
+walk_executor(wallshelf_235)
+Find drawing_241. Find drawing_242. Find drawing_243. Robot is inside dining_room_201. Robot is close food_egg_2020. Robot is close wallshelf_235. Robot is no longer close sauce_2078.Robot is no longer close fridge_289.Robot is no longer close floor_202.Robot is no longer close floor_203.Robot is no longer close food_steak_2008.Robot is no longer close food_apple_2009.Robot is no longer close food_bacon_2010.Robot is no longer close food_banana_2011.Robot is no longer close food_bread_2012.Robot is no longer close food_cake_2013.Robot is no longer close food_carrot_2014.Robot is no longer close food_cereal_2015.Robot is no longer close food_cheese_2016.Robot is no longer close food_chicken_2017.Robot is no longer close food_dessert_2018.Robot is no longer close food_donut_2019.Robot is no longer close food_fish_2021.Robot is no longer close food_food_2022.Robot is no longer close food_fruit_2023.Robot is no longer close food_hamburger_2024.Robot is no longer close food_ice_cream_2025.Robot is no longer close food_jam_2026.Robot is no longer close food_kiwi_2027.Robot is no longer close food_lemon_2028.Robot is no longer close food_noodles_2029.Robot is no longer close food_oatmeal_2030.Robot is no longer close food_orange_2031.Robot is no longer close food_onion_2032.Robot is no longer close food_peanut_butter_2033.Robot is no longer close food_pizza_2034.Robot is no longer close food_potato_2035.Robot is no longer close food_rice_2036.Robot is no longer close food_salt_2037.Robot is no longer close food_snack_2038.Robot is no longer close food_sugar_2039.Robot is no longer close food_turkey_2040.Robot is no longer close food_vegetable_2041.Robot is no longer close dry_pasta_2042.Robot is no longer close milk_2043.
+##############################
+From agent.py
+exp(bowl_2071, wallshelf_235)
+Fail to find bowl_2071 around wallshelf_235. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(wallshelf_234)exp(bowl_2071, wallshelf_234)walk_executor(bowl_2071)put_executor(food_egg_2020, bowl_2071)touch_executor(bowl_2071)
+##############################
+From agent.py
+walk_executor(wallshelf_234)
+Find drawing_238. Robot is inside dining_room_201. Robot is close food_egg_2020. Robot is close wallshelf_234. Robot is close wall_212. Robot is no longer close wallshelf_235.
+##############################
+From agent.py
+exp(bowl_2071, wallshelf_234)
+Fail to find bowl_2071 around wallshelf_234. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(cupboard_229)open_executor(cupboard_229)exp(bowl_2071, cupboard_229)walk_executor(bowl_2071)put_executor(food_egg_2020, bowl_2071)touch_executor(bowl_2071)
+##############################
+From agent.py
+walk_executor(cupboard_229)
+Find tray_296. Robot is inside dining_room_201. Robot is close food_egg_2020. Robot is close wall_211. Robot is close cupboard_229. Robot is no longer close wallshelf_234.Robot is no longer close wall_212.
+##############################
+From agent.py
+open_executor(cupboard_229)
+Robot is inside dining_room_201. Robot is close food_egg_2020. Robot is close wall_211. Robot is close cupboard_229. 
+##############################
+From agent.py
+exp(bowl_2071, cupboard_229)
+Fail to find bowl_2071 around cupboard_229. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(wallshelf_35)exp(bowl_2071, wallshelf_35)walk_executor(bowl_2071)put_executor(food_egg_2020, bowl_2071)touch_executor(bowl_2071)
+##############################
+From agent.py
+walk_executor(wallshelf_35)
+Find towel_rack_33. Find towel_rack_34. Robot is inside bathroom_1. Robot is close food_egg_2020. Robot is close wallshelf_35. Robot is no longer inside dining_room_201.Robot is no longer close wall_211.Robot is no longer close cupboard_229.
+##############################
+From agent.py
+exp(bowl_2071, wallshelf_35)
+Fail to find bowl_2071 around wallshelf_35. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(tablelamp_97)exp(bowl_2071, tablelamp_97)walk_executor(bowl_2071)put_executor(food_egg_2020, bowl_2071)touch_executor(bowl_2071)
+##############################
+From agent.py
+walk_executor(tablelamp_97)
+Find mat_173. Find pillow_183. Find pillow_182. Robot is inside bedroom_67. Robot is close food_egg_2020. Robot is close tablelamp_97. Robot is close nightstand_100. Robot is no longer inside bathroom_1.Robot is no longer close wallshelf_35.
+##############################
+From agent.py
+exp(bowl_2071, tablelamp_97)
+Fail to find bowl_2071 around tablelamp_97. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(closetdrawer_116)exp(bowl_2071, closetdrawer_116)walk_executor(bowl_2071)put_executor(food_egg_2020, bowl_2071)touch_executor(bowl_2071)
+##############################
+From agent.py
+walk_executor(closetdrawer_116)
+Find hanger_110. Find hanger_140. Find hanger_109. Find hanger_132. Find hanger_113. Find hanger_112. Find hanger_124. Find hanger_115. Find hanger_130. Find hanger_134. Find hanger_136. Find hanger_138. Find hanger_111. Find hanger_114. Find hanger_126. Find hanger_128. Find hanger_141. Find hanger_142. Robot is inside bedroom_67. Robot is close food_egg_2020. Robot is close closetdrawer_116. Robot is close dresser_108. Robot is close closetdrawer_119. Robot is no longer close nightstand_100.Robot is no longer close tablelamp_97.
+##############################
+From agent.py
+Record from func query_LLM_human in agent.py
+Question: Can you help me to find bowl_2071 ?
+Answer: Go to the dining room, labeled dining_room_201. Inside, locate table_226. You will find bowl_2071 on top of table_226.
+Re-decompose: None
+
+##############################
+From agent.py
+Human Instruction: Go to the dining room, labeled dining_room_201. Inside, locate table_226. You will find bowl_2071 on top of table_226.
+
+The actions you have taken:
+Action 1: Walk to fridge_289.
+Action 2: Switch off fridge_289.
+Action 3: Open fridge_289.
+Action 4: look for food_egg_2020 around fridge_289.
+Action 5: Grab food_egg_2020.
+Action 6: Walk to wallshelf_235.
+Action 7: look for bowl_2071 around wallshelf_235.
+Action 8: Walk to wallshelf_234.
+Action 9: look for bowl_2071 around wallshelf_234.
+Action 10: Walk to cupboard_229.
+Action 11: Open cupboard_229.
+Action 12: look for bowl_2071 around cupboard_229.
+Action 13: Walk to wallshelf_35.
+Action 14: look for bowl_2071 around wallshelf_35.
+Action 15: Walk to tablelamp_97.
+Action 16: look for bowl_2071 around tablelamp_97.
+Action 17: Walk to closetdrawer_116.
+
+##############################
+From agent.py
+exp(bowl_2071, closetdrawer_116)
+Fail to find bowl_2071 around closetdrawer_116. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(table_226)exp(bowl_2071, table_226)walk_executor(bowl_2071)put_executor(food_egg_2020, bowl_2071)touch_executor(bowl_2071)
+##############################
+From agent.py
+walk_executor(table_226)
+Find coffee_filter_2000. Find bowl_2071. Find drawing_2003. Find bowl_2072. Find mat_236. Find fork_2080. Find fork_2081. Find mat_237. Robot is inside dining_room_201. Robot is close food_egg_2020. Robot is close table_226. Robot is no longer inside bedroom_67.Robot is no longer close dresser_108.Robot is no longer close closetdrawer_116.Robot is no longer close closetdrawer_119.
+##############################
+From agent.py
+exp(bowl_2071, table_226)
+Find bowl_2071. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(bowl_2071)put_executor(food_egg_2020, bowl_2071)touch_executor(bowl_2071)
+##############################
+From agent.py
+walk_executor(bowl_2071)
+Robot is inside dining_room_201. Robot is close food_egg_2020. Robot is close table_226. Robot is close bowl_2071. 
+##############################
+From agent.py
+put_executor(food_egg_2020, bowl_2071)
+Robot is inside dining_room_201. Robot is close food_egg_2020. Robot is close table_226. Robot is close bowl_2071. food_egg_2020 released by right hand. 
+##############################
+From agent.py
+touch_executor(bowl_2071)
+Robot is inside dining_room_201. Robot is close food_egg_2020. Robot is close table_226. Robot is close bowl_2071. 
+##############################
+From agent.py
+Human Instruction: You need to crack the eggs and beat them in the bowl. The current actions only include placing the egg on the bowl and touching the bowl, without indicating the egg has been cracked and beaten.
+
+The actions you have taken:
+Action 1: Walk to fridge_289.
+Action 2: Switch off fridge_289.
+Action 3: Open fridge_289.
+Action 4: look for food_egg_2020 around fridge_289.
+Action 5: Grab food_egg_2020.
+Action 6: Walk to wallshelf_235.
+Action 7: look for bowl_2071 around wallshelf_235.
+Action 8: Walk to wallshelf_234.
+Action 9: look for bowl_2071 around wallshelf_234.
+Action 10: Walk to cupboard_229.
+Action 11: Open cupboard_229.
+Action 12: look for bowl_2071 around cupboard_229.
+Action 13: Walk to wallshelf_35.
+Action 14: look for bowl_2071 around wallshelf_35.
+Action 15: Walk to tablelamp_97.
+Action 16: look for bowl_2071 around tablelamp_97.
+Action 17: Walk to closetdrawer_116.
+Action 18: look for bowl_2071 around closetdrawer_116.
+Action 19: Walk to table_226.
+Action 20: look for bowl_2071 around table_226.
+Action 21: Walk to bowl_2071.
+Action 22: Put food_egg_2020 on bowl_2071.
+Action 23: Touch bowl_2071.
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_knife_2050_around_kitchen_counter_230(knife:item):
+    goal: not unknown(knife)
+    body:
+        assert is_knife(knife)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==230
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(knife,kitchen_counter_instance)
+        else:
+            exp(knife,kitchen_counter_instance)
+    eff:
+        unknown[knife]=False
+        close[knife,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,knife]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior crack_and_beat_egg(egg:item, bowl:item):
+    body:
+        achieve inside(egg, bowl)
+        # Ensure the egg is cracked and placed inside the bowl
+
+        achieve_once inhand(egg)
+        # Temporarily hold the egg to crack it
+
+        achieve_once inhand(bowl)
+        # Temporarily hold the bowl for beating the egg
+
+behavior beat_egg_in_bowl(bowl:item):
+    body:
+        touch(bowl)
+        # Beat the egg inside the bowl
+
+behavior __goal__():
+    body:
+        bind egg: item where:
+            is_food_egg(egg) and id[egg] == 2020
+        # Select the egg with ID 2020
+
+        bind bowl: item where:
+            is_bowl(bowl) and id[bowl] == 2071
+        # Select the bowl with ID 2071
+
+        crack_and_beat_egg(egg, bowl)
+        beat_egg_in_bowl(bowl)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_knife_2050_around_kitchen_counter_230(knife:item):
+    goal: not unknown(knife)
+    body:
+        assert is_knife(knife)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==230
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(knife,kitchen_counter_instance)
+        else:
+            exp(knife,kitchen_counter_instance)
+    eff:
+        unknown[knife]=False
+        close[knife,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,knife]=True
+    
+
+behavior find_cutting_board_2051_around_kitchen_counter_230(cutting_board:item):
+    goal: not unknown(cutting_board)
+    body:
+        assert is_cutting_board(cutting_board)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==230
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(cutting_board,kitchen_counter_instance)
+        else:
+            exp(cutting_board,kitchen_counter_instance)
+    eff:
+        unknown[cutting_board]=False
+        close[cutting_board,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,cutting_board]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+behavior crack_and_beat_eggs(egg:item, bowl:item):
+    body:
+        achieve cut(egg)
+        # Ensure the egg is cracked
+
+        achieve inside(egg, bowl)
+        # Ensure the egg content is placed inside the bowl
+
+behavior __goal__():
+    body:
+        bind egg: item where:
+            is_food_egg(egg) and id[egg] == 2020
+        # Select the specific egg instance with ID 2020
+
+        bind bowl: item where:
+            is_bowl(bowl) and id[bowl] == 2071
+        # Select the specific bowl instance with ID 2071
+
+        crack_and_beat_eggs(egg, bowl)
+        # Execute the behavior to crack and beat the egg inside the bowl
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+behavior crack_and_beat_eggs(egg:item, bowl:item):
+    body:
+        achieve cut(egg)
+        # Ensure the egg is cracked
+
+        achieve inside(egg, bowl)
+        # Ensure the egg content is placed inside the bowl
+
+behavior __goal__():
+    body:
+        bind egg: item where:
+            is_food_egg(egg) and id[egg] == 2020
+        # Select the specific egg instance with ID 2020
+
+        bind bowl: item where:
+            is_bowl(bowl) and id[bowl] == 2071
+        # Select the specific bowl instance with ID 2071
+
+        crack_and_beat_eggs(egg, bowl)
+        # Execute the behavior to crack and beat the egg inside the bowl
+##############################
+From agent.py-> find a plan in act()
+walk_executor(kitchen_counter_230)exp(cutting_board_2051, kitchen_counter_230)walk_executor(food_egg_2020)grab_executor(food_egg_2020)walk_executor(cutting_board_2051)put_executor(food_egg_2020, cutting_board_2051)walk_executor(kitchen_counter_230)exp(knife_2050, kitchen_counter_230)walk_executor(knife_2050)grab_executor(knife_2050)walk_executor(food_egg_2020)cut_executor(food_egg_2020)grab_executor(food_egg_2020)walk_executor(bowl_2071)putin_executor(food_egg_2020, bowl_2071)
+##############################
+From agent.py
+walk_executor(kitchen_counter_230)
+Find pot_2069. Find cup_2063. Find knife_2050. Find napkin_2005. Find cup_2064. Find cutting_board_2051. Find oil_2079. Find fryingpan_2083. Robot is inside dining_room_201. Robot is close kitchen_counter_230. Robot is no longer close table_226.Robot is no longer close food_egg_2020.Robot is no longer close bowl_2071.
+##############################
+From agent.py
+exp(cutting_board_2051, kitchen_counter_230)
+Find cutting_board_2051. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(food_egg_2020)grab_executor(food_egg_2020)walk_executor(cutting_board_2051)put_executor(food_egg_2020, cutting_board_2051)walk_executor(knife_2050)grab_executor(knife_2050)walk_executor(food_egg_2020)cut_executor(food_egg_2020)grab_executor(food_egg_2020)walk_executor(bowl_2071)putin_executor(food_egg_2020, bowl_2071)
+##############################
+From agent.py
+walk_executor(food_egg_2020)
+Robot is inside dining_room_201. Robot is close food_egg_2020. Robot is close bowl_2071. Robot is no longer close kitchen_counter_230.
+##############################
+From agent.py
+grab_executor(food_egg_2020)
+Robot is inside dining_room_201. Robot is close food_egg_2020. Robot is close bowl_2071. Grabbing food_egg_2020 by right hand. 
+##############################
+From agent.py
+walk_executor(cutting_board_2051)
+Robot is inside dining_room_201. Robot is close food_egg_2020. Robot is close cutting_board_2051. Robot is close kitchen_counter_230. Robot is no longer close bowl_2071.
+##############################
+From agent.py
+put_executor(food_egg_2020, cutting_board_2051)
+Robot is inside dining_room_201. Robot is close food_egg_2020. Robot is close cutting_board_2051. Robot is close kitchen_counter_230. food_egg_2020 released by right hand. 
+##############################
+From agent.py
+walk_executor(knife_2050)
+Robot is inside dining_room_201. Robot is close kitchen_counter_230. Robot is close knife_2050. Robot is no longer close cutting_board_2051.Robot is no longer close food_egg_2020.
+##############################
+From agent.py
+grab_executor(knife_2050)
+Robot is inside dining_room_201. Robot is close kitchen_counter_230. Robot is close knife_2050. Grabbing knife_2050 by right hand. 
+##############################
+From agent.py
+walk_executor(food_egg_2020)
+Robot is inside dining_room_201. Robot is close knife_2050. Robot is close cutting_board_2051. Robot is close food_egg_2020. Robot is no longer close kitchen_counter_230.
+##############################
+From agent.py
+cut_executor(food_egg_2020)
+Robot is inside dining_room_201. Robot is close knife_2050. Robot is close cutting_board_2051. Robot is close food_egg_2020. 
+##############################
+From agent.py
+grab_executor(food_egg_2020)
+Robot is inside dining_room_201. Robot is close knife_2050. Robot is close cutting_board_2051. Robot is close food_egg_2020. Grabbing food_egg_2020 by left hand. 
+##############################
+From agent.py
+walk_executor(bowl_2071)
+Robot is inside dining_room_201. Robot is close knife_2050. Robot is close food_egg_2020. Robot is close table_226. Robot is close bowl_2071. Robot is no longer close cutting_board_2051.
+##############################
+From agent.py
+putin_executor(food_egg_2020, bowl_2071)
+Robot is inside dining_room_201. Robot is close knife_2050. Robot is close food_egg_2020. Robot is close table_226. Robot is close bowl_2071. food_egg_2020 released by left hand. 
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_wall_clock_249_around_nightstand_102(wall_clock:item):
+    goal: not unknown(wall_clock)
+    body:
+        assert is_wall_clock(wall_clock)
+        bind nightstand_instance:item where:
+            is_nightstand(nightstand_instance) and id[nightstand_instance]==102
+        achieve close_char(char,nightstand_instance)
+        if can_open(nightstand_instance):
+            achieve_once open(nightstand_instance)
+            exp(wall_clock,nightstand_instance)
+        else:
+            exp(wall_clock,nightstand_instance)
+    eff:
+        unknown[wall_clock]=False
+        close[wall_clock,nightstand_instance]=True
+        close[nightstand_instance,wall_clock]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior fry_egg_in_pan(egg:item, fryingpan:item):
+    body:
+        achieve inside(egg, fryingpan)
+        # Ensure the egg is placed inside the fryingpan
+        
+behavior __goal__():
+    body:
+        bind egg: item where:
+            is_food_egg(egg) and id[egg] == 2020
+        # Select the egg with ID 2020
+
+        bind fryingpan: item where:
+            is_fryingpan(fryingpan)
+        # Select the fryingpan instance
+
+        fry_egg_in_pan(egg, fryingpan)
+        # Execute the behavior to fry the egg in the fryingpan
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+behavior fry_egg_in_pan(egg:item, fryingpan:item):
+    body:
+        achieve inside(egg, fryingpan)
+        # Ensure the egg is placed inside the fryingpan
+        
+behavior __goal__():
+    body:
+        bind egg: item where:
+            is_food_egg(egg) and id[egg] == 2020
+        # Select the egg with ID 2020
+
+        bind fryingpan: item where:
+            is_fryingpan(fryingpan)
+        # Select the fryingpan instance
+
+        fry_egg_in_pan(egg, fryingpan)
+        # Execute the behavior to fry the egg in the fryingpan
+
+##############################
+From agent.py-> find a plan in act()
+grab_executor(food_egg_2020)walk_executor(fryingpan_2083)putin_executor(food_egg_2020, fryingpan_2083)
+##############################
+From agent.py
+grab_executor(food_egg_2020)
+Robot is inside dining_room_201. Robot is close knife_2050. Robot is close food_egg_2020. Robot is close table_226. Robot is close bowl_2071. Grabbing food_egg_2020 by left hand. 
+##############################
+From agent.py
+walk_executor(fryingpan_2083)
+Robot is inside dining_room_201. Robot is close knife_2050. Robot is close food_egg_2020. Robot is close fryingpan_2083. Robot is close kitchen_counter_230. Robot is no longer close table_226.Robot is no longer close bowl_2071.
+##############################
+From agent.py
+putin_executor(food_egg_2020, fryingpan_2083)
+Robot is inside dining_room_201. Robot is close knife_2050. Robot is close food_egg_2020. Robot is close fryingpan_2083. Robot is close kitchen_counter_230. food_egg_2020 released by left hand. 
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_spectacles_2082_around_closetdrawer_160(spectacles:item):
+    goal: not unknown(spectacles)
+    body:
+        assert is_spectacles(spectacles)
+        bind closetdrawer_instance:item where:
+            is_closetdrawer(closetdrawer_instance) and id[closetdrawer_instance]==160
+        achieve close_char(char,closetdrawer_instance)
+        if can_open(closetdrawer_instance):
+            achieve_once open(closetdrawer_instance)
+            exp(spectacles,closetdrawer_instance)
+        else:
+            exp(spectacles,closetdrawer_instance)
+    eff:
+        unknown[spectacles]=False
+        close[spectacles,closetdrawer_instance]=True
+        close[closetdrawer_instance,spectacles]=True
+    
+
+behavior find_clothes_scarf_2048_around_hanger_141(clothes_scarf:item):
+    goal: not unknown(clothes_scarf)
+    body:
+        assert is_clothes_scarf(clothes_scarf)
+        bind hanger_instance:item where:
+            is_hanger(hanger_instance) and id[hanger_instance]==141
+        achieve close_char(char,hanger_instance)
+        if can_open(hanger_instance):
+            achieve_once open(hanger_instance)
+            exp(clothes_scarf,hanger_instance)
+        else:
+            exp(clothes_scarf,hanger_instance)
+    eff:
+        unknown[clothes_scarf]=False
+        close[clothes_scarf,hanger_instance]=True
+        close[hanger_instance,clothes_scarf]=True
+    
+
+behavior find_mouse_413_around_closetdrawer_160(mouse:item):
+    goal: not unknown(mouse)
+    body:
+        assert is_mouse(mouse)
+        bind closetdrawer_instance:item where:
+            is_closetdrawer(closetdrawer_instance) and id[closetdrawer_instance]==160
+        achieve close_char(char,closetdrawer_instance)
+        if can_open(closetdrawer_instance):
+            achieve_once open(closetdrawer_instance)
+            exp(mouse,closetdrawer_instance)
+        else:
+            exp(mouse,closetdrawer_instance)
+    eff:
+        unknown[mouse]=False
+        close[mouse,closetdrawer_instance]=True
+        close[closetdrawer_instance,mouse]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+behavior add_rice_to_pan(rice:item, pan:item):
+    body:
+        achieve inside(rice, pan)
+        # Ensure the rice is added to the pan
+
+behavior stir_fry_rice_and_egg(rice:item, egg:item, pan:item):
+    body:
+        achieve inside(rice, pan)
+        # Ensure the rice is inside the pan
+        achieve inside(egg, pan)
+        # Ensure the eggs are inside the pan
+
+behavior __goal__():
+    body:
+        bind rice: item where:
+            is_food_rice(rice)
+        # Select the rice instance
+
+        bind egg: item where:
+            is_food_egg(egg) and inside(egg, fryingpan_2083)
+        # Select the egg currently in the frying pan
+
+        bind fryingpan: item where:
+            is_fryingpan(fryingpan) and id[fryingpan]==2083
+        # Select the fryingpan with ID 2083
+
+        add_rice_to_pan(rice, fryingpan)
+        stir_fry_rice_and_egg(rice, egg, fryingpan)
+        # Perform the behavior to add rice to the pan and stirfry it with eggs
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "behavior_definition":
+
+Unknown variable: fryingpan_2083; available variables: [Variable<egg: item>].
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+#goal_representation
+
+behavior add_rice_to_pan(rice:item, pan:item):
+    body:
+        achieve inside(rice, pan)
+        # Ensure the rice is added to the pan
+
+behavior stir_fry_rice_and_egg(rice:item, egg:item, pan:item):
+    body:
+        achieve inside(rice, pan)
+        # Ensure the rice is inside the pan
+        achieve inside(egg, pan)
+        # Ensure the eggs are inside the pan
+
+behavior __goal__():
+    body:
+        bind rice: item where:
+            is_food_rice(rice)
+        # Select the rice instance
+
+        bind egg: item where:
+            is_food_egg(egg) and inside(egg, fryingpan)
+        # Select the egg currently in the frying pan
+
+        bind fryingpan: item where:
+            is_fryingpan(fryingpan) and id[fryingpan]==2083
+        # Select the fryingpan with ID 2083
+
+        add_rice_to_pan(rice, fryingpan)
+        stir_fry_rice_and_egg(rice, egg, fryingpan)
+        # Perform the behavior to add rice to the pan and stirfry it with eggs
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "behavior_definition":
+
+Unknown variable: fryingpan; available variables: [Variable<egg: item>].
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_spectacles_2082_around_closetdrawer_160(spectacles:item):
+    goal: not unknown(spectacles)
+    body:
+        assert is_spectacles(spectacles)
+        bind closetdrawer_instance:item where:
+            is_closetdrawer(closetdrawer_instance) and id[closetdrawer_instance]==160
+        achieve close_char(char,closetdrawer_instance)
+        if can_open(closetdrawer_instance):
+            achieve_once open(closetdrawer_instance)
+            exp(spectacles,closetdrawer_instance)
+        else:
+            exp(spectacles,closetdrawer_instance)
+    eff:
+        unknown[spectacles]=False
+        close[spectacles,closetdrawer_instance]=True
+        close[closetdrawer_instance,spectacles]=True
+    
+
+#goal_representation
+behavior add_rice_to_pan(rice:item, pan:item):
+    body:
+        achieve inside(rice, pan)
+        # Ensure the rice is added to the pan
+
+behavior stir_fry_rice_and_egg(rice:item, egg:item, pan:item):
+    body:
+        achieve inside(rice, pan)
+        # Ensure the rice is inside the pan
+        achieve inside(egg, pan)
+        # Ensure the eggs are inside the pan
+
+behavior __goal__():
+    body:
+        bind rice: item where:
+            is_food_rice(rice)
+        # Select the rice instance
+
+        bind egg: item where:
+            is_food_egg(egg) and inside(egg, fryingpan)
+        # Select the egg currently in the frying pan
+
+        bind fryingpan: item where:
+            is_fryingpan(fryingpan) and id[fryingpan] == 2083
+        # Select the fryingpan with ID 2083
+
+        add_rice_to_pan(rice, fryingpan)
+        stir_fry_rice_and_egg(rice, egg, fryingpan)
+        # Perform the behavior to add rice to the pan and stirfry it with eggs
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior add_rice_and_stir_fry(rice: item, pan: item, eggs: item):
+    body:
+        achieve inside(rice, pan)
+        # Ensure the rice is added to the pan
+
+        achieve inside(eggs, pan)
+        # Ensure the eggs are already inside the pan
+
+behavior __goal__():
+    body:
+        bind pan: item where:
+            is_fryingpan(pan)
+        # Select the frying pan instance
+
+        bind rice: item where:
+            is_food_rice(rice)
+        # Select the rice instance
+
+        bind eggs: item where:
+            is_food_egg(eggs)
+        # Select the eggs instance
+
+        add_rice_and_stir_fry(rice, pan, eggs)
+        # Execute the behavior to add rice to the pan and stirfry it with the eggs
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+behavior add_rice_and_stir_fry(rice: item, pan: item, eggs: item):
+    body:
+        achieve inside(rice, pan)
+        # Ensure the rice is added to the pan
+
+        achieve inside(eggs, pan)
+        # Ensure the eggs are already inside the pan
+
+behavior __goal__():
+    body:
+        bind pan: item where:
+            is_fryingpan(pan)
+        # Select the frying pan instance
+
+        bind rice: item where:
+            is_food_rice(rice)
+        # Select the rice instance
+
+        bind eggs: item where:
+            is_food_egg(eggs)
+        # Select the eggs instance
+
+        add_rice_and_stir_fry(rice, pan, eggs)
+        # Execute the behavior to add rice to the pan and stirfry it with the eggs
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(food_rice_2036)grab_executor(food_rice_2036)walk_executor(fryingpan_2083)putin_executor(food_rice_2036, fryingpan_2083)
+##############################
+From agent.py
+walk_executor(food_rice_2036)
+Robot is inside dining_room_201. Robot is close knife_2050. Robot is close fridge_289. Robot is close food_rice_2036. Robot is no longer close fryingpan_2083.Robot is no longer close food_egg_2020.Robot is no longer close kitchen_counter_230.
+##############################
+From agent.py
+grab_executor(food_rice_2036)
+Robot is inside dining_room_201. Robot is close knife_2050. Robot is close fridge_289. Robot is close food_rice_2036. Grabbing food_rice_2036 by left hand. 
+##############################
+From agent.py
+walk_executor(fryingpan_2083)
+Robot is inside dining_room_201. Robot is close knife_2050. Robot is close food_rice_2036. Robot is close fryingpan_2083. Robot is close kitchen_counter_230. Robot is no longer close fridge_289.
+##############################
+From agent.py
+putin_executor(food_rice_2036, fryingpan_2083)
+Robot is inside dining_room_201. Robot is close knife_2050. Robot is close food_rice_2036. Robot is close fryingpan_2083. Robot is close kitchen_counter_230. food_rice_2036 released by left hand. 
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_plate_1000_around_dishwasher_1001(plate:item):
+    goal: not unknown(plate)
+    body:
+        assert is_plate(plate)
+        bind dishwasher_instance:item where:
+            is_dishwasher(dishwasher_instance) and id[dishwasher_instance]==1001
+        achieve close_char(char,dishwasher_instance)
+        if can_open(dishwasher_instance):
+            achieve_once open(dishwasher_instance)
+            exp(plate,dishwasher_instance)
+        else:
+            exp(plate,dishwasher_instance)
+    eff:
+        unknown[plate]=False
+        close[plate,dishwasher_instance]=True
+        close[dishwasher_instance,plate]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior place_fried_rice_on_plate(fried_rice:item, plate:item):
+    body:
+        achieve once inside(fried_rice, plate)
+
+behavior __goal__():
+    body:
+        bind fried_rice: item where:
+            is_food_rice(fried_rice) and on(fried_rice, fryingpan_2083)
+        # Select the fried rice present in the fryingpan
+
+        bind plate: item where:
+            is_plate(plate)
+        # Select a plate instance for serving the fried rice
+
+        place_fried_rice_on_plate(fried_rice, plate)
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Unexpected token Token('VARNAME', 'inside') at line 6187, column 22.
+Expected one of: 
+	* SEMICOLON
+	* _NEWLINE
+
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_plate_1000_around_dishwasher_1001(plate:item):
+    goal: not unknown(plate)
+    body:
+        assert is_plate(plate)
+        bind dishwasher_instance:item where:
+            is_dishwasher(dishwasher_instance) and id[dishwasher_instance]==1001
+        achieve close_char(char,dishwasher_instance)
+        if can_open(dishwasher_instance):
+            achieve_once open(dishwasher_instance)
+            exp(plate,dishwasher_instance)
+        else:
+            exp(plate,dishwasher_instance)
+    eff:
+        unknown[plate]=False
+        close[plate,dishwasher_instance]=True
+        close[dishwasher_instance,plate]=True
+    
+
+#goal_representation
+ 
+behavior place_fried_rice_on_plate(fried_rice:item, plate:item):
+    body:
+        achieve on(fried_rice, plate)
+
+behavior __goal__():
+    body:
+        bind fried_rice: item where:
+            is_food_rice(fried_rice) and on(fried_rice, fryingpan_2083)
+        # Select the fried rice present in the fryingpan
+
+        bind plate: item where:
+            is_plate(plate)
+        # Select a plate instance for serving the fried rice
+
+        place_fried_rice_on_plate(fried_rice, plate)
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "behavior_definition":
+
+Unknown variable: fryingpan_2083; available variables: [Variable<fried_rice: item>].
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_plate_1000_around_dishwasher_1001(plate:item):
+    goal: not unknown(plate)
+    body:
+        assert is_plate(plate)
+        bind dishwasher_instance:item where:
+            is_dishwasher(dishwasher_instance) and id[dishwasher_instance]==1001
+        achieve close_char(char,dishwasher_instance)
+        if can_open(dishwasher_instance):
+            achieve_once open(dishwasher_instance)
+            exp(plate,dishwasher_instance)
+        else:
+            exp(plate,dishwasher_instance)
+    eff:
+        unknown[plate]=False
+        close[plate,dishwasher_instance]=True
+        close[dishwasher_instance,plate]=True
+    
+
+#goal_representation
+
+behavior place_fried_rice_on_plate(fried_rice:item, plate:item):
+    body:
+        achieve on(fried_rice, plate)
+
+behavior __goal__():
+    body:
+        bind fried_rice: item where:
+            is_food_rice(fried_rice) and on(fried_rice, fryingpan)
+        # Select the fried rice present in the fryingpan
+
+        bind plate: item where:
+            is_plate(plate)
+        # Select a plate instance for serving the fried rice
+
+        place_fried_rice_on_plate(fried_rice, plate)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_plate_1000_around_dishwasher_1001(plate:item):
+    goal: not unknown(plate)
+    body:
+        assert is_plate(plate)
+        bind dishwasher_instance:item where:
+            is_dishwasher(dishwasher_instance) and id[dishwasher_instance]==1001
+        achieve close_char(char,dishwasher_instance)
+        if can_open(dishwasher_instance):
+            achieve_once open(dishwasher_instance)
+            exp(plate,dishwasher_instance)
+        else:
+            exp(plate,dishwasher_instance)
+    eff:
+        unknown[plate]=False
+        close[plate,dishwasher_instance]=True
+        close[dishwasher_instance,plate]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior place_fried_rice_on_plate(fried_rice:item, plate:item):
+    body:
+        achieve on(fried_rice, plate)
+
+behavior __goal__():
+    body:
+        bind fried_rice: item where:
+            is_food_rice(fried_rice)
+        # Select the instance of fried rice
+
+        bind plate: item where:
+            is_plate(plate)
+        # Select the plate instance
+
+        place_fried_rice_on_plate(fried_rice, plate)
+        # Execute the behavior to place the fried rice on a plate
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+behavior place_fried_rice_on_plate(fried_rice:item, plate:item):
+    body:
+        achieve on(fried_rice, plate)
+
+behavior __goal__():
+    body:
+        bind fried_rice: item where:
+            is_food_rice(fried_rice)
+        # Select the instance of fried rice
+
+        bind plate: item where:
+            is_plate(plate)
+        # Select the plate instance
+
+        place_fried_rice_on_plate(fried_rice, plate)
+        # Execute the behavior to place the fried rice on a plate
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(dishwasher_1001)open_executor(dishwasher_1001)exp(plate_1000, dishwasher_1001)walk_executor(food_rice_2036)grab_executor(food_rice_2036)walk_executor(plate_1000)put_executor(food_rice_2036, plate_1000)
+##############################
+From agent.py
+walk_executor(dishwasher_1001)
+Robot is inside dining_room_201. Robot is close knife_2050. Robot is close dishwasher_1001. Robot is no longer close fryingpan_2083.Robot is no longer close food_rice_2036.Robot is no longer close kitchen_counter_230.
+##############################
+From agent.py
+open_executor(dishwasher_1001)
+Robot is inside dining_room_201. Robot is close knife_2050. Robot is close dishwasher_1001. 
+##############################
+From agent.py
+exp(plate_1000, dishwasher_1001)
+Fail to find plate_1000 around dishwasher_1001. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(coffee_table_2068)exp(plate_1000, coffee_table_2068)walk_executor(food_rice_2036)grab_executor(food_rice_2036)walk_executor(plate_1000)put_executor(food_rice_2036, plate_1000)
+##############################
+From agent.py
+walk_executor(coffee_table_2068)
+Robot is inside home_office_319. Robot is close knife_2050. Robot is close coffee_table_2068. Robot is no longer inside dining_room_201.Robot is no longer close dishwasher_1001.
+##############################
+From agent.py
+exp(plate_1000, coffee_table_2068)
+Fail to find plate_1000 around coffee_table_2068. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(ceilinglamp_223)exp(plate_1000, ceilinglamp_223)walk_executor(food_rice_2036)grab_executor(food_rice_2036)walk_executor(plate_1000)put_executor(food_rice_2036, plate_1000)
+##############################
+From agent.py
+walk_executor(ceilinglamp_223)
+Find wall_clock_249. Robot is inside dining_room_201. Robot is close knife_2050. Robot is close ceilinglamp_223. Robot is no longer inside home_office_319.Robot is no longer close coffee_table_2068.
+##############################
+From agent.py
+exp(plate_1000, ceilinglamp_223)
+Fail to find plate_1000 around ceilinglamp_223. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(powersocket_246)exp(plate_1000, powersocket_246)walk_executor(food_rice_2036)grab_executor(food_rice_2036)walk_executor(plate_1000)put_executor(food_rice_2036, plate_1000)
+##############################
+From agent.py
+walk_executor(powersocket_246)
+Find phone_247. Robot is inside dining_room_201. Robot is close knife_2050. Robot is close powersocket_246. Robot is no longer close ceilinglamp_223.
+##############################
+From agent.py
+exp(plate_1000, powersocket_246)
+Fail to find plate_1000 around powersocket_246. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(sink_231)exp(plate_1000, sink_231)walk_executor(food_rice_2036)grab_executor(food_rice_2036)walk_executor(plate_1000)put_executor(food_rice_2036, plate_1000)
+##############################
+From agent.py
+walk_executor(sink_231)
+Find plate_1000. Find soap_2054. Robot is inside dining_room_201. Robot is close knife_2050. Robot is close kitchen_counter_230. Robot is close sink_231. Robot is no longer close powersocket_246.
+##############################
+From agent.py
+exp(plate_1000, sink_231)
+Find plate_1000. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(food_rice_2036)grab_executor(food_rice_2036)walk_executor(plate_1000)put_executor(food_rice_2036, plate_1000)
+##############################
+From agent.py
+walk_executor(food_rice_2036)
+Robot is inside dining_room_201. Robot is close knife_2050. Robot is close fryingpan_2083. Robot is close food_rice_2036. Robot is no longer close kitchen_counter_230.Robot is no longer close sink_231.
+##############################
+From agent.py
+grab_executor(food_rice_2036)
+Robot is inside dining_room_201. Robot is close knife_2050. Robot is close fryingpan_2083. Robot is close food_rice_2036. Grabbing food_rice_2036 by left hand. 
+##############################
+From agent.py
+walk_executor(plate_1000)
+Robot is inside dining_room_201. Robot is close knife_2050. Robot is close food_rice_2036. Robot is close plate_1000. Robot is close sink_231. Robot is no longer close fryingpan_2083.
+##############################
+From agent.py
+put_executor(food_rice_2036, plate_1000)
+Robot is inside dining_room_201. Robot is close knife_2050. Robot is close food_rice_2036. Robot is close plate_1000. Robot is close sink_231. food_rice_2036 released by left hand. 
+##############################
+From agent.py
+Human Instruction: You need to ensure the egg is cooked and combined with the fried rice before serving it on a plate.
+
+The actions you have taken:
+Action 1: Walk to fridge_289.
+Action 2: Switch off fridge_289.
+Action 3: Open fridge_289.
+Action 4: look for food_egg_2020 around fridge_289.
+Action 5: Grab food_egg_2020.
+Action 6: Walk to wallshelf_235.
+Action 7: look for bowl_2071 around wallshelf_235.
+Action 8: Walk to wallshelf_234.
+Action 9: look for bowl_2071 around wallshelf_234.
+Action 10: Walk to cupboard_229.
+Action 11: Open cupboard_229.
+Action 12: look for bowl_2071 around cupboard_229.
+Action 13: Walk to wallshelf_35.
+Action 14: look for bowl_2071 around wallshelf_35.
+Action 15: Walk to tablelamp_97.
+Action 16: look for bowl_2071 around tablelamp_97.
+Action 17: Walk to closetdrawer_116.
+Action 18: look for bowl_2071 around closetdrawer_116.
+Action 19: Walk to table_226.
+Action 20: look for bowl_2071 around table_226.
+Action 21: Walk to bowl_2071.
+Action 22: Put food_egg_2020 on bowl_2071.
+Action 23: Touch bowl_2071.
+Action 24: Walk to kitchen_counter_230.
+Action 25: look for cutting_board_2051 around kitchen_counter_230.
+Action 26: Walk to food_egg_2020.
+Action 27: Grab food_egg_2020.
+Action 28: Walk to cutting_board_2051.
+Action 29: Put food_egg_2020 on cutting_board_2051.
+Action 30: Walk to knife_2050.
+Action 31: Grab knife_2050.
+Action 32: Walk to food_egg_2020.
+Action 33: Cut food_egg_2020.
+Action 34: Grab food_egg_2020.
+Action 35: Walk to bowl_2071.
+Action 36: Put food_egg_2020 into bowl_2071.
+Action 37: Grab food_egg_2020.
+Action 38: Walk to fryingpan_2083.
+Action 39: Put food_egg_2020 into fryingpan_2083.
+Action 40: Walk to food_rice_2036.
+Action 41: Grab food_rice_2036.
+Action 42: Walk to fryingpan_2083.
+Action 43: Put food_rice_2036 into fryingpan_2083.
+Action 44: Walk to dishwasher_1001.
+Action 45: Open dishwasher_1001.
+Action 46: look for plate_1000 around dishwasher_1001.
+Action 47: Walk to coffee_table_2068.
+Action 48: look for plate_1000 around coffee_table_2068.
+Action 49: Walk to ceilinglamp_223.
+Action 50: look for plate_1000 around ceilinglamp_223.
+Action 51: Walk to powersocket_246.
+Action 52: look for plate_1000 around powersocket_246.
+Action 53: Walk to sink_231.
+Action 54: look for plate_1000 around sink_231.
+Action 55: Walk to food_rice_2036.
+Action 56: Grab food_rice_2036.
+Action 57: Walk to plate_1000.
+Action 58: Put food_rice_2036 on plate_1000.
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_cd_2075_around_closetdrawer_117(cd:item):
+    goal: not unknown(cd)
+    body:
+        assert is_cd(cd)
+        bind closetdrawer_instance:item where:
+            is_closetdrawer(closetdrawer_instance) and id[closetdrawer_instance]==117
+        achieve close_char(char,closetdrawer_instance)
+        if can_open(closetdrawer_instance):
+            achieve_once open(closetdrawer_instance)
+            exp(cd,closetdrawer_instance)
+        else:
+            exp(cd,closetdrawer_instance)
+    eff:
+        unknown[cd]=False
+        close[cd,closetdrawer_instance]=True
+        close[closetdrawer_instance,cd]=True
+    
+
+behavior find_clothes_socks_2087_around_closetdrawer_377(clothes_socks:item):
+    goal: not unknown(clothes_socks)
+    body:
+        assert is_clothes_socks(clothes_socks)
+        bind closetdrawer_instance:item where:
+            is_closetdrawer(closetdrawer_instance) and id[closetdrawer_instance]==377
+        achieve close_char(char,closetdrawer_instance)
+        if can_open(closetdrawer_instance):
+            achieve_once open(closetdrawer_instance)
+            exp(clothes_socks,closetdrawer_instance)
+        else:
+            exp(clothes_socks,closetdrawer_instance)
+    eff:
+        unknown[clothes_socks]=False
+        close[clothes_socks,closetdrawer_instance]=True
+        close[closetdrawer_instance,clothes_socks]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+behavior put_fried_rice_on_plate(fried_rice:item, plate:item):
+    body:
+        achieve on(fried_rice, plate)
+        # Ensure the fried rice is served on the plate
+
+behavior __goal__():
+    body:
+        bind fried_rice: item where:
+            is_food_rice(fried_rice)
+        # Select the instance of fried rice
+
+        bind plate: item where:
+            is_plate(plate)
+        # Select an instance of a plate
+
+        put_fried_rice_on_plate(fried_rice, plate)
+        # Execute the behavior to serve the fried rice on the plate
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_egg_combined_with_rice(egg:item, rice:item, plate:item):
+    # Function to check if the egg and rice are both present on the plate
+    symbol combined=inside(egg, plate) and inside(rice, plate)
+    return combined
+
+behavior serve_fried_rice_on_plate(egg:item, rice:item, plate:item):
+    body:
+        if not is_egg_combined_with_rice(egg, rice, plate):
+            achieve inside(egg, plate)
+            achieve inside(rice, plate)
+        # Ensuring both egg and rice are placed on the plate together for serving
+
+behavior __goal__():
+    body:
+        bind plate: item where:
+            is_plate(plate)
+        # Select an instance of a plate
+
+        bind egg: item where:
+            is_food_egg(egg)
+        # Select an instance of the cooked egg
+        
+        bind rice: item where:
+            is_food_rice(rice)
+        # Select an instance of the cooked rice
+
+        serve_fried_rice_on_plate(egg, rice, plate)
+        # Placing the fried rice with the egg on the plate to serve
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+def is_egg_combined_with_rice(egg:item, rice:item, plate:item):
+    # Function to check if the egg and rice are both present on the plate
+    symbol combined=inside(egg, plate) and inside(rice, plate)
+    return combined
+
+behavior serve_fried_rice_on_plate(egg:item, rice:item, plate:item):
+    body:
+        if not is_egg_combined_with_rice(egg, rice, plate):
+            achieve inside(egg, plate)
+            achieve inside(rice, plate)
+        # Ensuring both egg and rice are placed on the plate together for serving
+
+behavior __goal__():
+    body:
+        bind plate: item where:
+            is_plate(plate)
+        # Select an instance of a plate
+
+        bind egg: item where:
+            is_food_egg(egg)
+        # Select an instance of the cooked egg
+        
+        bind rice: item where:
+            is_food_rice(rice)
+        # Select an instance of the cooked rice
+
+        serve_fried_rice_on_plate(egg, rice, plate)
+        # Placing the fried rice with the egg on the plate to serve
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(food_egg_2020)grab_executor(food_egg_2020)walk_executor(plate_1000)putin_executor(food_egg_2020, plate_1000)grab_executor(food_rice_2036)putin_executor(food_rice_2036, plate_1000)
+##############################
+From agent.py
+walk_executor(food_egg_2020)
+Robot is inside dining_room_201. Robot is close knife_2050. Robot is close fryingpan_2083. Robot is close food_egg_2020. Robot is no longer close plate_1000.Robot is no longer close food_rice_2036.Robot is no longer close sink_231.
+##############################
+From agent.py
+grab_executor(food_egg_2020)
+Robot is inside dining_room_201. Robot is close knife_2050. Robot is close fryingpan_2083. Robot is close food_egg_2020. Grabbing food_egg_2020 by left hand. 
+##############################
+From agent.py
+walk_executor(plate_1000)
+Robot is inside dining_room_201. Robot is close knife_2050. Robot is close food_egg_2020. Robot is close plate_1000. Robot is close sink_231. Robot is no longer close fryingpan_2083.
+##############################
+From agent.py
+putin_executor(food_egg_2020, plate_1000)
+Robot is inside dining_room_201. Robot is close knife_2050. Robot is close food_egg_2020. Robot is close plate_1000. Robot is close sink_231. food_egg_2020 released by left hand. 
+##############################
+From agent.py
+grab_executor(food_rice_2036)
+Robot is inside dining_room_201. Robot is close knife_2050. Robot is close food_egg_2020. Robot is close plate_1000. Robot is close sink_231. Robot is close food_rice_2036. Grabbing food_rice_2036 by left hand. 
+##############################
+From agent.py
+putin_executor(food_rice_2036, plate_1000)
+Robot is inside dining_room_201. Robot is close knife_2050. Robot is close food_egg_2020. Robot is close plate_1000. Robot is close sink_231. Robot is close food_rice_2036. food_rice_2036 released by left hand. 
+##############################
+From agent.py
+Human Instruction: You need to ensure that the egg is cooked before serving it with the fried rice on the plate. The provided information indicates that the egg was not cooked yet. Please look for the steps required to cook the egg and then combine it with the fried rice before serving.
+
+The actions you have taken:
+Action 1: Walk to fridge_289.
+Action 2: Switch off fridge_289.
+Action 3: Open fridge_289.
+Action 4: look for food_egg_2020 around fridge_289.
+Action 5: Grab food_egg_2020.
+Action 6: Walk to wallshelf_235.
+Action 7: look for bowl_2071 around wallshelf_235.
+Action 8: Walk to wallshelf_234.
+Action 9: look for bowl_2071 around wallshelf_234.
+Action 10: Walk to cupboard_229.
+Action 11: Open cupboard_229.
+Action 12: look for bowl_2071 around cupboard_229.
+Action 13: Walk to wallshelf_35.
+Action 14: look for bowl_2071 around wallshelf_35.
+Action 15: Walk to tablelamp_97.
+Action 16: look for bowl_2071 around tablelamp_97.
+Action 17: Walk to closetdrawer_116.
+Action 18: look for bowl_2071 around closetdrawer_116.
+Action 19: Walk to table_226.
+Action 20: look for bowl_2071 around table_226.
+Action 21: Walk to bowl_2071.
+Action 22: Put food_egg_2020 on bowl_2071.
+Action 23: Touch bowl_2071.
+Action 24: Walk to kitchen_counter_230.
+Action 25: look for cutting_board_2051 around kitchen_counter_230.
+Action 26: Walk to food_egg_2020.
+Action 27: Grab food_egg_2020.
+Action 28: Walk to cutting_board_2051.
+Action 29: Put food_egg_2020 on cutting_board_2051.
+Action 30: Walk to knife_2050.
+Action 31: Grab knife_2050.
+Action 32: Walk to food_egg_2020.
+Action 33: Cut food_egg_2020.
+Action 34: Grab food_egg_2020.
+Action 35: Walk to bowl_2071.
+Action 36: Put food_egg_2020 into bowl_2071.
+Action 37: Grab food_egg_2020.
+Action 38: Walk to fryingpan_2083.
+Action 39: Put food_egg_2020 into fryingpan_2083.
+Action 40: Walk to food_rice_2036.
+Action 41: Grab food_rice_2036.
+Action 42: Walk to fryingpan_2083.
+Action 43: Put food_rice_2036 into fryingpan_2083.
+Action 44: Walk to dishwasher_1001.
+Action 45: Open dishwasher_1001.
+Action 46: look for plate_1000 around dishwasher_1001.
+Action 47: Walk to coffee_table_2068.
+Action 48: look for plate_1000 around coffee_table_2068.
+Action 49: Walk to ceilinglamp_223.
+Action 50: look for plate_1000 around ceilinglamp_223.
+Action 51: Walk to powersocket_246.
+Action 52: look for plate_1000 around powersocket_246.
+Action 53: Walk to sink_231.
+Action 54: look for plate_1000 around sink_231.
+Action 55: Walk to food_rice_2036.
+Action 56: Grab food_rice_2036.
+Action 57: Walk to plate_1000.
+Action 58: Put food_rice_2036 on plate_1000.
+Action 59: Walk to food_egg_2020.
+Action 60: Grab food_egg_2020.
+Action 61: Walk to plate_1000.
+Action 62: Put food_egg_2020 into plate_1000.
+Action 63: Grab food_rice_2036.
+Action 64: Put food_rice_2036 into plate_1000.
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_clothes_dress_2044_around_closetdrawer_118(clothes_dress:item):
+    goal: not unknown(clothes_dress)
+    body:
+        assert is_clothes_dress(clothes_dress)
+        bind closetdrawer_instance:item where:
+            is_closetdrawer(closetdrawer_instance) and id[closetdrawer_instance]==118
+        achieve close_char(char,closetdrawer_instance)
+        if can_open(closetdrawer_instance):
+            achieve_once open(closetdrawer_instance)
+            exp(clothes_dress,closetdrawer_instance)
+        else:
+            exp(clothes_dress,closetdrawer_instance)
+    eff:
+        unknown[clothes_dress]=False
+        close[clothes_dress,closetdrawer_instance]=True
+        close[closetdrawer_instance,clothes_dress]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior serve_fried_rice_with_egg(fried_rice:item, plate:item):
+    body:
+        achieve on(fried_rice, plate)
+        # Place the fried rice on the plate
+
+behavior ensure_egg_cooked(egg:item, fryingpan:item):
+    body:
+        bind stove: item where:
+            is_stove(stove)
+        # Select the stove to check if its on
+
+        if is_on(stove) and inside(egg, fryingpan):
+            # Ensure the egg is cooked if its in the frying pan
+            achieve on(egg, fryingpan)
+
+        # Assume if egg is not cooked, turn on stove and place egg in pan
+        achieve is_on(stove)
+        achieve inside(egg, fryingpan)
+        is_egg_cooked = True
+        
+behavior __goal__():
+    body:
+        bind egg: item where:
+            is_food_egg(egg) and id[egg] == 2020
+        # Select the egg instance that should be part of the meal
+
+        bind fried_rice: item where:
+            is_food_rice(fried_rice) and on(fried_rice, egg)
+        # Select the fried rice instance as its stirred with the egg
+
+        bind plate: item where:
+            is_plate(plate)
+        # Select a plate to serve the dish on
+
+        ensure_egg_cooked(egg, fryingpan_2083)
+        # Ensure the egg is cooked before serving
+
+        serve_fried_rice_with_egg(fried_rice, plate)
+        # Serve the fried rice with egg on the plate
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "behavior_definition":
+
+Invalid assignment target: it is not a local variable and not a feature with 0 arguments: is_egg_cooked
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_clothes_dress_2044_around_closetdrawer_160(clothes_dress:item):
+    goal: not unknown(clothes_dress)
+    body:
+        assert is_clothes_dress(clothes_dress)
+        bind closetdrawer_instance:item where:
+            is_closetdrawer(closetdrawer_instance) and id[closetdrawer_instance]==160
+        achieve close_char(char,closetdrawer_instance)
+        if can_open(closetdrawer_instance):
+            achieve_once open(closetdrawer_instance)
+            exp(clothes_dress,closetdrawer_instance)
+        else:
+            exp(clothes_dress,closetdrawer_instance)
+    eff:
+        unknown[clothes_dress]=False
+        close[clothes_dress,closetdrawer_instance]=True
+        close[closetdrawer_instance,clothes_dress]=True
+    
+
+#goal_representation
+behavior place_rice_on_plate(fried_rice:item, plate:item):
+    body:
+        achieve on(fried_rice, plate)
+        # Place the fried rice on the plate
+
+behavior ensure_egg_cooked(egg:item, fryingpan:item):
+    body:
+        bind stove: item where:
+            is_stove(stove)
+        # Select the stove to check if its on
+
+        if not is_on(stove):
+            achieve is_on(stove)
+            # Turn on the stove if its not on
+
+        achieve inside(egg, fryingpan)
+        # Place the egg in the frying pan to cook
+
+        assert cut(egg)
+        # Ensure the egg is cooked by being cut as an indication
+
+behavior __goal__():
+    body:
+        bind egg: item where:
+            is_food_egg(egg) and id[egg] == 2020
+        # Select the egg instance that should be part of the meal
+
+        bind fried_rice: item where:
+            is_food_rice(fried_rice) and on(fried_rice, egg)
+        # Select the fried rice instance as its stirred with the egg
+
+        bind plate: item where:
+            is_plate(plate)
+        # Select a plate to serve the dish on
+
+        bind fryingpan: item where:
+            is_fryingpan(fryingpan) and id[fryingpan] == 2083
+        # Select the fryingpan with the specific ID
+
+        ensure_egg_cooked(egg, fryingpan)
+        # Ensure the egg is cooked before serving
+
+        place_rice_on_plate(fried_rice, plate)
+        # Serve the fried rice with egg on the plate
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_iron_2089_around_ironing_board_2074(iron:item):
+    goal: not unknown(iron)
+    body:
+        assert is_iron(iron)
+        bind ironing_board_instance:item where:
+            is_ironing_board(ironing_board_instance) and id[ironing_board_instance]==2074
+        achieve close_char(char,ironing_board_instance)
+        if can_open(ironing_board_instance):
+            achieve_once open(ironing_board_instance)
+            exp(iron,ironing_board_instance)
+        else:
+            exp(iron,ironing_board_instance)
+    eff:
+        unknown[iron]=False
+        close[iron,ironing_board_instance]=True
+        close[ironing_board_instance,iron]=True
+    
+
+behavior find_cleaning_solution_2073_around_bathroom_counter_41(cleaning_solution:item):
+    goal: not unknown(cleaning_solution)
+    body:
+        assert is_cleaning_solution(cleaning_solution)
+        bind bathroom_counter_instance:item where:
+            is_bathroom_counter(bathroom_counter_instance) and id[bathroom_counter_instance]==41
+        achieve close_char(char,bathroom_counter_instance)
+        if can_open(bathroom_counter_instance):
+            achieve_once open(bathroom_counter_instance)
+            exp(cleaning_solution,bathroom_counter_instance)
+        else:
+            exp(cleaning_solution,bathroom_counter_instance)
+    eff:
+        unknown[cleaning_solution]=False
+        close[cleaning_solution,bathroom_counter_instance]=True
+        close[bathroom_counter_instance,cleaning_solution]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_plate_1000_clean_and_visited():
+    # Function to verify if the plate is clean and visited
+    return clean(plate_1000) and visited(plate_1000)
+
+behavior serve_fried_rice_with_egg(plate:item, table:item):
+    body:
+        achieve visited(plate)
+        # Ensure the plate is visited
+        
+        if not is_plate_1000_clean_and_visited():
+            achieve clean(plate)
+            # Clean the plate if it has not been cleaned
+        
+        achieve on(plate, table)
+        # Serve the plate with fried rice and egg on the table
+
+behavior __goal__():
+    body:
+        bind table: item where:
+            is_table(table)
+        # Select an instance of a table
+
+        bind plate: item where:
+            is_plate(plate) and id[plate] == 1000
+        # Select the plate with ID 1000
+
+        serve_fried_rice_with_egg(plate, table)
+        # Execute the behavior to serve the fried rice with egg on a plate
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "function_definition":
+
+Unknown variable: plate_1000; available variables: [].
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_clothes_dress_2044_around_closetdrawer_377(clothes_dress:item):
+    goal: not unknown(clothes_dress)
+    body:
+        assert is_clothes_dress(clothes_dress)
+        bind closetdrawer_instance:item where:
+            is_closetdrawer(closetdrawer_instance) and id[closetdrawer_instance]==377
+        achieve close_char(char,closetdrawer_instance)
+        if can_open(closetdrawer_instance):
+            achieve_once open(closetdrawer_instance)
+            exp(clothes_dress,closetdrawer_instance)
+        else:
+            exp(clothes_dress,closetdrawer_instance)
+    eff:
+        unknown[clothes_dress]=False
+        close[clothes_dress,closetdrawer_instance]=True
+        close[closetdrawer_instance,clothes_dress]=True
+    
+
+behavior find_clothes_socks_2087_around_closetdrawer_160(clothes_socks:item):
+    goal: not unknown(clothes_socks)
+    body:
+        assert is_clothes_socks(clothes_socks)
+        bind closetdrawer_instance:item where:
+            is_closetdrawer(closetdrawer_instance) and id[closetdrawer_instance]==160
+        achieve close_char(char,closetdrawer_instance)
+        if can_open(closetdrawer_instance):
+            achieve_once open(closetdrawer_instance)
+            exp(clothes_socks,closetdrawer_instance)
+        else:
+            exp(clothes_socks,closetdrawer_instance)
+    eff:
+        unknown[clothes_socks]=False
+        close[clothes_socks,closetdrawer_instance]=True
+        close[closetdrawer_instance,clothes_socks]=True
+    
+
+#goal_representation
+ 
+def is_plate_clean_and_visited(plate:item):
+    # Function to verify if the plate is clean and visited
+    return clean(plate) and visited(plate)
+
+behavior serve_fried_rice_with_egg(plate:item, table:item):
+    body:
+        achieve visited(plate)
+        # Ensure the plate is visited
+        
+        if not is_plate_clean_and_visited(plate):
+            achieve clean(plate)
+            # Clean the plate if it has not been cleaned
+        
+        achieve on(plate, table)
+        # Serve the plate with fried rice and egg on the table
+
+behavior __goal__():
+    body:
+        bind table: item where:
+            is_table(table)
+        # Select an instance of a table
+
+        bind plate: item where:
+            is_plate(plate)
+        # Select a plate
+
+        serve_fried_rice_with_egg(plate, table)
+        # Execute the behavior to serve the fried rice with egg on a plate
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+def is_plate_clean_and_visited(plate:item):
+    # Function to verify if the plate is clean and visited
+    return clean(plate) and visited(plate)
+
+behavior serve_fried_rice_with_egg(plate:item, table:item):
+    body:
+        achieve visited(plate)
+        # Ensure the plate is visited
+        
+        if not is_plate_clean_and_visited(plate):
+            achieve clean(plate)
+            # Clean the plate if it has not been cleaned
+        
+        achieve on(plate, table)
+        # Serve the plate with fried rice and egg on the table
+
+behavior __goal__():
+    body:
+        bind table: item where:
+            is_table(table)
+        # Select an instance of a table
+
+        bind plate: item where:
+            is_plate(plate)
+        # Select a plate
+
+        serve_fried_rice_with_egg(plate, table)
+        # Execute the behavior to serve the fried rice with egg on a plate
+
+##############################
+From agent.py-> find a plan in act()
+obs(plate_1000, look around this place)wash_executor(plate_1000)grab_executor(plate_1000)walk_executor(coffee_table_2068)put_executor(plate_1000, coffee_table_2068)
+##############################
+From agent.py
+obs(plate_1000, look around this place)
+Get this information:  plate_1000 is on sink_231. plate_1000 is close to sink_231. plate_1000 is close to food_rice_2036. plate_1000 is close to character_65. plate_1000 is close to food_egg_2020. food_rice_2036 is inside plate_1000. food_egg_2020 is inside plate_1000. plate_1000 is inside dining_room_201. plate_1000 is DIRTY.
+##############################
+From agent.py
+wash_executor(plate_1000)
+Robot is inside dining_room_201. Robot is close knife_2050. Robot is close food_egg_2020. Robot is close plate_1000. Robot is close sink_231. Robot is close food_rice_2036. 
+##############################
+From agent.py
+grab_executor(plate_1000)
+Robot is inside dining_room_201. Robot is close knife_2050. Robot is close food_egg_2020. Robot is close plate_1000. Robot is close sink_231. Robot is close food_rice_2036. Grabbing plate_1000 by left hand. 
+##############################
+From agent.py
+walk_executor(coffee_table_2068)
+Robot is inside home_office_319. Robot is close knife_2050. Robot is close plate_1000. Robot is close coffee_table_2068. Robot is no longer inside dining_room_201.Robot is no longer close food_egg_2020.Robot is no longer close sink_231.Robot is no longer close food_rice_2036.
+##############################
+From agent.py
+put_executor(plate_1000, coffee_table_2068)
+Robot is inside home_office_319. Robot is close knife_2050. Robot is close plate_1000. Robot is close coffee_table_2068. plate_1000 released by left hand. 
+##############################

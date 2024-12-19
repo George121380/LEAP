@@ -78,9 +78,10 @@ def run(args,epoch_logger,epoch_path,task_path,classes,init_scene_graph):
             PO=True, 
             epoch_path=epoch_path
         )
-        agent.download_behaviors_from_library()
         agent.set_human_helper(Human(init_scene_graph,task_data['Guidance']))
         agent.reset_goal(task_data['Goal'],classes,task_data['Task name'],First_time=True)#ini a GR
+        agent.download_behaviors_from_library()
+
     if args.model.type=='LLM':
         agent = LLM_Agent(
             args=args,
@@ -104,9 +105,9 @@ def run(args,epoch_logger,epoch_path,task_path,classes,init_scene_graph):
             PO=True, 
             epoch_path=epoch_path
         )
-        agent.download_behaviors_from_library()
         agent.set_human_helper(Human(init_scene_graph,task_data['Guidance']))
         agent.reset_goal(task_data['Goal'],classes,task_data['Task name'],First_time=True)#ini a GR
+        agent.download_behaviors_from_library()
 
     ######## Test Human Guidance ########
     # log_path = f'log/epoch_{timestamp}/test_all_human_guidance.json'
@@ -254,12 +255,15 @@ def evaluate_all_cross_scene(args): # main function
         epoch_path = f'log/epoch_{timestamp}'
         epoch_logger = setup_epoch_logger(epoch_path)
 
-        files=evaluation_task_loader(DATASET_FOLDER_PATH)
-        scenes=[0,1,2]
-
-        # Use a random order for the tasks
-        task_scene_pairs = [(task, scene) for task in files for scene in scenes]
-        random.shuffle(task_scene_pairs)
+        if running_mode == 'test':
+            with open('experiments/virtualhome/VH_scripts/shuffled_task_scene_pairs.json', 'r') as file:
+                task_scene_pairs = json.load(file)
+        else:
+            files=evaluation_task_loader(DATASET_FOLDER_PATH)
+            scenes=[0,1,2]
+            # Use a random order for the tasks
+            task_scene_pairs = [(task, scene) for task in files for scene in scenes]
+            random.shuffle(task_scene_pairs)
         with open(f'{epoch_path}/args.yaml', 'w') as file:
             yaml.dump(namespace_to_dict(args), file)
         with open(f'{epoch_path}/shuffled_task_scene_pairs.json', 'w') as file:
@@ -274,8 +278,8 @@ def evaluate_all_cross_scene(args): # main function
         task_path=os.path.join(DATASET_FOLDER_PATH,task_scene_pair[0])
         Debug=run(args,epoch_logger,epoch_path,task_path,classes,init_scene_graph)
         
-        if Debug==False:
-            raise Exception('Error in evaluation')
+        # if Debug==False:
+        #     raise Exception('Error in evaluation')
         
     end_time = datetime.now().strftime('%Y%m%d_%H%M%S')
     epoch_logger.info('Evaluation Finished',end_time,'','','','')

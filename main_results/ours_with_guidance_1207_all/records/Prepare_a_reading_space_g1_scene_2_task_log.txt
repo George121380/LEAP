@@ -1,0 +1,228 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Locate the book in the household environment.', '2. Place the book on the coffee table in the home office.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_novel_2010_around_bookshelf_137(novel:item):
+    goal: not unknown(novel)
+    body:
+        assert is_novel(novel)
+        bind bookshelf_instance:item where:
+            is_bookshelf(bookshelf_instance) and id[bookshelf_instance]==137
+        achieve close_char(char,bookshelf_instance)
+        if can_open(bookshelf_instance):
+            achieve_once open(bookshelf_instance)
+            exp(novel,bookshelf_instance)
+        else:
+            exp(novel,bookshelf_instance)
+    eff:
+        unknown[novel]=False
+        close[novel,bookshelf_instance]=True
+        close[bookshelf_instance,novel]=True
+    
+
+behavior find_book_2091_around_bookshelf_137(book:item):
+    goal: not unknown(book)
+    body:
+        assert is_book(book)
+        bind bookshelf_instance:item where:
+            is_bookshelf(bookshelf_instance) and id[bookshelf_instance]==137
+        achieve close_char(char,bookshelf_instance)
+        if can_open(bookshelf_instance):
+            achieve_once open(bookshelf_instance)
+            exp(book,bookshelf_instance)
+        else:
+            exp(book,bookshelf_instance)
+    eff:
+        unknown[book]=False
+        close[book,bookshelf_instance]=True
+        close[bookshelf_instance,book]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def has_book_in_environment():
+    # Function to determine if any book can be located in the environment
+    symbol book_found = exists book: item : is_book(book)
+    return book_found
+
+behavior locate_book():
+    body:
+        foreach book: item:
+            if is_book(book) and not visited(book):
+                observe(book, "Check if this is the book to locate")
+
+behavior __goal__():
+    body:
+        if has_book_in_environment():
+            # If a book has already been determined to exist in the known environment
+            bind book: item where:
+                is_book(book)
+            achieve visited(book)
+        else:
+            # If no known book is determined to exist, commence search for a book in the environment
+            locate_book()
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+ 
+def has_book_in_environment():
+    # Function to determine if any book can be located in the environment
+    symbol book_found = exists book: item : is_book(book)
+    return book_found
+
+behavior locate_book():
+    body:
+        foreach book: item:
+            if is_book(book) and not visited(book):
+                observe(book, "Check if this is the book to locate")
+
+behavior __goal__():
+    body:
+        if has_book_in_environment():
+            # If a book has already been determined to exist in the known environment
+            bind book: item where:
+                is_book(book)
+            achieve visited(book)
+        else:
+            # If no known book is determined to exist, commence search for a book in the environment
+            locate_book()
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(bookshelf_137)open_executor(bookshelf_137)exp(book_2091, bookshelf_137)walk_executor(book_2091)open_executor(book_2091)obs(book_2091, look around this place)
+##############################
+From agent.py
+walk_executor(bookshelf_137)
+Find book_2092. Find cup_2089. Find drawing_118. Robot is inside dining_room_1. Robot is close floor_24. Robot is close bookshelf_137. Robot is close photoframe_102. Robot is no longer inside home_office_161.
+##############################
+From agent.py
+open_executor(bookshelf_137)
+Find drawing_387. Robot is inside dining_room_1. Robot is close floor_24. Robot is close bookshelf_137. Robot is close photoframe_102. 
+##############################
+From agent.py
+exp(book_2091, bookshelf_137)
+Fail to find book_2091 around bookshelf_137. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(bookshelf_136)exp(book_2091, bookshelf_136)walk_executor(book_2091)open_executor(book_2091)obs(book_2091, look around this place)
+##############################
+From agent.py
+walk_executor(bookshelf_136)
+Find book_2091. Robot is inside dining_room_1. Robot is close bookshelf_136. Robot is close floor_12. Robot is close floor_13. Robot is no longer close floor_24.Robot is no longer close bookshelf_137.Robot is no longer close photoframe_102.
+##############################
+From agent.py
+exp(book_2091, bookshelf_136)
+Find book_2091. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(book_2091)open_executor(book_2091)obs(book_2091, look around this place)
+##############################
+From agent.py
+walk_executor(book_2091)
+Robot is inside dining_room_1. Robot is close bookshelf_136. Robot is close book_2091. Robot is no longer close floor_12.Robot is no longer close floor_13.
+##############################
+From agent.py
+open_executor(book_2091)
+Robot is inside dining_room_1. Robot is close bookshelf_136. Robot is close book_2091. 
+##############################
+From agent.py
+obs(book_2091, look around this place)
+Get this information:  book_2091 is on bookshelf_136. book_2091 is inside dining_room_1. book_2091 is close to bookshelf_136. book_2091 is close to character_219. book_2091 is OPEN.
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_book_2092_around_book_2092(book:item):
+    goal: not unknown(book)
+    body:
+        assert is_book(book)
+        bind book_instance:item where:
+            is_book(book_instance) and id[book_instance]==2092
+        achieve close_char(char,book_instance)
+        if can_open(book_instance):
+            achieve_once open(book_instance)
+            exp(book,book_instance)
+        else:
+            exp(book,book_instance)
+    eff:
+        unknown[book]=False
+        close[book,book_instance]=True
+        close[book_instance,book]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior put_book_on_table(book:item, table:item):
+    body:
+        achieve on(book, table)
+
+behavior __goal__():
+    body:
+        bind home_office: item where:
+            is_home_office(home_office)
+        # Select the home office as the target location
+
+        bind coffee_table: item where:
+            is_table(coffee_table) and inside(coffee_table, home_office)
+        # Select the coffee table within the home office
+
+        bind book: item where:
+            is_book(book)
+        # Select the instance of a book
+
+        put_book_on_table(book, coffee_table)
+        # Execute the behavior to put the book on the coffee table in the home office
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+behavior put_book_on_table(book:item, table:item):
+    body:
+        achieve on(book, table)
+
+behavior __goal__():
+    body:
+        bind home_office: item where:
+            is_home_office(home_office)
+        # Select the home office as the target location
+
+        bind coffee_table: item where:
+            is_table(coffee_table) and inside(coffee_table, home_office)
+        # Select the coffee table within the home office
+
+        bind book: item where:
+            is_book(book)
+        # Select the instance of a book
+
+        put_book_on_table(book, coffee_table)
+        # Execute the behavior to put the book on the coffee table in the home office
+
+##############################
+From agent.py-> find a plan in act()
+grab_executor(book_2091)walk_executor(table_193)put_executor(book_2091, table_193)
+##############################
+From agent.py
+grab_executor(book_2091)
+Robot is inside dining_room_1. Robot is close bookshelf_136. Robot is close book_2091. Grabbing book_2091 by right hand. 
+##############################
+From agent.py
+walk_executor(table_193)
+Find keyboard_2111. Find drawing_196. Find mouse_2112. Find oil_2005. Find dvd_player_2000. Find chair_2118. Find pillow_195. Find laser_pointer_2025. Find mat_201. Robot is inside home_office_161. Robot is close book_2091. Robot is close table_193. Robot is no longer inside dining_room_1.Robot is no longer close bookshelf_136.
+##############################
+From agent.py
+put_executor(book_2091, table_193)
+Find stereo_2007. Find cd_2100. Find cat_2082. Find video_game_controller_2019. Find clothes_underwear_2022. Find cup_2006. Find vacuum_cleaner_2094. Robot is inside home_office_161. Robot is close book_2091. Robot is close table_193. book_2091 released by right hand. 
+##############################

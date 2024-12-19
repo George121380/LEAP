@@ -1,0 +1,313 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Sit on the chair in front of the computer in the home office.', '2. Touch the mouse near the computer to turn it on.', '3. Type on the keyboard to send an e-mail.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_sauce_2078_around_home_office_319(sauce:item):
+    goal: not unknown(sauce)
+    body:
+        assert is_sauce(sauce)
+        bind home_office_instance:item where:
+            is_home_office(home_office_instance) and id[home_office_instance]==319
+        achieve close_char(char,home_office_instance)
+        if can_open(home_office_instance):
+            achieve_once open(home_office_instance)
+            exp(sauce,home_office_instance)
+        else:
+            exp(sauce,home_office_instance)
+    eff:
+        unknown[sauce]=False
+        close[sauce,home_office_instance]=True
+        close[home_office_instance,sauce]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior __goal__():
+    body:
+        bind home_office: item where:
+            is_home_office(home_office)
+        # Select the home office as the target location
+
+        bind chair: item where:
+            is_chair(chair) and inside(chair, home_office)
+        # Select the chair in the home office
+
+        achieve on_char(char, chair)
+        # Sit on the chair in front of the computer in the home office
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_chair_103_around_home_office_319(chair:item):
+    goal: not unknown(chair)
+    body:
+        assert is_chair(chair)
+        bind home_office_instance:item where:
+            is_home_office(home_office_instance) and id[home_office_instance]==319
+        achieve close_char(char,home_office_instance)
+        if can_open(home_office_instance):
+            achieve_once open(home_office_instance)
+            exp(chair,home_office_instance)
+        else:
+            exp(chair,home_office_instance)
+    eff:
+        unknown[chair]=False
+        close[chair,home_office_instance]=True
+        close[home_office_instance,chair]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior sit_on_chair(chair:item):
+    body:
+        achieve on_char(char, chair)
+        # Ensure that the character is sitting on the chair
+
+behavior __goal__():
+    body:
+        bind home_office: item where:
+            is_home_office(home_office)
+        # Select the home office as the target location
+
+        bind chair: item where:
+            is_chair(chair) and inside(chair, home_office)
+        # Select the chair inside the home office
+
+        sit_on_chair(chair)
+        # Execute the behavior to sit on the chair
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+Fail to generate the goal representation
+##############################
+From agent.py
+Record from func query_LLM_human in agent.py
+Question: Can you teach me how to "1. sit on the chair in front of the computer in the home office." ?
+Answer: Get close to the computer in the home office. Then sit on the chair in front of the computer.
+Re-decompose: False
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_chair_106_around_home_office_319(chair:item):
+    goal: not unknown(chair)
+    body:
+        assert is_chair(chair)
+        bind home_office_instance:item where:
+            is_home_office(home_office_instance) and id[home_office_instance]==319
+        achieve close_char(char,home_office_instance)
+        if can_open(home_office_instance):
+            achieve_once open(home_office_instance)
+            exp(chair,home_office_instance)
+        else:
+            exp(chair,home_office_instance)
+    eff:
+        unknown[chair]=False
+        close[chair,home_office_instance]=True
+        close[home_office_instance,chair]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior sit_on_chair(chair:item):
+    body:
+        sit_somewhere(chair)
+        # Sit on the specified chair
+
+behavior __goal__():
+    body:
+        bind home_office: item where:
+            is_home_office(home_office)
+        # Select the home office as the target location
+
+        bind chair: item where:
+            is_chair(chair) and inside(chair, home_office)
+        # Select the chair within the home office
+
+        achieve close_char(char, chair)
+        # Ensure the character is close to the chair
+
+        sit_on_chair(chair)
+        # Execute the behavior to sit on the chair in the home office
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_sauce_2078_around_home_office_319(sauce:item):
+    goal: not unknown(sauce)
+    body:
+        assert is_sauce(sauce)
+        bind home_office_instance:item where:
+            is_home_office(home_office_instance) and id[home_office_instance]==319
+        achieve close_char(char,home_office_instance)
+        if can_open(home_office_instance):
+            achieve_once open(home_office_instance)
+            exp(sauce,home_office_instance)
+        else:
+            exp(sauce,home_office_instance)
+    eff:
+        unknown[sauce]=False
+        close[sauce,home_office_instance]=True
+        close[home_office_instance,sauce]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_chair_in_home_office(chair:item):
+    # Function to check if a chair is in the home office
+    return is_chair(chair) and inside(chair, home_office)
+
+behavior __goal__():
+    body:
+        bind home_office: item where:
+            is_home_office(home_office)
+        # Select the home office as the target location
+
+        if exists chair: item : is_chair_in_home_office(chair):
+            # If a chair is found in the home office, approach and sit on it
+            bind chair: item where:
+                is_chair_in_home_office(chair)
+            achieve close_char(char, chair)
+            sit_somewhere(chair)
+
+        else:
+            # If no chair has been confirmed in the home office, inspect all unvisited chairs
+            foreach chair: item:
+                if is_chair(chair) and not visited(chair):
+                    observe(chair, "Check if the chair is in the home office")
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "function_definition":
+
+Unknown variable: home_office; available variables: [Variable<chair: item>].
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_sauce_2078_around_home_office_319(sauce:item):
+    goal: not unknown(sauce)
+    body:
+        assert is_sauce(sauce)
+        bind home_office_instance:item where:
+            is_home_office(home_office_instance) and id[home_office_instance]==319
+        achieve close_char(char,home_office_instance)
+        if can_open(home_office_instance):
+            achieve_once open(home_office_instance)
+            exp(sauce,home_office_instance)
+        else:
+            exp(sauce,home_office_instance)
+    eff:
+        unknown[sauce]=False
+        close[sauce,home_office_instance]=True
+        close[home_office_instance,sauce]=True
+    
+
+#goal_representation
+ 
+def is_chair_in_home_office(chair:item):
+    # Function to check if a chair is in the home office
+    return is_chair(chair) and inside(chair, home_office)
+
+behavior __goal__():
+    body:
+        bind home_office: item where:
+            is_home_office(home_office)
+        # Select the home office as the target location
+
+        if exists chair: item : is_chair_in_home_office(chair):
+            # If a chair is found in the home office, approach and sit on it
+            bind chair: item where:
+                is_chair_in_home_office(chair)
+            achieve close_char(char, chair)
+            sit_somewhere(chair)
+
+        else:
+            # If no chair has been confirmed in the home office, inspect all unvisited chairs
+            foreach chair: item:
+                if is_chair(chair) and not visited(chair):
+                    observe(chair, "Check if the chair is in the home office")
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "function_definition":
+
+Unknown variable: home_office; available variables: [Variable<chair: item>].
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_sauce_2078_around_home_office_319(sauce:item):
+    goal: not unknown(sauce)
+    body:
+        assert is_sauce(sauce)
+        bind home_office_instance:item where:
+            is_home_office(home_office_instance) and id[home_office_instance]==319
+        achieve close_char(char,home_office_instance)
+        if can_open(home_office_instance):
+            achieve_once open(home_office_instance)
+            exp(sauce,home_office_instance)
+        else:
+            exp(sauce,home_office_instance)
+    eff:
+        unknown[sauce]=False
+        close[sauce,home_office_instance]=True
+        close[home_office_instance,sauce]=True
+    
+
+#goal_representation
+ 
+def is_chair_in_home_office(chair:item):
+    # Function to check if a chair is in the home office
+    return is_chair(chair) and inside(chair, home_office)
+
+behavior __goal__():
+    body:
+        bind home_office: item where:
+            is_home_office(home_office)
+        # Select the home office as the target location
+
+        if exists chair: item : is_chair_in_home_office(chair):
+            # If a chair is found in the home office, approach and sit on it
+            bind chair: item where:
+                is_chair_in_home_office(chair)
+            achieve close_char(char, chair)
+            sit_somewhere(chair)
+
+        else:
+            # If no chair has been confirmed in the home office, inspect all unvisited chairs
+            foreach chair: item:
+                if is_chair(chair) and not visited(chair):
+                    observe(chair, "Check if the chair is in the home office")
+
+#goal_representation_end
+
+##############################
