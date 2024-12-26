@@ -1,0 +1,537 @@
+[
+    {
+        "task_name": "Listen to music",
+        "source_sub_task": "Hold the remote control, get close to the DVD player, and then touch the remote control.",
+        "cdl": " \nbehavior hold_remote_control(remote_control: item):\n    body:\n        achieve_once inhand(remote_control)\n        # Pick up the remote control\n\nbehavior approach_dvd_player(dvd_player: item):\n    body:\n        achieve close_char(char, dvd_player)\n        # Move close to the DVD player\n\nbehavior touch_remote_control(remote_control: item):\n    body:\n        touch(remote_control)\n        # Touch the remote control\n\nbehavior __goal__():\n    body:\n        bind remote_control: item where:\n            is_remote_control(remote_control)\n        # Select an instance of the remote control\n\n        bind dvd_player: item where:\n            is_dvd_player(dvd_player)\n        # Select an instance of the DVD player\n\n        hold_remote_control(remote_control)\n        # Hold the remote control\n\n        approach_dvd_player(dvd_player)\n        # Get close to the DVD player\n\n        touch_remote_control(remote_control)\n        # Touch the remote control\n"
+    },
+    {
+        "task_name": "make up bed",
+        "source_sub_task": "Pour a cup of water and place it on the nightstand.",
+        "cdl": " \nbehavior pour_water(cup: item):\n    body:\n        achieve has_water(cup)\n        # Ensure the cup has water\n\nbehavior place_on_nightstand(cup: item, nightstand: item):\n    body:\n        achieve on(cup, nightstand)\n        # Place the cup on the nightstand\n\nbehavior __goal__():\n    body:\n        bind cup: item where:\n            is_cup(cup)\n        # Select an instance of a cup\n\n        bind nightstand: item where:\n            is_nightstand(nightstand)\n        # Select an instance of a nightstand\n\n        pour_water(cup)\n        # Pour water into the cup\n\n        place_on_nightstand(cup, nightstand)\n        # Place the cup on the nightstand\n"
+    },
+    {
+        "task_name": "Pet cat",
+        "source_sub_task": "1. Fill a bowl with water and place it on the table in the home office.",
+        "cdl": "behavior fill_bowl_with_water(bowl: item):\n    body:\n        achieve has_water(bowl)\n        # Fill the bowl with water\n\nbehavior place_bowl_on_table(bowl: item, table: item):\n    body:\n        achieve on(bowl, table)\n        # Place the bowl on the table\n\nbehavior __goal__():\n    body:\n        bind bowl: item where:\n            is_bowl(bowl)\n        # Select an instance of a bowl\n\n        bind home_office: item where:\n            is_home_office(home_office)\n\n        bind table: item where:\n            is_table(table) and inside(table, home_office)\n        # Select a table inside the home office\n\n        fill_bowl_with_water(bowl)\n        # Fill the bowl with water\n\n        place_bowl_on_table(bowl, table)\n        # Place the bowl on the table inside the home office"
+    },
+    {
+        "task_name": "Pet cat",
+        "source_sub_task": "2. Find the cat and place it on the table in the home office.",
+        "cdl": " \nbehavior find_cat_and_place_on_table(cat: item, table: item):\n    body:\n        achieve on(cat, table)\n\nbehavior __goal__():\n    body:\n        bind cat: item where:\n            is_cat(cat) and id[cat] == 2069\n        # Select cat with ID 2069\n\n        bind table: item where:\n            is_table(table) and id[table] == 270\n        # Select table with ID 270\n\n        find_cat_and_place_on_table(cat, table)\n        # Place cat on the table\n"
+    },
+    {
+        "task_name": "Clean the bathroom",
+        "source_sub_task": "Clean the bathroom sink.",
+        "cdl": "\nbehavior clean_sink(sink: item):\n    body:\n        achieve clean(sink)\n\nbehavior __goal__():\n    body:\n        bind sink: item where:\n            is_sink(sink)\n        clean_sink(sink)\n"
+    },
+    {
+        "task_name": "Turn on light",
+        "source_sub_task": "1. Identify all the rooms in the household using their features or markers.",
+        "cdl": " \nbehavior identify_all_rooms():\n    body:\n        foreach room: item:\n            if is_bedroom(room) or is_bathroom(room) or is_kitchen(room) or is_dining_room(room) or is_home_office(room):\n                observe(room, \"Identify room features and markers\")\n\nbehavior __goal__():\n    body:\n        identify_all_rooms()\n"
+    },
+    {
+        "task_name": "Turn on light",
+        "source_sub_task": "2. Ensure that there is at least one light turned on in each room.",
+        "cdl": " \ndef has_light_on(room:item):\n    # Function to check if there is any light turned on in a specified room\n    symbol has_light_on=exists o: item : is_light(o) and is_on(o) and inside(o, room)\n    return has_light_on\n\nbehavior turn_on_light_if_needed(room:item):\n    body:\n        if not has_light_on(room):\n            # If no light is on in the room, find a light and turn it on\n            bind light: item where:\n                is_light(light) and inside(light, room)\n            achieve is_on(light)\n\nbehavior __goal__():\n    body:\n        foreach room: item:\n            if is_dining_room(room) or is_home_office(room) or is_bathroom(room) or is_bedroom(room):\n                # Iterate through all rooms (dining room, home office, bathroom, and bedroom)\n                observe(room, \"Identify room features and markers\")\n                turn_on_light_if_needed(room)\n"
+    },
+    {
+        "task_name": "Clean the bathroom",
+        "source_sub_task": "Clean the bathroom sink directly.",
+        "cdl": "behavior clean_bathroom_sink(sink: item):\n    body:\n        achieve clean(sink)\n\nbehavior __goal__():\n    body:\n        bind sink: item where:\n            is_sink(sink)\n        clean_bathroom_sink(sink)"
+    },
+    {
+        "task_name": "Drink",
+        "source_sub_task": "1. Get a cup and fill it with water.",
+        "cdl": " \ndef has_water_source(location: item):\n    # Determine if there is a water source near a given location\n    symbol has_faucet=exists faucet: item : is_faucet(faucet) and close(faucet, location)\n    return has_faucet\n\nbehavior fill_cup_with_water(cup: item, location: item):\n    body:\n        achieve_once inside(cup, location)\n        # Ensure the cup is in the location to fill it with water\n\n        if has_water_source(location):\n            bind faucet: item where:\n                is_faucet(faucet) and close(faucet, location)\n            achieve_once is_on(faucet)\n            # If theres a water source, turn it on to fill the cup\n\n        achieve has_water(cup)\n        # Fill the cup with water\n\n        if has_water_source(location):\n            bind faucet: item where:\n                is_faucet(faucet) and close(faucet, location)\n            achieve_once is_off(faucet)\n            # Turn off the water source after filling the cup\n\nbehavior __goal__():\n    body:\n        bind cup: item where:\n            is_cup(cup)\n        # Select an instance of a cup\n\n        bind sink: item where:\n            is_sink(sink)\n        # Select a sink location for filling the cup\n\n        fill_cup_with_water(cup, sink)\n"
+    },
+    {
+        "task_name": "Drink",
+        "source_sub_task": "2. Put the cup in the freezer.",
+        "cdl": " \nbehavior place_cup_in_freezer(cup: item, freezer: item):\n    body:\n        achieve inside(cup, freezer)\n\nbehavior __goal__():\n    body:\n        bind cup: item where:\n            is_cup(cup) and id[cup] == 2063\n        # Select cup with ID 2063\n\n        bind freezer: item where:\n            is_fridge(freezer)\n        # Select an instance of a freezer or fridge\n\n        place_cup_in_freezer(cup, freezer)\n        # Place the cup inside the freezer\n"
+    },
+    {
+        "task_name": "Turn on light",
+        "source_sub_task": "1. Turn on the lights in the bedroom.  ",
+        "cdl": " \nbehavior turn_on_light_in_bedroom(light: item):\n    body:\n        achieve is_on(light)\n\nbehavior __goal__():\n    body:\n        bind bedroom: item where:\n            is_bedroom(bedroom)\n        \n        bind light: item where:\n            is_light(light) and inside(light, bedroom)\n        \n        turn_on_light_in_bedroom(light)\n"
+    },
+    {
+        "task_name": "Turn on light",
+        "source_sub_task": "2. Turn on the lights in the bathroom.",
+        "cdl": " \nbehavior turn_on_light_in_bathroom(light:item, bathroom:item):\n    body:\n        achieve inside(light, bathroom)\n        # Ensure the light is located in the bathroom\n        achieve is_on(light)\n        # Turn the light on\n\nbehavior __goal__():\n    body:\n        bind bathroom: item where:\n            is_bathroom(bathroom)\n        # Select an instance of a bathroom\n\n        bind light: item where:\n            is_light(light) and inside(light, bathroom)\n        # Select an instance of a light that is inside a bathroom\n\n        turn_on_light_in_bathroom(light, bathroom)\n        # Turn on the light in the bathroom\n"
+    },
+    {
+        "task_name": "Prepare a reading space",
+        "source_sub_task": "1. Find the book and place it on the coffee table in the home office.",
+        "cdl": " \nbehavior find_book_and_place_on_coffee_table(book: item, table: item):\n    body:\n        achieve on(book, table)\n\nbehavior __goal__():\n    body:\n        bind book: item where:\n            is_book(book)\n        # Select an instance of a book\n\n        bind home_office: item where:\n            is_home_office(home_office)\n\n        bind table: item where:\n            is_table(table) and inside(table, home_office)\n        # Select a table inside the home office\n\n        find_book_and_place_on_coffee_table(book, table)\n"
+    },
+    {
+        "task_name": "Prepare a reading space",
+        "source_sub_task": "2. Open the window in the home office.",
+        "cdl": " \nbehavior open_home_office_window(window: item):\n    body:\n        achieve open(window)\n\nbehavior __goal__():\n    body:\n        bind home_office: item where:\n            is_home_office(home_office)\n        \n        bind window: item where:\n            is_window(window) and inside(window, home_office)\n        \n        open_home_office_window(window)\n"
+    },
+    {
+        "task_name": "Turn on light",
+        "source_sub_task": "1. Identify all the rooms in the household.",
+        "cdl": "behavior identify_all_rooms():\n    body:\n        foreach room: item:\n            if is_bedroom(room) or is_bathroom(room) or is_kitchen(room) or is_dining_room(room) or is_home_office(room):\n                observe(room, \"Identify room features and markers\")\n\nbehavior __goal__():\n    body:\n        identify_all_rooms()"
+    },
+    {
+        "task_name": "Turn on light",
+        "source_sub_task": "2. Turn on at least one light in each room.",
+        "cdl": " \ndef has_light_on(room:item):\n    # Function to check if there is any light turned on in a specified room\n    symbol has_light_on=exists o: item : is_light(o) and is_on(o) and inside(o, room)\n    return has_light_on\n\nbehavior turn_on_light_in_room(room:item):\n    body:\n        if not has_light_on(room):\n            # If no light is on in the room, find a light and turn it on\n            bind light: item where:\n                is_light(light) and inside(light, room)\n            achieve is_on(light)\n\nbehavior __goal__():\n    body:\n        foreach room: item:\n            if is_dining_room(room) or is_home_office(room) or is_bathroom(room) or is_bedroom(room):\n                # Iterate through all rooms (dining room, home office, bathroom, and bedroom)\n                observe(room, \"Identify room features and markers\")\n                turn_on_light_in_room(room)\n"
+    },
+    {
+        "task_name": "Wash clothes",
+        "source_sub_task": "1. Find the basket containing clothes.",
+        "cdl": " \nbehavior find_basket_for_clothes(basket: item):\n    body:\n        achieve visited(basket)\n\nbehavior __goal__():\n    body:\n        if exists basket: item : is_basket_for_clothes(basket):\n            bind basket: item where:\n                is_basket_for_clothes(basket)\n            find_basket_for_clothes(basket)\n        else:\n            foreach basket: item:\n                if is_basket_for_clothes(basket) and not visited(basket):\n                    observe(basket, \"Check contents of the basket for clothes\")\n"
+    },
+    {
+        "task_name": "Wash clothes",
+        "source_sub_task": "2. Put the clothes in the washing machine and start the wash cycle.",
+        "cdl": " \nbehavior load_clothes_into_washing_machine(clothes:item, washing_machine:item):\n    body:\n        achieve inside(clothes, washing_machine)\n        # Place each piece of clothing inside the washing machine\n\nbehavior start_wash_cycle(washing_machine:item):\n    body:\n        assert has_switch(washing_machine)\n        # Ensure the washing machine has a switch\n        achieve is_on(washing_machine)\n        # Turn on the washing machine to start the wash cycle\n\nbehavior __goal__():\n    body:\n        bind basket: item where:\n            is_basket_for_clothes(basket) and id[basket] == 2006\n        # Select the basket with clothes\n        \n        bind washing_machine: item where:\n            is_washing_machine(washing_machine)\n        # Select an instance of a washing machine\n\n        foreach clothes: item:\n            if (is_clothes_shirt(clothes) or is_clothes_pants(clothes) or is_clothes_socks(clothes) or is_clothes_skirt(clothes)) and inside(clothes, basket):\n                load_clothes_into_washing_machine(clothes, washing_machine)\n        # Load all clothes from the basket into the washing machine\n\n        start_wash_cycle(washing_machine)\n        # Start the washing machine to wash the clothes\n"
+    },
+    {
+        "task_name": "Wash dishes with dishwasher",
+        "source_sub_task": "1. Put cleaning solution in the dishwasher.",
+        "cdl": " \nbehavior put_cleaning_solution_in_dishwasher(cleaning_solution: item, dishwasher: item):\n    body:\n        achieve inside(cleaning_solution, dishwasher)\n        # Place the cleaning solution inside the dishwasher\n\nbehavior __goal__():\n    body:\n        bind cleaning_solution: item where:\n            is_cleaning_solution(cleaning_solution)\n        # Select an instance of the cleaning solution\n\n        bind dishwasher: item where:\n            is_dishwasher(dishwasher)\n        # Select an instance of the dishwasher\n\n        put_cleaning_solution_in_dishwasher(cleaning_solution, dishwasher)\n        # Put the cleaning solution in the dishwasher\n"
+    },
+    {
+        "task_name": "Wash dishes with dishwasher",
+        "source_sub_task": "2. Place the bowls and plates in the dishwasher and start the washing cycle.",
+        "cdl": " \nbehavior place_items_in_dishwasher(o:item, dishwasher:item):\n    body:\n        achieve inside(o, dishwasher)\n        # Place the item inside the dishwasher\n\nbehavior start_dishwasher(dishwasher:item):\n    body:\n        achieve closed(dishwasher) # Close the dishwasher door\n        achieve is_on(dishwasher) # Turn on the dishwasher\n\nbehavior __goal__():\n    body:\n        bind dishwasher: item where:\n            is_dishwasher(dishwasher)\n        # Select a dishwasher instance\n        \n        foreach o: item:\n        # Place all plates and bowls inside the dishwasher\n            if is_plate(o) or is_bowl(o):\n                place_items_in_dishwasher(o, dishwasher)\n        \n        start_dishwasher(dishwasher) # Start the dishwasher\n"
+    },
+    {
+        "task_name": "Wash windows",
+        "source_sub_task": "Open the windows in the bathroom.",
+        "cdl": " \nbehavior open_bathroom_windows(windows: item):\n    body:\n        achieve open(windows)\n\nbehavior __goal__():\n    body:\n        bind bathroom: item where:\n            is_bathroom(bathroom)\n\n        foreach windows: item:\n            if is_window(windows) and inside(windows, bathroom):\n                open_bathroom_windows(windows)\n"
+    },
+    {
+        "task_name": "Wash dishes with dishwasher",
+        "source_sub_task": "Wash the bowls and plates using the dishwasher.",
+        "cdl": " \nbehavior put_items_in_dishwasher(o:item, dishwasher:item):\n    body:\n        achieve inside(o, dishwasher)\n        # Place the item inside the dishwasher\n\nbehavior start_dishwasher(dishwasher:item):\n    body:\n        achieve closed(dishwasher) # Close the dishwasher door\n        achieve is_on(dishwasher) # Turn on the dishwasher\n\nbehavior __goal__():\n    body:\n        bind dishwasher: item where:\n            is_dishwasher(dishwasher)\n        # Select a dishwasher instance\n        \n        foreach o: item:\n        # Place all plates and bowls inside the dishwasher\n            if is_plate(o) or is_bowl(o):\n                put_items_in_dishwasher(o, dishwasher)\n        \n        start_dishwasher(dishwasher) # Start the dishwasher\n"
+    },
+    {
+        "task_name": "Put groceries in Fridge",
+        "source_sub_task": "1. Locate the milk, turkey, egg, fish, and chicken in the household.",
+        "cdl": " \ndef has_relevant_food(fridge:item):\n    # Function to check if there are milk, turkey, eggs, fish, or chicken in the specified fridge\n    symbol contains_milk = exists o: item : is_milk(o) and inside(o, fridge)\n    symbol contains_turkey = exists o: item : is_food_turkey(o) and inside(o, fridge)\n    symbol contains_egg = exists o: item : is_food_egg(o) and inside(o, fridge)\n    symbol contains_fish = exists o: item : is_food_fish(o) and inside(o, fridge)\n    symbol contains_chicken = exists o: item : is_food_chicken(o) and inside(o, fridge)\n    return contains_milk or contains_turkey or contains_egg or contains_fish or contains_chicken\n\nbehavior __goal__():\n    body:\n        if exists fridge: item : is_fridge(fridge) and has_relevant_food(fridge):\n            # If we have already found the fridge with the relevant food, we can directly observe it\n            bind fridge: item where:\n                is_fridge(fridge) and has_relevant_food(fridge)\n            observe(fridge, \"Locate milk, turkey, egg, fish, and chicken\")\n\n        else:\n            # Check all fridges in the scene that have not been visited\n            foreach fridge: item:\n                if is_fridge(fridge) and not visited(fridge):\n                    observe(fridge, \"Locate milk, turkey, egg, fish, and chicken\")\n"
+    },
+    {
+        "task_name": "Put groceries in Fridge",
+        "source_sub_task": "2. Identify the dining room table.",
+        "cdl": " \nbehavior __goal__():\n    body:\n        bind dining_room: item where:\n            is_dining_room(dining_room)\n\n        foreach table: item:\n            if is_table(table) and inside(table, dining_room) and not visited(table):\n                observe(table, \"Identify the dining room table\")\n"
+    },
+    {
+        "task_name": "Put groceries in Fridge",
+        "source_sub_task": "3. Place the milk, turkey, egg, fish, and chicken on the dining room table.",
+        "cdl": " \nbehavior place_items_on_table(item: item, table: item):\n    body:\n        achieve on(item, table)\n\nbehavior __goal__():\n    body:\n        bind dining_room: item where:\n            is_dining_room(dining_room)\n\n        bind table: item where:\n            is_table(table) and inside(table, dining_room)\n        \n        bind milk: item where:\n            is_milk(milk)\n        \n        bind turkey: item where:\n            is_food_turkey(turkey)\n        \n        bind egg: item where:\n            is_food_egg(egg)\n        \n        bind fish: item where:\n            is_food_fish(fish)\n        \n        bind chicken: item where:\n            is_food_chicken(chicken)\n        \n        place_items_on_table(milk, table)\n        place_items_on_table(turkey, table)\n        place_items_on_table(egg, table)\n        place_items_on_table(fish, table)\n        place_items_on_table(chicken, table)\n"
+    },
+    {
+        "task_name": "Drink",
+        "source_sub_task": "Get a cup and fill it with water.",
+        "cdl": " \ndef has_water_source(location: item):\n    # Determine if there is a water source near a given location\n    symbol has_faucet=exists faucet: item : is_faucet(faucet) and close(faucet, location)\n    return has_faucet\n\nbehavior fill_cup_with_water(cup: item, location: item):\n    body:\n        achieve_once inside(cup, location)\n        # Ensure the cup is in the location to fill it with water\n\n        if has_water_source(location):\n            bind faucet: item where:\n                is_faucet(faucet) and close(faucet, location)\n            achieve_once is_on(faucet)\n            # If theres a water source, turn it on to fill the cup\n\n        achieve has_water(cup)\n        # Fill the cup with water\n\n        if has_water_source(location):\n            bind faucet: item where:\n                is_faucet(faucet) and close(faucet, location)\n            achieve_once is_off(faucet)\n            # Turn off the water source after filling the cup\n\nbehavior __goal__():\n    body:\n        bind cup: item where:\n            is_cup(cup) and id[cup] == 2087\n        # Select cup with ID 2087\n\n        bind sink: item where:\n            is_sink(sink) and id[sink] == 133\n        # Select the sink with ID 133\n\n        fill_cup_with_water(cup, sink)\n"
+    },
+    {
+        "task_name": "Turn on light",
+        "source_sub_task": "Turn on the lights in the bedroom, then turn on the lights in the bathroom.",
+        "cdl": " \nbehavior turn_on_light_in_bedroom(light: item):\n    body:\n        achieve is_on(light)\n\nbehavior turn_on_light_in_bathroom(light: item):\n    body:\n        achieve is_on(light)\n\nbehavior __goal__():\n    body:\n        bind bedroom: item where:\n            is_bedroom(bedroom)\n        bind light_in_bedroom: item where:\n            is_light(light_in_bedroom) and inside(light_in_bedroom, bedroom)\n        \n        bind bathroom: item where:\n            is_bathroom(bathroom)\n        bind light_in_bathroom: item where:\n            is_light(light_in_bathroom) and inside(light_in_bathroom, bathroom)\n        \n        turn_on_light_in_bedroom(light_in_bedroom)\n        turn_on_light_in_bathroom(light_in_bathroom)\n"
+    },
+    {
+        "task_name": "Prepare a reading space",
+        "source_sub_task": "1. Find the spectacles and put them on the coffee table in the home office.",
+        "cdl": " \nbehavior find_spectacles_and_place_on_coffee_table(spectacles: item, table: item):\n    body:\n        achieve on(spectacles, table)\n\nbehavior __goal__():\n    body:\n        bind spectacles: item where:\n            is_spectacles(spectacles)\n        # Select an instance of spectacles\n\n        bind home_office: item where:\n            is_home_office(home_office)\n\n        bind table: item where:\n            is_coffee_table(table) and inside(table, home_office)\n        # Select a coffee table inside the home office\n\n        find_spectacles_and_place_on_coffee_table(spectacles, table)\n"
+    },
+    {
+        "task_name": "Prepare a reading space",
+        "source_sub_task": "2. Find the book and put it on the coffee table in the home office.",
+        "cdl": " \nbehavior put_book_on_coffee_table(book: item, coffee_table: item):\n    body:\n        achieve on(book, coffee_table)\n\nbehavior __goal__():\n    body:\n        bind book: item where:\n            is_book(book)\n        # Select an instance of a book\n\n        bind home_office: item where:\n            is_home_office(home_office)\n\n        bind coffee_table: item where:\n            is_coffee_table(coffee_table) and inside(coffee_table, home_office)\n        # Select a coffee table inside the home office\n\n        put_book_on_coffee_table(book, coffee_table)\n"
+    },
+    {
+        "task_name": "Prepare a reading space",
+        "source_sub_task": "1. Find the book and put it on the coffee table in the home office.",
+        "cdl": " \nbehavior put_book_on_coffee_table(book: item, coffee_table: item):\n    body:\n        achieve on(book, coffee_table)\n\nbehavior __goal__():\n    body:\n        bind book: item where:\n            is_book(book)\n        # Select an instance of a book\n\n        bind home_office: item where:\n            is_home_office(home_office)\n\n        bind coffee_table: item where:\n            is_coffee_table(coffee_table) and inside(coffee_table, home_office)\n        # Select a coffee table inside the home office\n\n        put_book_on_coffee_table(book, coffee_table)\n"
+    },
+    {
+        "task_name": "Prepare a reading space",
+        "source_sub_task": "2. Open the window in the home office.",
+        "cdl": "\nbehavior open_home_office_window(window: item):\n    body:\n        achieve open(window)\n\nbehavior __goal__():\n    body:\n        bind home_office: item where:\n            is_home_office(home_office)\n        \n        bind window: item where:\n            is_window(window) and inside(window, home_office)\n        \n        open_home_office_window(window)\n"
+    },
+    {
+        "task_name": "Drink",
+        "source_sub_task": "Get a cup of water.",
+        "cdl": " \ndef has_water_source(location: item):\n    # Determine if there is a water source near a given location\n    symbol has_faucet=exists faucet: item : is_faucet(faucet) and close(faucet, location)\n    return has_faucet\n\nbehavior fill_cup_with_water(cup: item, location: item):\n    body:\n        achieve_once inside(cup, location)\n        # Ensure the cup is in the location to fill it with water\n\n        if has_water_source(location):\n            bind faucet: item where:\n                is_faucet(faucet) and close(faucet, location)\n            achieve_once is_on(faucet)\n            # If theres a water source, turn it on to fill the cup\n\n        achieve has_water(cup)\n        # Fill the cup with water\n\n        if has_water_source(location):\n            bind faucet: item where:\n                is_faucet(faucet) and close(faucet, location)\n            achieve_once is_off(faucet)\n            # Turn off the water source after filling the cup\n\nbehavior __goal__():\n    body:\n        bind cup: item where:\n            is_cup(cup)\n        # Select an instance of a cup\n\n        bind sink: item where:\n            is_sink(sink)\n        # Select a sink location for filling the cup\n\n        fill_cup_with_water(cup, sink)\n"
+    },
+    {
+        "task_name": "Pet cat",
+        "source_sub_task": "2. Find your cat and put it on the table in the home office.",
+        "cdl": "behavior find_cat_and_place_on_table(cat: item, table: item):\n    body:\n        achieve on(cat, table)\n\nbehavior __goal__():\n    body:\n        bind cat: item where:\n            is_cat(cat)\n        # Select an instance of the cat\n\n        bind home_office: item where:\n            is_home_office(home_office)\n\n        bind table: item where:\n            is_table(table) and inside(table, home_office)\n        # Select a table inside the home office\n\n        find_cat_and_place_on_table(cat, table)\n        # Place the cat on the table in the home office"
+    },
+    {
+        "task_name": "Turn on light",
+        "source_sub_task": "1. Identify all rooms in the household.",
+        "cdl": "behavior identify_all_rooms():\n    body:\n        foreach room: item:\n            if is_bedroom(room) or is_bathroom(room) or is_kitchen(room) or is_dining_room(room) or is_home_office(room):\n                observe(room, \"Identify room features and markers\")\n\nbehavior __goal__():\n    body:\n        identify_all_rooms()"
+    },
+    {
+        "task_name": "Turn on light",
+        "source_sub_task": "2. Check each room to ensure at least one light is on.",
+        "cdl": "def has_light_on(room: item):\n    # Function to check if there is any light turned on in a specified room\n    symbol has_light_on = exists o: item: is_light(o) and is_on(o) and inside(o, room)\n    return has_light_on\n\nbehavior turn_on_light_if_needed(room: item):\n    body:\n        if not has_light_on(room):\n            # If no light is on in the room, find a light and turn it on\n            bind light: item where:\n                is_light(light) and inside(light, room)\n            achieve is_on(light)\n\nbehavior __goal__():\n    body:\n        foreach room: item:\n            if is_dining_room(room) or is_home_office(room) or is_bathroom(room) or is_bedroom(room):\n                # Iterate through all rooms (dining room, home office, bathroom, and bedroom)\n                observe(room, \"Identify room features and markers\")\n                turn_on_light_if_needed(room)"
+    },
+    {
+        "task_name": "Wash clothes",
+        "source_sub_task": "1. Identify the basket containing clothes.",
+        "cdl": " \nbehavior find_basket_for_clothes(basket: item):\n    body:\n        achieve visited(basket)\n\nbehavior __goal__():\n    body:\n        if exists basket: item : is_basket_for_clothes(basket):\n            bind basket: item where:\n                is_basket_for_clothes(basket)\n            find_basket_for_clothes(basket)\n        else:\n            foreach basket: item:\n                if is_basket_for_clothes(basket) and not visited(basket):\n                    observe(basket, \"Check contents of the basket for clothes\")\n"
+    },
+    {
+        "task_name": "Wash clothes",
+        "source_sub_task": "2. Put the clothes in the washing machine and start the wash cycle.",
+        "cdl": " \nbehavior load_clothes_into_washing_machine(clothes:item, washing_machine:item):\n    body:\n        achieve inside(clothes, washing_machine)\n        # Place each piece of clothing inside the washing machine\n\nbehavior start_wash_cycle(washing_machine:item):\n    body:\n        assert has_switch(washing_machine)\n        # Ensure the washing machine has a switch\n        achieve is_on(washing_machine)\n        # Turn on the washing machine to start the wash cycle\n\nbehavior __goal__():\n    body:\n        bind basket: item where:\n            is_basket_for_clothes(basket) and id[basket] == 2040\n        # Select the basket with clothes\n\n        bind washing_machine: item where:\n            is_washing_machine(washing_machine)\n        # Select an instance of a washing machine\n\n        foreach clothes: item:\n            if (is_clothes_shirt(clothes) or is_clothes_pants(clothes) or is_clothes_socks(clothes) or is_clothes_skirt(clothes)) and inside(clothes, basket):\n                load_clothes_into_washing_machine(clothes, washing_machine)\n        # Load all clothes from the basket into the washing machine\n\n        start_wash_cycle(washing_machine)\n        # Start the washing machine to wash the clothes\n"
+    },
+    {
+        "task_name": "Wash windows",
+        "source_sub_task": "Open the windows in the bathroom.",
+        "cdl": " \nbehavior open_bathroom_windows(windows: item):\n    body:\n        achieve open(windows)\n\nbehavior __goal__():\n    body:\n        bind bathroom: item where:\n            is_bathroom(bathroom)\n\n        foreach windows: item:\n            if is_window(windows) and inside(windows, bathroom):\n                open_bathroom_windows(windows)\n"
+    },
+    {
+        "task_name": "Prepare a reading space",
+        "source_sub_task": "1. Find the book and put it on the coffee table in the home office.",
+        "cdl": " \nbehavior put_book_on_coffee_table(book: item, coffee_table: item):\n    body:\n        achieve on(book, coffee_table)\n\nbehavior __goal__():\n    body:\n        bind book: item where:\n            is_book(book)\n        # Select an instance of a book\n\n        bind home_office: item where:\n            is_home_office(home_office)\n\n        bind coffee_table: item where:\n            is_coffee_table(coffee_table) and inside(coffee_table, home_office)\n        # Select a coffee table inside the home office\n\n        put_book_on_coffee_table(book, coffee_table)\n"
+    },
+    {
+        "task_name": "Prepare a reading space",
+        "source_sub_task": "2. Prepare a cup of hot milk and put it on the coffee table in the home office.",
+        "cdl": "def has_milk_in_fridge(fridge:item):\n    # Function to check if there is milk in the specified fridge\n    symbol contains_milk = exists o: item : is_milk(o) and inside(o, fridge)\n    return contains_milk\n\ndef has_microwave_in_kitchen(kitchen:item):\n    # Function to check if there is a microwave in the kitchen\n    symbol has_microwave = exists microwave: item : is_microwave(microwave) and inside(microwave, kitchen)\n    return has_microwave\n\nbehavior prepare_hot_milk(milk:item, cup:item, microwave:item):\n    body:\n        achieve inside(milk, cup)\n        # Fill the cup with milk\n\n        achieve inside(cup, microwave)\n        # Place the cup with milk in the microwave\n\n        achieve is_on(microwave)\n        # Turn on the microwave to heat the milk\n\nbehavior __goal__():\n    body:\n        bind fridge: item where:\n            is_fridge(fridge) and has_milk_in_fridge(fridge)\n        # Select fridge that contains milk\n        \n        bind milk: item where:\n            is_milk(milk) and inside(milk, fridge)\n        # Bind specific milk instance from the fridge\n\n        bind coffee_table: item where:\n            is_coffee_table(coffee_table) and id[coffee_table] == 2068\n        # Select coffee table with ID 2068\n\n        bind cup: item where:\n            is_cup(cup) and has_water(cup)\n        # Select an instance of a cup with water to replace with milk\n\n        bind kitchen: item where:\n            is_kitchen(kitchen)\n        # Bind kitchen instance\n\n        observe(cup, \"Check for milk and prepare if not present\")\n        # Observe the current state of the cup and prepare hot milk if necessary\n\n        if has_microwave_in_kitchen(kitchen):\n            bind microwave: item where:\n                is_microwave(microwave) and inside(microwave, kitchen)\n            prepare_hot_milk(milk, cup, microwave)\n\n        achieve on(cup, coffee_table)\n        # Place the cup with hot milk on the coffee table in the home office"
+    },
+    {
+        "task_name": "Wash dishes with dishwasher",
+        "source_sub_task": "1. Load the bowls and plates into the dishwasher and start it.",
+        "cdl": "behavior load_dishwasher(o:item, dishwasher:item):\n    body:\n        achieve inside(o, dishwasher)\n        # Place the item inside the dishwasher\n\nbehavior start_dishwasher(dishwasher:item):\n    body:\n        achieve closed(dishwasher) # Close the dishwasher door\n        achieve is_on(dishwasher) # Turn on the dishwasher\n\nbehavior __goal__():\n    body:\n        bind dishwasher: item where:\n            is_dishwasher(dishwasher)\n        # Select a dishwasher instance\n        \n        foreach o: item:\n        # Load all bowls and plates into the dishwasher\n            if is_bowl(o) or is_plate(o):\n                load_dishwasher(o, dishwasher)\n        \n        start_dishwasher(dishwasher) # Start the dishwasher"
+    },
+    {
+        "task_name": "Wash dishes with dishwasher",
+        "source_sub_task": "2. Wash the forks by hand.",
+        "cdl": " \nbehavior wash_forks_hand(fork: item):\n    body:\n        wash(fork)\n\nbehavior __goal__():\n    body:\n        bind dining_room: item where:\n            is_dining_room(dining_room)\n        \n        bind table: item where:\n            is_table(table) and inside(table, dining_room)\n\n        foreach fork: item:\n            if is_fork(fork) and on(fork, table):\n                wash_forks_hand(fork)\n"
+    },
+    {
+        "task_name": "Pet cat",
+        "source_sub_task": "Cut some chicken and put it close to the cat.",
+        "cdl": " \nbehavior cut_chicken(chicken: item, knife: item):\n    body:\n        achieve cut(chicken)\n\nbehavior place_chicken_near_cat(chicken: item, cat: item):\n    body:\n        achieve close(chicken, cat)\n\nbehavior __goal__():\n    body:\n        bind chicken: item where:\n            is_food_chicken(chicken)\n        # Select the chicken item\n\n        bind knife: item where:\n            is_knife(knife)\n        # Select a knife instance for cutting the chicken\n\n        bind cat: item where:\n            is_cat(cat)\n        # Select the instance of the cat\n\n        cut_chicken(chicken, knife)\n        # Cut the chicken using the knife\n\n        place_chicken_near_cat(chicken, cat)\n        # Place the cut chicken close to the cat\n"
+    },
+    {
+        "task_name": "Prepare breakfast",
+        "source_sub_task": "Cut the bread, put it in the toaster, and turn on the toaster.",
+        "cdl": " \nbehavior cut_bread(bread: item, cutting_board: item):\n    body:\n        achieve cut(bread)\n\nbehavior put_bread_in_toaster(bread: item, toaster: item):\n    body:\n        achieve inside(bread, toaster)\n\nbehavior turn_on_toaster(toaster: item):\n    body:\n        achieve is_on(toaster)\n\nbehavior __goal__():\n    body:\n        bind bread: item where:\n            is_food_bread(bread)\n        # Select an instance of bread\n\n        bind cutting_board: item where:\n            is_cutting_board(cutting_board)\n        # Select an instance of a cutting board\n\n        bind toaster: item where:\n            is_toaster(toaster)\n        # Select an instance of a toaster\n\n        cut_bread(bread, cutting_board)\n        # Cut the bread on the cutting board\n\n        put_bread_in_toaster(bread, toaster)\n        # Put the cut bread slices into the toaster\n\n        turn_on_toaster(toaster)\n        # Turn on the toaster to toast the bread\n"
+    },
+    {
+        "task_name": "Prepare a reading space",
+        "source_sub_task": "1. Find your spectacles and put them on the coffee table in the home office.",
+        "cdl": " \nbehavior put_spectacles_on_coffee_table(spectacles: item, coffee_table: item):\n    body:\n        achieve on(spectacles, coffee_table)\n\nbehavior __goal__():\n    body:\n        bind spectacles: item where:\n            is_spectacles(spectacles)\n        # Select an instance of spectacles\n\n        bind home_office: item where:\n            is_home_office(home_office)\n\n        bind coffee_table: item where:\n            is_table(coffee_table) and inside(coffee_table, home_office)\n        # Select a coffee table inside the home office\n\n        put_spectacles_on_coffee_table(spectacles, coffee_table)\n"
+    },
+    {
+        "task_name": "Prepare a reading space",
+        "source_sub_task": "2. Find the book and put it on the coffee table in the home office.",
+        "cdl": "behavior put_book_on_coffee_table(book: item, coffee_table: item):\n    body:\n        achieve on(book, coffee_table)\n\nbehavior __goal__():\n    body:\n        bind book: item where:\n            is_book(book)\n        # Select an instance of a book\n\n        bind home_office: item where:\n            is_home_office(home_office)\n\n        bind coffee_table: item where:\n            is_coffee_table(coffee_table) and inside(coffee_table, home_office)\n        # Select a coffee table inside the home office\n\n        put_book_on_coffee_table(book, coffee_table)"
+    },
+    {
+        "task_name": "Wash windows",
+        "source_sub_task": "1. Locate all windows in the house.  ",
+        "cdl": " \ndef has_window_for_observation(window: item):\n    # Returns true if the window needs to be observed to identify it\n    return not visited(window)\n\nbehavior __goal__():\n    body:\n        foreach window: item:\n            if is_window(window) and not visited(window):\n                observe(window, \"Locate and identify the window\")\n"
+    },
+    {
+        "task_name": "Wash windows",
+        "source_sub_task": "2. Wipe each window using a towel.",
+        "cdl": " \nbehavior wipe_window(window: item, towel: item):\n    body:\n        achieve_once inhand(towel)\n        wipe(window)\n        # Wipe the window using the towel\n\nbehavior __goal__():\n    body:\n        foreach window: item:\n            if is_window(window):\n                bind towel: item where:\n                    is_towel(towel)\n                wipe_window(window, towel)\n "
+    },
+    {
+        "task_name": "Wash dishes with dishwasher",
+        "source_sub_task": "1. Load the bowls and plates into the dishwasher and start the wash cycle.  ",
+        "cdl": "behavior load_items_in_dishwasher(o:item, dishwasher:item):\n    body:\n        achieve inside(o, dishwasher)\n        # Place the item inside the dishwasher\n\nbehavior start_dishwasher(dishwasher:item):\n    body:\n        achieve closed(dishwasher) # Close the dishwasher door\n        achieve is_on(dishwasher) # Turn on the dishwasher\n\nbehavior __goal__():\n    body:\n        bind dishwasher: item where:\n            is_dishwasher(dishwasher)\n        # Select a dishwasher instance\n\n        foreach o: item:\n        # Load all bowls and plates into the dishwasher\n            if is_plate(o) or is_bowl(o):\n                load_items_in_dishwasher(o, dishwasher)\n\n        start_dishwasher(dishwasher) # Start the dishwasher"
+    },
+    {
+        "task_name": "Wash dishes with dishwasher",
+        "source_sub_task": "2. Wash the forks by hand in the sink.  ",
+        "cdl": " \nbehavior wash_forks_hand(fork: item):\n    body:\n        wash(fork)\n\nbehavior __goal__():\n    body:\n        bind dining_room: item where:\n            is_dining_room(dining_room)\n        \n        bind table: item where:\n            is_table(table) and inside(table, dining_room)\n        \n        foreach fork: item:\n            if is_fork(fork) and on(fork, table):\n                wash_forks_hand(fork)\n"
+    },
+    {
+        "task_name": "Clean the bathroom",
+        "source_sub_task": "1. Find the bathroom sink.",
+        "cdl": "behavior __goal__():\n    body:\n        bind bathroom: item where:\n            is_bathroom(bathroom)\n        \n        foreach sink: item:\n            if is_sink(sink) and inside(sink, bathroom):\n                observe(sink, \"Determine if this is the bathroom sink\")"
+    },
+    {
+        "task_name": "Clean the bathroom",
+        "source_sub_task": "2. Fill the sink with water.",
+        "cdl": " \ndef is_confirmed_bathroom_sink(sink: item):\n    # Function to check if the sink is confirmed as the bathroom sink\n    return is_sink(sink) and id[sink] == 19 and visited(sink)\n\ndef has_faucet(sink: item):\n    # Function to check if the sink has an accessible faucet\n    symbol exists_faucet = exists faucet: item : is_faucet(faucet) and close(faucet, sink)\n    return exists_faucet\n\nbehavior fill_sink_with_water(sink: item):\n    body:\n        achieve has_water(sink)\n        # Ensure that the sink is filled with water\n\nbehavior __goal__():\n    body:\n        bind sink_19: item where:\n            is_sink(sink_19) and id[sink_19] == 19\n        # Declare sink_19 before use\n\n        if not is_confirmed_bathroom_sink(sink_19):\n            observe(sink_19, \"Confirm that sink_19 is the bathroom sink\")\n            # Confirm the identity of sink_19 as the bathroom sink\n\n        if has_faucet(sink_19):\n            bind faucet: item where:\n                is_faucet(faucet) and close(faucet, sink_19)\n            achieve_once is_on(faucet)\n            # Turn on the faucet to fill the sink if available\n\n        fill_sink_with_water(sink_19)\n        # Fill the sink with water\n\n        if has_faucet(sink_19):\n            bind faucet: item where:\n                is_faucet(faucet) and close(faucet, sink_19)\n            achieve_once is_off(faucet)\n            # Turn off the faucet after filling the sink\n"
+    },
+    {
+        "task_name": "Clean the bathroom",
+        "source_sub_task": "3. Add soap to create soapy water.",
+        "cdl": " \ndef has_soap_near_sink(sink: item):\n    # Function to check if there is soap close to a specified sink\n    symbol has_soap=exists soap: item : is_soap(soap) and close(soap, sink)\n    return has_soap\n\nbehavior add_soap_to_water(sink: item, soap: item):\n    body:\n        achieve inside(soap, sink)\n        # Ensure the soap is inside the sink\n\nbehavior __goal__():\n    body:\n        bind sink: item where:\n            is_sink(sink) and id[sink] == 19\n        # Select the sink with ID 19, confirmed to be in the bathroom\n\n        if has_soap_near_sink(sink):\n            bind soap: item where:\n                is_soap(soap) and close(soap, sink)\n            # Select a soap that is close to the sink\n            add_soap_to_water(sink, soap)\n            # Add soap to the sink to create soapy water\n        else:\n            foreach soap: item:\n                if is_soap(soap) and not visited(soap):\n                    observe(soap, \"Check proximity to bathroom sink to add soap\")\n"
+    },
+    {
+        "task_name": "Change TV channel",
+        "source_sub_task": "Turn on the TV using the remote control.",
+        "cdl": " \nbehavior turn_on_tv_using_remote(remote_control: item, television: item):\n    body:\n        achieve close_char(char, remote_control)\n        # Ensure character is close to the remote control\n        achieve_once inhand(remote_control)\n        # Pick up the remote control\n        touch(remote_control)\n        # Use the remote control to turn on the television\n        achieve is_on(television)\n        # Ensure the television is turned on\n\nbehavior __goal__():\n    body:\n        bind remote_control: item where:\n            is_remote_control(remote_control)\n        # Select an instance of the remote control\n        \n        bind television: item where:\n            is_television(television)\n        # Select an instance of the television \n\n        turn_on_tv_using_remote(remote_control, television)\n        # Turn on the TV using the remote control\n"
+    },
+    {
+        "task_name": "Turn on light",
+        "source_sub_task": "Turn on the lights in the bathroom.",
+        "cdl": " \nbehavior turn_on_light_in_bathroom(light: item):\n    body:\n        achieve is_on(light)\n\nbehavior __goal__():\n    body:\n        bind bathroom: item where:\n            is_bathroom(bathroom)\n\n        bind light: item where:\n            is_light(light) and inside(light, bathroom)\n\n        turn_on_light_in_bathroom(light)\n"
+    },
+    {
+        "task_name": "Drink",
+        "source_sub_task": "Get a cup of water and freeze it.",
+        "cdl": " \ndef has_water_source(location: item):\n    # Determine if there is a water source near a given location\n    symbol has_faucet=exists faucet: item : is_faucet(faucet) and close(faucet, location)\n    return has_faucet\n\nbehavior fill_cup_with_water(cup: item, location: item):\n    body:\n        achieve_once inside(cup, location)\n        # Ensure the cup is in the location to fill it with water\n\n        if has_water_source(location):\n            bind faucet: item where:\n                is_faucet(faucet) and close(faucet, location)\n            achieve_once is_on(faucet)\n            # If theres a water source, turn it on to fill the cup\n\n        achieve has_water(cup)\n        # Fill the cup with water\n\n        if has_water_source(location):\n            bind faucet: item where:\n                is_faucet(faucet) and close(faucet, location)\n            achieve_once is_off(faucet)\n            # Turn off the water source after filling the cup\n\nbehavior place_cup_in_freezer(cup: item, freezer: item):\n    body:\n        achieve inside(cup, freezer)\n\nbehavior __goal__():\n    body:\n        bind cup: item where:\n            is_cup(cup)\n        # Select an instance of a cup\n\n        bind sink: item where:\n            is_sink(sink)\n        # Select a sink location for filling the cup\n\n        bind freezer: item where:\n            is_fridge(freezer)\n        # Select an instance of a freezer or fridge\n\n        fill_cup_with_water(cup, sink)\n        place_cup_in_freezer(cup, freezer)\n        # Place the cup inside the freezer\n"
+    },
+    {
+        "task_name": "Drink",
+        "source_sub_task": "1. Find a cup and fill it with milk.",
+        "cdl": "behavior __goal__():\n    body:\n        bind cup: item where:\n            is_cup(cup)\n        # Select an instance of a cup\n\n        bind milk: item where:\n            is_milk(milk)\n        # Select an instance of milk\n\n        achieve inside(milk, cup)\n        # Fill the cup with milk"
+    },
+    {
+        "task_name": "Drink",
+        "source_sub_task": "2. Heat the cup of milk in the microwave.",
+        "cdl": " \ndef has_microwave(microwave:item):\n    # Function to check if there is a microwave\n    return is_microwave(microwave)\n\nbehavior heat_milk_in_microwave(cup:item, microwave:item):\n    body:\n        achieve inside(cup, microwave)\n        # Place the cup with milk in the microwave\n\n        achieve is_on(microwave)\n        # Turn on the microwave to heat the milk\n\nbehavior __goal__():\n    body:\n        bind cup: item where:\n            is_cup(cup) and id[cup] == 2063\n        # Select cup with ID 2063\n        \n        bind microwave: item where:\n            is_microwave(microwave)\n        # Select an instance of a microwave\n\n        heat_milk_in_microwave(cup, microwave)\n        # Heat the milk in the microwave\n"
+    },
+    {
+        "task_name": "Clean the bathroom",
+        "source_sub_task": "1. Find the bathroom sink.",
+        "cdl": "behavior __goal__():\n    body:\n        bind bathroom: item where:\n            is_bathroom(bathroom)\n        \n        foreach sink: item:\n            if is_sink(sink) and inside(sink, bathroom):\n                observe(sink, \"Determine if this is the bathroom sink\")"
+    },
+    {
+        "task_name": "Clean the bathroom",
+        "source_sub_task": "Add soap to the sink, then turn on the faucet to fill the sink with water.",
+        "cdl": " \ndef has_faucet(sink: item):\n    # Determine whether the sink has a faucet\n    symbol exists_faucet = exists faucet: item : is_faucet(faucet) and close(faucet, sink)\n    return exists_faucet\n\nbehavior add_soap_to_sink(soap: item, sink: item):\n    body:\n        achieve inside(soap, sink)\n        # Ensure that the soap is inside the sink\n\nbehavior fill_sink_with_water(sink: item):\n    body:\n        achieve has_water(sink)\n        # Ensure that the sink is filled with water\n\nbehavior __goal__():\n    body:\n        bind soap: item where:\n            is_soap(soap)\n        # Select an instance of soap\n        \n        bind bathroom: item where:\n            is_bathroom(bathroom)\n        \n        bind sink: item where:\n            is_sink(sink) and inside(sink, bathroom)\n        # Select a sink that is confirmed to be inside the bathroom\n\n        if has_faucet(sink):\n            bind faucet: item where:\n                is_faucet(faucet) and close(faucet, sink)\n            achieve_once is_off(faucet)\n            # Initially ensure the faucet is off\n\n            add_soap_to_sink(soap, sink)\n            # Add the soap to the sink\n\n            achieve_once is_on(faucet)\n            # Turn on the faucet to fill the sink with water\n\n            fill_sink_with_water(sink)\n            # Fill the sink with water\n            \n            achieve_once is_off(faucet)\n            # Turn off the faucet once the sink is filled\n"
+    },
+    {
+        "task_name": "Turn on light",
+        "source_sub_task": "Turn on the lights in the bedroom, then turn on the lights in the bathroom.",
+        "cdl": " \nbehavior turn_on_light_in_bedroom(light: item):\n    body:\n        achieve is_on(light)\n\nbehavior turn_on_light_in_bathroom(light: item):\n    body:\n        achieve is_on(light)\n\nbehavior __goal__():\n    body:\n        bind bedroom: item where:\n            is_bedroom(bedroom)\n        bind light_in_bedroom: item where:\n            is_light(light_in_bedroom) and inside(light_in_bedroom, bedroom)\n\n        bind bathroom: item where:\n            is_bathroom(bathroom)\n        bind light_in_bathroom: item where:\n            is_light(light_in_bathroom) and inside(light_in_bathroom, bathroom)\n\n        turn_on_light_in_bedroom(light_in_bedroom)\n        turn_on_light_in_bathroom(light_in_bathroom)\n"
+    },
+    {
+        "task_name": "Cook some food",
+        "source_sub_task": "Slice some chicken.",
+        "cdl": "behavior hold_knife(knife: item):\n    body:\n        achieve_once inhand(knife)\n        # Hold the knife in hand\n\nbehavior prepare_to_slice_chicken(chicken: item, cutting_board: item):\n    body:\n        achieve on(chicken, cutting_board)\n        # Place the chicken on the cutting board\n\nbehavior slice_chicken(chicken: item):\n    body:\n        achieve cut(chicken)\n        # Slice the chicken\n\nbehavior __goal__():\n    body:\n        bind knife: item where:\n            is_knife(knife)\n        # Select an instance of a knife\n\n        bind chicken: item where:\n            is_food_chicken(chicken)\n        # Select the chicken item\n\n        bind cutting_board: item where:\n            is_cutting_board(cutting_board)\n        # Select an instance of a cutting board\n\n        hold_knife(knife)\n        # Hold the knife to start slicing\n\n        prepare_to_slice_chicken(chicken, cutting_board)\n        # Place the chicken on the cutting board\n\n        slice_chicken(chicken)\n        # Slice the chicken"
+    },
+    {
+        "task_name": "Wash clothes",
+        "source_sub_task": "1. Hand wash the jacket.",
+        "cdl": "behavior wash_jacket_by_hand(jacket: item):\n    body:\n        achieve clean(jacket)\n        # Ensure the jacket is clean after hand washing\n\nbehavior __goal__():\n    body:\n        bind jacket: item where:\n            is_clothes_jacket(jacket)\n        # Select an instance of a jacket to clean\n\n        wash_jacket_by_hand(jacket)\n        # Hand wash the jacket to achieve cleanliness"
+    },
+    {
+        "task_name": "Wash clothes",
+        "source_sub_task": "2. Use the washing machine to wash the jacket.",
+        "cdl": " \nbehavior find_jacket(jacket: item):\n    body:\n        achieve visited(jacket)\n        # Ensure the jacket is located and visited\n\nbehavior load_jacket_into_washing_machine(jacket: item, washing_machine: item):\n    body:\n        achieve inside(jacket, washing_machine)\n        # Place the jacket inside the washing machine\n        \nbehavior start_wash_cycle(washing_machine:item):\n    body:\n        assert has_switch(washing_machine)\n        # Ensure the washing machine has a switch\n        achieve is_on(washing_machine)\n        # Turn on the washing machine to start the wash cycle\n        \nbehavior __goal__():\n    body:\n        bind jacket: item where:\n            is_clothes_jacket(jacket) and id[jacket] == 2119\n        # Select the jacket with ID 2119\n\n        bind couch: item where:\n            is_couch(couch) and id[couch] == 198\n        # Select the couch with ID 198\n\n        observe(couch, \"Locate clothes_jacket_2119 on couch_198\")\n        # Observe the jacket on the couch to ensure its location\n\n        find_jacket(jacket)\n        # Find and confirm the jacket is located\n\n        bind washing_machine: item where:\n            is_washing_machine(washing_machine) and id[washing_machine] == 2079\n        # Select the washing machine with ID 2079\n\n        load_jacket_into_washing_machine(jacket, washing_machine)\n        # Load the jacket into the washing machine\n\n        start_wash_cycle(washing_machine)\n        # Start the wash cycle on the washing machine\n"
+    },
+    {
+        "task_name": "Wash dishes with dishwasher",
+        "source_sub_task": "Wash the bowls and the plates with the dishwasher.",
+        "cdl": "behavior load_dishwasher(o:item, dishwasher:item):\n    body:\n        achieve inside(o, dishwasher)\n        # Place the item inside the dishwasher\n\nbehavior start_dishwasher(dishwasher:item):\n    body:\n        achieve closed(dishwasher) # Close the dishwasher door\n        achieve is_on(dishwasher) # Turn on the dishwasher\n\nbehavior __goal__():\n    body:\n        bind dishwasher: item where:\n            is_dishwasher(dishwasher)\n        # Select a dishwasher instance\n        \n        foreach o: item:\n        # Load all bowls and plates into the dishwasher\n            if is_bowl(o) or is_plate(o):\n                load_dishwasher(o, dishwasher)\n        \n        start_dishwasher(dishwasher) # Start the dishwasher"
+    },
+    {
+        "task_name": "Drink",
+        "source_sub_task": "Get a cup of water.",
+        "cdl": " \ndef has_water_source(location: item):\n    # Determine if there is a water source near a given location\n    symbol has_faucet=exists faucet: item : is_faucet(faucet) and close(faucet, location)\n    return has_faucet\n\nbehavior fill_cup_with_water(cup: item, location: item):\n    body:\n        achieve_once inside(cup, location)\n        # Ensure the cup is in the location to fill it with water\n\n        if has_water_source(location):\n            bind faucet: item where:\n                is_faucet(faucet) and close(faucet, location)\n            achieve_once is_on(faucet)\n            # If theres a water source, turn it on to fill the cup\n\n        achieve has_water(cup)\n        # Fill the cup with water\n\n        if has_water_source(location):\n            bind faucet: item where:\n                is_faucet(faucet) and close(faucet, location)\n            achieve_once is_off(faucet)\n            # Turn off the water source after filling the cup\n\nbehavior __goal__():\n    body:\n        bind cup: item where:\n            is_cup(cup)\n        # Select an instance of a cup\n\n        bind sink: item where:\n            is_sink(sink)\n        # Select a sink location for filling the cup\n\n        fill_cup_with_water(cup, sink)\n"
+    },
+    {
+        "task_name": "Drink",
+        "source_sub_task": "1. Identify the location where kitchen items are stored, locate a cup, and take the cup.",
+        "cdl": "behavior find_and_take_cup(cup: item):\n    body:\n        achieve_once inhand(cup)\n        # Identify and take the cup\n\nbehavior __goal__():\n    body:\n        if exists location: item : is_cupboard(location) or is_kitchen_counter(location):\n            # In this example, check for known potential storage places for cups\n            bind cup: item where:\n                is_cup(cup)\n            find_and_take_cup(cup)\n        else:\n            foreach location: item:\n                if is_cupboard(location) or is_kitchen_counter(location) and not visited(location):\n                    observe(location, \"Check if there are any cups available\")\n                    # Observe the kitchen storage locations for the presence of a cup to be taken"
+    },
+    {
+        "task_name": "Drink",
+        "source_sub_task": "2. Pour milk into the cup.",
+        "cdl": " \nbehavior __goal__():\n    body:\n        bind cup: item where:\n            is_cup(cup)\n        # Select an instance of a cup\n\n        bind milk: item where:\n            is_milk(milk)\n        # Select an instance of milk\n\n        achieve inside(milk, cup)\n        # Fill the cup with milk\n"
+    },
+    {
+        "task_name": "Drink",
+        "source_sub_task": "3. Heat the cup of milk using the microwave.",
+        "cdl": "behavior heat_milk_in_microwave(cup: item, microwave: item):\n    body:\n        achieve inside(cup, microwave)\n        # Place the cup with milk in the microwave\n\n        achieve is_on(microwave)\n        # Turn on the microwave to heat the milk\n\nbehavior __goal__():\n    body:\n        bind cup: item where:\n            is_cup(cup) and id[cup] == 2087\n        # Select cup with ID 2087\n\n        bind microwave: item where:\n            is_microwave(microwave)\n        # Select an instance of a microwave\n\n        heat_milk_in_microwave(cup, microwave)\n        # Heat the milk in the microwave"
+    },
+    {
+        "task_name": "Prepare breakfast",
+        "source_sub_task": "Boil the egg.",
+        "cdl": " \nbehavior prepare_pot_for_boiling(pot: item, stove: item):\n    body:\n        achieve has_water(pot)\n        # Fill the pot with water\n\n        achieve on(pot, stove)\n        # Place the pot on the stove\n\nbehavior place_egg_in_pot(egg: item, pot: item):\n    body:\n        achieve inside(egg, pot)\n        # Place the egg inside the pot\n\nbehavior turn_on_stove(stove: item):\n    body:\n        achieve is_on(stove)\n        # Turn on the stove\n\nbehavior __goal__():\n    body:\n        bind pot: item where:\n            is_pot(pot)\n        # Select an instance of a pot\n\n        bind stove: item where:\n            is_stove(stove)\n        # Select an instance of a stove\n\n        bind egg: item where:\n            is_food_egg(egg)\n        # Select an instance of an egg\n\n        prepare_pot_for_boiling(pot, stove)\n        place_egg_in_pot(egg, pot)\n        turn_on_stove(stove)\n"
+    },
+    {
+        "task_name": "Wash windows",
+        "source_sub_task": "1. Identify all windows in the house that need to be wiped.",
+        "cdl": "behavior identify_windows(window: item):\n    body:\n        achieve visited(window)\n\nbehavior __goal__():\n    body:\n        foreach window: item:\n            if is_window(window) and not visited(window):\n                observe(window, \"Identify windows in the house\")"
+    },
+    {
+        "task_name": "Wash windows",
+        "source_sub_task": "2. Wipe each window with a towel.",
+        "cdl": " \nbehavior wipe_window_with_towel(window: item, towel: item):\n    body:\n        achieve_once inhand(towel)\n        wipe(window)\n        # Wipe the window using the towel\n\nbehavior __goal__():\n    body:\n        foreach window: item:\n            if is_window(window):\n                bind towel: item where:\n                    is_towel(towel)\n                wipe_window_with_towel(window, towel)\n"
+    },
+    {
+        "task_name": "Prepare a reading space",
+        "source_sub_task": "1. Locate the coffee table in the home office.",
+        "cdl": "behavior locate_coffee_table(coffee_table: item):\n    body:\n        achieve visited(coffee_table)\n\nbehavior __goal__():\n    body:\n        bind home_office: item where:\n            is_home_office(home_office)\n        \n        foreach coffee_table: item:\n            if is_coffee_table(coffee_table) and inside(coffee_table, home_office):\n                locate_coffee_table(coffee_table)"
+    },
+    {
+        "task_name": "Prepare a reading space",
+        "source_sub_task": "2. Find the book and place it on the coffee table.",
+        "cdl": " \nbehavior put_book_on_coffee_table(book: item, coffee_table: item):\n    body:\n        achieve on(book, coffee_table)\n\nbehavior __goal__():\n    body:\n        bind book: item where:\n            is_book(book)\n        # Select an instance of a book\n        \n        bind home_office: item where:\n            is_home_office(home_office)\n        \n        bind coffee_table: item where:\n            is_coffee_table(coffee_table) and inside(coffee_table, home_office)\n        # Select a coffee table inside the home office\n\n        put_book_on_coffee_table(book, coffee_table)\n"
+    },
+    {
+        "task_name": "Clean the bathroom",
+        "source_sub_task": "1. Find the sink in the bathroom.",
+        "cdl": " \nbehavior __goal__():\n    body:\n        bind bathroom: item where:\n            is_bathroom(bathroom)\n\n        foreach sink: item:\n            if is_sink(sink) and inside(sink, bathroom):\n                observe(sink, \"Identify the sink in the bathroom\")\n"
+    },
+    {
+        "task_name": "Clean the bathroom",
+        "source_sub_task": "2. Add soap and water to the sink to prepare the soapy water.",
+        "cdl": "behavior add_soap_and_water_to_sink(soap: item, sink: item):\n    body:\n        achieve inside(soap, sink)\n        # Ensure that the soap is inside the sink\n\n        achieve has_water(sink)\n        # Ensure that the sink is filled with water\n\nbehavior __goal__():\n    body:\n        bind soap: item where:\n            is_soap(soap)\n        # Select an instance of soap\n\n        bind bathroom: item where:\n            is_bathroom(bathroom)\n        \n        bind sink: item where:\n            is_sink(sink) and id[sink] == 42\n        # Select sink with ID 42\n\n        add_soap_and_water_to_sink(soap, sink)\n        # Add soap and water to the sink to prepare soapy water"
+    },
+    {
+        "task_name": "Wash clothes",
+        "source_sub_task": "1. Find the basket with clothes in it.",
+        "cdl": " \nbehavior find_basket_for_clothes(basket: item):\n    body:\n        achieve visited(basket)\n\nbehavior __goal__():\n    body:\n        if exists basket: item : is_basket_for_clothes(basket):\n            bind basket: item where:\n                is_basket_for_clothes(basket)\n            find_basket_for_clothes(basket)\n        else:\n            foreach basket: item:\n                if is_basket_for_clothes(basket) and not visited(basket):\n                    observe(basket, \"Check contents of the basket for clothes\")\n"
+    },
+    {
+        "task_name": "Wash clothes",
+        "source_sub_task": "2. Add the clothes and soap to the washing machine.",
+        "cdl": " \ndef is_clothing_in_basket(basket: item):\n    # Determine if there is clothing in the selected basket\n    symbol has_clothing = exists clothing: item : (is_clothes_shirt(clothing) or is_clothes_pants(clothing) or is_clothes_socks(clothing) or is_clothes_skirt(clothing)) and inside(clothing, basket)\n    return has_clothing\n\ndef is_soap_near_sink(sink: item):\n    # Check if there is soap close to a specific sink\n    symbol soap_near_sink = exists soap: item : is_soap(soap) and close(soap, sink)\n    return soap_near_sink\n\nbehavior load_clothes_into_washing_machine(clothes: item, washing_machine: item):\n    body:\n        achieve inside(clothes, washing_machine)\n        # Place each piece of clothing inside the washing machine\n\nbehavior add_soap_to_washing_machine(soap: item, washing_machine: item):\n    body:\n        achieve inside(soap, washing_machine)\n        # Ensure the soap is placed inside the washing machine\n\nbehavior __goal__():\n    body:\n        bind basket: item where:\n            is_basket_for_clothes(basket) and id[basket] == 2006\n        # Select the basket with clothes\n\n        bind washing_machine: item where:\n            is_washing_machine(washing_machine) and id[washing_machine] == 2007\n        # Select the washing machine with ID 2007\n\n        if is_clothing_in_basket(basket):\n            foreach clothes: item:\n                if (is_clothes_shirt(clothes) or is_clothes_pants(clothes) or is_clothes_socks(clothes) or is_clothes_skirt(clothes)) and inside(clothes, basket):\n                    load_clothes_into_washing_machine(clothes, washing_machine)\n            # Load all clothes from the basket into the washing machine\n\n        bind soap: item where:\n            is_soap(soap) and id[soap] == 2053\n        # Select the soap with ID 2053\n        \n        add_soap_to_washing_machine(soap, washing_machine)\n        # Add the soap to the washing machine\n"
+    },
+    {
+        "task_name": "Wash clothes",
+        "source_sub_task": "3. Run the washing machine.",
+        "cdl": "behavior start_washing_machine(washing_machine: item):\n    body:\n        assert has_switch(washing_machine)\n        # Ensure the washing machine has a switch\n        achieve is_on(washing_machine)\n        # Turn on the washing machine to start the wash cycle\n\nbehavior __goal__():\n    body:\n        bind washing_machine: item where:\n            is_washing_machine(washing_machine) and id[washing_machine] == 2007\n        # Select the washing machine with ID 2007\n\n        start_washing_machine(washing_machine)\n        # Start the washing machine to run the wash cycle"
+    },
+    {
+        "task_name": "Wash clothes",
+        "source_sub_task": "1. Locate the basket containing clothes.  ",
+        "cdl": " \nbehavior locate_basket_for_clothes(basket: item):\n    body:\n        achieve visited(basket)\n\nbehavior __goal__():\n    body:\n        if exists basket: item : is_basket_for_clothes(basket):\n            bind basket: item where:\n                is_basket_for_clothes(basket)\n            locate_basket_for_clothes(basket)\n        else:\n            foreach basket: item:\n                if is_basket_for_clothes(basket) and not visited(basket):\n                    observe(basket, \"Check if the basket contains clothes\")\n"
+    },
+    {
+        "task_name": "Wash clothes",
+        "source_sub_task": "2. Place the clothes into the washing machine.  ",
+        "cdl": " \nbehavior load_clothes_into_washing_machine(clothes: item, washing_machine: item):\n    body:\n        achieve inside(clothes, washing_machine)\n        # Place each piece of clothing inside the washing machine\n\nbehavior __goal__():\n    body:\n        bind basket: item where:\n            is_basket_for_clothes(basket) and id[basket] == 2040\n        # Select the basket containing clothes\n\n        bind washing_machine: item where:\n            is_washing_machine(washing_machine)\n        # Select an instance of a washing machine\n\n        foreach clothes: item:\n            if (is_clothes_shirt(clothes) or is_clothes_pants(clothes) or is_clothes_socks(clothes) or is_clothes_skirt(clothes)) and inside(clothes, basket):\n                load_clothes_into_washing_machine(clothes, washing_machine)\n        # Load all clothes from the basket into the washing machine\n"
+    },
+    {
+        "task_name": "Wash clothes",
+        "source_sub_task": "3. Add soap to the washing machine and run it.",
+        "cdl": " \nbehavior add_soap_to_washing_machine(soap: item, washing_machine: item):\n    body:\n        achieve inside(soap, washing_machine)\n        # Add soap to the washing machine\n\nbehavior run_washing_machine(washing_machine: item):\n    body:\n        assert has_switch(washing_machine)\n        # Ensure the washing machine has a switch\n        achieve is_on(washing_machine)\n        # Start the washing machine\n\nbehavior __goal__():\n    body:\n        bind soap: item where:\n            is_soap(soap)\n        # Select an instance of soap\n\n        bind washing_machine: item where:\n            is_washing_machine(washing_machine)\n        # Select an instance of a washing machine\n\n        add_soap_to_washing_machine(soap, washing_machine)\n        # Add the soap to the washing machine\n\n        run_washing_machine(washing_machine)\n        # Run the washing machine\n"
+    },
+    {
+        "task_name": "Wash dishes with dishwasher",
+        "source_sub_task": "Put cleaning solution in the dishwasher, then wash the bowls and plates with the dishwasher.",
+        "cdl": "behavior put_cleaning_solution_in_dishwasher(cleaning_solution: item, dishwasher: item):\n    body:\n        achieve inside(cleaning_solution, dishwasher)\n        # Place the cleaning solution inside the dishwasher\n\nbehavior load_items_into_dishwasher(o:item, dishwasher:item):\n    body:\n        achieve inside(o, dishwasher)\n        # Place the item inside the dishwasher\n\nbehavior start_dishwasher(dishwasher:item):\n    body:\n        achieve closed(dishwasher) # Close the dishwasher door\n        achieve is_on(dishwasher) # Turn on the dishwasher\n\nbehavior __goal__():\n    body:\n        bind cleaning_solution: item where:\n            is_cleaning_solution(cleaning_solution)\n        # Select an instance of the cleaning solution\n        \n        bind dishwasher: item where:\n            is_dishwasher(dishwasher)\n        # Select an instance of the dishwasher\n        \n        put_cleaning_solution_in_dishwasher(cleaning_solution, dishwasher)\n        \n        foreach o: item:\n            if is_bowl(o) or is_plate(o):\n                load_items_into_dishwasher(o, dishwasher)\n                \n        start_dishwasher(dishwasher) # Start the dishwasher with bowls and plates inside"
+    },
+    {
+        "task_name": "Make coffee",
+        "source_sub_task": "Make a cup of coffee using the coffee maker.",
+        "cdl": " \nbehavior place_cup_in_coffee_maker(cup: item, coffee_maker: item):\n    body:\n        achieve inside(cup, coffee_maker)\n        # Ensure the cup is placed inside the coffee maker\n\nbehavior turn_on_coffee_maker(coffee_maker: item):\n    body:\n        achieve is_on(coffee_maker)\n        # Turn on the coffee maker\n\nbehavior __goal__():\n    body:\n        bind cup: item where:\n            is_cup(cup)\n        # Select an instance of a cup\n\n        bind coffee_maker: item where:\n            is_coffe_maker(coffee_maker)\n        # Select an instance of a coffee maker\n\n        place_cup_in_coffee_maker(cup, coffee_maker)\n        # Place the cup inside the coffee maker\n\n        turn_on_coffee_maker(coffee_maker)\n        # Turn on the coffee maker\n"
+    },
+    {
+        "task_name": "Put groceries in Fridge",
+        "source_sub_task": "1. Take the milk and egg from the fridge and place them on the table in the dining room.",
+        "cdl": "behavior find_milk_and_egg_and_place_on_table(milk: item, egg: item, table: item):\n    body:\n        achieve_once inhand(milk)\n        # Take the milk to place it on the table\n\n        achieve_once inhand(egg)\n        # Take the egg to place it on the table\n \n        achieve on(milk, table)\n        # Place the milk on the table\n\n        achieve on(egg, table)\n        # Place the egg on the table\n\nbehavior __goal__():\n    body:\n        bind fridge: item where:\n            is_fridge(fridge)\n\n        observe(fridge, \"Locate milk and eggs\")\n        # Observe the fridge to locate the milk and eggs inside it\n\n        bind milk: item where:\n            is_milk(milk)\n\n        bind egg: item where:\n            is_food_egg(egg)\n\n        bind dining_room: item where:\n            is_dining_room(dining_room)\n\n        bind table: item where:\n            is_table(table) and inside(table, dining_room)\n        \n        find_milk_and_egg_and_place_on_table(milk, egg, table)\n        # Place milk and egg on the dining room table"
+    },
+    {
+        "task_name": "Put groceries in Fridge",
+        "source_sub_task": "2. Throw all the items in the fridge into the trashcan.",
+        "cdl": " \ndef has_items_in_fridge(fridge:item):\n    # Function to check if there are any items in the specified fridge\n    symbol has_items = exists o: item : inside(o, fridge)\n    return has_items\n\nbehavior place_items_in_trashcan(o:item, trashcan:item):\n    body:\n        achieve inside(o, trashcan)\n        # Place the item inside the trashcan\n\nbehavior __goal__():\n    body:\n        bind fridge: item where:\n            is_fridge(fridge) and id[fridge] == 126\n        # Select the fridge with ID 126\n        \n        bind trashcan: item where:\n            is_trashcan(trashcan)\n        # Select the trashcan\n\n        if has_items_in_fridge(fridge):\n            foreach o: item:\n                if inside(o, fridge):\n                    place_items_in_trashcan(o, trashcan)\n        # Place all items from the fridge into the trashcan\n"
+    },
+    {
+        "task_name": "Put groceries in Fridge",
+        "source_sub_task": "3. Put the milk and egg back in the fridge.",
+        "cdl": " \nbehavior put_milk_and_egg_back_in_fridge(milk: item, egg: item, fridge: item):\n    body:\n        achieve inside(milk, fridge)\n        achieve inside(egg, fridge)\n\nbehavior __goal__():\n    body:\n        bind milk: item where:\n            is_milk(milk) and id[milk] == 2115\n        # Select milk with ID 2115\n\n        bind egg: item where:\n            is_food_egg(egg) and id[egg] == 2092\n        # Select egg with ID 2092\n\n        bind fridge: item where:\n            is_fridge(fridge) and id[fridge] == 126\n        # Select the fridge with ID 126\n\n        put_milk_and_egg_back_in_fridge(milk, egg, fridge)\n"
+    },
+    {
+        "task_name": "Wash windows",
+        "source_sub_task": "1. Identify the locations of all windows in the house.",
+        "cdl": "behavior identify_windows(window: item):\n    body:\n        achieve visited(window)\n\nbehavior __goal__():\n    body:\n        foreach window: item:\n            if is_window(window) and not visited(window):\n                observe(window, \"Identify window locations in the house\")"
+    },
+    {
+        "task_name": "Wash windows",
+        "source_sub_task": "2. Wipe each window using a towel.",
+        "cdl": " \nbehavior wipe_window(window: item, towel: item):\n    body:\n        achieve_once inhand(towel)\n        wipe(window)\n        # Wipe the window using the towel\n\nbehavior __goal__():\n    body:\n        foreach window: item:\n            if is_window(window):\n                bind towel: item where:\n                    is_towel(towel)\n                wipe_window(window, towel)\n"
+    },
+    {
+        "task_name": "Put groceries in Fridge",
+        "source_sub_task": "1. Find the milk and eggs.",
+        "cdl": " \ndef has_milk_or_egg(fridge:item):\n    # Function to check if there is milk or egg in the specified fridge\n    symbol has_milk = exists o: item : is_milk(o) and inside(o, fridge)\n    symbol has_egg = exists o: item : is_food_egg(o) and inside(o, fridge)\n    return has_milk or has_egg\n\nbehavior __goal__():\n    body:\n        if exists fridge: item : is_fridge(fridge) and has_milk_or_egg(fridge):\n            # If we have already found the fridge with milk or egg, we can directly observe it\n            bind fridge: item where:\n                is_fridge(fridge) and has_milk_or_egg(fridge)\n            observe(fridge, \"Locate milk and egg\")\n\n        else:\n            # Check all fridges in the scene that have not been visited\n            foreach fridge: item:\n                if is_fridge(fridge) and not visited(fridge):\n                    observe(fridge, \"Locate milk and egg\")\n"
+    },
+    {
+        "task_name": "Put groceries in Fridge",
+        "source_sub_task": "2. Put the milk and eggs on the table in the dining room.",
+        "cdl": " \nbehavior place_milk_and_eggs_on_table(milk: item, eggs: item, table: item):\n    body:\n        achieve_once inhand(milk)\n        # Temporarily hold the milk to place it on the table\n\n        achieve_once inhand(eggs)\n        # Temporarily hold the eggs to place them on the table\n\n        achieve on(milk, table)\n        # Place the milk on the table\n\n        achieve on(eggs, table)\n        # Place the eggs on the table\n\nbehavior __goal__():\n    body:\n        bind milk: item where:\n            is_milk(milk)\n        # Select an instance of milk\n\n        bind eggs: item where:\n            is_food_egg(eggs)\n        # Select an instance of eggs\n\n        bind dining_room: item where:\n            is_dining_room(dining_room)\n        # Select the dining room\n\n        bind table: item where:\n            is_table(table) and inside(table, dining_room)\n        # Select a table in the dining room\n\n        place_milk_and_eggs_on_table(milk, eggs, table)\n        # Execute the behavior to place milk and eggs on the table in the dining room\n"
+    },
+    {
+        "task_name": "Put groceries in Fridge",
+        "source_sub_task": "3. Take all items from the fridge and throw them in the trashcan.",
+        "cdl": "behavior throw_items_in_trashcan(o: item, trashcan: item):\n    body:\n        achieve inside(o, trashcan)\n\nbehavior __goal__():\n    body:\n        bind fridge: item where:\n            is_fridge(fridge)\n\n        bind trashcan: item where:\n            is_trashcan(trashcan)\n\n        foreach o: item:\n            if inside(o, fridge):\n                throw_items_in_trashcan(o, trashcan)"
+    },
+    {
+        "task_name": "Put groceries in Fridge",
+        "source_sub_task": "4. Put the milk and eggs back in the fridge.",
+        "cdl": " \nbehavior put_milk_and_eggs_back_in_fridge(milk: item, egg: item, fridge: item):\n    body:\n        achieve inside(milk, fridge)\n        achieve inside(egg, fridge)\n\nbehavior __goal__():\n    body:\n        bind milk: item where:\n            is_milk(milk) and id[milk] == 2043\n        # Select the milk with ID 2043\n\n        bind egg: item where:\n            is_food_egg(egg) and id[egg] == 2020\n        # Select the egg with ID 2020\n\n        bind fridge: item where:\n            is_fridge(fridge) and id[fridge] == 289\n        # Select the fridge with ID 289\n\n        put_milk_and_eggs_back_in_fridge(milk, egg, fridge)\n"
+    },
+    {
+        "task_name": "Wash dishes with dishwasher",
+        "source_sub_task": "1. Load the bowls and plates into the dishwasher and start it.",
+        "cdl": "behavior load_dishwasher(o:item, dishwasher:item):\n    body:\n        achieve inside(o, dishwasher)\n        # Place the item inside the dishwasher\n\nbehavior start_dishwasher(dishwasher:item):\n    body:\n        achieve closed(dishwasher) # Close the dishwasher door\n        achieve is_on(dishwasher) # Turn on the dishwasher\n\nbehavior __goal__():\n    body:\n        bind dishwasher: item where:\n            is_dishwasher(dishwasher)\n        # Select a dishwasher instance\n        \n        foreach o: item:\n        # Load all bowls and plates into the dishwasher\n            if is_bowl(o) or is_plate(o):\n                load_dishwasher(o, dishwasher)\n        \n        start_dishwasher(dishwasher) # Start the dishwasher"
+    },
+    {
+        "task_name": "Wash dishes with dishwasher",
+        "source_sub_task": "2. Wash the forks by hand.",
+        "cdl": "behavior wash_forks_hand(fork: item):\n    body:\n        wash(fork)\n\nbehavior __goal__():\n    body:\n        foreach fork: item:\n            if is_fork(fork):\n                wash_forks_hand(fork)"
+    },
+    {
+        "task_name": "Change TV channel",
+        "source_sub_task": "Turn on the TV with the remote control.",
+        "cdl": " \nbehavior turn_on_tv_using_remote(remote_control: item, television: item):\n    body:\n        achieve_once inhand(remote_control)\n        # Pick up the remote control\n        touch(remote_control)\n        # Use the remote control to turn on the television\n        achieve is_on(television)\n        # Ensure the television is turned on\n\nbehavior __goal__():\n    body:\n        bind remote_control: item where:\n            is_remote_control(remote_control)\n        # Select an instance of the remote control\n        \n        bind television: item where:\n            is_television(television)\n        # Select an instance of the television \n\n        turn_on_tv_using_remote(remote_control, television)\n        # Turn on the TV using the remote control\n"
+    },
+    {
+        "task_name": "Prepare dinner",
+        "source_sub_task": "Boil the rice using a pot.",
+        "cdl": " \ndef has_faucet(sink:item):\n    # Determine if there is a faucet near the sink\n    symbol exists_faucet = exists faucet: item : is_faucet(faucet) and close(faucet, sink)\n    return exists_faucet\n\nbehavior add_water_to_pot(pot:item, sink:item):\n    body:\n        achieve_once inside(pot, sink)\n        # Ensure the pot is placed inside the sink for filling\n\n        if has_faucet(sink):\n            bind faucet: item where:\n                is_faucet(faucet) and close(faucet, sink)\n            achieve_once is_on(faucet)\n            # If the sink has a faucet, turn it on to fill the pot with water\n\n        achieve has_water(pot)\n        # Ensure that the pot is filled with water\n\n        if has_faucet(sink):\n            bind faucet: item where:\n                is_faucet(faucet) and close(faucet, sink)\n            achieve_once is_off(faucet)\n            # Turn off the faucet after filling the pot with water\n\nbehavior place_rice_in_pot(rice:item, pot:item):\n    body:\n        achieve inside(rice, pot)\n        # Ensure the rice is inside the pot\n\nbehavior place_pot_on_stove(pot: item, stove: item):\n    body:\n        achieve on(pot, stove)\n        # Place the pot on the stove\n\nbehavior turn_on_stove(stove: item):\n    body:\n        achieve is_on(stove)\n        # Turn on the stove\n\nbehavior __goal__():\n    body:\n        bind pot: item where:\n            is_pot(pot) and id[pot] == 2069\n        # Select the pot with ID 2069\n\n        bind rice: item where:\n            is_food_rice(rice) and id[rice] == 2036\n        # Select the rice with ID 2036\n\n        bind sink: item where:\n            is_sink(sink)\n        # Select an instance of a sink\n\n        bind stove: item where:\n            is_stove(stove) and id[stove] == 2065\n        # Select the stove with ID 2065\n\n        add_water_to_pot(pot, sink)\n        place_rice_in_pot(rice, pot)\n        place_pot_on_stove(pot, stove)\n        turn_on_stove(stove)\n "
+    },
+    {
+        "task_name": "Prepare a reading space",
+        "source_sub_task": "1. Find the spectacles and put them on the coffee table in the home office.",
+        "cdl": " \nbehavior put_spectacles_on_coffee_table(spectacles: item, coffee_table: item):\n    body:\n        achieve on(spectacles, coffee_table)\n\nbehavior __goal__():\n    body:\n        bind spectacles: item where:\n            is_spectacles(spectacles)\n        # Select an instance of spectacles\n\n        bind home_office: item where:\n            is_home_office(home_office)\n\n        bind coffee_table: item where:\n            is_table(coffee_table) and inside(coffee_table, home_office)\n        # Select a coffee table inside the home office\n\n        put_spectacles_on_coffee_table(spectacles, coffee_table)\n"
+    },
+    {
+        "task_name": "Prepare a reading space",
+        "source_sub_task": "2. Find the book and put it on the coffee table in the home office.",
+        "cdl": " \nbehavior put_book_on_coffee_table(book: item, coffee_table: item):\n    body:\n        achieve on(book, coffee_table)\n\nbehavior __goal__():\n    body:\n        bind book: item where:\n            is_book(book)\n        # Select an instance of a book\n\n        bind home_office: item where:\n            is_home_office(home_office)\n\n        bind coffee_table: item where:\n            is_coffee_table(coffee_table) and inside(coffee_table, home_office)\n        # Select a coffee table inside the home office\n\n        put_book_on_coffee_table(book, coffee_table)\n"
+    },
+    {
+        "task_name": "Put groceries in Fridge",
+        "source_sub_task": "1. Put the milk and egg on the table in the dining room.",
+        "cdl": " \nbehavior find_milk_and_egg_and_place_on_table(milk: item, egg: item, table: item):\n    body:\n        achieve_once inhand(milk)\n        # Take the milk to place it on the table\n\n        achieve_once inhand(egg)\n        # Take the egg to place it on the table\n\n        achieve on(milk, table)\n        # Place the milk on the table\n\n        achieve on(egg, table)\n        # Place the egg on the table\n\nbehavior __goal__():\n    body:\n        bind fridge: item where:\n            is_fridge(fridge)\n\n        observe(fridge, \"Locate milk and eggs\")\n        # Observe the fridge to locate the milk and eggs inside it\n\n        bind milk: item where:\n            is_milk(milk)\n\n        bind egg: item where:\n            is_food_egg(egg)\n\n        bind dining_room: item where:\n            is_dining_room(dining_room)\n\n        bind table: item where:\n            is_table(table) and inside(table, dining_room)\n        \n        find_milk_and_egg_and_place_on_table(milk, egg, table)\n        # Place milk and egg on the dining room table\n"
+    },
+    {
+        "task_name": "Put groceries in Fridge",
+        "source_sub_task": "2. Throw all the items in the fridge into the trashcan.",
+        "cdl": " \ndef has_items_in_fridge(fridge:item):\n    # Function to check if there are any items in the specified fridge\n    symbol has_items = exists o: item : inside(o, fridge)\n    return has_items\n\nbehavior place_items_in_trashcan(o:item, trashcan:item):\n    body:\n        achieve inside(o, trashcan)\n        # Place the item inside the trashcan\n\nbehavior __goal__():\n    body:\n        bind fridge: item where:\n            is_fridge(fridge) and id[fridge] == 140\n        # Select the fridge with ID 140\n        \n        bind trashcan: item where:\n            is_trashcan(trashcan)\n        # Select a trashcan\n\n        if has_items_in_fridge(fridge):\n            foreach o: item:\n                if inside(o, fridge):\n                    place_items_in_trashcan(o, trashcan)\n        # Place all items from the fridge into the trashcan\n"
+    },
+    {
+        "task_name": "Put groceries in Fridge",
+        "source_sub_task": "3. Put the milk and eggs back in the fridge.",
+        "cdl": "behavior put_milk_and_eggs_back_in_fridge(milk: item, egg: item, fridge: item):\n    body:\n        achieve inside(milk, fridge)\n        achieve inside(egg, fridge)\n\nbehavior __goal__():\n    body:\n        bind milk: item where:\n            is_milk(milk) and id[milk] == 2074\n        # Select the milk with ID 2074\n\n        bind egg: item where:\n            is_food_egg(egg) and id[egg] == 2053\n        # Select the egg with ID 2053\n\n        bind fridge: item where:\n            is_fridge(fridge) and id[fridge] == 140\n        # Select the fridge with ID 140\n\n        put_milk_and_eggs_back_in_fridge(milk, egg, fridge)"
+    },
+    {
+        "task_name": "Put groceries in Fridge",
+        "source_sub_task": "1. Identify milk, turkey, egg, fish, and chicken in the household.",
+        "cdl": "\ndef has_relevant_food(item: item):\n    # Function to check if there are milk, turkey, egg, fish, or chicken in the specified location\n    symbol contains_milk = exists o: item : is_milk(o) and close(o, item)\n    symbol contains_turkey = exists o: item : is_food_turkey(o) and close(o, item)\n    symbol contains_egg = exists o: item : is_food_egg(o) and close(o, item)\n    symbol contains_fish = exists o: item : is_food_fish(o) and close(o, item)\n    symbol contains_chicken = exists o: item : is_food_chicken(o) and close(o, item)\n    return contains_milk or contains_turkey or contains_egg or contains_fish or contains_chicken\n\nbehavior __goal__():\n    body:\n        if exists item: item : has_relevant_food(item):\n            # If relevant food is found, we can directly observe the item\n            bind item: item where:\n                has_relevant_food(item)\n            observe(item, \"Check for milk, turkey, egg, fish, and chicken\")\n        else:\n            # Check all items in the scene that have not been visited\n            foreach item: item:\n                if not visited(item):\n                    observe(item, \"Locate milk, turkey, egg, fish, and chicken\")\n"
+    },
+    {
+        "task_name": "Put groceries in Fridge",
+        "source_sub_task": "2. Place each item on the table in the dining room.",
+        "cdl": " \nbehavior place_items_on_table(item: item, table: item):\n    body:\n        achieve on(item, table)\n\nbehavior __goal__():\n    body:\n        bind table: item where:\n            is_table(table) and id[table] == 114\n\n        bind milk: item where:\n            is_milk(milk)\n\n        bind turkey: item where:\n            is_food_turkey(turkey)\n\n        bind egg: item where:\n            is_food_egg(egg)\n\n        bind fish: item where:\n            is_food_fish(fish)\n\n        bind chicken: item where:\n            is_food_chicken(chicken)\n\n        place_items_on_table(milk, table)\n        place_items_on_table(turkey, table)\n        place_items_on_table(egg, table)\n        place_items_on_table(fish, table)\n        place_items_on_table(chicken, table)\n"
+    },
+    {
+        "task_name": "Put groceries in Fridge",
+        "source_sub_task": "Cut the chicken into pieces, then put it back in the fridge.",
+        "cdl": " \nbehavior hold_knife(knife: item):\n    body:\n        achieve_once inhand(knife)\n        # Hold the knife in hand\n\nbehavior prepare_to_cut_chicken(chicken: item, cutting_board: item):\n    body:\n        achieve on(chicken, cutting_board)\n        # Place the chicken on the cutting board\n\nbehavior cut_chicken(chicken: item):\n    body:\n        achieve cut(chicken)\n        # Cut the chicken\n\nbehavior place_chicken_in_fridge(chicken: item, fridge: item):\n    body:\n        achieve inside(chicken, fridge)\n        # Place the chicken inside the fridge\n\nbehavior __goal__():\n    body:\n        bind knife: item where:\n            is_knife(knife)\n        # Select an instance of a knife\n\n        bind chicken: item where:\n            is_food_chicken(chicken)\n        # Select the instance of the chicken\n\n        bind cutting_board: item where:\n            is_cutting_board(cutting_board)\n        # Select an instance of a cutting board\n\n        bind fridge: item where:\n            is_fridge(fridge)\n        # Select an instance of a fridge\n\n        hold_knife(knife)\n        # Hold the knife to start cutting\n\n        prepare_to_cut_chicken(chicken, cutting_board)\n        # Prepare the chicken by placing it on the cutting board\n\n        cut_chicken(chicken)\n        # Cut the chicken into pieces\n\n        place_chicken_in_fridge(chicken, fridge)\n        # Put the cut chicken back in the fridge\n"
+    },
+    {
+        "task_name": "Pet cat",
+        "source_sub_task": "1. Fill a bowl with water and put the bowl on the table in the home office.",
+        "cdl": "behavior fill_bowl_with_water(bowl: item):\n    body:\n        achieve has_water(bowl)\n        # Fill the bowl with water\n\nbehavior place_bowl_on_table(bowl: item, table: item):\n    body:\n        achieve on(bowl, table)\n        # Place the bowl on the table\n\nbehavior __goal__():\n    body:\n        bind bowl: item where:\n            is_bowl(bowl)\n        # Select an instance of a bowl\n\n        bind home_office: item where:\n            is_home_office(home_office)\n\n        bind table: item where:\n            is_table(table) and inside(table, home_office)\n        # Select a table inside the home office\n\n        fill_bowl_with_water(bowl)\n        # Fill the bowl with water\n\n        place_bowl_on_table(bowl, table)\n        # Place the bowl on the table inside the home office"
+    },
+    {
+        "task_name": "Pet cat",
+        "source_sub_task": "2. Find the cat and put it on the table in the home office.",
+        "cdl": " \nbehavior find_cat_and_place_on_table(cat: item, table: item):\n    body:\n        achieve on(cat, table)\n\nbehavior __goal__():\n    body:\n        bind cat: item where:\n            is_cat(cat)\n        # Select an instance of the cat\n\n        bind home_office: item where:\n            is_home_office(home_office)\n\n        bind table: item where:\n            is_table(table) and inside(table, home_office)\n        # Select a table inside the home office\n\n        find_cat_and_place_on_table(cat, table)\n        # Place the cat on the table in the home office\n"
+    }
+]

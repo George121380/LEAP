@@ -696,7 +696,7 @@ class LLM_Agent:
         self.logger.info("From agent_LLM->query_human"+record)
         return answer
     
-    def select_relevant_items(self, k=30):
+    def select_relevant_items(self, k=100):
         model = SentenceTransformer('paraphrase-MiniLM-L6-v2')  # You can choose other models
         task_instruction = self.goal_nl
         task_embedding = model.encode([task_instruction])  # Convert task instruction to vector

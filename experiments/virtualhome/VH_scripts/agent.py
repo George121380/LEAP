@@ -1208,6 +1208,8 @@ class VHAgent:
         else:
             print(f"current_subgoal_num: {self.current_subgoal_num}")
             result,insrtuctions=sub_goal_evaluate(self.goal_representation,self.add_info_action_history,self.current_subgoal_nl,self.goal_nl, self.sub_goal_list[self.current_subgoal_num+1],self.add_info_nl,self.name2opid.keys())
+
+        self.logger.info("From agent.py -> evaluate_current_subgoal()\n"+"The evaluation result for current subgoal: "+str(result)+"\nThe feedback instruction: "+insrtuctions)
         return result,insrtuctions
     
     def final_human_check(self): # ask human to check whether the task is done, removed

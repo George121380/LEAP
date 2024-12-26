@@ -45,7 +45,7 @@ def load_scene(scene_id):
     construct_cdl(INIT_PATH_PO,objects,states,relationships,properties,cat_statement,sizes)
     return classes,init_scene_graph
 
-def task_summary_record(epoch_logger, scene_id, goal, action_history, start_time, complete_rate, task_path, final_info):
+def task_summary_record(epoch_logger, task_logger, scene_id, goal, action_history, start_time, complete_rate, task_path, final_info):
     """
     Record the summary of a task execution.
     """
@@ -53,6 +53,7 @@ def task_summary_record(epoch_logger, scene_id, goal, action_history, start_time
     time_elapsed = int(current_time - start_time) if start_time else ''
     time_info = f"Time consume: {time_elapsed} seconds\nExp_helper query times: {final_info['exp_helper_query_times']}\nGuidance query times: {final_info['guidance_query_times']}\nlibrary scale: {final_info['library_scale']}"
     epoch_logger.info(task_path, goal, action_history, time_info, complete_rate, f"Scene_id: {str(scene_id)}")
+    task_logger.info("Task Summary:\nTask Goal:\n"+goal+"\nAction History:\n"+action_history+"\nTime info:\n"+time_info+"\nTask complete rate:\n"+complete_rate+"\n"+f"Scene_id: {str(scene_id)}")
     
 def run(args,epoch_logger,epoch_path,task_path,classes,init_scene_graph):
     """
@@ -146,7 +147,7 @@ def run(args,epoch_logger,epoch_path,task_path,classes,init_scene_graph):
 
     while True:
         try:
-            action,plan = agent.act() #Planning   
+            action,plan = agent.act() # Planning   
             if action=="human guided":
                 continue 
             if action=="Failed":
@@ -159,7 +160,7 @@ def run(args,epoch_logger,epoch_path,task_path,classes,init_scene_graph):
                     return False
                 print("Task failed")
                 if epoch_logger:
-                    task_summary_record(epoch_logger,args.scene.id,task_data['Goal'],executed_actions,start_time,complete_rate,task_path,agent.final_important_numbers_report())
+                    task_summary_record(epoch_logger,task_logger,args.scene.id,task_data['Goal'],executed_actions,start_time,complete_rate,task_path,agent.final_important_numbers_report())
                 return True
             
             if action=='over':
@@ -175,11 +176,11 @@ def run(args,epoch_logger,epoch_path,task_path,classes,init_scene_graph):
                     print("Task Success")
                     agent.lift_behaviors()
                     if epoch_logger:
-                        task_summary_record(epoch_logger,args.scene.id,task_data['Goal'],executed_actions,start_time,1,task_path,agent.final_important_numbers_report())
+                        task_summary_record(epoch_logger,task_logger,args.scene.id,task_data['Goal'],executed_actions,start_time,1,task_path,agent.final_important_numbers_report())
                     return True
                 else:
                     if epoch_logger:
-                        task_summary_record(epoch_logger,args.scene.id,task_data['Goal'],executed_actions,start_time,complete_rate,task_path,agent.final_important_numbers_report())
+                        task_summary_record(epoch_logger,task_logger,args.scene.id,task_data['Goal'],executed_actions,start_time,complete_rate,task_path,agent.final_important_numbers_report())
                 return True
             
             print('Action: ',str(action))
@@ -193,7 +194,7 @@ def run(args,epoch_logger,epoch_path,task_path,classes,init_scene_graph):
             print(e)
             evaluation_result,complete_rate=evaluator.evaluate_final(ast=None,action_history=agent.add_info_action_history_for_evaluation,Root=True)
             executed_actions=env.report_actions()
-            task_summary_record(epoch_logger,args.scene.id,'Syntax Error',executed_actions,start_time,complete_rate,task_path,agent.final_important_numbers_report())
+            task_summary_record(epoch_logger,task_logger,args.scene.id,'Syntax Error',executed_actions,start_time,complete_rate,task_path,agent.final_important_numbers_report())
             return False
        
 def evaluate_single(args):
@@ -203,7 +204,7 @@ def evaluate_single(args):
     classes,init_scene_graph=load_scene(args.scene.id)
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     epoch_logger = setup_epoch_logger(f'log/epoch_{timestamp}')
-    task_path='/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/cdl_dataset/dataset/Prepare_breakfast/g4.txt'
+    task_path='/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/cdl_dataset/dataset/Drink/g1.txt'
     run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph)
     # test_simulator(init_scene_graph)
     end_time = time.time()
@@ -249,7 +250,6 @@ def evaluate_all_cross_scene(args): # main function
         print("Lastest Task Path:", last_task_path)
         task_scene_pairs=filter_tasks(task_scene_pairs, last_task_path, last_task_scene_num)
 
-    
     else:
         # Create a new folder for the epoch
         epoch_path = f'log/epoch_{timestamp}'
@@ -289,7 +289,7 @@ def check_task_define_all(args):
     files=evaluation_task_loader(DATASET_FOLDER_PATH)
     random.shuffle(files)
     epoch_path=f'log/epoch_{timestamp}'
-    epoch_logger = setup_epoch_logger(f'log/epoch_{timestamp}',timestamp=timestamp)
+    epoch_logger = setup_epoch_logger(f'log/epoch_{timestamp}')
     for task_file in files:
         task_path=os.path.join(DATASET_FOLDER_PATH,task_file)
         print(task_path)
@@ -298,13 +298,13 @@ def check_task_define_all(args):
 
 def check_task_define_single(args):
 
-    args.scene.id = 0
+    args.scene.id = 1
 
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     epoch_path=f'log/epoch_{timestamp}'
     epoch_logger = setup_epoch_logger(f'log/epoch_{timestamp}')
    
-    task_path='/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/cdl_dataset/dataset/Prepare_breakfast/g4.txt'
+    task_path='/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/cdl_dataset/dataset/Write_an_email/g2.txt'
     evaluator=Evaluator(args,task_path,epoch_logger,epoch_path)
     # for action in action_list:
     #     evaluator.updates(action)

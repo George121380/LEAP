@@ -10,6 +10,37 @@ sys.path.append('cdl_dataset/scripts')
 from logic_parser import parse_logic_from_file_path
 
 
+def aggregate_success_rates(success_rate_list):
+    """
+    对同一个 task 下的多条成功率记录求平均。
+
+    Args:
+        success_rate_list (list): 
+            [
+                {"task": "path/to/task_1", "suc_rate": 0.85},
+                {"task": "path/to/task_1", "suc_rate": 0.95},
+                {"task": "path/to/task_2", "suc_rate": 0.72},
+                ...
+            ]
+
+    Returns:
+        dict: {task_name: 平均成功率}
+              例如: {"path/to/task_1": 0.90, "path/to/task_2": 0.72}
+    """
+    # 先用 defaultdict(list) 把同一任务的 suc_rate 收集起来
+    task_rates = defaultdict(list)
+    for item in success_rate_list:
+        task_name = item["task"]
+        suc_rate = item["suc_rate"]
+        task_rates[task_name].append(suc_rate)
+    
+    # 然后再求平均值
+    averaged_dict = {}
+    for t, rates in task_rates.items():
+        averaged_dict[t] = sum(rates) / len(rates)
+
+    return averaged_dict
+
 def parse_info(log_text):
     parsed_data = {}
     # Use regex to extract the relevant fields
@@ -219,17 +250,88 @@ def find_tasks_with_declining_success(tasks):
         #     declining_tasks.append(task_name)
         #     scores.update({f"{task_name}":(first, second, third)})
 
-        if second == 1 and first == 1 and third ==1:
+        if first > second and first > third:
             declining_tasks.append(task_name)
             scores.update({f"{task_name}":(first, second, third)})
             
     return declining_tasks, scores
 
+def compare_methods_performance(methodA_name, success_rate_dict_a, methodB_name, success_rate_dict_b):
+    """
+    对比两种方法（A 和 B）的成功率表现。
+
+    Args:
+        methodA_name (str): 方法 A 的名称，用于输出时标识。
+        success_rate_dict_a (list): 方法 A 的成功率列表，可能包含同一 task 多条记录
+        methodB_name (str): 方法 B 的名称，用于输出时标识。
+        success_rate_dict_b (list): 方法 B 的成功率列表，可能包含同一 task 多条记录
+
+    Returns:
+        dict: 
+            {
+                "A_better": [(task, A_success_rate, B_success_rate), ...],
+                "B_better": [(task, A_success_rate, B_success_rate), ...],
+                "equal": [(task, A_success_rate, B_success_rate), ...]
+            }
+    """
+    # 先聚合(去重+求平均)：
+    task_to_rate_a = aggregate_success_rates(success_rate_dict_a)
+    task_to_rate_b = aggregate_success_rates(success_rate_dict_b)
+
+    # 获取全部出现过的 task 集合
+    all_tasks = set(task_to_rate_a.keys()) | set(task_to_rate_b.keys())
+
+    A_better = []
+    B_better = []
+    equal = []
+
+    for task in all_tasks:
+        rate_a = task_to_rate_a.get(task, None)
+        rate_b = task_to_rate_b.get(task, None)
+
+        # 如果某个任务只存在于 A 或只存在于 B，可以根据需要自定义处理：
+        # 例如直接认为另一个方法成功率为 0，也可以直接跳过
+        if rate_a is None or rate_b is None:
+            # 此处示例直接跳过
+            continue
+
+        if rate_a > rate_b:
+            A_better.append((task, rate_a, rate_b))
+        elif rate_a < rate_b:
+            B_better.append((task, rate_a, rate_b))
+        else:
+            equal.append((task, rate_a, rate_b))
+
+    result_dict = {
+        "A_better": A_better,
+        "B_better": B_better,
+        "equal": equal
+    }
+
+    # 打印输出（可注释掉，改成只返回 result_dict）
+    print(f"{methodA_name} perform better on:")
+    for t, a, b in A_better:
+        print(f"  Task: {t}, {methodA_name}: {a:.3f}, {methodB_name}: {b:.3f}")
+
+    print(f"\n{methodB_name} perform better on：")
+    for t, a, b in B_better:
+        print(f"  Task: {t}, {methodA_name}: {a:.3f}, {methodB_name}: {b:.3f}")
+
+    print(f"\n same on:")
+    for t, a, b in equal:
+        print(f"  Task: {t}, {methodA_name}: {a:.3f}, {methodB_name}: {b:.3f}")
+
+    return result_dict
+
+
+
 if __name__ == '__main__':
     # methods_experiments = find_csv_files('log/main_with_guidance')
     methods_experiments=[]
 
-    methods_experiments.append(find_csv_files('/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/main_results/LLM+P_without_guidance'))
+    # methods_experiments.append(find_csv_files('/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/main_results/LLM+P_without_guidance'))
+
+    # methods_experiments.append(find_csv_files('/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/main_results/ours_without_library_withguidance'))
 
     # methods_experiments.append(find_csv_files('/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/main_results/ours_without_guidance_1207'))
 
@@ -239,22 +341,39 @@ if __name__ == '__main__':
 
 
 
-    window_size = 61
+    _, csv_file_path_A = find_csv_files('/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/main_results/LLM+P_without_guidance')
+    result_list_A, _ = parse_completion_rates(csv_file_path_A)
 
-    for experiments in methods_experiments:
-        exp_name, csv_file_path = experiments
-        result_list, guidance_nums = parse_completion_rates(csv_file_path)
-        avg_success_rate, success_rate_dict = calculation(result_list)
+    _, csv_file_path_B = find_csv_files('/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/main_results/ours_without_guidance_1207')
+    result_list_B, _ = parse_completion_rates(csv_file_path_B)
 
-        worse_cases, scores = find_tasks_with_declining_success(success_rate_dict)
-        for task in worse_cases:
-            print(task)
-            print("first:",scores[task][0], " second:",scores[task][1], " third:",scores[task][2])
-        print(len(worse_cases))
+    avg_success_rate_A, success_rate_dict_A = calculation(result_list_A)
+    avg_success_rate_B, success_rate_dict_B = calculation(result_list_B)
+
+    comparison_results = compare_methods_performance(
+        methodA_name="LLM+P",
+        success_rate_dict_a=success_rate_dict_A,
+        methodB_name="ours",
+        success_rate_dict_b=success_rate_dict_B
+    )
+
+    # window_size = 61
+
+    # for experiments in methods_experiments:
+    #     exp_name, csv_file_path = experiments
+    #     result_list, guidance_nums = parse_completion_rates(csv_file_path)
+    #     avg_success_rate, success_rate_dict = calculation(result_list)
 
 
 
 
+
+
+        # worse_cases, scores = find_tasks_with_declining_success(success_rate_dict)
+        # for task in worse_cases:
+        #     print(task)
+        #     print("first:",scores[task][0], " second:",scores[task][1], " third:",scores[task][2])
+        # print(len(worse_cases))
 
         # # 计算成功率的滑动平均并绘制曲线
         # success_rate_list=[]

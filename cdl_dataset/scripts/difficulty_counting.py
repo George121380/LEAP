@@ -119,7 +119,7 @@ def counting(args):
 if __name__ == '__main__':
     
     args = load_config("experiments/virtualhome/VH_scripts/config.yaml")
-    args.scene.id = 0
+    args.scene.id = 2
 
     if os.path.exists(f'result_{args.scene.id}.json'):
         with open(f'result_{args.scene.id}.json') as f:

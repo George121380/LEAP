@@ -1,23 +1,36 @@
 from openai import OpenAI
 import time
+import tiktoken
+import json
 
-Jiayuan_key="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"
 
-Taobao_key="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"
+def count_tokens_tiktoken(query: str, model: str = "gpt-4o") -> int:
+    encoding = tiktoken.encoding_for_model(model)
+    tokens = encoding.encode(query)
+    return len(tokens)
 
-Taobao_trans_key = "sk-ijWSBlLY9QqOxt1EFxhdMK0BTmhi8NsZsszKmPjVPBSzKVrg"
+# Load the api key
+KEY_BANK_PATH = "/Users/liupeiqi/workshop/Research/key_bank.json"
+
+with open(KEY_BANK_PATH) as f:
+    api_key = json.load(f)
+    Openai_key = api_key["OpenAI_API_Key"]
+    Deepseek_key = api_key["Deepseek_API_Key"]
+    Thirdparty_key = ""
 
 # LLM_MODEL = "gpt-4o"
-# LLM_MODEL = "deepseek"
-LLM_MODEL = "thirdparty"
+LLM_MODEL = "deepseek"
+# LLM_MODEL = "thirdparty"
+
+# empty the log file
+with open("query_log.txt", "w") as log_file:
+    log_file.write("")
 
 def ask_GPT(system,content):
     while True:
         try:
             if LLM_MODEL == "gpt-4o": # GPT-4o api
-                # with open("/Users/liupeiqi/workshop/Research/api_key.txt","r") as f:
-                #     api_key = f.read().strip()
-                client = OpenAI(api_key=Taobao_key)
+                client = OpenAI(api_key=Openai_key)
                 
                 completion = client.chat.completions.create(
                     model="gpt-4o",
@@ -27,7 +40,7 @@ def ask_GPT(system,content):
                     ]
                 )
             elif LLM_MODEL == "deepseek": # Deepseek api
-                client = OpenAI(api_key="sk-7eb58550af8a4042aca7d33d495ec2e0", base_url="https://api.deepseek.com")
+                client = OpenAI(api_key=Deepseek_key, base_url="https://api.deepseek.com")
                 completion = client.chat.completions.create(
                     model="deepseek-chat",
                     messages=[
@@ -37,7 +50,7 @@ def ask_GPT(system,content):
                     stream=False
                 )
             elif LLM_MODEL == "thirdparty": # Taobao
-                client = OpenAI(api_key=Taobao_trans_key, base_url="https://api.feidaapi.com/v1")
+                client = OpenAI(api_key=Thirdparty_key, base_url="https://api.feidaapi.com/v1")
                 completion = client.chat.completions.create(
                     model="gpt-4o",
                     messages=[
@@ -49,6 +62,12 @@ def ask_GPT(system,content):
             else:
                 raise ValueError("Invalid LLM_MODEL")
             
+            with open("query_log.txt", "a") as log_file:
+                log_file.write(f"System: {system}\nContent: {content}\n\n")
+                log_file.write(f"Response:\n{completion.choices[0].message.content}\n\n")
+                log_file.write("Tokens: " + str(count_tokens_tiktoken(completion.choices[0].message.content)+count_tokens_tiktoken(system)+count_tokens_tiktoken(content)) + "\n")
+                log_file.write("#"*80 + "\n\n")
+            
             return completion.choices[0].message.content
             
         except Exception as e:
@@ -56,16 +75,8 @@ def ask_GPT(system,content):
             time.sleep(1)
             continue
 
-if __name__ == '__main__':
-    system = """
-    Please answer the question based on the scenario.
-    Scenario:
-    Peppa Pig has a golden egg that she loves very much, and she keeps it at home in her collection. One day, Peppa invited her two new friends (they just know each other), Shaun the Sheep and Winnie the Pooh, over to her house to study together. At some point, Peppa had to leave the house for a while. Shaun the Sheep, being mischievous, found a brand new hammer that had never been used before. He used the hammer to smash Peppa’s golden egg but, fearing Peppa's anger when she returned, he handed the hammer to Winnie the Pooh. Shaun then began to work on his homework, while Winnie, curious about the hammer, started playing with it. Throughout the entire process, Peppa didn’t witness any of this. A little while later, Peppa returned home, only to find her golden egg broken, Shaun doing his homework, and Winnie playing with the hammer."""
-    Q1 = "After Peppa Pig returns, what would she feel?"
-    Q2 = "After Peppa Pig returns, who will she think broke the golden egg, and why."
-    Q3 = "If you were Daddy Pig and witnessed the whole process at home, and then saw Peppa get very angry after returning, what would you say to her"
-    print(ask_GPT(system,Q1))
-    print('#'*10)
-    print(ask_GPT(system,Q2))
-    print('#'*10)
-    print(ask_GPT(system,Q3))
+
+if __name__ == "__main__":
+    system = "Hello, how can I help you today?"
+    content = "I want to know about the history of the United States."
+    print(ask_GPT(system, content))

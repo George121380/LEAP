@@ -1,0 +1,974 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['Slice the bread and toast it.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_bread_2084_around_fridge_126(food_bread:item):
+    goal: not unknown(food_bread)
+    body:
+        assert is_food_bread(food_bread)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==126
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_bread,fridge_instance)
+        else:
+            exp(food_bread,fridge_instance)
+    eff:
+        unknown[food_bread]=False
+        close[food_bread,fridge_instance]=True
+        close[fridge_instance,food_bread]=True
+    
+
+behavior find_knife_2122_around_knifeblock_76(knife:item):
+    goal: not unknown(knife)
+    body:
+        assert is_knife(knife)
+        bind knifeblock_instance:item where:
+            is_knifeblock(knifeblock_instance) and id[knifeblock_instance]==76
+        achieve close_char(char,knifeblock_instance)
+        if can_open(knifeblock_instance):
+            achieve_once open(knifeblock_instance)
+            exp(knife,knifeblock_instance)
+        else:
+            exp(knife,knifeblock_instance)
+    eff:
+        unknown[knife]=False
+        close[knife,knifeblock_instance]=True
+        close[knifeblock_instance,knife]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior slice_bread_with_knife(bread: item, knife: item):
+    body:
+        achieve cut(bread)
+
+behavior toast_bread_in_toaster(bread: item, toaster: item):
+    body:
+        achieve plugged(toaster)
+        # Ensure toaster is plugged in
+        achieve is_on(toaster)
+        # Turn toaster on
+
+behavior __goal__():
+    body:
+        bind bread: item where:
+            is_food_bread(bread)
+        # Select an instance of bread
+
+        bind knife: item where:
+            is_knife(knife)
+        # Select an instance of a knife
+
+        bind toaster: item where:
+            is_toaster(toaster)
+        # Select an instance of a toaster
+
+        slice_bread_with_knife(bread, knife)
+        # Slice the bread with the knife
+
+        toast_bread_in_toaster(bread, toaster)
+        # Toast the sliced bread in the toaster
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_bread_2084_around_fridge_126(food_bread:item):
+    goal: not unknown(food_bread)
+    body:
+        assert is_food_bread(food_bread)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==126
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_bread,fridge_instance)
+        else:
+            exp(food_bread,fridge_instance)
+    eff:
+        unknown[food_bread]=False
+        close[food_bread,fridge_instance]=True
+        close[fridge_instance,food_bread]=True
+    
+
+behavior find_knife_2122_around_knifeblock_76(knife:item):
+    goal: not unknown(knife)
+    body:
+        assert is_knife(knife)
+        bind knifeblock_instance:item where:
+            is_knifeblock(knifeblock_instance) and id[knifeblock_instance]==76
+        achieve close_char(char,knifeblock_instance)
+        if can_open(knifeblock_instance):
+            achieve_once open(knifeblock_instance)
+            exp(knife,knifeblock_instance)
+        else:
+            exp(knife,knifeblock_instance)
+    eff:
+        unknown[knife]=False
+        close[knife,knifeblock_instance]=True
+        close[knifeblock_instance,knife]=True
+    
+
+behavior find_knife_2035_around_knifeblock_76(knife:item):
+    goal: not unknown(knife)
+    body:
+        assert is_knife(knife)
+        bind knifeblock_instance:item where:
+            is_knifeblock(knifeblock_instance) and id[knifeblock_instance]==76
+        achieve close_char(char,knifeblock_instance)
+        if can_open(knifeblock_instance):
+            achieve_once open(knifeblock_instance)
+            exp(knife,knifeblock_instance)
+        else:
+            exp(knife,knifeblock_instance)
+    eff:
+        unknown[knife]=False
+        close[knife,knifeblock_instance]=True
+        close[knifeblock_instance,knife]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def has_knife_on_kitchen_counter(kitchen_counter:item):
+    # Function to check if there is a knife on the kitchen counter
+    symbol has_knife=exists o: item : is_knife(o) and on(o, kitchen_counter)
+    return has_knife
+
+def has_toaster_on_kitchen_counter(kitchen_counter:item):
+    # Function to check if there is a toaster on the kitchen counter
+    symbol has_toaster=exists o: item : is_toaster(o) and on(o, kitchen_counter)
+    return has_toaster
+
+behavior slice_bread(bread: item, knife: item):
+    body:
+        achieve cut(bread)
+        # Achieve bread is sliced
+
+behavior toast_bread(bread: item, toaster: item):
+    body:
+        achieve inside(bread, toaster)
+        achieve closed(toaster)
+        achieve is_on(toaster)
+        # Achieve bread is toasted inside toaster
+
+behavior __goal__():
+    body:
+        bind bread: item where:
+            is_food_bread(bread)
+        # Select an instance of bread
+        
+        bind kitchen_counter: item where:
+            is_kitchen_counter(kitchen_counter)
+        # Select the kitchen counter
+
+        if exists knife: item : is_knife(knife) and on(knife, kitchen_counter):
+            bind knife: item where:
+                is_knife(knife) and on(knife, kitchen_counter)
+            slice_bread(bread, knife)
+        else:
+            foreach kitchen_counter: item:
+                if is_kitchen_counter(kitchen_counter) and not visited(kitchen_counter):
+                    observe(kitchen_counter, "Check for a knife")
+        
+        if exists toaster: item : is_toaster(toaster) and on(toaster, kitchen_counter):
+            bind toaster: item where:
+                is_toaster(toaster) and on(toaster, kitchen_counter)
+            toast_bread(bread, toaster)
+        else:
+            foreach kitchen_counter: item:
+                if is_kitchen_counter(kitchen_counter) and not visited(kitchen_counter):
+                    observe(kitchen_counter, "Check for a toaster")
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+ 
+def has_knife_on_kitchen_counter(kitchen_counter:item):
+    # Function to check if there is a knife on the kitchen counter
+    symbol has_knife=exists o: item : is_knife(o) and on(o, kitchen_counter)
+    return has_knife
+
+def has_toaster_on_kitchen_counter(kitchen_counter:item):
+    # Function to check if there is a toaster on the kitchen counter
+    symbol has_toaster=exists o: item : is_toaster(o) and on(o, kitchen_counter)
+    return has_toaster
+
+behavior slice_bread(bread: item, knife: item):
+    body:
+        achieve cut(bread)
+        # Achieve bread is sliced
+
+behavior toast_bread(bread: item, toaster: item):
+    body:
+        achieve inside(bread, toaster)
+        achieve closed(toaster)
+        achieve is_on(toaster)
+        # Achieve bread is toasted inside toaster
+
+behavior __goal__():
+    body:
+        bind bread: item where:
+            is_food_bread(bread)
+        # Select an instance of bread
+        
+        bind kitchen_counter: item where:
+            is_kitchen_counter(kitchen_counter)
+        # Select the kitchen counter
+
+        if exists knife: item : is_knife(knife) and on(knife, kitchen_counter):
+            bind knife: item where:
+                is_knife(knife) and on(knife, kitchen_counter)
+            slice_bread(bread, knife)
+        else:
+            foreach kitchen_counter: item:
+                if is_kitchen_counter(kitchen_counter) and not visited(kitchen_counter):
+                    observe(kitchen_counter, "Check for a knife")
+        
+        if exists toaster: item : is_toaster(toaster) and on(toaster, kitchen_counter):
+            bind toaster: item where:
+                is_toaster(toaster) and on(toaster, kitchen_counter)
+            toast_bread(bread, toaster)
+        else:
+            foreach kitchen_counter: item:
+                if is_kitchen_counter(kitchen_counter) and not visited(kitchen_counter):
+                    observe(kitchen_counter, "Check for a toaster")
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(kitchen_counter_119)obs(kitchen_counter_119, Check for a knife)walk_executor(kitchen_counter_122)obs(kitchen_counter_122, Check for a knife)walk_executor(kitchen_counter_123)obs(kitchen_counter_123, Check for a knife)
+##############################
+From agent.py
+walk_executor(kitchen_counter_119)
+Find pot_2138. Find tray_128. Find bowl_2141. Find plate_2152. Find cutting_board_2123. Find food_salt_2041. Find fork_2150. Find bowl_2140. Find bowl_2142. Find pot_78. Find fork_2151. Robot is inside dining_room_41. Robot is close kitchen_counter_119. 
+##############################
+From agent.py
+obs(kitchen_counter_119, Check for a knife)
+Get this information:  pot_2138 is on kitchen_counter_119. bowl_2141 is on kitchen_counter_119. plate_2152 is on kitchen_counter_119. food_salt_2041 is on kitchen_counter_119. fork_2150 is on kitchen_counter_119. faucet_121 is on kitchen_counter_119. cutting_board_2123 is on kitchen_counter_119. kitchen_counter_119 is inside dining_room_41. bowl_2142 is on kitchen_counter_119. kitchen_counter_119 is close to tray_128. kitchen_counter_119 is close to walllamp_140. kitchen_counter_119 is close to walllamp_141. kitchen_counter_119 is close to food_salt_2041. kitchen_counter_119 is close to floor_45. kitchen_counter_119 is close to floor_46. kitchen_counter_119 is close to wall_64. kitchen_counter_119 is close to desk_193. kitchen_counter_119 is close to wall_67. kitchen_counter_119 is close to cutting_board_2123. kitchen_counter_119 is close to knifeblock_76. kitchen_counter_119 is close to pot_78. kitchen_counter_119 is close to cpuscreen_210. kitchen_counter_119 is close to stove_2135. kitchen_counter_119 is close to pot_2138. kitchen_counter_119 is close to bowl_2140. kitchen_counter_119 is close to bowl_2141. kitchen_counter_119 is close to bowl_2142. kitchen_counter_119 is close to fork_2150. kitchen_counter_119 is close to fork_2151. kitchen_counter_119 is close to plate_2152. kitchen_counter_119 is close to cupboard_117. kitchen_counter_119 is close to sink_120. kitchen_counter_119 is close to faucet_121. kitchen_counter_119 is close to kitchen_counter_123. kitchen_counter_119 is close to stovefan_125. kitchen_counter_119 is close to oven_127. kitchen_counter_119 is close to character_240. bowl_2140 is on kitchen_counter_119. fork_2151 is on kitchen_counter_119. sink_120 is inside kitchen_counter_119. stove_2135 is on kitchen_counter_119. kitchen_counter_119 is CLEAN. kitchen_counter_119 is OPEN.
+##############################
+From agent.py
+walk_executor(kitchen_counter_122)
+Find spectacles_2153. Find fryingpan_2154. Robot is inside dining_room_41. Robot is close kitchen_counter_122. Robot is no longer close kitchen_counter_119.
+##############################
+From agent.py
+obs(kitchen_counter_122, Check for a knife)
+Get this information:  fryingpan_2154 is on kitchen_counter_122. toaster_132 is on kitchen_counter_122. kitchen_counter_122 is close to tray_128. kitchen_counter_122 is close to dishwasher_129. kitchen_counter_122 is close to coffe_maker_130. kitchen_counter_122 is close to trashcan_99. kitchen_counter_122 is close to toaster_132. kitchen_counter_122 is close to wall_68. kitchen_counter_122 is close to wall_64. kitchen_counter_122 is close to microwave_135. kitchen_counter_122 is close to spectacles_2153. kitchen_counter_122 is close to fryingpan_2154. kitchen_counter_122 is close to walllamp_139. kitchen_counter_122 is close to walllamp_141. kitchen_counter_122 is close to floor_46. kitchen_counter_122 is close to pot_78. kitchen_counter_122 is close to floor_51. kitchen_counter_122 is close to cupboard_118. kitchen_counter_122 is close to stovefan_125. kitchen_counter_122 is close to oven_127. kitchen_counter_122 is close to character_240. spectacles_2153 is on kitchen_counter_122. microwave_135 is on kitchen_counter_122. kitchen_counter_122 is inside dining_room_41. coffe_maker_130 is on kitchen_counter_122. kitchen_counter_122 is CLOSED. kitchen_counter_122 is DIRTY.
+##############################
+From agent.py
+walk_executor(kitchen_counter_123)
+Find oil_2149. Find knife_2035. Find food_kiwi_2054. Find food_orange_2027. Find tray_2068. Robot is inside dining_room_41. Robot is close kitchen_counter_123. Robot is close floor_45. Robot is no longer close kitchen_counter_122.
+##############################
+From agent.py
+obs(kitchen_counter_123, Check for a knife)
+Get this information:  kitchen_counter_123 is inside dining_room_41. oil_2149 is on kitchen_counter_123. knife_2035 is on kitchen_counter_123. food_kiwi_2054 is on kitchen_counter_123. food_orange_2027 is on kitchen_counter_123. kitchen_counter_123 is on floor_45. kitchen_counter_123 is close to desk_193. kitchen_counter_123 is close to floor_163. kitchen_counter_123 is close to wall_67. kitchen_counter_123 is close to floor_164. kitchen_counter_123 is close to oil_2149. kitchen_counter_123 is close to food_kiwi_2054. kitchen_counter_123 is close to food_orange_2027. kitchen_counter_123 is close to floor_45. kitchen_counter_123 is close to wall_175. kitchen_counter_123 is close to cpuscreen_210. kitchen_counter_123 is close to keyboard_211. kitchen_counter_123 is close to knife_2035. kitchen_counter_123 is close to cupboard_117. kitchen_counter_123 is close to tray_2068. kitchen_counter_123 is close to kitchen_counter_119. kitchen_counter_123 is close to sink_120. kitchen_counter_123 is close to character_240. tray_2068 is on kitchen_counter_123. kitchen_counter_123 is CLEAN. kitchen_counter_123 is CLOSED.
+##############################
+From agent.py
+Human Instruction: You have identified the locations of a knife and toaster across different kitchen counters, but you have not yet sliced or toasted the bread. You'll need to go to the kitchen counter with a knife to slice the bread and then locate the toaster to toast the slices, ensuring they are inside and the toaster is turned on.
+
+The actions you have taken:
+Action 1: Walk to kitchen_counter_119.
+Action 2: Observe around kitchen_counter_119 with the question of Check for a knife.
+Action 3: Walk to kitchen_counter_122.
+Action 4: Observe around kitchen_counter_122 with the question of Check for a knife.
+Action 5: Walk to kitchen_counter_123.
+Action 6: Observe around kitchen_counter_123 with the question of Check for a knife.
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_bread_2084_around_fridge_126(food_bread:item):
+    goal: not unknown(food_bread)
+    body:
+        assert is_food_bread(food_bread)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==126
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_bread,fridge_instance)
+        else:
+            exp(food_bread,fridge_instance)
+    eff:
+        unknown[food_bread]=False
+        close[food_bread,fridge_instance]=True
+        close[fridge_instance,food_bread]=True
+    
+
+behavior find_knife_2037_around_knifeblock_76(knife:item):
+    goal: not unknown(knife)
+    body:
+        assert is_knife(knife)
+        bind knifeblock_instance:item where:
+            is_knifeblock(knifeblock_instance) and id[knifeblock_instance]==76
+        achieve close_char(char,knifeblock_instance)
+        if can_open(knifeblock_instance):
+            achieve_once open(knifeblock_instance)
+            exp(knife,knifeblock_instance)
+        else:
+            exp(knife,knifeblock_instance)
+    eff:
+        unknown[knife]=False
+        close[knife,knifeblock_instance]=True
+        close[knifeblock_instance,knife]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+def is_knife_on_counter(counter: item):
+    # Determine if there is a knife on a specific counter
+    symbol knife_found = exists o: item : is_knife(o) and on(o, counter)
+    return knife_found
+
+behavior slice_bread_with_knife(knife: item, bread: item):
+    body:
+        achieve_once inhand(knife) 
+        # Temporarily hold the knife in hand
+        achieve cut(bread)
+        # Slice the bread
+
+behavior use_toaster(toaster: item, sliced_bread: item):
+    body:
+        achieve inside(sliced_bread, toaster)
+        # Place the sliced bread inside the toaster
+        achieve is_on(toaster)
+        # Turn on the toaster
+
+behavior __goal__():
+    body:
+        bind bread: item where:
+            is_food_bread(bread)
+        # Select an instance of bread
+
+        bind toaster: item where:
+            is_toaster(toaster)
+        # Select an instance of the toaster
+
+        if exists counter: item : is_kitchen_counter(counter) and is_knife_on_counter(counter):
+            # Identify a kitchen counter with a knife already available
+            bind counter: item where:
+                is_kitchen_counter(counter) and is_knife_on_counter(counter)
+            bind knife: item where:
+                is_knife(knife) and on(knife, counter)
+            # Select the knife on the counter
+            slice_bread_with_knife(knife, bread)
+            # Slice the bread using the knife
+
+        else:
+            # Search for the knife on unvisited kitchen counters
+            foreach counter: item:
+                if is_kitchen_counter(counter) and not visited(counter):
+                    observe(counter, "Check for a knife on the counter")
+
+        use_toaster(toaster, bread)
+        # Toast the sliced bread using the toaster
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+def is_knife_on_counter(counter: item):
+    # Determine if there is a knife on a specific counter
+    symbol knife_found = exists o: item : is_knife(o) and on(o, counter)
+    return knife_found
+
+behavior slice_bread_with_knife(knife: item, bread: item):
+    body:
+        achieve_once inhand(knife) 
+        # Temporarily hold the knife in hand
+        achieve cut(bread)
+        # Slice the bread
+
+behavior use_toaster(toaster: item, sliced_bread: item):
+    body:
+        achieve inside(sliced_bread, toaster)
+        # Place the sliced bread inside the toaster
+        achieve is_on(toaster)
+        # Turn on the toaster
+
+behavior __goal__():
+    body:
+        bind bread: item where:
+            is_food_bread(bread)
+        # Select an instance of bread
+
+        bind toaster: item where:
+            is_toaster(toaster)
+        # Select an instance of the toaster
+
+        if exists counter: item : is_kitchen_counter(counter) and is_knife_on_counter(counter):
+            # Identify a kitchen counter with a knife already available
+            bind counter: item where:
+                is_kitchen_counter(counter) and is_knife_on_counter(counter)
+            bind knife: item where:
+                is_knife(knife) and on(knife, counter)
+            # Select the knife on the counter
+            slice_bread_with_knife(knife, bread)
+            # Slice the bread using the knife
+
+        else:
+            # Search for the knife on unvisited kitchen counters
+            foreach counter: item:
+                if is_kitchen_counter(counter) and not visited(counter):
+                    observe(counter, "Check for a knife on the counter")
+
+        use_toaster(toaster, bread)
+        # Toast the sliced bread using the toaster
+##############################
+From agent.py-> find a plan in act()
+walk_executor(knife_2035)grab_executor(knife_2035)walk_executor(fridge_126)switchoff_executor(fridge_126)open_executor(fridge_126)exp(food_bread_2084, fridge_126)walk_executor(food_bread_2084)grab_executor(food_bread_2084)walk_executor(cutting_board_2123)put_executor(food_bread_2084, cutting_board_2123)walk_executor(food_bread_2084)cut_executor(food_bread_2084)grab_executor(food_bread_2084)walk_executor(toaster_132)putin_executor(food_bread_2084, toaster_132)
+##############################
+From agent.py
+walk_executor(knife_2035)
+Robot is inside dining_room_41. Robot is close kitchen_counter_123. Robot is close knife_2035. Robot is no longer close floor_45.
+##############################
+From agent.py
+grab_executor(knife_2035)
+Robot is inside dining_room_41. Robot is close kitchen_counter_123. Robot is close knife_2035. Grabbing knife_2035 by right hand. 
+##############################
+From agent.py
+walk_executor(fridge_126)
+Find food_onion_2048. Find food_food_2046. Find food_food_2073. Find food_steak_2080. Find food_apple_2081. Find food_bacon_2082. Find food_banana_2083. Find food_cake_2085. Find food_carrot_2086. Find food_cereal_2087. Find food_cheese_2088. Find food_chicken_2089. Find food_dessert_2090. Find food_donut_2091. Find food_egg_2092. Find food_fish_2093. Find food_food_2094. Find food_fruit_2095. Find food_hamburger_2096. Find food_ice_cream_2097. Find food_jam_2098. Find food_kiwi_2099. Find food_lemon_2100. Find food_noodles_2101. Find food_oatmeal_2102. Find food_orange_2103. Find food_onion_2104. Find food_peanut_butter_2105. Find food_pizza_2106. Find food_potato_2107. Find food_rice_2108. Find food_salt_2109. Find food_snack_2110. Find food_sugar_2111. Find food_turkey_2112. Find food_vegetable_2113. Find food_food_2001. Find sauce_2148. Find basket_for_clothes_2078. Find food_food_1000. Robot is inside dining_room_41. Robot is close knife_2035. Robot is close food_onion_2048. Robot is close food_food_2046. Robot is close food_food_2073. Robot is close food_steak_2080. Robot is close food_apple_2081. Robot is close food_bacon_2082. Robot is close food_banana_2083. Robot is close food_cake_2085. Robot is close food_carrot_2086. Robot is close food_cereal_2087. Robot is close food_cheese_2088. Robot is close food_chicken_2089. Robot is close food_dessert_2090. Robot is close food_donut_2091. Robot is close food_egg_2092. Robot is close food_fish_2093. Robot is close food_food_2094. Robot is close food_fruit_2095. Robot is close food_hamburger_2096. Robot is close food_ice_cream_2097. Robot is close food_jam_2098. Robot is close food_kiwi_2099. Robot is close food_lemon_2100. Robot is close food_noodles_2101. Robot is close food_oatmeal_2102. Robot is close food_orange_2103. Robot is close food_onion_2104. Robot is close food_peanut_butter_2105. Robot is close food_pizza_2106. Robot is close food_potato_2107. Robot is close food_rice_2108. Robot is close food_salt_2109. Robot is close food_snack_2110. Robot is close food_sugar_2111. Robot is close food_turkey_2112. Robot is close food_vegetable_2113. Robot is close food_food_2001. Robot is close floor_44. Robot is close sauce_2148. Robot is close fridge_126. Robot is no longer close kitchen_counter_123.
+##############################
+From agent.py
+switchoff_executor(fridge_126)
+Find mouse_213. Robot is inside dining_room_41. Robot is close knife_2035. Robot is close food_onion_2048. Robot is close food_food_2046. Robot is close food_food_2073. Robot is close food_steak_2080. Robot is close food_apple_2081. Robot is close food_bacon_2082. Robot is close food_banana_2083. Robot is close food_cake_2085. Robot is close food_carrot_2086. Robot is close food_cereal_2087. Robot is close food_cheese_2088. Robot is close food_chicken_2089. Robot is close food_dessert_2090. Robot is close food_donut_2091. Robot is close food_egg_2092. Robot is close food_fish_2093. Robot is close food_food_2094. Robot is close food_fruit_2095. Robot is close food_hamburger_2096. Robot is close food_ice_cream_2097. Robot is close food_jam_2098. Robot is close food_kiwi_2099. Robot is close food_lemon_2100. Robot is close food_noodles_2101. Robot is close food_oatmeal_2102. Robot is close food_orange_2103. Robot is close food_onion_2104. Robot is close food_peanut_butter_2105. Robot is close food_pizza_2106. Robot is close food_potato_2107. Robot is close food_rice_2108. Robot is close food_salt_2109. Robot is close food_snack_2110. Robot is close food_sugar_2111. Robot is close food_turkey_2112. Robot is close food_vegetable_2113. Robot is close food_food_2001. Robot is close floor_44. Robot is close sauce_2148. Robot is close fridge_126. 
+##############################
+From agent.py
+open_executor(fridge_126)
+Robot is inside dining_room_41. Robot is close knife_2035. Robot is close food_onion_2048. Robot is close food_food_2046. Robot is close food_food_2073. Robot is close food_steak_2080. Robot is close food_apple_2081. Robot is close food_bacon_2082. Robot is close food_banana_2083. Robot is close food_cake_2085. Robot is close food_carrot_2086. Robot is close food_cereal_2087. Robot is close food_cheese_2088. Robot is close food_chicken_2089. Robot is close food_dessert_2090. Robot is close food_donut_2091. Robot is close food_egg_2092. Robot is close food_fish_2093. Robot is close food_food_2094. Robot is close food_fruit_2095. Robot is close food_hamburger_2096. Robot is close food_ice_cream_2097. Robot is close food_jam_2098. Robot is close food_kiwi_2099. Robot is close food_lemon_2100. Robot is close food_noodles_2101. Robot is close food_oatmeal_2102. Robot is close food_orange_2103. Robot is close food_onion_2104. Robot is close food_peanut_butter_2105. Robot is close food_pizza_2106. Robot is close food_potato_2107. Robot is close food_rice_2108. Robot is close food_salt_2109. Robot is close food_snack_2110. Robot is close food_sugar_2111. Robot is close food_turkey_2112. Robot is close food_vegetable_2113. Robot is close food_food_2001. Robot is close floor_44. Robot is close sauce_2148. Robot is close fridge_126. 
+##############################
+From agent.py
+exp(food_bread_2084, fridge_126)
+Fail to find food_bread_2084 around fridge_126. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(kitchen_counter_119)obs(kitchen_counter_119, Check for a knife on the counter)walk_executor(kitchen_counter_122)obs(kitchen_counter_122, Check for a knife on the counter)walk_executor(kitchen_counter_123)obs(kitchen_counter_123, Check for a knife on the counter)walk_executor(cupboard_117)exp(food_bread_2084, cupboard_117)walk_executor(food_bread_2084)grab_executor(food_bread_2084)walk_executor(toaster_132)putin_executor(food_bread_2084, toaster_132)
+##############################
+From agent.py
+walk_executor(kitchen_counter_119)
+Robot is inside dining_room_41. Robot is close knife_2035. Robot is close kitchen_counter_119. Robot is no longer close food_onion_2048.Robot is no longer close food_food_2046.Robot is no longer close food_food_2073.Robot is no longer close food_steak_2080.Robot is no longer close food_apple_2081.Robot is no longer close food_bacon_2082.Robot is no longer close food_banana_2083.Robot is no longer close food_cake_2085.Robot is no longer close food_carrot_2086.Robot is no longer close food_cereal_2087.Robot is no longer close food_cheese_2088.Robot is no longer close food_chicken_2089.Robot is no longer close food_dessert_2090.Robot is no longer close food_donut_2091.Robot is no longer close food_egg_2092.Robot is no longer close food_fish_2093.Robot is no longer close food_food_2094.Robot is no longer close food_fruit_2095.Robot is no longer close food_hamburger_2096.Robot is no longer close food_ice_cream_2097.Robot is no longer close food_jam_2098.Robot is no longer close food_kiwi_2099.Robot is no longer close food_lemon_2100.Robot is no longer close food_noodles_2101.Robot is no longer close food_oatmeal_2102.Robot is no longer close food_orange_2103.Robot is no longer close food_onion_2104.Robot is no longer close food_peanut_butter_2105.Robot is no longer close food_pizza_2106.Robot is no longer close food_potato_2107.Robot is no longer close food_rice_2108.Robot is no longer close food_salt_2109.Robot is no longer close food_snack_2110.Robot is no longer close food_sugar_2111.Robot is no longer close food_turkey_2112.Robot is no longer close food_vegetable_2113.Robot is no longer close food_food_2001.Robot is no longer close floor_44.Robot is no longer close sauce_2148.Robot is no longer close fridge_126.
+##############################
+From agent.py
+obs(kitchen_counter_119, Check for a knife on the counter)
+Get this information:  pot_2138 is on kitchen_counter_119. bowl_2141 is on kitchen_counter_119. plate_2152 is on kitchen_counter_119. food_salt_2041 is on kitchen_counter_119. fork_2150 is on kitchen_counter_119. faucet_121 is on kitchen_counter_119. cutting_board_2123 is on kitchen_counter_119. kitchen_counter_119 is inside dining_room_41. bowl_2142 is on kitchen_counter_119. kitchen_counter_119 is close to tray_128. kitchen_counter_119 is close to walllamp_140. kitchen_counter_119 is close to walllamp_141. kitchen_counter_119 is close to food_salt_2041. kitchen_counter_119 is close to floor_45. kitchen_counter_119 is close to floor_46. kitchen_counter_119 is close to wall_64. kitchen_counter_119 is close to desk_193. kitchen_counter_119 is close to wall_67. kitchen_counter_119 is close to cutting_board_2123. kitchen_counter_119 is close to knifeblock_76. kitchen_counter_119 is close to pot_78. kitchen_counter_119 is close to cpuscreen_210. kitchen_counter_119 is close to stove_2135. kitchen_counter_119 is close to pot_2138. kitchen_counter_119 is close to bowl_2140. kitchen_counter_119 is close to bowl_2141. kitchen_counter_119 is close to bowl_2142. kitchen_counter_119 is close to fork_2150. kitchen_counter_119 is close to fork_2151. kitchen_counter_119 is close to plate_2152. kitchen_counter_119 is close to cupboard_117. kitchen_counter_119 is close to sink_120. kitchen_counter_119 is close to faucet_121. kitchen_counter_119 is close to kitchen_counter_123. kitchen_counter_119 is close to stovefan_125. kitchen_counter_119 is close to oven_127. kitchen_counter_119 is close to character_240. bowl_2140 is on kitchen_counter_119. fork_2151 is on kitchen_counter_119. sink_120 is inside kitchen_counter_119. stove_2135 is on kitchen_counter_119. kitchen_counter_119 is CLEAN. kitchen_counter_119 is OPEN.
+##############################
+From agent.py
+walk_executor(kitchen_counter_122)
+Robot is inside dining_room_41. Robot is close knife_2035. Robot is close kitchen_counter_122. Robot is no longer close kitchen_counter_119.
+##############################
+From agent.py
+obs(kitchen_counter_122, Check for a knife on the counter)
+Get this information:  fryingpan_2154 is on kitchen_counter_122. toaster_132 is on kitchen_counter_122. kitchen_counter_122 is close to tray_128. kitchen_counter_122 is close to dishwasher_129. kitchen_counter_122 is close to coffe_maker_130. kitchen_counter_122 is close to trashcan_99. kitchen_counter_122 is close to toaster_132. kitchen_counter_122 is close to wall_68. kitchen_counter_122 is close to wall_64. kitchen_counter_122 is close to microwave_135. kitchen_counter_122 is close to spectacles_2153. kitchen_counter_122 is close to fryingpan_2154. kitchen_counter_122 is close to walllamp_139. kitchen_counter_122 is close to walllamp_141. kitchen_counter_122 is close to floor_46. kitchen_counter_122 is close to pot_78. kitchen_counter_122 is close to floor_51. kitchen_counter_122 is close to cupboard_118. kitchen_counter_122 is close to stovefan_125. kitchen_counter_122 is close to oven_127. kitchen_counter_122 is close to character_240. spectacles_2153 is on kitchen_counter_122. microwave_135 is on kitchen_counter_122. kitchen_counter_122 is inside dining_room_41. coffe_maker_130 is on kitchen_counter_122. kitchen_counter_122 is CLOSED. kitchen_counter_122 is DIRTY.
+##############################
+From agent.py
+walk_executor(kitchen_counter_123)
+Robot is inside dining_room_41. Robot is close knife_2035. Robot is close kitchen_counter_123. Robot is close floor_45. Robot is no longer close kitchen_counter_122.
+##############################
+From agent.py
+obs(kitchen_counter_123, Check for a knife on the counter)
+Get this information:  kitchen_counter_123 is inside dining_room_41. oil_2149 is on kitchen_counter_123. food_kiwi_2054 is on kitchen_counter_123. food_orange_2027 is on kitchen_counter_123. kitchen_counter_123 is on floor_45. kitchen_counter_123 is close to desk_193. kitchen_counter_123 is close to floor_163. kitchen_counter_123 is close to wall_67. kitchen_counter_123 is close to floor_164. kitchen_counter_123 is close to oil_2149. kitchen_counter_123 is close to food_kiwi_2054. kitchen_counter_123 is close to food_orange_2027. kitchen_counter_123 is close to floor_45. kitchen_counter_123 is close to wall_175. kitchen_counter_123 is close to cpuscreen_210. kitchen_counter_123 is close to keyboard_211. kitchen_counter_123 is close to knife_2035. kitchen_counter_123 is close to cupboard_117. kitchen_counter_123 is close to tray_2068. kitchen_counter_123 is close to kitchen_counter_119. kitchen_counter_123 is close to sink_120. kitchen_counter_123 is close to character_240. tray_2068 is on kitchen_counter_123. kitchen_counter_123 is CLEAN. kitchen_counter_123 is CLOSED.
+##############################
+From agent.py
+walk_executor(cupboard_117)
+Find coffee_filter_2053. Robot is inside dining_room_41. Robot is close knife_2035. Robot is close coffee_filter_2053. Robot is close wall_67. Robot is close cupboard_117. Robot is no longer close kitchen_counter_123.Robot is no longer close floor_45.
+##############################
+From agent.py
+exp(food_bread_2084, cupboard_117)
+Fail to find food_bread_2084 around cupboard_117. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(cupboard_118)open_executor(cupboard_118)exp(food_bread_2084, cupboard_118)walk_executor(food_bread_2084)grab_executor(food_bread_2084)walk_executor(toaster_132)putin_executor(food_bread_2084, toaster_132)
+##############################
+From agent.py
+walk_executor(cupboard_118)
+Find tea_2066. Find knife_2037. Find food_peanut_butter_2077. Robot is inside dining_room_41. Robot is close knife_2035. Robot is close wall_68. Robot is close tea_2066. Robot is close knife_2037. Robot is close cupboard_118. Robot is close food_peanut_butter_2077. Robot is no longer close coffee_filter_2053.Robot is no longer close wall_67.Robot is no longer close cupboard_117.
+##############################
+From agent.py
+open_executor(cupboard_118)
+Robot is inside dining_room_41. Robot is close knife_2035. Robot is close wall_68. Robot is close tea_2066. Robot is close knife_2037. Robot is close cupboard_118. Robot is close food_peanut_butter_2077. 
+##############################
+From agent.py
+exp(food_bread_2084, cupboard_118)
+Fail to find food_bread_2084 around cupboard_118. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(walllamp_306)exp(food_bread_2084, walllamp_306)walk_executor(food_bread_2084)grab_executor(food_bread_2084)walk_executor(toaster_132)putin_executor(food_bread_2084, toaster_132)
+##############################
+From agent.py
+walk_executor(walllamp_306)
+Find drawing_288. Robot is inside home_office_241. Robot is close knife_2035. Robot is close walllamp_306. Robot is no longer inside dining_room_41.Robot is no longer close wall_68.Robot is no longer close tea_2066.Robot is no longer close knife_2037.Robot is no longer close cupboard_118.Robot is no longer close food_peanut_butter_2077.
+##############################
+From agent.py
+exp(food_bread_2084, walllamp_306)
+Fail to find food_bread_2084 around walllamp_306. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(oven_127)open_executor(oven_127)exp(food_bread_2084, oven_127)walk_executor(food_bread_2084)grab_executor(food_bread_2084)walk_executor(toaster_132)putin_executor(food_bread_2084, toaster_132)
+##############################
+From agent.py
+walk_executor(oven_127)
+Find food_cheese_2072. Find oil_2013. Find food_carrot_2015. Find food_food_2064. Robot is inside dining_room_41. Robot is close knife_2035. Robot is close tray_128. Robot is close food_cheese_2072. Robot is close oven_127. Robot is close oil_2013. Robot is close food_carrot_2015. Robot is no longer inside home_office_241.Robot is no longer close walllamp_306.
+##############################
+From agent.py
+open_executor(oven_127)
+Robot is inside dining_room_41. Robot is close knife_2035. Robot is close tray_128. Robot is close food_cheese_2072. Robot is close oven_127. Robot is close oil_2013. Robot is close food_carrot_2015. 
+##############################
+From agent.py
+exp(food_bread_2084, oven_127)
+Fail to find food_bread_2084 around oven_127. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(toaster_132)exp(food_bread_2084, toaster_132)walk_executor(food_bread_2084)grab_executor(food_bread_2084)walk_executor(toaster_132)putin_executor(food_bread_2084, toaster_132)
+##############################
+From agent.py
+walk_executor(toaster_132)
+Robot is inside dining_room_41. Robot is close knife_2035. Robot is close kitchen_counter_122. Robot is close toaster_132. Robot is no longer close tray_128.Robot is no longer close food_cheese_2072.Robot is no longer close oven_127.Robot is no longer close oil_2013.Robot is no longer close food_carrot_2015.
+##############################
+From agent.py
+Record from func query_LLM_human in agent.py
+Question: Can you help me to find food_bread_2084 ?
+Answer: Go to dining_room_41 and locate table_114. food_bread_2084 is inside table_114.
+Re-decompose: None
+
+##############################
+From agent.py
+Human Instruction: You have identified the locations of a knife and toaster across different kitchen counters, but you have not yet sliced or toasted the bread. You'll need to go to the kitchen counter with a knife to slice the bread and then locate the toaster to toast the slices, ensuring they are inside and the toaster is turned on.
+Go to dining_room_41 and locate table_114. food_bread_2084 is inside table_114.
+
+The actions you have taken:
+Action 1: Walk to kitchen_counter_119.
+Action 2: Observe around kitchen_counter_119 with the question of Check for a knife.
+Action 3: Walk to kitchen_counter_122.
+Action 4: Observe around kitchen_counter_122 with the question of Check for a knife.
+Action 5: Walk to kitchen_counter_123.
+Action 6: Observe around kitchen_counter_123 with the question of Check for a knife.
+Action 7: Walk to knife_2035.
+Action 8: Grab knife_2035.
+Action 9: Walk to fridge_126.
+Action 10: Switch off fridge_126.
+Action 11: Open fridge_126.
+Action 12: look for food_bread_2084 around fridge_126.
+Action 13: Walk to kitchen_counter_119.
+Action 14: Observe around kitchen_counter_119 with the question of Check for a knife on the counter.
+Action 15: Walk to kitchen_counter_122.
+Action 16: Observe around kitchen_counter_122 with the question of Check for a knife on the counter.
+Action 17: Walk to kitchen_counter_123.
+Action 18: Observe around kitchen_counter_123 with the question of Check for a knife on the counter.
+Action 19: Walk to cupboard_117.
+Action 20: look for food_bread_2084 around cupboard_117.
+Action 21: Walk to cupboard_118.
+Action 22: Open cupboard_118.
+Action 23: look for food_bread_2084 around cupboard_118.
+Action 24: Walk to walllamp_306.
+Action 25: look for food_bread_2084 around walllamp_306.
+Action 26: Walk to oven_127.
+Action 27: Open oven_127.
+Action 28: look for food_bread_2084 around oven_127.
+Action 29: Walk to toaster_132.
+
+##############################
+From agent.py
+exp(food_bread_2084, toaster_132)
+Fail to find food_bread_2084 around toaster_132. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(table_114)exp(food_bread_2084, table_114)walk_executor(food_bread_2084)grab_executor(food_bread_2084)walk_executor(toaster_132)putin_executor(food_bread_2084, toaster_132)
+##############################
+From agent.py
+walk_executor(table_114)
+Find mat_102. Find dry_pasta_2114. Find food_food_2021. Find drawing_110. Find drawing_111. Find knife_2122. Find cup_2133. Find table_cloth_2005. Find food_bread_2084. Find pillow_104. Find cup_2049. Find box_2038. Find clothes_hat_2117. Find clothes_gloves_2118. Find milk_2115. Find pillow_103. Find pillow_105. Find pillow_106. Find lighter_2004. Find lighter_2039. Find cup_2134. Find check_2058. Find cup_2132. Robot is inside dining_room_41. Robot is close knife_2035. Robot is close table_114. Robot is close mat_102. Robot is close floor_47. Robot is no longer close kitchen_counter_122.Robot is no longer close toaster_132.
+##############################
+From agent.py
+exp(food_bread_2084, table_114)
+Find food_bread_2084. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(food_bread_2084)grab_executor(food_bread_2084)walk_executor(toaster_132)putin_executor(food_bread_2084, toaster_132)
+##############################
+From agent.py
+walk_executor(food_bread_2084)
+Robot is inside dining_room_41. Robot is close knife_2035. Robot is close table_114. Robot is close food_bread_2084. Robot is no longer close mat_102.Robot is no longer close floor_47.
+##############################
+From agent.py
+grab_executor(food_bread_2084)
+Robot is inside dining_room_41. Robot is close knife_2035. Robot is close table_114. Robot is close food_bread_2084. Grabbing food_bread_2084 by left hand. 
+##############################
+From agent.py
+walk_executor(toaster_132)
+Robot is inside dining_room_41. Robot is close knife_2035. Robot is close food_bread_2084. Robot is close kitchen_counter_122. Robot is close toaster_132. Robot is no longer close table_114.
+##############################
+From agent.py
+putin_executor(food_bread_2084, toaster_132)
+Robot is inside dining_room_41. Robot is close knife_2035. Robot is close food_bread_2084. Robot is close kitchen_counter_122. Robot is close toaster_132. food_bread_2084 released by left hand. 
+##############################
+From agent.py
+Human Instruction: You need to slice the bread before proceeding to toast it. Ensure you use the knife to cut the bread into slices. Once the bread is sliced, place the sliced bread back into the toaster and turn the toaster on to complete the task.
+
+The actions you have taken:
+Action 1: Walk to kitchen_counter_119.
+Action 2: Observe around kitchen_counter_119 with the question of Check for a knife.
+Action 3: Walk to kitchen_counter_122.
+Action 4: Observe around kitchen_counter_122 with the question of Check for a knife.
+Action 5: Walk to kitchen_counter_123.
+Action 6: Observe around kitchen_counter_123 with the question of Check for a knife.
+Action 7: Walk to knife_2035.
+Action 8: Grab knife_2035.
+Action 9: Walk to fridge_126.
+Action 10: Switch off fridge_126.
+Action 11: Open fridge_126.
+Action 12: look for food_bread_2084 around fridge_126.
+Action 13: Walk to kitchen_counter_119.
+Action 14: Observe around kitchen_counter_119 with the question of Check for a knife on the counter.
+Action 15: Walk to kitchen_counter_122.
+Action 16: Observe around kitchen_counter_122 with the question of Check for a knife on the counter.
+Action 17: Walk to kitchen_counter_123.
+Action 18: Observe around kitchen_counter_123 with the question of Check for a knife on the counter.
+Action 19: Walk to cupboard_117.
+Action 20: look for food_bread_2084 around cupboard_117.
+Action 21: Walk to cupboard_118.
+Action 22: Open cupboard_118.
+Action 23: look for food_bread_2084 around cupboard_118.
+Action 24: Walk to walllamp_306.
+Action 25: look for food_bread_2084 around walllamp_306.
+Action 26: Walk to oven_127.
+Action 27: Open oven_127.
+Action 28: look for food_bread_2084 around oven_127.
+Action 29: Walk to toaster_132.
+Action 30: look for food_bread_2084 around toaster_132.
+Action 31: Walk to table_114.
+Action 32: look for food_bread_2084 around table_114.
+Action 33: Walk to food_bread_2084.
+Action 34: Grab food_bread_2084.
+Action 35: Walk to toaster_132.
+Action 36: Put food_bread_2084 into toaster_132.
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_phone_2029_around_phone_2017(phone:item):
+    goal: not unknown(phone)
+    body:
+        assert is_phone(phone)
+        bind phone_instance:item where:
+            is_phone(phone_instance) and id[phone_instance]==2017
+        achieve close_char(char,phone_instance)
+        if can_open(phone_instance):
+            achieve_once open(phone_instance)
+            exp(phone,phone_instance)
+        else:
+            exp(phone,phone_instance)
+    eff:
+        unknown[phone]=False
+        close[phone,phone_instance]=True
+        close[phone_instance,phone]=True
+    
+
+behavior find_food_food_2001_around_food_food_1000(food_food:item):
+    goal: not unknown(food_food)
+    body:
+        assert is_food_food(food_food)
+        bind food_food_instance:item where:
+            is_food_food(food_food_instance) and id[food_food_instance]==1000
+        achieve close_char(char,food_food_instance)
+        if can_open(food_food_instance):
+            achieve_once open(food_food_instance)
+            exp(food_food,food_food_instance)
+        else:
+            exp(food_food,food_food_instance)
+    eff:
+        unknown[food_food]=False
+        close[food_food,food_food_instance]=True
+        close[food_food_instance,food_food]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_sliced(bread:item):
+    # Function to check if bread is sliced
+    symbol is_bread_sliced=exists slices: item : is_food_bread(slices) and cut(slices) and on(slices, bread)
+    return is_bread_sliced
+
+def is_toasted(bread:item, toaster:item):
+    # Function to check if bread is toasted inside the toaster
+    symbol is_bread_toasted=exists slices: item : is_food_bread(slices) and inside(slices, toaster) and is_on(toaster)
+    return is_bread_toasted
+
+behavior slice_bread(bread: item, knife: item):
+    body:
+        achieve_once inhand(knife)
+        # Use the knife to slice the bread
+        achieve cut(bread) 
+        # Ensure the bread is cut
+
+behavior toast_bread(bread: item, toaster: item):
+    body:
+        achieve inside(bread, toaster)
+        # Place the bread inside the toaster
+        achieve is_on(toaster)
+        # Turn on the toaster to toast the bread
+
+behavior __goal__():
+    body:
+        bind bread: item where:
+            is_food_bread(bread)
+        # Select an instance of bread
+
+        bind knife: item where:
+            is_knife(knife)
+        # Select an instance of a knife
+
+        bind toaster: item where:
+            is_toaster(toaster)
+        # Select an instance of a toaster
+        
+        if not is_sliced(bread):
+            slice_bread(bread, knife)
+        if not is_toasted(bread, toaster):
+            toast_bread(bread, toaster)
+
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+def is_sliced(bread:item):
+    # Function to check if bread is sliced
+    symbol is_bread_sliced=exists slices: item : is_food_bread(slices) and cut(slices) and on(slices, bread)
+    return is_bread_sliced
+
+def is_toasted(bread:item, toaster:item):
+    # Function to check if bread is toasted inside the toaster
+    symbol is_bread_toasted=exists slices: item : is_food_bread(slices) and inside(slices, toaster) and is_on(toaster)
+    return is_bread_toasted
+
+behavior slice_bread(bread: item, knife: item):
+    body:
+        achieve_once inhand(knife)
+        # Use the knife to slice the bread
+        achieve cut(bread) 
+        # Ensure the bread is cut
+
+behavior toast_bread(bread: item, toaster: item):
+    body:
+        achieve inside(bread, toaster)
+        # Place the bread inside the toaster
+        achieve is_on(toaster)
+        # Turn on the toaster to toast the bread
+
+behavior __goal__():
+    body:
+        bind bread: item where:
+            is_food_bread(bread)
+        # Select an instance of bread
+
+        bind knife: item where:
+            is_knife(knife)
+        # Select an instance of a knife
+
+        bind toaster: item where:
+            is_toaster(toaster)
+        # Select an instance of a toaster
+        
+        if not is_sliced(bread):
+            slice_bread(bread, knife)
+        if not is_toasted(bread, toaster):
+            toast_bread(bread, toaster)
+
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(knife_2122)grab_executor(knife_2122)walk_executor(food_bread_2084)grab_executor(food_bread_2084)walk_executor(cutting_board_2123)put_executor(food_bread_2084, cutting_board_2123)walk_executor(food_bread_2084)cut_executor(food_bread_2084)grab_executor(food_bread_2084)walk_executor(toaster_132)putin_executor(food_bread_2084, toaster_132)
+##############################
+From agent.py
+walk_executor(knife_2122)
+Robot is inside dining_room_41. Robot is close knife_2035. Robot is close knife_2122. Robot is close table_114. Robot is no longer close toaster_132.Robot is no longer close kitchen_counter_122.Robot is no longer close food_bread_2084.
+##############################
+From agent.py
+grab_executor(knife_2122)
+Robot is inside dining_room_41. Robot is close knife_2035. Robot is close knife_2122. Robot is close table_114. Grabbing knife_2122 by left hand. 
+##############################
+From agent.py
+walk_executor(food_bread_2084)
+Robot is inside dining_room_41. Robot is close knife_2035. Robot is close knife_2122. Robot is close toaster_132. Robot is close food_bread_2084. Robot is no longer close table_114.
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_phone_2029_around_nightstand_192(phone:item):
+    goal: not unknown(phone)
+    body:
+        assert is_phone(phone)
+        bind nightstand_instance:item where:
+            is_nightstand(nightstand_instance) and id[nightstand_instance]==192
+        achieve close_char(char,nightstand_instance)
+        if can_open(nightstand_instance):
+            achieve_once open(nightstand_instance)
+            exp(phone,nightstand_instance)
+        else:
+            exp(phone,nightstand_instance)
+    eff:
+        unknown[phone]=False
+        close[phone,nightstand_instance]=True
+        close[nightstand_instance,phone]=True
+    
+
+behavior find_food_snack_2110_around_pillow_286(food_snack:item):
+    goal: not unknown(food_snack)
+    body:
+        assert is_food_snack(food_snack)
+        bind pillow_instance:item where:
+            is_pillow(pillow_instance) and id[pillow_instance]==286
+        achieve close_char(char,pillow_instance)
+        if can_open(pillow_instance):
+            achieve_once open(pillow_instance)
+            exp(food_snack,pillow_instance)
+        else:
+            exp(food_snack,pillow_instance)
+    eff:
+        unknown[food_snack]=False
+        close[food_snack,pillow_instance]=True
+        close[pillow_instance,food_snack]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior slice_bread(bread: item, knife: item):
+    body:
+        achieve cut(bread)
+        # Ensure the bread is sliced using the knife
+
+behavior toast_bread(toaster: item, bread: item):
+    body:
+        achieve inside(bread, toaster)
+        # Place the sliced bread inside the toaster
+        achieve is_on(toaster)
+        # Turn on the toaster to toast the bread
+
+behavior __goal__():
+    body:
+        bind bread: item where:
+            is_food_bread(bread)
+        # Select an instance of bread
+
+        bind knife: item where:
+            is_knife(knife)
+        # Select an instance of a knife
+
+        bind toaster: item where:
+            is_toaster(toaster)
+        # Select an instance of a toaster
+
+        slice_bread(bread, knife)
+        # Slice the bread
+
+        toast_bread(toaster, bread)
+        # Toast the sliced bread in the toaster
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+behavior slice_bread(bread: item, knife: item):
+    body:
+        achieve cut(bread)
+        # Ensure the bread is sliced using the knife
+
+behavior toast_bread(toaster: item, bread: item):
+    body:
+        achieve inside(bread, toaster)
+        # Place the sliced bread inside the toaster
+        achieve is_on(toaster)
+        # Turn on the toaster to toast the bread
+
+behavior __goal__():
+    body:
+        bind bread: item where:
+            is_food_bread(bread)
+        # Select an instance of bread
+
+        bind knife: item where:
+            is_knife(knife)
+        # Select an instance of a knife
+
+        bind toaster: item where:
+            is_toaster(toaster)
+        # Select an instance of a toaster
+
+        slice_bread(bread, knife)
+        # Slice the bread
+
+        toast_bread(toaster, bread)
+        # Toast the sliced bread in the toaster
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(basket_for_clothes_2078)put_executor(knife_2122, basket_for_clothes_2078)walk_executor(food_bread_2084)grab_executor(food_bread_2084)walk_executor(cutting_board_2123)put_executor(food_bread_2084, cutting_board_2123)walk_executor(food_bread_2084)cut_executor(food_bread_2084)grab_executor(food_bread_2084)walk_executor(toaster_132)putin_executor(food_bread_2084, toaster_132)
+##############################
+From agent.py
+walk_executor(basket_for_clothes_2078)
+Find clothes_pants_2157. Find clothes_shirt_2158. Find clothes_socks_2159. Find clothes_skirt_2160. Robot is inside dining_room_41. Robot is close knife_2035. Robot is close knife_2122. Robot is close clothes_pants_2157. Robot is close clothes_shirt_2158. Robot is close clothes_socks_2159. Robot is close clothes_skirt_2160. Robot is close basket_for_clothes_2078. Robot is no longer close toaster_132.Robot is no longer close food_bread_2084.
+##############################
+From agent.py
+put_executor(knife_2122, basket_for_clothes_2078)
+Robot is inside dining_room_41. Robot is close knife_2035. Robot is close knife_2122. Robot is close clothes_pants_2157. Robot is close clothes_shirt_2158. Robot is close clothes_socks_2159. Robot is close clothes_skirt_2160. Robot is close basket_for_clothes_2078. knife_2122 released by left hand. 
+##############################
+From agent.py
+walk_executor(food_bread_2084)
+Robot is inside dining_room_41. Robot is close knife_2035. Robot is close toaster_132. Robot is close food_bread_2084. Robot is no longer close knife_2122.Robot is no longer close clothes_pants_2157.Robot is no longer close clothes_shirt_2158.Robot is no longer close clothes_socks_2159.Robot is no longer close clothes_skirt_2160.Robot is no longer close basket_for_clothes_2078.
+##############################
+From agent.py
+grab_executor(food_bread_2084)
+Robot is inside dining_room_41. Robot is close knife_2035. Robot is close toaster_132. Robot is close food_bread_2084. Grabbing food_bread_2084 by left hand. 
+##############################
+From agent.py
+walk_executor(cutting_board_2123)
+Robot is inside dining_room_41. Robot is close knife_2035. Robot is close food_bread_2084. Robot is close cutting_board_2123. Robot is close kitchen_counter_119. Robot is no longer close toaster_132.
+##############################
+From agent.py
+put_executor(food_bread_2084, cutting_board_2123)
+Robot is inside dining_room_41. Robot is close knife_2035. Robot is close food_bread_2084. Robot is close cutting_board_2123. Robot is close kitchen_counter_119. food_bread_2084 released by left hand. 
+##############################
+From agent.py
+walk_executor(food_bread_2084)
+Robot is inside dining_room_41. Robot is close knife_2035. Robot is close food_bread_2084. Robot is close cutting_board_2123. Robot is no longer close kitchen_counter_119.
+##############################
+From agent.py
+cut_executor(food_bread_2084)
+Robot is inside dining_room_41. Robot is close knife_2035. Robot is close food_bread_2084. Robot is close cutting_board_2123. 
+##############################
+From agent.py
+grab_executor(food_bread_2084)
+Robot is inside dining_room_41. Robot is close knife_2035. Robot is close food_bread_2084. Robot is close cutting_board_2123. Grabbing food_bread_2084 by left hand. 
+##############################
+From agent.py
+walk_executor(toaster_132)
+Robot is inside dining_room_41. Robot is close knife_2035. Robot is close food_bread_2084. Robot is close kitchen_counter_122. Robot is close toaster_132. Robot is no longer close cutting_board_2123.
+##############################
+From agent.py
+putin_executor(food_bread_2084, toaster_132)
+Robot is inside dining_room_41. Robot is close knife_2035. Robot is close food_bread_2084. Robot is close kitchen_counter_122. Robot is close toaster_132. food_bread_2084 released by left hand. 
+##############################

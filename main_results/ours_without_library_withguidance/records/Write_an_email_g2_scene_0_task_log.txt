@@ -1,0 +1,685 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['Sit on the chair in front of the computer in the home office and touch the mouse near the computer to turn it on.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_mouse_413_around_desk_104(mouse:item):
+    goal: not unknown(mouse)
+    body:
+        assert is_mouse(mouse)
+        bind desk_instance:item where:
+            is_desk(desk_instance) and id[desk_instance]==104
+        achieve close_char(char,desk_instance)
+        if can_open(desk_instance):
+            achieve_once open(desk_instance)
+            exp(mouse,desk_instance)
+        else:
+            exp(mouse,desk_instance)
+    eff:
+        unknown[mouse]=False
+        close[mouse,desk_instance]=True
+        close[desk_instance,mouse]=True
+    
+
+behavior find_chair_103_around_desk_104(chair:item):
+    goal: not unknown(chair)
+    body:
+        assert is_chair(chair)
+        bind desk_instance:item where:
+            is_desk(desk_instance) and id[desk_instance]==104
+        achieve close_char(char,desk_instance)
+        if can_open(desk_instance):
+            achieve_once open(desk_instance)
+            exp(chair,desk_instance)
+        else:
+            exp(chair,desk_instance)
+    eff:
+        unknown[chair]=False
+        close[chair,desk_instance]=True
+        close[desk_instance,chair]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior sit_on_chair_in_home_office(chair: item):
+    body:
+        achieve on_char(char, chair)
+
+behavior touch_mouse(mouse: item):
+    body:
+        achieve close_char(char, mouse)
+        touch(mouse)
+
+behavior __goal__():
+    body:
+        bind home_office: item where:
+            is_home_office(home_office)
+        
+        bind chair: item where:
+            is_chair(chair) and inside(chair, home_office)
+
+        bind computer: item where:
+            is_computer(computer) and inside(computer, home_office)
+
+        bind mouse: item where:
+            is_mouse(mouse) and close(mouse, computer)
+
+        sit_on_chair_in_home_office(chair)
+        touch_mouse(mouse)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_mouse_413_around_desk_104(mouse:item):
+    goal: not unknown(mouse)
+    body:
+        assert is_mouse(mouse)
+        bind desk_instance:item where:
+            is_desk(desk_instance) and id[desk_instance]==104
+        achieve close_char(char,desk_instance)
+        if can_open(desk_instance):
+            achieve_once open(desk_instance)
+            exp(mouse,desk_instance)
+        else:
+            exp(mouse,desk_instance)
+    eff:
+        unknown[mouse]=False
+        close[mouse,desk_instance]=True
+        close[desk_instance,mouse]=True
+    
+
+behavior find_chair_2004_around_desk_104(chair:item):
+    goal: not unknown(chair)
+    body:
+        assert is_chair(chair)
+        bind desk_instance:item where:
+            is_desk(desk_instance) and id[desk_instance]==104
+        achieve close_char(char,desk_instance)
+        if can_open(desk_instance):
+            achieve_once open(desk_instance)
+            exp(chair,desk_instance)
+        else:
+            exp(chair,desk_instance)
+    eff:
+        unknown[chair]=False
+        close[chair,desk_instance]=True
+        close[desk_instance,chair]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior sit_on_chair(chair: item):
+    body:
+        achieve on_char(char, chair) 
+
+behavior touch_mouse(mouse: item):
+    body:
+        touch(mouse) 
+        achieve is_on(mouse) 
+
+behavior __goal__():
+    body:
+        bind home_office: item where:
+            is_home_office(home_office)
+
+        bind chair: item where:
+            is_chair(chair) and inside(chair, home_office)
+        
+        bind mouse: item where:
+            is_mouse(mouse) and close(mouse, chair)
+
+        sit_on_chair(chair)
+        touch_mouse(mouse)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+Fail to generate the goal representation
+##############################
+From agent.py
+Record from func query_LLM_human in agent.py
+Question: Can you teach me how to "sit on the chair in front of the computer in the home office and touch the mouse near the computer to turn it on." ?
+Answer: Get close to the computer in the home office. Then sit on the chair in front of the computer. Finally, touch the mouse to turn on the computer.
+Re-decompose: False
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_mouse_166_around_computer_170(mouse:item):
+    goal: not unknown(mouse)
+    body:
+        assert is_mouse(mouse)
+        bind computer_instance:item where:
+            is_computer(computer_instance) and id[computer_instance]==170
+        achieve close_char(char,computer_instance)
+        if can_open(computer_instance):
+            achieve_once open(computer_instance)
+            exp(mouse,computer_instance)
+        else:
+            exp(mouse,computer_instance)
+    eff:
+        unknown[mouse]=False
+        close[mouse,computer_instance]=True
+        close[computer_instance,mouse]=True
+    
+
+behavior find_chair_2004_around_desk_104(chair:item):
+    goal: not unknown(chair)
+    body:
+        assert is_chair(chair)
+        bind desk_instance:item where:
+            is_desk(desk_instance) and id[desk_instance]==104
+        achieve close_char(char,desk_instance)
+        if can_open(desk_instance):
+            achieve_once open(desk_instance)
+            exp(chair,desk_instance)
+        else:
+            exp(chair,desk_instance)
+    eff:
+        unknown[chair]=False
+        close[chair,desk_instance]=True
+        close[desk_instance,chair]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_in_home_office(item: item):
+    # Determine if an item is inside the home office
+    symbol inside_office = exists room: item : is_home_office(room) and inside(item, room)
+    return inside_office
+
+behavior sit_on_chair(chair: item):
+    body:
+        achieve on_char(char, chair)
+        # Sit on the specified chair
+
+behavior activate_computer(mouse: item):
+    body:
+        touch(mouse)
+        # Touch the mouse to turn on the computer
+
+behavior __goal__():
+    body:
+        bind chair: item where:
+            is_chair(chair) and is_in_home_office(chair)
+        # Select a chair inside the home office
+
+        bind mouse: item where:
+            is_mouse(mouse) and is_in_home_office(mouse)
+        # Select a mouse inside the home office
+
+        sit_on_chair(chair)
+        # Sit on the chair in the home office
+        
+        activate_computer(mouse)
+        # Touch the mouse to activate the computer
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_mouse_413_around_desk_104(mouse:item):
+    goal: not unknown(mouse)
+    body:
+        assert is_mouse(mouse)
+        bind desk_instance:item where:
+            is_desk(desk_instance) and id[desk_instance]==104
+        achieve close_char(char,desk_instance)
+        if can_open(desk_instance):
+            achieve_once open(desk_instance)
+            exp(mouse,desk_instance)
+        else:
+            exp(mouse,desk_instance)
+    eff:
+        unknown[mouse]=False
+        close[mouse,desk_instance]=True
+        close[desk_instance,mouse]=True
+    
+
+behavior find_chair_103_around_desk_104(chair:item):
+    goal: not unknown(chair)
+    body:
+        assert is_chair(chair)
+        bind desk_instance:item where:
+            is_desk(desk_instance) and id[desk_instance]==104
+        achieve close_char(char,desk_instance)
+        if can_open(desk_instance):
+            achieve_once open(desk_instance)
+            exp(chair,desk_instance)
+        else:
+            exp(chair,desk_instance)
+    eff:
+        unknown[chair]=False
+        close[chair,desk_instance]=True
+        close[desk_instance,chair]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior sit_on_chair_at_computer(chair: item):
+    body:
+        achieve on_char(char, chair)
+        # Sit on the chair at the computer
+
+behavior touch_mouse(mouse: item):
+    body:
+        touch(mouse)
+        # Touch the mouse to turn on the computer
+
+behavior __goal__():
+    body:
+        bind home_office: item where:
+            is_home_office(home_office)
+        # Select the home office
+
+        bind chair: item where:
+            is_chair(chair) and close(chair, home_office)
+        # Select a chair close to the home office
+
+        bind mouse: item where:
+            is_mouse(mouse) and close(mouse, chair)
+        # Select a mouse close to the chair
+
+        sit_on_chair_at_computer(chair)
+        # Sit on the chair in front of the computer
+
+        touch_mouse(mouse)
+        # Touch the mouse to turn on the computer
+
+#goal_representation_end
+
+##############################
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Get close to the computer in the home office.', '2. Sit on the chair in front of the computer.', '3. Touch the mouse to turn on the computer.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_mouse_166_around_desk_104(mouse:item):
+    goal: not unknown(mouse)
+    body:
+        assert is_mouse(mouse)
+        bind desk_instance:item where:
+            is_desk(desk_instance) and id[desk_instance]==104
+        achieve close_char(char,desk_instance)
+        if can_open(desk_instance):
+            achieve_once open(desk_instance)
+            exp(mouse,desk_instance)
+        else:
+            exp(mouse,desk_instance)
+    eff:
+        unknown[mouse]=False
+        close[mouse,desk_instance]=True
+        close[desk_instance,mouse]=True
+    
+
+behavior find_chair_356_around_desk_104(chair:item):
+    goal: not unknown(chair)
+    body:
+        assert is_chair(chair)
+        bind desk_instance:item where:
+            is_desk(desk_instance) and id[desk_instance]==104
+        achieve close_char(char,desk_instance)
+        if can_open(desk_instance):
+            achieve_once open(desk_instance)
+            exp(chair,desk_instance)
+        else:
+            exp(chair,desk_instance)
+    eff:
+        unknown[chair]=False
+        close[chair,desk_instance]=True
+        close[desk_instance,chair]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior __goal__():
+    body:
+        bind home_office: item where:
+            is_home_office(home_office)
+
+        bind computer: item where:
+            is_computer(computer) and inside(computer, home_office)
+
+        achieve close_char(char, computer)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+ 
+behavior __goal__():
+    body:
+        bind home_office: item where:
+            is_home_office(home_office)
+
+        bind computer: item where:
+            is_computer(computer) and inside(computer, home_office)
+
+        achieve close_char(char, computer)
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(computer_417)
+##############################
+From agent.py
+walk_executor(computer_417)
+Find chair_356. Find mouse_413. Find keyboard_415. Robot is inside home_office_319. Robot is close computer_417. Robot is no longer inside bathroom_1.
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_mouse_413_around_desk_104(mouse:item):
+    goal: not unknown(mouse)
+    body:
+        assert is_mouse(mouse)
+        bind desk_instance:item where:
+            is_desk(desk_instance) and id[desk_instance]==104
+        achieve close_char(char,desk_instance)
+        if can_open(desk_instance):
+            achieve_once open(desk_instance)
+            exp(mouse,desk_instance)
+        else:
+            exp(mouse,desk_instance)
+    eff:
+        unknown[mouse]=False
+        close[mouse,desk_instance]=True
+        close[desk_instance,mouse]=True
+    
+
+behavior find_chair_2004_around_desk_104(chair:item):
+    goal: not unknown(chair)
+    body:
+        assert is_chair(chair)
+        bind desk_instance:item where:
+            is_desk(desk_instance) and id[desk_instance]==104
+        achieve close_char(char,desk_instance)
+        if can_open(desk_instance):
+            achieve_once open(desk_instance)
+            exp(chair,desk_instance)
+        else:
+            exp(chair,desk_instance)
+    eff:
+        unknown[chair]=False
+        close[chair,desk_instance]=True
+        close[desk_instance,chair]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior sit_on_chair(chair: item):
+    body:
+        achieve on_char(char, chair)
+        # Sit on the chair in front of the computer
+
+behavior __goal__():
+    body:
+        bind home_office: item where:
+            is_home_office(home_office)
+        # Select the home office
+
+        bind computer: item where:
+            is_computer(computer) and inside(computer, home_office)
+        # Select the computer located in the home office
+
+        bind chair: item where:
+            is_chair(chair) and close(computer, chair)
+        # Select a chair that is close to the computer
+
+        sit_on_chair(chair)
+        # Perform the action of sitting on the chair in front of the computer
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+behavior sit_on_chair(chair: item):
+    body:
+        achieve on_char(char, chair)
+        # Sit on the chair in front of the computer
+
+behavior __goal__():
+    body:
+        bind home_office: item where:
+            is_home_office(home_office)
+        # Select the home office
+
+        bind computer: item where:
+            is_computer(computer) and inside(computer, home_office)
+        # Select the computer located in the home office
+
+        bind chair: item where:
+            is_chair(chair) and close(computer, chair)
+        # Select a chair that is close to the computer
+
+        sit_on_chair(chair)
+        # Perform the action of sitting on the chair in front of the computer
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(chair_356)sit_executor(chair_356)
+##############################
+From agent.py
+walk_executor(chair_356)
+Robot is inside home_office_319. Robot is close chair_356. Robot is no longer close computer_417.
+##############################
+From agent.py
+sit_executor(chair_356)
+Find vacuum_cleaner_2070. Find headset_2062. Find mat_401. Find hanger_363. Find hanger_374. Find drawing_404. Find headset_2076. Find hanger_369. Find remote_control_2052. Find hanger_361. Find spectacles_2082. Find drawing_402. Find hanger_372. Find cat_2055. Find clothes_jacket_2047. Find book_2066. Find phone_2077. Find hanger_375. Find pencil_2001. Find pillow_405. Find hanger_367. Find hanger_359. Find dvd_player_2061. Find drawing_400. Find drawing_403. Find hanger_365. Find book_2067. Find hanger_376. Find pillow_406. Find hairbrush_2002. Robot is inside home_office_319. Robot is close chair_356. Robot is on chair_356. Robot is facing computer_417. 
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_mouse_166_around_desk_104(mouse:item):
+    goal: not unknown(mouse)
+    body:
+        assert is_mouse(mouse)
+        bind desk_instance:item where:
+            is_desk(desk_instance) and id[desk_instance]==104
+        achieve close_char(char,desk_instance)
+        if can_open(desk_instance):
+            achieve_once open(desk_instance)
+            exp(mouse,desk_instance)
+        else:
+            exp(mouse,desk_instance)
+    eff:
+        unknown[mouse]=False
+        close[mouse,desk_instance]=True
+        close[desk_instance,mouse]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior achieve_touch_mouse_to_turn_on_computer(mouse: item, computer: item):
+    body:
+        achieve close_char(char, mouse)
+        # Ensure that the character is close to the mouse
+        touch(mouse)
+        # Touch the mouse to turn on the computer
+        achieve is_on(computer)
+        # Ensure the computer is turned on
+
+behavior __goal__():
+    body:
+        bind computer: item where:
+            is_computer(computer)
+        # Select an instance of the computer
+
+        bind mouse: item where:
+            is_mouse(mouse) and close(mouse, computer)
+        # Select an instance of the mouse close to the computer
+
+        achieve_touch_mouse_to_turn_on_computer(mouse, computer)
+        # Achieve the goal of touching the mouse to turn on the computer
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_mouse_413_around_desk_104(mouse:item):
+    goal: not unknown(mouse)
+    body:
+        assert is_mouse(mouse)
+        bind desk_instance:item where:
+            is_desk(desk_instance) and id[desk_instance]==104
+        achieve close_char(char,desk_instance)
+        if can_open(desk_instance):
+            achieve_once open(desk_instance)
+            exp(mouse,desk_instance)
+        else:
+            exp(mouse,desk_instance)
+    eff:
+        unknown[mouse]=False
+        close[mouse,desk_instance]=True
+        close[desk_instance,mouse]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior touch_mouse_to_turn_on_computer(mouse: item):
+    body:
+        achieve is_on(mouse)
+        # Touch the mouse to turn on the computer
+
+behavior __goal__():
+    body:
+        bind mouse: item where:
+            is_mouse(mouse)
+        # Select an instance of the mouse
+
+        touch_mouse_to_turn_on_computer(mouse)
+        # Touch the mouse to turn on the computer
+
+#goal_representation_end
+
+##############################
+From agent.py
+Record from func query_LLM_human in agent.py
+Question: Can you teach me how to "3. touch the mouse to turn on the computer." ?
+Answer: Touch the mouse to turn on the computer.
+Re-decompose: False
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_mouse_166_around_desk_104(mouse:item):
+    goal: not unknown(mouse)
+    body:
+        assert is_mouse(mouse)
+        bind desk_instance:item where:
+            is_desk(desk_instance) and id[desk_instance]==104
+        achieve close_char(char,desk_instance)
+        if can_open(desk_instance):
+            achieve_once open(desk_instance)
+            exp(mouse,desk_instance)
+        else:
+            exp(mouse,desk_instance)
+    eff:
+        unknown[mouse]=False
+        close[mouse,desk_instance]=True
+        close[desk_instance,mouse]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior touch_mouse(mouse: item):
+    body:
+        touch(mouse)
+        # Touch the mouse to engage its function
+
+behavior __goal__():
+    body:
+        bind mouse: item where:
+            is_mouse(mouse)
+        # Select an instance of the mouse
+
+        touch_mouse(mouse)
+        # Touch the mouse to turn on the computer
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+behavior touch_mouse(mouse: item):
+    body:
+        touch(mouse)
+        # Touch the mouse to engage its function
+
+behavior __goal__():
+    body:
+        bind mouse: item where:
+            is_mouse(mouse)
+        # Select an instance of the mouse
+
+        touch_mouse(mouse)
+        # Touch the mouse to turn on the computer
+
+##############################
+From agent.py-> find a plan in act()
+standup_executor(char)walk_executor(desk_104)exp(mouse_166, desk_104)standup_executor(char)walk_executor(mouse_166)touch_executor(mouse_166)
+##############################
+From agent.py
+standup_executor(char)
+Robot is inside home_office_319. Robot is close chair_356. Robot is on chair_356. Robot is facing computer_417. 
+##############################
+From agent.py
+walk_executor(desk_104)
+Find keyboard_168. Find mouse_166. Find chair_103. Find drawing_175. Robot is inside bedroom_67. Robot is close desk_104. Robot is close floor_75. Robot is on chair_356. Robot is no longer inside home_office_319.Robot is no longer close chair_356.Robot is no longer facing computer_417.
+##############################
+From agent.py
+exp(mouse_166, desk_104)
+Find mouse_166. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(mouse_166)touch_executor(mouse_166)
+##############################
+From agent.py
+walk_executor(mouse_166)
+Robot is inside bedroom_67. Robot is close desk_104. Robot is close mouse_166. Robot is close mousepad_167. Robot is on chair_356. Robot is no longer close floor_75.
+##############################
+From agent.py
+touch_executor(mouse_166)
+Robot is inside bedroom_67. Robot is close desk_104. Robot is close mouse_166. Robot is close mousepad_167. Robot is on chair_356. 
+##############################

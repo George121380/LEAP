@@ -9,51 +9,43 @@ def predicate_expl():
     closed(x: item): The item x, such as a door or container, is closed.
     dirty(x: item): The item x is dirty.
     clean(x: item): The item x is clean.
-    sitting(x: character): The character x is sitting.
-    lying(x: character): The character x is lying down.
-    sleeping(x: character): The character x is sleeping.
-    standing(x: character): The character x is standing.
+    has_water(x: item) : The item has water inside or on it.
     cut(x: item): The item x has been cut.
     inhand(x: item): The item x is currently in someone’s hand.
 
 Relationships:
     on(x: item, y: item): The item x is on top of the item (y).
-    inside(x: item, y: item): The item x is inside the item (y).
-    between(door: item, room: item): The door x is between two rooms.
-    close(x: item, y: item): The item x is near or close to the item (y).
-    facing(x: item, y: item): The item x is facing towards the item (y).
-    close_char(x: character, y: item): The character x is near or close to the item (y).
-    facing_char(x: character, y: item): The character x is facing towards the item (y).
-    inside_char(x: character, y: item): The character x is inside the item (y).
     on_char(x: character, y: item): The character x is on top of the item (y).
-    on_body(x: item, y: character): The item x is attached to or worn by the character (y).
-    holds_rh(x: character, y: item): The character x is holding the item (y) in their right hand.
-    holds_lh(x: character, y: item): The character x is holding the item (y) in their left hand.
+    inside(x: item, y: item): The item x is inside the item (y).
+    inside_char(x: character, y: item): The character x is inside the item (y).
+    close(x: item, y: item): The item x is near or close to the item (y).
+    close_char(x: character, y: item): The character x is near or close to the item (y).
 
 Properties:
-    surfaces(x: item): The item x has a flat surface suitable for placing things.
-    grabbable(x: item): The item x can be grabbed or picked up.
-    sittable(x: item): The item x is suitable for sitting on.
-    lieable(x: item): The item x is suitable for lying on.
-    hangable(x: item): The item x can be hung or suspended.
-    drinkable(x: item): The item x is suitable for drinking.
-    eatable(x: item): The item x is suitable for eating.
-    recipient(x: item): The item x is a recipient, suitable for holding things.
-    cuttable(x: item): The item x can be cut.
-    pourable(x: item): The item x can be poured (e.g., liquid).
-    can_open(x: item): The item x can be opened.
-    has_switch(x: item): The item x has a switch.
-    readable(x: item): The item x can be read (e.g., a book).
-    lookable(x: item): The item x can be looked at or observed.
-    containers(x: item): The item x is a container.
-    person(x: item): The item x is a person.
-    body_part(x: item): The item x is a body part.
-    cover_object(x: item): The item x can cover or protect other items.
-    has_plug(x: item): The item x has a plug.
-    has_paper(x: item): The item x contains paper.
-    movable(x: item): The item x can be moved.
-    cream(x: item): The item x is a type of cream.
-    is_clothes(x: item): The item x is clothing.
+    surfaces: The item x has a flat surface suitable for placing things.
+    grabbable: The item x can be grabbed or picked up.
+    sittable: The item x is suitable for sitting on.
+    lieable: The item x is suitable for lying on.
+    hangable: The item x can be hung or suspended.
+    drinkable: The item x is suitable for drinking.
+    eatable: The item x is suitable for eating.
+    recipient: The item x is a recipient, suitable for holding things.
+    cuttable: The item x can be cut.
+    pourable: The item x can be poured (e.g., liquid).
+    can_open: The item x can be opened.
+    has_switch: The item x has a switch.
+    readable: The item x can be read (e.g., a book).
+    lookable: The item x can be looked at or observed.
+    containers: The item x is a container.
+    person: The item x is a person.
+    body_part: The item x is a body part.
+    cover_object: The item x can cover or protect other items.
+    has_plug: The item x has a plug.
+    has_paper: The item x contains paper.
+    movable: The item x can be moved.
+    cream: The item x is a type of cream.
+    is_clothes: The item x is clothing.
+    is_food: Indicates that the item is food.
     """
 
     return prompt
@@ -93,12 +85,12 @@ def guidance():
     - For unknown items, move to the location where they are most likely to be. If you believe the item is inside a container, such as a refrigerator, open the container to check. Once you successfully approach the item, you will receive an observation that can be used to update your knowledge.
     - Limit yourself to holding a maximum of two items at any given time.
     - Before retrieving an item from a closed container, ensure the container is opened first.
-    - To fill a container with water, hold a container (e.g., a cup), approach the faucet, turn it on, and then turn it off. Ignore the precise details, such as the exact duration the faucet should remain open.
+    - To fill a container with water, hold a container (e.g., a cup), approach the faucet, turn it on, and then turn it off. Ignore the precise details, such as the exact duration the faucet should remain open. Assume that all actions are performed correctly and imidiately.
     - If both of your hands are occupied and you need to free one, place the item on a surface.
     - To turn off an appliance, switch it off before interacting with it. When switching on an appliance, ensure it is closed first.
     - When cutting something, place it on a cutting board and hold the knife to cut.
-    - You can only interact with an object when you walk close to it.
-    - You must an appliance is turned off before open it. (e.g., fridge, oven)
+    - You can only interact with an object after you walk close to it.
+    - You must make sure an appliance is turned off before open it. (e.g., fridge, oven)
     - You must make sure an appliance is plugged in before turning it on.
     """
     return prompt
