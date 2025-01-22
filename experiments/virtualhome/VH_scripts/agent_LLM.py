@@ -323,7 +323,16 @@ class LLM_Agent(BaseAgent):
             for rh in rh_hold:
                 char_information+=f'Robot is holding {self.opid2name[rh]} by right hand. '
         if not len(lh_hold)>0 and not len(rh_hold)>0:
-            char_information+="Robot's arms are empty, holding nothing"
+            char_information+="Robot's arms are empty, holding nothing. "
+
+        if self.character_state['standing']:
+            char_information+="Robot is standing. "
+        if self.character_state['sitting']:
+            char_information+="Robot is sitting. "
+        if self.character_state['lying']:
+            char_information+="Robot is lying. "
+        if self.character_state['sleeping']:
+            char_information+="Robot is sleeping. "
         return char_information
     
     def get_unknwon_list(self):
