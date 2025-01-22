@@ -17,8 +17,6 @@ from logger import setup_task_logger, setup_epoch_logger, get_last_task_path_fro
 from evaluation import Evaluator
 random.seed(time.time())
 import os
-from dataset import parse_file_to_json
-from tqdm import tqdm
 from configs import OursWG, OursWOG, LLMWG, LLMWOG, LLMPlusPWG, LLMPlusPWOG, CAPWG, CAPWOG, load_scene, set_agent
 
 
@@ -46,7 +44,6 @@ running_mode='test' #debug or test
 #################################################
 #######          Debugger           #######
 #################################################
-
 
 
 def check_task_define_all(config):
@@ -95,9 +92,7 @@ def test_simulator(init_scene_graph):
         observation = env.step(action_crow) #Execute action
         
 if __name__ == '__main__':
-    # evaluate_all_cross_scene(config)
-    # evaluate_single(config)
-    # evaluate_all(config)
+
     check_task_define_all(config)
     # check_task_define_single(config)
     # case_study_easy2hard(config)

@@ -84,9 +84,9 @@ class LLM_Agent(BaseAgent):
         self.guidance_query_times=0 
 
         self.failed_execution_flag=False
-        # self.difficulty=5
-        self.difficulty=1.5*difficulty
         self.query_human_flag=False
+
+        self.difficulty=1.5*difficulty
         self.max_trying_times=3*difficulty
 
         self.exp_query_record=[] # record all the items that already queried the location

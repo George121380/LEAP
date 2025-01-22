@@ -16,7 +16,6 @@ from logger import setup_task_logger, setup_epoch_logger, get_last_task_path_fro
 
 from evaluation import Evaluator
 random.seed(time.time())
-import pdb
 import yaml 
 import os
 from dataset import parse_file_to_json
@@ -43,7 +42,15 @@ config = LLMWG()
 config.checkpoint = ''
 
 DATASET_FOLDER_PATH = 'cdl_dataset/dataset'
-running_mode='test' #debug or test 
+running_mode='test' # Set default running mode to test
+
+def print_task_info(task_data, scene_id):
+    print('-'*60)
+    print("Task Path is: ",task_data['task_path'])
+    print("Task Goal is: ",task_data['Goal'])
+    print("Scene ID is: ",scene_id)
+    print("Possible Guidance: ",task_data['Guidance'])
+    print('-'*60)
 
 def task_summary_record(epoch_logger, task_logger, scene_id, goal, action_history, start_time, complete_rate, task_path, final_info):
     """
@@ -59,6 +66,8 @@ def run(config,epoch_logger,epoch_path,task_path,classes,init_scene_graph):
     """
     Execute a single task with the specified agent.
     """
+
+
     start_time = time.time()
     log_name = f"{os.path.basename(os.path.dirname(task_path))}_{os.path.basename(task_path).replace('.txt', '')}_scene_{config.scene_id}"
     folder_path = f'{epoch_path}/records'
@@ -67,11 +76,14 @@ def run(config,epoch_logger,epoch_path,task_path,classes,init_scene_graph):
     task_logger = setup_task_logger(folder_path, task_name = log_name)
 
     task_data=parse_file_to_json(task_path)
+    print_task_info(task_data, config.scene_id)
+
     evaluator=Evaluator(config, task_path, task_logger, epoch_path)
 
     agent = set_agent(config, init_scene_graph, task_data, classes, task_logger, epoch_path)    
 
     env=VH_Env(init_scene_graph)
+
 
     while True:
         try:
@@ -79,8 +91,7 @@ def run(config,epoch_logger,epoch_path,task_path,classes,init_scene_graph):
             if action=="human guided":
                 continue 
             if action=="Failed":
-                print("Task Path is: ",task_path)
-                print("Task Goal is: ",task_data['Goal'])
+                print_task_info(task_data, config.scene_id)
                 executed_actions=env.report_actions()
                 evaluation_result,complete_rate=evaluator.evaluate_final(ast=None,action_history=agent.add_info_action_history_for_evaluation,Root=True)
                 if evaluation_result=="Keystate Evaluate Error":
@@ -92,8 +103,7 @@ def run(config,epoch_logger,epoch_path,task_path,classes,init_scene_graph):
                 return True
             
             if action=='over':
-                print("Task Path is: ",task_path)
-                print("Task Goal is: ",task_data['Goal'])
+                print_task_info(task_data, config.scene_id)
                 executed_actions=env.report_actions()
                 evaluation_result,complete_rate=evaluator.evaluate_final(ast=None,action_history=agent.add_info_action_history_for_evaluation,Root=True)
                 if evaluation_result=="Keystate Evaluate Error":
@@ -119,6 +129,8 @@ def run(config,epoch_logger,epoch_path,task_path,classes,init_scene_graph):
                 evaluation_result=evaluator.evaluate(ast=None,action_history=agent.add_info_action_history_for_evaluation,Root=True)
                 
         except Exception as e:
+            print_task_info(task_data, config.scene_id)
+            print("Error happend in the execution")
             print(e)
             evaluation_result,complete_rate=evaluator.evaluate_final(ast=None,action_history=agent.add_info_action_history_for_evaluation,Root=True)
             executed_actions=env.report_actions()
@@ -133,20 +145,31 @@ def run(config,epoch_logger,epoch_path,task_path,classes,init_scene_graph):
     
 def evaluate_single(config):
     start_time = time.time()
-    # print('Start Time: ',start_time)
-    config.scene_id = 2
+    # input the scene id and the task path you want to evaluate
+    print("Please input the scene id you want to evaluate, Four Options: 0,1,2")
+    scene_id=input()
+    config.scene_id = scene_id
+
+    print("Please input the task path you want to evaluate")
+    task_path=input()
+    # check existance of the task path
+    if not os.path.exists(task_path):
+        raise Exception('Task path does not exist')
+
     classes,init_scene_graph=load_scene(config.scene_id)
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     epoch_logger = setup_epoch_logger(f'log/epoch_{timestamp}')
-    task_path='/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/cdl_dataset/dataset/Drink/g1.txt'
+
     run(config,epoch_logger,timestamp,task_path,classes,init_scene_graph)
-    # test_simulator(init_scene_graph)
     end_time = time.time()
-    # print('End Time: ',end_time)
     print('Time Consumed: ',end_time-start_time)
 
 
 def evaluate_all_cross_scene(config): # main function
+
+    # choose the running mode
+    print("Please input the running mode, Four Options: debug, test")
+    running_mode=input()
 
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     if os.path.isdir(config.checkpoint) and config.checkpoint != '':
@@ -212,5 +235,5 @@ def evaluate_all_cross_scene(config): # main function
     epoch_logger.info('Evaluation Finished',end_time,'','','','')
 
 if __name__ == '__main__':
-    evaluate_all_cross_scene(config)
     # evaluate_single(config)
+    evaluate_all_cross_scene(config)

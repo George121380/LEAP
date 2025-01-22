@@ -489,3 +489,4 @@ def get_difficulty_dict():
     diff_2 = json.load(open('cdl_dataset/scenes/diff_2.json'))
     difficulty_dict = {'scene_0': diff_0, 'scene_1': diff_1, 'scene_2': diff_2}
     return difficulty_dict
+
