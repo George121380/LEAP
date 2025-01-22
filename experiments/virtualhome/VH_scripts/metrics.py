@@ -8,6 +8,7 @@ from collections import defaultdict
 
 sys.path.append('cdl_dataset/scripts')
 from logic_parser import parse_logic_from_file_path
+from utils_eval import get_difficulty_dict
 
 
 def aggregate_success_rates(success_rate_list):
@@ -183,10 +184,7 @@ def parse_completion_rates(csv_file_path):
 
 
 def calculation(result_list):
-    diff_0 = json.load(open('cdl_dataset/scenes/diff_0.json'))
-    diff_1 = json.load(open('cdl_dataset/scenes/diff_1.json'))
-    diff_2 = json.load(open('cdl_dataset/scenes/diff_2.json'))
-    difficulty_dict = {'scene_0': diff_0, 'scene_1': diff_1, 'scene_2': diff_2}
+    difficulty_dict = get_difficulty_dict()
     success_rate_list = []
     sum_success_rate = 0
     for entry in result_list:

@@ -22,10 +22,10 @@ from sentence_transformers import SentenceTransformer, util
 
 
 class behavior_library_simple:
-    def __init__(self, args, epoch_path):
-        self.args = args
-        self.record_method = args.library.record_method # 'behavior' or 'actions'
-        self.extract_method = args.library.extract_method # 'whole' or 'rag'
+    def __init__(self, config, epoch_path):
+        self.config = config
+        self.record_method = config.record_method # 'behavior' or 'actions'
+        self.extract_method = config.extract_method # 'whole' or 'rag'
         # self.source_path='log/main_with_guidance/library_data.json'
         self.source_path=os.path.join(epoch_path,'library_data.json')
         self.visualize_path = os.path.join(epoch_path, 'visual.txt')
@@ -65,7 +65,7 @@ class behavior_library_simple:
 
     def lift(self, task_name: str, source_sub_task: str, content: str):
         """
-        Args:
+        config:
             source_sub_task: where the behavior is created
             behavior_cdl: cdl representation for this behavior
         """

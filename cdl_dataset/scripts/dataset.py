@@ -77,4 +77,5 @@ def parse_file_to_json(file_path):
         behaviors[current_behavior_name] = behavior_content.rstrip('\n')
 
     data['Keystates'] = behaviors
+    data['task_path'] = file_path
     return data

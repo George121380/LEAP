@@ -29,6 +29,7 @@ with open("query_log.txt", "w") as log_file:
 def ask_GPT(system,content):
     while True:
         try:
+            # print("debug")
             if LLM_MODEL == "gpt-4o": # GPT-4o api
                 client = OpenAI(api_key=Openai_key)
                 

@@ -480,3 +480,12 @@ def evaluation_task_loader(dataset_folder_path):
             if not 'bug' in file:
                 all_files.append(os.path.join(subdir,file))
     return all_files
+
+
+def get_difficulty_dict():
+    # used in metric and main_VH
+    diff_0 = json.load(open('cdl_dataset/scenes/diff_0.json'))
+    diff_1 = json.load(open('cdl_dataset/scenes/diff_1.json'))
+    diff_2 = json.load(open('cdl_dataset/scenes/diff_2.json'))
+    difficulty_dict = {'scene_0': diff_0, 'scene_1': diff_1, 'scene_2': diff_2}
+    return difficulty_dict

@@ -11,37 +11,26 @@ from action_explaination import controller_to_natural_language
 import pdb
 import os
 import time
+from agent_base import BaseAgent
 
-class VHAgent:
-    def __init__(self, args, filepath, task_logger, PO=True,epoch_path=None):
+class VHAgent(BaseAgent):
+    def __init__(self, config, filepath, task_logger, PO=True, epoch_path=None):
+        
         # Initialize dictionaries
-        self.args=args
-        self.logger=task_logger
-        self.agent_type = self.args.agent_type # Policy or Planning
+        super().__init__(config, filepath, task_logger, epoch_path, agent_base_type='behavior')
+
+        self.agent_type = self.config.agent_type # Policy or Planning
         if self.agent_type=='Policy':
             self.commit_skeleton_everything=True
         if self.agent_type=='Planning':
             self.commit_skeleton_everything=False
-        self.name2opid = {}
-        self.name2id = {}
-        self.name2size = {}
-        self.num_items = 0 # Record how mani items in the scene
-        self.item_type = np.array([], dtype=object) # Record the type of each item
-        self.category = {}
-        self.properties = {}
-        self.relations = {}
-        self.state = {}
-        self.character_state = {}
-        self.exploration = {}
 
         # Task information
-        self.task_name=''
-        self.goal_nl=''
         self.current_subgoal_nl=''
         self.current_subgoal_num=0
         self.self_evaluate_times_for_current_subgoal=0
         self.guidance_block=False
-        if self.args.human_guidance.type=='None':
+        if self.config.human_guidance=='None':
             self.guidance_block=True
         self.guidance_query_times=0
         self.sub_goal_list=[]
@@ -56,6 +45,7 @@ class VHAgent:
         self.goal_representation = ""
         self.behaviors_from_library={} # all skills in library
         self.library_pool = []
+        
         """
         path to the CDL files
         internal_executable_file_path: the file can be solve py planner: state + goal
@@ -78,7 +68,7 @@ class VHAgent:
         self.exp_fail_num=0
         self.empty_plan_times=0
         self.max_replan_num=3
-        self.library=behavior_library_simple(args, epoch_path)
+        self.library=behavior_library_simple(config, epoch_path)
         self._parse_file(filepath)
         self.save_to_file()
         self.save_to_file(self.state_file_path)
@@ -89,16 +79,16 @@ class VHAgent:
     """
     def lift_behaviors(self):
         # add executable behaviors to the library
-        if self.args.library.record_method == 'behavior':
+        if self.config.record_method == 'behavior':
             for behavior in self.library_pool:
                 self.library.lift(behavior['task_name'],behavior['subgoal'],behavior['goal_representation'])
         
-        elif self.args.library.record_method == 'actions':
+        elif self.config.record_method == 'actions':
             for actions in self.library_pool:
                 self.library.lift(actions['task_name'],actions['subgoal'],actions['action_history'])
         
     def add_to_library_pool(self):
-        if self.args.library.record_method == 'behavior':
+        if self.config.record_method == 'behavior':
             info={
                 'task_name':self.task_name,
                 'subgoal':self.current_subgoal_nl,
@@ -106,7 +96,7 @@ class VHAgent:
             }
             self.library_pool.append(info)
         
-        elif self.args.library.record_method == 'actions':
+        elif self.config.record_method == 'actions':
             info={
                 'task_name':self.task_name,
                 'subgoal':self.current_subgoal_nl,
@@ -118,7 +108,7 @@ class VHAgent:
 
     def download_behaviors_from_library(self):
         # download behaviors from the library
-        if self.args.library.enabled:
+        if self.config.library:
             self.behaviors_from_library=self.library.download_behaviors(self.goal_nl)
         else:
             self.behaviors_from_library['content']=[]
@@ -127,12 +117,6 @@ class VHAgent:
     def reset_visited(self):
         # reset the visited state
         self.state['visited']=np.full(self.num_items , "uncertain", dtype=object)
-
-    def set_human_helper(self,human_helper):
-        self.human_helper=human_helper
-        self.human_helper.set_name2id(self.name2id)
-
-
 
     def query_LLM_human(self,question:str):
         # ask for LLM-based human guidance
@@ -144,7 +128,7 @@ class VHAgent:
         answer,re_decompose=self.human_helper.QA(question,task_info)
         record+=f'Answer: {answer}\n'
         record+=f'Re-decompose: {re_decompose}\n'
-        self.logger.info("From agent.py\n"+record)
+        self.logger.info("From agent.py -> query_LLM_human\n"+record)
         print("#"*60)
         print(record)
         print("#"*60)
@@ -178,10 +162,10 @@ class VHAgent:
         re_decompose=False
         question=f'Can you teach me how to "{self.current_subgoal_nl.lower()}" ?'
 
-        if self.args.human_guidance.type=='LLM':
+        if self.config.human_guidance=='LLM':
             Human_Guidance, re_decompose=self.query_LLM_human(question)
 
-        if self.args.human_guidance.type=='Manual':
+        if self.config.human_guidance=='Manual':
             Human_Guidance, re_decompose=self.query_real_human(question)
 
         self.current_subtask_guidance=Human_Guidance
@@ -217,437 +201,6 @@ class VHAgent:
             for id in range(len(self.add_info_action_history)):
                 # self.add_info_nl+=f"Action {id+1}: {controller_to_natural_language(self.add_info_action_history[id]['action'])} -> effect: {self.add_info_action_history[id]['effects']}\n"
                 self.add_info_nl+=f"Action {id+1}: {controller_to_natural_language(self.add_info_action_history[id]['action'])}\n"
-
-    def _initialize_relationships(self):
-        relationship_features = [
-            "on", "inside", "between", 
-            "close","facing"
-        ]
-        for feature in relationship_features:
-            self.relations[feature] = np.full((self.num_items , self.num_items ), "uncertain", dtype=object)
-
-    def _initialize_states(self):
-        state_features = [
-            "is_on", "is_off", "open", "closed", "dirty", 
-            "clean", "plugged", "unplugged", "facing_char","on_char", "on_body","close_char", "inside_char","holds_rh", "holds_lh",'has_water','cut','visited','inhand'
-        ]
-        for feature in state_features:
-            self.state[feature] = np.full(self.num_items , "uncertain", dtype=object)
-
-    def _initialize_character_states(self):
-        self.character_state['standing']=True
-        self.character_state['sitting']=False
-        self.character_state['lying']=False
-        self.character_state['sleeping']=False
-        self.character_state['has_a_free_hand']=True
-
-    def _initialize_properties(self):
-        property_features = [
-            "surfaces", "grabbable", "sittable","lieable","hangable","drinkable","eatable","recipient","cuttable", "pourable", 
-            "can_open", "has_switch", "containers", "has_plug", "readable","lookable","is_clothes","is_food","person","body_part","cover_object","has_paper","movable","cream", "has_size"
-        ]
-        for feature in property_features:
-            self.properties[feature] = np.full(self.num_items , "uncertain", dtype=object)
-
-    def _parse_file(self, filepath:str):
-        with open(filepath, 'r') as file:
-            content = file.read()
-        # Read IDs and determine the number of items
-        id_section = re.search(r'#id\n(.+?)#id_end', content, re.DOTALL).group(1)
-        self.num_items = self._parse_id_section(id_section)
-        self._initialize_relationships()
-        self._initialize_properties()
-        self._initialize_states()
-        self._initialize_character_states()
-
-        size_section = re.search(r'#sizes\n(.+?)#sizes_end', content, re.DOTALL).group(1)
-        self._parse_size_section(size_section)
-
-        # Initialize vectors with None values
-        self.item_type = np.full(self.num_items, None, dtype=object)
-        known = np.full(self.num_items , False, dtype=bool)
-        checked = np.full((self.num_items , self.num_items), False, dtype=bool)
-        self.exploration.update({"unknown": known})
-        self.exploration.update({"checked": checked})
-
-        # Read objects
-        object_section = re.search(r'#objects\n(.+?)#object_end', content, re.DOTALL).group(1)
-        self._parse_type_section(object_section)
-
-        # Read categories
-        init_section = re.search(r'#categories\n(.+?)#categories_end', content, re.DOTALL).group(1)
-        self._parse_categories_section(init_section)
-
-        # Read states
-        state_section = re.search(r'#states\n(.+?)#states_end', content, re.DOTALL).group(1)
-        self._parse_state_section(state_section)
-
-        # Read char related states
-        char_section = re.search(r'#char\n(.+?)#char_end', content, re.DOTALL)
-        if char_section:
-            char_section = char_section.group(1)
-            self._parse_char_section(char_section)
-
-        char_state_section = re.search(r'#char_states\n(.+?)#char_states_end', content, re.DOTALL)
-        if char_state_section:
-            char_state_section = char_state_section.group(1)
-            self._parse_char_state_section(char_state_section)
-
-        # Read properties
-        property_section = re.search(r'#properties\n(.+?)#properties_end', content, re.DOTALL).group(1)
-        self._parse_properties_section(property_section)
-
-        # Read exploration
-        exploration_section = re.search(r'#exploration\n(.+?)#exploration_end', content, re.DOTALL).group(1)
-        self._parse_exploration_section(exploration_section)
-
-         # Read relations
-        relation_section = re.search(r'#relations\n(.+?)#relations_end', content, re.DOTALL).group(1)
-        self._parse_relations_section(relation_section)
-
-        # Read exploration behavior
-        exploration_behavior = re.search(r'#exp_behavior\n(.+?)#exp_behavior_end', content, re.DOTALL)
-        if exploration_behavior:
-            exploration_behavior = exploration_behavior.group(1)
-            self.exploration_behavior = exploration_behavior
-
-        # behavior_from_library = re.search(r'#behaviors_from_library\n(.+?)#behaviors_from_library_end', content, re.DOTALL)
-        # if behavior_from_library:
-        #     behavior_from_library = behavior_from_library.group(1)
-        #     self.behaviors_from_library_representation = behavior_from_library
-
-        # Read goal representation
-        goal_rep=re.search(r'#goal_representation\n(.+?)#goal_representation_end', content, re.DOTALL)
-        if goal_rep:
-            goal_representation_section = goal_rep.group(1)
-            self.goal_representation = goal_representation_section
-        # if not goal_rep:
-        #     print("No goal representation yet")
-        # Set uncertain information for unknown items
-        self._set_uncertain_information()
-        self.save_to_file()
-        self.save_to_file(self.state_file_path)
-
-    def _parse_id_section(self, section:str):
-        lines = section.strip().split("\n")
-        op_id = 1
-        self.name2id['char']=0
-        self.name2opid['char']=0
-        for line in lines:
-            key, value, id_str = re.search(r'(\w+)\[(.+?)\]=(\d+)', line).groups()
-            id_num = int(id_str.strip())
-            name = f"{value.strip()}"
-            if name == 'char':
-                continue
-            self.name2id[name] = id_num
-            self.name2opid[name] = op_id
-            op_id += 1
-        return op_id
-    
-    def _parse_size_section(self, section:str):
-        lines = section.strip().split("\n")
-        for line in lines:
-            if "=" in line:
-                key, value, size_str = re.search(r'(\w+)\[(.+?)\]=(\d+)', line).groups()
-                key = key.strip()
-                value = value.strip()
-                size = size_str.strip()
-                self.name2size[value] = size
-
-
-    def _parse_type_section(self, section:str):
-        lines = section.strip().split("\n")
-        for line in lines:
-            if line.startswith("#") or line=="":
-                continue
-            name, type_ = line.split(":")
-            name = name.strip()
-            if name=="char":
-                continue
-            type_ = type_.strip()
-            obj_id = self.name2opid[name]
-            self.item_type[obj_id] = type_
-
-    def _parse_categories_section(self, section:str):
-        lines = section.strip().split("\n")
-        for line in lines:
-            if "=" in line:
-                key, value = line.split("[")
-                key = key.strip()
-                value = value.split("]")[0].strip()
-                if not value in self.category:
-                    self.category[value]=set()
-                self.category[value].add(key)
-
-    def _parse_char_section(self, section:str):
-        lines = section.strip().split("\n")
-        for line in lines:
-            if "=" in line:
-                key, value = line.split("=")
-                key = key.strip()
-                value = value.strip().lower() == "true"
-                prop_name, obj_name = re.match(r'(\w+)\[(char,.+?)\]', key).groups()
-                obj_id = self.name2opid[obj_name]
-                
-                # Initialize property vector if not already done
-                if prop_name not in self.state:
-                    new_state = np.full(self.num_items , False, dtype=bool)
-                    self.state.update({prop_name: new_state})
-                
-                self.state[prop_name][obj_id] = value
-
-    def _parse_state_section(self, section:str):
-        lines = section.strip().split("\n")
-        for line in lines:
-            if "=" in line:
-                key, value = line.split("=")
-                key = key.strip()
-                value = value.strip().lower() == "true"
-                prop_name, obj_name = re.match(r'(\w+)\[(.+?)\]', key).groups()
-                obj_id = self.name2opid[obj_name]
-                
-                # Initialize property vector if not already done
-                if prop_name not in self.state:
-                    new_state = np.full(self.num_items , False, dtype=bool)
-                    self.state.update({prop_name: new_state})
-                
-                self.state[prop_name][obj_id] = value
-
-    def _parse_char_state_section(self, section:str):
-        lines = section.strip().split("\n")
-        for line in lines:
-            if "=" in line:
-                key, value = line.split("=")
-                key = key.strip()
-                value = value.strip().lower() == "true"
-                prop_name = re.match(r'(\w+)\[(char)\]', key).groups()
-                
-                # Initialize property vector if not already done
-                if prop_name not in self.state:
-                    new_state = np.full(self.num_items , False, dtype=bool)
-                    self.state.update({prop_name: new_state})
-                
-                self.character_state[prop_name] = value
-
-    def _parse_properties_section(self, section:str):
-        lines = section.strip().split("\n")
-        for line in lines:
-            if "=" in line:
-                key, value = line.split("=")
-                key = key.strip()
-                value = value.strip().lower() == "true"
-                prop_name, obj_name = re.match(r'(\w+)\[(.+?)\]', key).groups()
-                obj_id = self.name2opid[obj_name]
-                
-                # Initialize property vector if not already done
-                if prop_name not in self.properties:
-                    new_properties = np.full(self.num_items , False, dtype=bool)
-                    self.properties.update({prop_name: new_properties})
-                
-                self.properties[prop_name][obj_id] = value
-
-    def _parse_relations_section(self, section:str):
-        lines = section.strip().split("\n")
-        for line in lines:
-            if "=" in line and not 'char' in line:
-                key, value = line.split("=")
-                key = key.strip()
-                relation_name, obj_names = re.match(r'(\w+)\[(.+?)\]', key).groups()
-                obj_names = obj_names.split(",")
-                obj_ids = [self.name2opid[obj_name.strip()] for obj_name in obj_names]
-                relation_value = value.strip().lower() == "true"
-
-                # Initialize matrix for the relation if not already done
-                if relation_name not in self.relations:
-                    self.relations[relation_name] = np.full((self.num_items , self.num_items ), False, dtype=bool)
-
-                # Set the value for the relation between the objects
-                if len(obj_ids) == 2:
-                    i, j = obj_ids
-                    self.relations[relation_name][i][j] = relation_value
-            if '=' in line and 'char' in line:
-                key, value = line.split("=")
-                key = key.strip()
-                value = value.strip().lower() == "true"
-                prop_name, obj_name = re.match(r'(\w+)\[(char,.+?)\]', key).groups()
-                obj_name=obj_name.split(',')[1]
-                obj_id = self.name2opid[obj_name]
-                
-                # Initialize property vector if not already done
-                if prop_name not in self.state:
-                    new_state = np.full(self.num_items, False, dtype=bool)
-                    self.state.update({prop_name: new_state})
-                
-                self.state[prop_name][obj_id] = value
-
-    def _parse_exploration_section(self, section:str):
-        lines = section.strip().split("\n")
-        for line in lines:
-            if "=" in line:
-                key, value = line.split("=")
-                key = key.strip()
-                expstate_name, obj_names = re.match(r'(\w+)\[(.+?)\]', key).groups()
-                obj_names = obj_names.split(",")
-                obj_ids = [self.name2opid[obj_name.strip()] for obj_name in obj_names]
-                relation_value = value.strip().lower() == "true"
-
-                # Initialize matrix for the relation if not already done
-                if expstate_name == "unknown":
-                    i = obj_ids[0]
-                    self.exploration[expstate_name][i] = relation_value
-
-                # Set the value for the relation between the objects
-                if expstate_name == "checked":
-                    i, j = obj_ids
-                    self.exploration[expstate_name][i][j] = relation_value
-
-    def _set_uncertain_information(self:str):
-        for obj_id in range(1, self.num_items ):
-            if self.exploration["unknown"][obj_id]:
-                # For objects that are not known, set properties and relations to "uncertain"
-                # for prop_name in self.properties:
-                #     self.properties[prop_name][obj_id] = "uncertain"
-                for relation_name in self.relations:
-                    for i in range(self.num_items):
-                        self.relations[relation_name][obj_id][i] = "uncertain"
-                        self.relations[relation_name][i][obj_id] = "uncertain"
-            # else:
-            #     # For known objects, set missing properties/relations explicitly to False
-            #     # for prop_name, prop_values in self.properties.items():
-            #     #     if prop_values[obj_id] == "uncertain":
-            #     #         self.properties[prop_name][obj_id] = False
-            #     for state_name, state_values in self.state.items():
-            #         if state_values[obj_id] == "uncertain":
-            #             self.state[state_name][obj_id] = False
-            #     for relation_name, relation_matrix in self.relations.items():
-            #         for i in range(self.num_items ):
-            #             if self.exploration["unknown"][i]:
-            #                 if relation_matrix[obj_id][i] == "uncertain":
-            #                     self.relations[relation_name][obj_id][i] = False
-            #                 if relation_matrix[i][obj_id] == "uncertain":
-            #                     self.relations[relation_name][i][obj_id] = False
-
-    def __str__(self):
-        properties_str = "\n".join([f"{prop}: {values}" for prop, values in self.properties.items()])
-        relations_str = "\n".join([f"{rel}: {pairs}" for rel, pairs in self.relations.items()])
-        known_str = "\n".join([f"{i}: {val}" for i, val in enumerate(self.exploration["unknown"]) if val])
-        return (f"Name to ID: {self.name2id}\n"
-                f"Item Type: {self.item_type}\n"
-                f"Initial State: {self.category}\n"
-                f"Properties:\n{properties_str}\n"
-                f"Relations:\n{relations_str}\n"
-                f"unKnown Objects:\n{known_str}")
-
-    def save_to_file(self,path=None):
-        if path is None:
-            path = self.internal_executable_file_path
-
-        with open(path, 'w') as file:
-            # Write problem and domain
-            file.write('problem "agent-problem"\n')
-            file.write('domain "virtualhome_partial.cdl"\n\n')
-            file.write("#!pragma planner_is_goal_serializable=False\n")
-            file.write("#!pragma planner_is_goal_ordered=True\n")
-            file.write("#!pragma planner_always_commit_skeleton=True\n\n")
-
-            # Write objects
-            file.write("objects:\n")
-
-            file.write("#objects\n")
-            for i, obj_type in enumerate(self.item_type):
-                if obj_type:
-                    name = next(name for name, id_ in self.name2opid.items() if id_ == i)
-                    file.write(f"  {name}:{obj_type}\n")
-            file.write("#object_end\n\n")
-
-            # Write categories (initial state)
-            file.write("init:\n    #categories\n")
-            for item in self.category:
-                for cat in self.category[item]:
-                    file.write(f"    {cat}[{item}]=True\n")
-            file.write("    #categories_end\n\n")
-
-            # Write states
-            file.write("    #states\n")
-            for state_name, state_values in self.state.items():
-                for i, has_state in enumerate(state_values):
-                    if has_state and has_state != "uncertain":
-                        if not ("char" in state_name) and not ("hold" in state_name):
-                            name = next(name for name, id_ in self.name2opid.items() if id_ == i)
-                            file.write(f"    {state_name}[{name}]=True\n")
-            file.write("    #states_end\n\n")
-
-            file.write("    #char_states\n")
-            for state_name,state_value in self.character_state.items():
-                file.write(f"    {state_name}[char]={state_value}\n")
-            file.write("    #char_states_end\n\n")
-
-            # Write char states
-            file.write("    #char\n")
-            for state_name, state_values in self.state.items():
-                for i, has_state in enumerate(state_values):
-                    if has_state and has_state != "uncertain":
-                        if ("char" in state_name) or ("hold" in state_name):
-                            name = next(name for name, id_ in self.name2opid.items() if id_ == i)
-                            if name!='char':
-                                file.write(f"    {state_name}[char,{name}]=True\n")
-            file.write("    #char_end\n\n")
-
-            # Write properties
-            file.write("    #properties\n")
-            for prop_name, prop_values in self.properties.items():
-                for i, has_property in enumerate(prop_values):
-                    if has_property and has_property != "uncertain":
-                        name = next(name for name, id_ in self.name2opid.items() if id_ == i)
-                        file.write(f"    {prop_name}[{name}]=True\n")
-            file.write("    #properties_end\n\n")
-
-            # Write relations
-            file.write("    #relations\n")
-            for relation_name, relation_matrix in self.relations.items():
-                for i, row in enumerate(relation_matrix):
-                    for j, has_relation in enumerate(row):
-                        if has_relation and has_relation != "uncertain":
-                            name_i = next(name for name, id_ in self.name2opid.items() if id_ == i)
-                            name_j = next(name for name, id_ in self.name2opid.items() if id_ == j)
-                            file.write(f"    {relation_name}[{name_i},{name_j}]=True\n")
-            file.write("    #relations_end\n\n")
-
-            # Write exploration
-            file.write("    #exploration\n")
-            unknown = self.exploration.get("unknown", [])
-            for i, is_unknown in enumerate(unknown):
-                if is_unknown:
-                    name = next(name for name, id_ in self.name2opid.items() if id_ == i)
-                    
-                    file.write(f"    unknown[{name}]=True\n")
-            file.write("    #exploration_end\n")
-
-            file.write("\n    #id\n")
-            for i, obj_type in enumerate(self.item_type):
-                if obj_type:
-                    name = next(name for name, id_ in self.name2opid.items() if id_ == i)
-                    file.write(f"    id[{name}]={self.name2id[name]}\n")
-            file.write("    #id_end\n")
-
-            file.write("\n    #size\n")
-            for i, obj_type in enumerate(self.item_type):
-                if obj_type:
-                    name = next(name for name, id_ in self.name2opid.items() if id_ == i)
-                    if name in self.name2size:
-                        file.write(f"    size[{name}]={self.name2size[name]}\n")
-            file.write("    #size_end\n")
-
-            if path == self.internal_executable_file_path:
-                file.write("\n#exp_behavior\n")
-                file.write(self.exploration_behavior)
-                file.write("\n#exp_behavior_end\n")
-                # file.write("\n#behaviors_from_library\n")
-                # file.write(self.behaviors_from_library_representation)
-                # file.write("\n#behaviors_from_library_end\n")
-                file.write("\n#goal_representation\n")
-                file.write(self.goal_representation)
-                file.write("\n#goal_representation_end\n")
     
     def updates(self,observation):
         if "You can not" in observation: # if this action is not executable, environment feedback
@@ -659,100 +212,7 @@ class VHAgent:
         else:
             action_effects=''
             if not observation['exp_flag'] and not observation['obs_flag']:# other actions
-                for new_known in observation['known']:
-                    if 'character' in new_known:
-                        continue
-                    if self.exploration['unknown'][self.name2opid[new_known]]==True:
-                        self.exploration['unknown'][self.name2opid[new_known]]=False
-                        action_effects+=f"Find {new_known}. "
-                        
-                for check_place in observation['checked']:
-                    if 'character' in check_place:
-                        continue
-                    self.exploration['checked'][:,self.name2opid[check_place]]=True
-
-                for new_relations in observation['relations']:# add relations
-                    if 'character' in new_relations['to_name']:
-                        new_relations['to_name']='char'
-                    if new_relations['from_name']=='char':
-                        
-                        if new_relations['relation_type']=='HOLDS_LH':
-                            if self.state['holds_lh'][self.name2opid[new_relations['to_name']]]!=True:
-                                action_effects+=f"Grabbing {new_relations['to_name']} by left hand. "
-                                self.state['holds_lh'][self.name2opid[new_relations['to_name']]]=True
-                        elif new_relations['relation_type']=='HOLDS_RH':
-                            if self.state['holds_rh'][self.name2opid[new_relations['to_name']]]!=True:
-                                action_effects+=f"Grabbing {new_relations['to_name']} by right hand. "
-                                self.state['holds_rh'][self.name2opid[new_relations['to_name']]]=True
-                        else:
-                            relation_type=new_relations['relation_type'].lower()+"_char"
-                            self.state[relation_type][self.name2opid[new_relations['to_name']]]=True
-
-                            action_effects+=f"Robot is {new_relations['relation_type'].lower()} {new_relations['to_name']}. "
-
-                    elif new_relations['to_name']=='char' and new_relations['relation_type']=='ON':
-                        self.state['on_body'][self.name2opid[new_relations['from_name']]]=True
-                    else:
-                        if self.relations[new_relations['relation_type'].lower()][self.name2opid[new_relations['from_name']]][self.name2opid[new_relations['to_name']]]!=True:
-                            # action_effects+=f"{new_relations['from_name']} is {new_relations['relation_type'].lower()} {new_relations['to_name']}. "
-                            self.relations[new_relations['relation_type'].lower()][self.name2opid[new_relations['from_name']]][self.name2opid[new_relations['to_name']]]=True
-
-                for delete_relations in observation['remove_relations']:# delete relations
-                    if 'character' in delete_relations['to_name']:
-                        delete_relations['to_name']='char'
-                    if 'character' in delete_relations['from_name']:
-                        delete_relations['from_name']='char'
-                    if delete_relations['from_name']=='char':
-                        if delete_relations['relation_type']=='HOLDS_LH':
-                            if self.state['holds_lh'][self.name2opid[delete_relations['to_name']]]==True:
-                                action_effects+=f"{delete_relations['to_name']} released by left hand. "
-                                self.state['holds_lh'][self.name2opid[delete_relations['to_name']]]=False
-                        elif delete_relations['relation_type']=='HOLDS_RH':
-                            if self.state['holds_rh'][self.name2opid[delete_relations['to_name']]]==True:
-                                action_effects+=f"{delete_relations['to_name']} released by right hand. "
-                                self.state['holds_rh'][self.name2opid[delete_relations['to_name']]]=False
-                        else:
-                            relation_type=delete_relations['relation_type'].lower()+"_char"
-                            if self.state[relation_type][self.name2opid[delete_relations['to_name']]]==True:
-                                action_effects+=f"Robot is no longer {delete_relations['relation_type'].lower()} {delete_relations['to_name']}."
-                                self.state[relation_type][self.name2opid[delete_relations['to_name']]]=False
-                    elif delete_relations['to_name']=='char' and delete_relations['relation_type']=='ON':
-                        self.state['on_body'][self.name2opid[delete_relations['from_name']]]=False
-                    else:
-                        if self.relations[delete_relations['relation_type'].lower()][self.name2opid[delete_relations['from_name']]][self.name2opid[delete_relations['to_name']]]==True:
-                            # action_effects+=f"{delete_relations['from_name']} is no longer {delete_relations['relation_type'].lower()} {delete_relations['to_name']}."
-                            self.relations[delete_relations['relation_type'].lower()][self.name2opid[delete_relations['from_name']]][self.name2opid[delete_relations['to_name']]]=False
-                
-                for obj_name in observation['states']:
-                    update_list=observation['states'][obj_name]
-                    for update in update_list:
-                        state_info=update.name.lower()
-                        if state_info=='clean':
-                            self.state['clean'][self.name2opid[obj_name]]=True
-                            self.state['dirty'][self.name2opid[obj_name]]=False
-                        elif state_info=='dirty':
-                            self.state['dirty'][self.name2opid[obj_name]]=True
-                            self.state['clean'][self.name2opid[obj_name]]=False
-                        elif state_info=='open':
-                            self.state['open'][self.name2opid[obj_name]]=True
-                            self.state['closed'][self.name2opid[obj_name]]=False
-                        elif state_info=='closed':
-                            self.state['closed'][self.name2opid[obj_name]]=True
-                            self.state['open'][self.name2opid[obj_name]]=False
-                        elif state_info=='plugged_in':
-                            self.state['plugged'][self.name2opid[obj_name]]=True
-                            self.state['unplugged'][self.name2opid[obj_name]]=False
-                        elif state_info=='plugged_out':
-                            self.state['unplugged'][self.name2opid[obj_name]]=True
-                            self.state['plugged'][self.name2opid[obj_name]]=False
-                        elif state_info=='on':
-                            self.state['is_on'][self.name2opid[obj_name]]=True
-                            self.state['is_off'][self.name2opid[obj_name]]=False
-                        elif state_info=='off':
-                            self.state['is_off'][self.name2opid[obj_name]]=True
-                            self.state['is_on'][self.name2opid[obj_name]]=False
-                        else:
-                            print('error in state updates')
+                action_effects = self.regular_action_obs_update(observation)
 
             if observation['exp_flag']:# action==explore
                 exp_target=observation['exp_target']
@@ -853,29 +313,6 @@ class VHAgent:
             self.save_to_file()
             self.save_to_file(self.state_file_path)   
 
-    def annotation(self,observation):
-        if observation['action'].name=='switchon_executor' and 'faucet' in observation['action'].arguments[0].name:
-            faucet_id=self.name2opid[observation['action'].arguments[0].name]
-            rh = set(np.where(self.state['holds_rh'] == True)[0])
-            lh = set(np.where(self.state['holds_lh'] == True)[0])
-            close_obj=set(np.where(self.relations['close'][faucet_id] == True)[0])
-            container=set(np.where(self.properties['containers'] == True)[0])
-            close_containers=close_obj.intersection(container)
-
-            union_indices = rh.union(lh)
-            for i in union_indices or close_containers:
-                if self.properties['containers'][i]:
-                    self.state['has_water'][i]=True
-
-        if observation['action'].name=='cut_executor':
-            target_id=self.name2opid[observation['action'].arguments[0].name]
-            knife_id = next((value for key, value in self.name2opid.items() if "knife_" in key), None)
-            # knife_id=self.name2opid['knife_2050']
-            rh = set(np.where(self.state['holds_rh'] == True)[0])
-            lh = set(np.where(self.state['holds_lh'] == True)[0])
-            union_indices = rh.union(lh)
-            if knife_id in union_indices:
-                self.state['cut'][target_id]=True
 
     def organize_obs_result(self,observation):
         discription=''
@@ -980,7 +417,7 @@ class VHAgent:
                             print('current subgoal is done')
                             self.add_to_library_pool()
                             self.current_subgoal_num+=1
-                            if self.args.human_guidance.type!='None':
+                            if self.config.human_guidance!='None':
                                 self.guidance_block=False # reset the guided flag
                             self.current_subtask_guidance=''
                             break
@@ -990,7 +427,7 @@ class VHAgent:
                             print('Try to evaluate the sub-task for 3 times, but still failed. Force to move to the next sub task. Probably the current sub-task is unneccesary.')
                             result='yes'
                             self.current_subgoal_num+=1
-                            if self.args.human_guidance.type!='None':
+                            if self.config.human_guidance!='None':
                                 self.guidance_block=False # reset the guided flag
                             self.current_subtask_guidance=''
                             break
@@ -1040,7 +477,7 @@ class VHAgent:
             return "Failed",None
 
     def reset_goal_decomposition(self):
-        if not self.args.task_split.enabled:
+        if not self.config.task_split:
             self.sub_goal_list=[self.goal_nl]
         else:
             self.sub_goal_list=sub_goal_generater(self.goal_nl,self.completed_sub_goal_list,self.current_subtask_guidance) # Generate sub goals
@@ -1056,7 +493,7 @@ class VHAgent:
 
     def reset_goal(self,goal,classes,task_name,First_time=False,sub_goal=True):
         """
-        Args:
+        config:
             goal: Full goal of the whole task
             additional_information: Human instruction + Human guidance + Action history
             classes: the classes of the objects in the environment
@@ -1070,19 +507,8 @@ class VHAgent:
             self.record_add_info()
             self.classes=classes
 
-        # self.sub_goal_list=sub_goal_generater(self.goal_nl,self.completed_sub_goal_list,self.current_subtask_guidance) # Generate sub goals
-
-        # print(self.sub_goal_list)
-        # record='Reset goals: The sub-goals are: \n'+str(self.sub_goal_list)
-
-        # # block while test
-        # self.logger.info(record,"","","","","")
-
-        # self.current_subgoal_nl=self.sub_goal_list[0]
         self.reset_goal_decomposition()
-        # pdb.set_trace()
         
-
         # # debug
         # return
         _, self.goal_representation, self.exploration_behavior = VH_pipeline(
@@ -1097,12 +523,10 @@ class VHAgent:
             behavior_from_library=self.library.download_behaviors(self.current_subgoal_nl),
             partial_observation=True,
             agent_type=self.agent_type,
-            refinement=self.args.refinement.enabled,
-            loop_feedback=self.args.refinement.loop_feedback,
+            refinement=self.config.refine,
+            loop_feedback=self.config.loop_feedback,
             logger=self.logger
         )
-
-        # pdb.set_trace()
 
         # block while test
         goal_representation_record=self.goal_representation
@@ -1134,8 +558,8 @@ class VHAgent:
                     behavior_from_library=self.library.download_behaviors(self.current_subgoal_nl),
                     partial_observation=True,
                     agent_type=self.agent_type,
-                    refinement=self.args.refinement.enabled,
-                    loop_feedback=self.args.refinement.loop_feedback,
+                    refinement=self.config.refine,
+                    loop_feedback=self.config.loop_feedback,
                     logger=self.logger
                 )
 
@@ -1158,8 +582,8 @@ class VHAgent:
             behavior_from_library=self.library.download_behaviors(self.current_subgoal_nl),
             partial_observation=True,
             agent_type=self.agent_type,
-            refinement=self.args.refinement.enabled,
-            loop_feedback=self.args.refinement.loop_feedback,
+            refinement=self.config.refine,
+            loop_feedback=self.config.loop_feedback,
             logger=self.logger
         )
 
@@ -1186,14 +610,15 @@ class VHAgent:
                     behavior_from_library=self.library.download_behaviors(self.current_subgoal_nl),
                     partial_observation=True,
                     agent_type=self.agent_type,
-                    refinement=self.args.refinement.enabled,
-                    loop_feedback=self.args.refinement.loop_feedback,
+                    refinement=self.config.refineme,
+                    loop_feedback=self.config.loop_feedback,
                     logger=self.logger
                 )
 
                 if self.goal_representation==None:
                     print("Fail to generate the goal representation after asking for human guidance")
                     return "Failed", None
+                
         # block while test
         self.logger.info("From agent.py->reset_sub_goal\n"+self.goal_representation)
         self.reset_visited()
@@ -1214,7 +639,6 @@ class VHAgent:
     
     def final_human_check(self): # ask human to check whether the task is done, removed
         print('Ask human to check whether the task is done')
-
         pass
 
     def final_important_numbers_report(self):
