@@ -1,6 +1,6 @@
 import sys
 sys.path.append('prompt')
-import json
+import os
 import random
 import numpy as np
 import re
@@ -57,17 +57,6 @@ class LLM_Agent(BaseAgent):
         self.add_info_trial_and_error_info=''
         self.add_info_action_history=[]
         self.add_info_action_history_for_evaluation=[]
-        
-        """
-        path to the CDL files
-        internal_executable_file_path: the file can be solve py planner: state + goal
-        basic_domain_knowledge_file_path: domain knowledge
-        state_file_path: the file contains the current state: state (only)        
-        """
-        self.internal_executable_file_path = 'experiments/virtualhome/CDLs/internal_executable.cdl'
-        self.basic_domain_knowledge_file_path = 'experiments/virtualhome/CDLs/virtualhome_partial.cdl'
-        self.state_file_path = 'experiments/virtualhome/CDLs/current_agent_state.cdl'
-
         self.plan=[]
         self.current_step=0
 
@@ -343,18 +332,27 @@ class LLM_Agent(BaseAgent):
         random.shuffle(unknown_list)
         return unknown_list
 
-    def preprocess_for_action_list(self,action_list):
-        filtered_action_list=action_list.replace('python','')
-        filtered_action_list=filtered_action_list.replace('`','')
-        filtered_action_list=filtered_action_list.replace('\n','')
-        python_action_list=eval(filtered_action_list)
-        executable_action_list=[Action(action) for action in python_action_list]
-        print("#"*80)
-        print("Find a plan:")
-        # print all the actions with idx
+    def preprocess_for_action_list(self, action_list):
+        # Remove unwanted substrings
+        filtered_action_list = action_list.replace('python', '')
+        filtered_action_list = filtered_action_list.replace('`', '')
+        filtered_action_list = filtered_action_list.replace('\n', '')
+
+        # Convert the cleaned string to a Python list and wrap each item in an Action object
+        python_action_list = eval(filtered_action_list)
+        executable_action_list = [Action(action) for action in python_action_list]
+
+        output_lines = []
+        output_lines.append("#" * 80)
+        output_lines.append("Find a plan:")
         for idx, action in enumerate(executable_action_list):
-            print(f"{idx}: {action}")
-        print("#"*80)
+            output_lines.append(f"{idx}: {action}")
+        output_lines.append("#" * 80)
+        
+        plan_string = "\n".join(output_lines)
+        print(plan_string)
+        self.logger.info("From agent_LLM.py->preprocess_for_action_list\n"+plan_string)
+        
         return executable_action_list
 
     def act(self):

@@ -11,8 +11,6 @@ from agent import VHAgent
 from agent_LLM import LLM_Agent
 from human import Human
 
-INIT_PATH_PO = "experiments/virtualhome/CDLs/init_scene_PO.cdl"
-INIT_PATH_NPO = "experiments/virtualhome/CDLs/init_scene_NPO.cdl"
 
 @dataclass
 # Baseline
@@ -223,7 +221,7 @@ class WOSplit:
 
 
 
-def load_scene(scene_id):
+def load_scene(scene_id, epoch_path):
     """
     Load a predefined scene based on its ID.
     """
@@ -234,10 +232,12 @@ def load_scene(scene_id):
 
     # Generate CDL for NPO
     objects,states,relationships,properties,categories,classes,cat_statement,sizes=get_nodes_information(init_scene_graph,PO=False)
+    INIT_PATH_NPO = f"{epoch_path}/init_scene_NPO.cdl"
     construct_cdl(INIT_PATH_NPO,objects,states,relationships,properties,cat_statement,sizes)
 
     # Generate CDL for PO
     objects,states,relationships,properties,categories,classes,cat_statement,sizes=get_nodes_information(init_scene_graph)
+    INIT_PATH_PO = f"{epoch_path}/init_scene_PO.cdl"
     construct_cdl(INIT_PATH_PO,objects,states,relationships,properties,cat_statement,sizes)
     return classes,init_scene_graph
 
@@ -248,6 +248,7 @@ def set_agent(config, init_scene_graph, task_data, classes, task_logger, epoch_p
     """
     Set the agent based on the experiment configuration.
     """
+    INIT_PATH_PO = f"{epoch_path}/init_scene_PO.cdl"
 
     if config.exp_name in ['Ours','LLMPlusP','CAP']:
 
@@ -255,7 +256,6 @@ def set_agent(config, init_scene_graph, task_data, classes, task_logger, epoch_p
             config.agent_type='Policy'
         else:
             config.agent_type='Planning'
-
         agent = VHAgent(
             config=config, 
             filepath=INIT_PATH_PO, 
@@ -287,20 +287,6 @@ def set_agent(config, init_scene_graph, task_data, classes, task_logger, epoch_p
         agent.item_infoto_nl()
 
     return agent
-
-    # if config.model.type=='CAP':
-    #     config.agent_type='Policy'
-    #     agent = VHAgent(
-    #         config=config, 
-    #         filepath=INIT_PATH_PO, 
-    #         task_logger=task_logger, 
-    #         PO=True, 
-    #         epoch_path=epoch_path
-    #     )
-    #     agent.set_human_helper(Human(init_scene_graph,task_data['Guidance']))
-    #     agent.reset_goal(task_data['Goal'],classes,task_data['Task name'],First_time=True)#ini a GR
-    #     agent.download_behaviors_from_library()
-
 
 
 # def test_human_guidance():

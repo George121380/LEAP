@@ -1,5 +1,6 @@
 import numpy as np
 import re
+import os
 
 class BaseAgent:
     def __init__(self, config, filepath, task_logger, epoch_path=None, agent_base_type="behavior",evaluation=False):
@@ -23,6 +24,15 @@ class BaseAgent:
         self.state = {}
         self.character_state = {}
         self.exploration = {}
+
+        """
+        path to the CDL files
+        internal_executable_file_path: the file can be solve py planner: state + goal
+        state_file_path: the file contains the current state: state (only)        
+        """
+
+        self.internal_executable_file_path = os.path.join(epoch_path,'internal_executable.cdl')
+        self.state_file_path = os.path.join(epoch_path,'current_agent_state.cdl')
 
     def set_human_helper(self,human_helper):
         self.human_helper=human_helper

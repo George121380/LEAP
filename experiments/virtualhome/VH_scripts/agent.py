@@ -46,20 +46,7 @@ class VHAgent(BaseAgent):
         self.behaviors_from_library={} # all skills in library
         self.library_pool = []
         
-        """
-        path to the CDL files
-        internal_executable_file_path: the file can be solve py planner: state + goal
-        basic_domain_knowledge_file_path: domain knowledge
-        state_file_path: the file contains the current state: state (only)        
-        """
-        if PO:
-            # self.internal_executable_file_path = 'experiments/virtualhome/CDLs/internal_executable.cdl'
-            self.internal_executable_file_path = os.path.join(epoch_path,'internal_executable.cdl')
-        else:
-            self.internal_executable_file_path = 'experiments/virtualhome/CDLs/internal_executable_NPO.cdl'
         self.basic_domain_knowledge_file_path = 'experiments/virtualhome/toy_examples/toy_domain.cdl'
-        # self.state_file_path = 'experiments/virtualhome/CDLs/current_agent_state.cdl'
-        self.state_file_path = os.path.join(epoch_path,'current_agent_state.cdl')
         self.reset_add_info_record()
         self.reset_goal_representation_record()
         self.need_replan=True # need replan, when find something new or regenerate a goal representation

@@ -335,55 +335,49 @@ if __name__ == '__main__':
 
     # methods_experiments.append(find_csv_files('/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/main_results/ours_rag_with_guidance'))
 
-    # methods_experiments.append(find_csv_files('/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/main_results/ours_with_guidance_1207_all'))
+    methods_experiments.append(find_csv_files('/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/main_results/deepseek/LLM_1_scene'))
 
 
 
-    _, csv_file_path_A = find_csv_files('/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/main_results/LLM+P_without_guidance')
-    result_list_A, _ = parse_completion_rates(csv_file_path_A)
+    # _, csv_file_path_A = find_csv_files('/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/main_results/LLM+P_without_guidance')
+    # result_list_A, _ = parse_completion_rates(csv_file_path_A)
 
-    _, csv_file_path_B = find_csv_files('/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/main_results/ours_without_guidance_1207')
-    result_list_B, _ = parse_completion_rates(csv_file_path_B)
+    # _, csv_file_path_B = find_csv_files('/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/main_results/ours_without_guidance_1207')
+    # result_list_B, _ = parse_completion_rates(csv_file_path_B)
 
-    avg_success_rate_A, success_rate_dict_A = calculation(result_list_A)
-    avg_success_rate_B, success_rate_dict_B = calculation(result_list_B)
+    # avg_success_rate_A, success_rate_dict_A = calculation(result_list_A)
+    # avg_success_rate_B, success_rate_dict_B = calculation(result_list_B)
 
-    comparison_results = compare_methods_performance(
-        methodA_name="LLM+P",
-        success_rate_dict_a=success_rate_dict_A,
-        methodB_name="ours",
-        success_rate_dict_b=success_rate_dict_B
-    )
+    # comparison_results = compare_methods_performance(
+    #     methodA_name="LLM+P",
+    #     success_rate_dict_a=success_rate_dict_A,
+    #     methodB_name="ours",
+    #     success_rate_dict_b=success_rate_dict_B
+    # )
 
-    # window_size = 61
+    window_size = 10
 
-    # for experiments in methods_experiments:
-    #     exp_name, csv_file_path = experiments
-    #     result_list, guidance_nums = parse_completion_rates(csv_file_path)
-    #     avg_success_rate, success_rate_dict = calculation(result_list)
+    for experiments in methods_experiments:
+        exp_name, csv_file_path = experiments
+        result_list, guidance_nums = parse_completion_rates(csv_file_path)
+        avg_success_rate, success_rate_dict = calculation(result_list)
+        worse_cases, scores = find_tasks_with_declining_success(success_rate_dict)
+        for task in worse_cases:
+            print(task)
+            print("first:",scores[task][0], " second:",scores[task][1], " third:",scores[task][2])
+        print(len(worse_cases))
 
+        # 计算成功率的滑动平均并绘制曲线
+        success_rate_list=[]
+        for data in success_rate_dict:
+            success_rate_list.append(data['suc_rate'])
+        success_moving_averages = calculate_moving_average(success_rate_list, window_size)
+        plot_output_path = f'main_results/{exp_name}_success_rate_moving_average_plot.png'
+        plot_moving_average(success_moving_averages, plot_output_path, f'Average Success Rate', f'{exp_name} Average Success Rate')
 
+        # 计算 Guidance query times 的滑动平均并绘制曲线
+        guidance_moving_averages = calculate_moving_average(guidance_nums, window_size)
+        guidance_plot_output_path = f'main_results/{exp_name}_guidance_moving_average_plot.png'
+        plot_moving_average(guidance_moving_averages, guidance_plot_output_path, f'Average Guidance Query Times', f'{exp_name} Average Guidance Query Times')
 
-
-
-
-        # worse_cases, scores = find_tasks_with_declining_success(success_rate_dict)
-        # for task in worse_cases:
-        #     print(task)
-        #     print("first:",scores[task][0], " second:",scores[task][1], " third:",scores[task][2])
-        # print(len(worse_cases))
-
-        # # 计算成功率的滑动平均并绘制曲线
-        # success_rate_list=[]
-        # for data in success_rate_dict:
-        #     success_rate_list.append(data['suc_rate'])
-        # success_moving_averages = calculate_moving_average(success_rate_list, window_size)
-        # plot_output_path = f'main_results/{exp_name}_success_rate_moving_average_plot.png'
-        # plot_moving_average(success_moving_averages, plot_output_path, f'Average Success Rate', f'{exp_name} Average Success Rate')
-
-        # # 计算 Guidance query times 的滑动平均并绘制曲线
-        # guidance_moving_averages = calculate_moving_average(guidance_nums, window_size)
-        # guidance_plot_output_path = f'main_results/{exp_name}_guidance_moving_average_plot.png'
-        # plot_moving_average(guidance_moving_averages, guidance_plot_output_path, f'Average Guidance Query Times', f'{exp_name} Average Guidance Query Times')
-
-        # print(f'{exp_name} 的结果图表已保存。')
+        print(f'{exp_name} 的结果图表已保存。')

@@ -89,7 +89,8 @@ class Evaluator(BaseAgent):
         super().__init__(config, filepath, task_logger, epoch_path, agent_base_type='evaluation', evaluation=True)
         self.task_file_path=filepath
 
-        self.init_path="experiments/virtualhome/CDLs/init_scene_NPO.cdl"
+        # self.init_path="experiments/virtualhome/CDLs/init_scene_NPO.cdl"
+        self.init_path = f"{epoch_path}/init_scene_NPO.cdl"
         # self.state_file_path = 'experiments/virtualhome/CDLs/evaluator_state.cdl'
         self.state_file_path = os.path.join(epoch_path,'evaluator_state.cdl')
         # self.internal_executable_file_path = 'experiments/virtualhome/CDLs/evaluator_execution.cdl'
@@ -134,7 +135,6 @@ class Evaluator(BaseAgent):
             scene=json.load(f)
         init_scene_graph = EnvironmentGraph(scene)
         objects,states,relationships,properties,categories,classes,cat_statement,sizes=get_nodes_information(init_scene_graph,PO=False)
-        construct_cdl(self.init_path,objects,states,relationships,properties,cat_statement,sizes)
         self.init_scene_graph=init_scene_graph
         self.classes=classes
     

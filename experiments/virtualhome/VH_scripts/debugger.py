@@ -66,13 +66,13 @@ def check_task_define_all(config):
 
 def check_task_define_single(config):
 
-    config.scene_id = 1
+    config.scene_id = 0
 
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     epoch_path=f'log/epoch_{timestamp}'
     epoch_logger = setup_epoch_logger(f'log/epoch_{timestamp}')
    
-    task_path='/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/cdl_dataset/dataset/Drink/g5.txt'
+    task_path='/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/cdl_dataset/dataset/Prepare_dinner/g1.txt'
     evaluator=Evaluator(config,task_path,epoch_logger,epoch_path)
     # for action in action_list:
     #     evaluator.updates(action)
@@ -93,6 +93,6 @@ def test_simulator(init_scene_graph):
         
 if __name__ == '__main__':
 
-    check_task_define_all(config)
-    # check_task_define_single(config)
+    # check_task_define_all(config)
+    check_task_define_single(config)
     # case_study_easy2hard(config)

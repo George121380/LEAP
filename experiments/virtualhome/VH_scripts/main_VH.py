@@ -156,9 +156,11 @@ def evaluate_single(config):
     if not os.path.exists(task_path):
         raise Exception('Task path does not exist')
 
-    classes,init_scene_graph=load_scene(config.scene_id)
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    epoch_path = f'log/epoch_{timestamp}'
     epoch_logger = setup_epoch_logger(f'log/epoch_{timestamp}')
+
+    classes,init_scene_graph=load_scene(config.scene_id, epoch_path)
 
     run(config,epoch_logger,timestamp,task_path,classes,init_scene_graph)
     end_time = time.time()
@@ -172,6 +174,7 @@ def evaluate_all_cross_scene(config): # main function
     running_mode=input()
 
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    
     if os.path.isdir(config.checkpoint) and config.checkpoint != '':
         print('Continue training base on the checkpoint')
         input("Press Enter to continue...")
@@ -224,7 +227,7 @@ def evaluate_all_cross_scene(config): # main function
 
     for task_scene_pair in task_scene_pairs:
         config.scene_id = task_scene_pair[1]
-        classes,init_scene_graph=load_scene(config.scene_id)
+        classes,init_scene_graph=load_scene(config.scene_id, epoch_path)
         task_path=os.path.join(DATASET_FOLDER_PATH,task_scene_pair[0])
         Debug=run(config,epoch_logger,epoch_path,task_path,classes,init_scene_graph)
         
