@@ -765,17 +765,32 @@ behavior grab(obj: item):
     close_char[char,obj]=True
     used[obj] = True
 
+#behavior wash(obj: item):
+#  goal: clean(obj)
+#  body:
+#    assert grabbable(obj) or is_water(obj)
+#    achieve not unknown(obj)
+#    achieve_once has_a_free_hand(char)
+#    achieve_once close_char(char, obj)
+#    wash_executor(obj)
+#  eff:
+#    dirty[obj] = False
+#    clean[obj] = True
+#    used[obj] = True
+
 behavior wash(obj: item):
   goal: clean(obj)
   body:
     achieve not unknown(obj)
-    achieve_once has_a_free_hand(char)
-    achieve_once close_char(char, obj)
+    symbol obj_inside_sink=exists sink:item: is_sink(sink) and inside(obj, sink)
+    if not obj_inside_sink:
+      bind sink:item where:
+        is_sink(sink)
+      achieve_once inside(obj, sink)
     wash_executor(obj)
   eff:
     dirty[obj] = False
     clean[obj] = True
-    used[obj] = True
 
 behavior scrub(obj: item):
   body:

@@ -1,6 +1,6 @@
 Task name: Cook some food
-Goal: Wash all the vegetables, then put them in a pot and boil them on the stove. Then store the whole pot in the fridge.
-Guidance: Wash all the vegetables. Put them in a pot. Fill the pot with water. Put the pot on the stove. Turn on the stove. Then turn off the stove. Put the pot in the fridge.
+Goal: Boil some vegetables with pot. Then store the whole pot in the fridge.
+Guidance: Wash vegetables. Fill a pot with water. Put the pot on the stove. Turn on the stove. Put the vegetables inside the pot. Then turn off the stove. Put the pot in the fridge.
 Logic: (k1 or k2) then k3
 S0_Actions: switchon_executor(faucet_43) or switchon_executor(faucet_232)
 S1_Actions: switchon_executor(faucet_20) or switchon_executor(faucet_121)
@@ -12,11 +12,12 @@ behavior k1():
             is_pot(pot)
         bind stove: item where:
             is_stove(stove)
-        foreach o: item:
-            if is_food_vegetable(o):
-                achieve inside(o, pot)
+        bind vegetables: item where:
+            is_food_vegetable(vegetables)
+        achieve has_water(pot)
         achieve on(pot,stove)
         achieve is_on(stove)
+        achieve inside(vegetables, pot)
 
 behavior k2():
     body:
@@ -24,11 +25,12 @@ behavior k2():
             is_pot(pot)
         bind stove: item where:
             is_stove(stove)
-        foreach o: item:
-            if is_food_vegetable(o):
-                achieve inside(o, pot)
+        bind vegetables: item where:
+            is_food_vegetable(vegetables)
+        achieve has_water(pot)
         achieve inside(pot,stove)
         achieve is_on(stove)
+        achieve inside(vegetables, pot)
 
 behavior k3():
     body:
@@ -36,8 +38,18 @@ behavior k3():
             is_stove(stove)
         bind fridge: item where:
             is_fridge(fridge)
-        bind pot: item where:
-            is_pot(pot)
+        bind vegetables: item where:
+            is_food_vegetable(vegetables)
+        symbol pot_with_vegetables=exists pot:item: is_pot(pot) and inside(vegetables, pot)
+        if pot_with_vegetables:
+            bind pot: item where:
+                is_pot(pot) and inside(vegetables, pot)
+            achieve inside(pot, fridge)
+        if not pot_with_vegetables:
+            bind pot: item where:
+                is_pot(pot)
+            achieve inside(vegetables, pot)
+            achieve inside(pot, fridge)
         achieve is_off(stove)
-        achieve inside(pot, fridge)
+        
         

@@ -4,6 +4,8 @@
 
 
 import sys
+from tqdm import tqdm
+sys.setrecursionlimit(1000000)
 import json
 sys.path.append('cdl_dataset/scripts')
 sys.path.append('')
@@ -18,7 +20,6 @@ from evaluation import Evaluator
 random.seed(time.time())
 import os
 from configs import OursWG, OursWOG, LLMWG, LLMWOG, LLMPlusPWG, LLMPlusPWOG, CAPWG, CAPWOG, load_scene, set_agent
-
 
 #################################################
 #######          Select Configs           #######
@@ -52,7 +53,7 @@ def check_task_define_all(config):
     random.shuffle(files)
     epoch_path=f'log/epoch_{timestamp}'
     epoch_logger = setup_epoch_logger(f'log/epoch_{timestamp}')
-    for task_file in files:
+    for task_file in tqdm(files):
         for scene_id in range(3):
             print('#'*60)
             print('Scene ID: ',scene_id)
@@ -61,38 +62,39 @@ def check_task_define_all(config):
             config.scene_id = scene_id
             task_path=os.path.join(DATASET_FOLDER_PATH,task_file)
             print(task_path)
+
             evaluator=Evaluator(config,task_path,epoch_logger,epoch_path)
             evaluator.left_action_counting_for_each_keystate()
 
 def check_task_define_single(config):
 
     config.scene_id = 0
+    Action_list=['walk_executor(soap_2054)','grab_executor(soap_2054)','walk_executor(sink_42)','putin_executor(soap_2054, sink_42)']
 
-    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    epoch_path=f'log/epoch_{timestamp}'
-    epoch_logger = setup_epoch_logger(f'log/epoch_{timestamp}')
-   
-    task_path='/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/cdl_dataset/dataset/Prepare_dinner/g1.txt'
+    task_path='/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/cdl_dataset/dataset/Cook_some_food/g1.txt'
+
+
+    epoch_path=f'log/Debugging'   
+    epoch_logger = setup_epoch_logger(epoch_path)
     evaluator=Evaluator(config,task_path,epoch_logger,epoch_path)
-    # for action in action_list:
-    #     evaluator.updates(action)
-    evaluator.left_action_counting_for_each_keystate()
-
-def test_simulator(init_scene_graph):
-    """
-    Give a list of actions, test the simulator
-    """
+    classes,init_scene_graph=load_scene(config.scene_id, epoch_path)
     env=VH_Env(init_scene_graph)
-    Action_list=['walk_executor(window_2109)','open_executor(window_2109)']
-
+    evaluator.left_action_counting_for_each_keystate() # Check the task define before executing the actions
+    return
+    if len(Action_list)==0:
+        return
     for action in Action_list:
-        if 'put' in str(action):
-            print('Action: ',str(action))
         action_crow=CrowControllerApplier(action)
         observation = env.step(action_crow) #Execute action
-        
+        evaluator.updates(observation)
+    evaluator.left_action_counting_for_each_keystate() # Check the task define after executing the actions
+
 if __name__ == '__main__':
 
-    # check_task_define_all(config)
-    check_task_define_single(config)
-    # case_study_easy2hard(config)
+    check_task_define_all(config)
+    # check_task_define_single(config)
+    # test_action_sequence(2)
+
+
+
+    

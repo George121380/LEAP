@@ -135,6 +135,7 @@ class Evaluator(BaseAgent):
             scene=json.load(f)
         init_scene_graph = EnvironmentGraph(scene)
         objects,states,relationships,properties,categories,classes,cat_statement,sizes=get_nodes_information(init_scene_graph,PO=False)
+        construct_cdl(self.init_path,objects,states,relationships,properties,cat_statement,sizes)
         self.init_scene_graph=init_scene_graph
         self.classes=classes
     

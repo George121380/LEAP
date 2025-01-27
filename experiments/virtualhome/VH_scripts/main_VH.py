@@ -23,6 +23,7 @@ from tqdm import tqdm
 import shutil
 from configs import OursWG, OursWOG, LLMWG, LLMWOG, LLMPlusPWG, LLMPlusPWOG, CAPWG, CAPWOG, load_scene, set_agent
 
+sys.setrecursionlimit(1000000)
 
 #################################################
 #######          Select Configs           #######
@@ -162,7 +163,8 @@ def evaluate_single(config):
 
     classes,init_scene_graph=load_scene(config.scene_id, epoch_path)
 
-    run(config,epoch_logger,timestamp,task_path,classes,init_scene_graph)
+    run(config,epoch_logger,epoch_path,task_path,classes,init_scene_graph)
+    
     end_time = time.time()
     print('Time Consumed: ',end_time-start_time)
 
@@ -238,5 +240,5 @@ def evaluate_all_cross_scene(config): # main function
     epoch_logger.info('Evaluation Finished',end_time,'','','','')
 
 if __name__ == '__main__':
-    # evaluate_single(config)
-    evaluate_all_cross_scene(config)
+    evaluate_single(config)
+    # evaluate_all_cross_scene(config)

@@ -322,6 +322,14 @@ class LLM_Agent(BaseAgent):
             char_information+="Robot is lying. "
         if self.character_state['sleeping']:
             char_information+="Robot is sleeping. "
+
+        # provide items that close to the robot
+        close_items=[]
+        for obj_id, is_close in enumerate(self.state['close_char']):
+            if is_close==True and obj_id!=self.name2opid['char']:
+                close_items.append(self.opid2name[obj_id])
+        if len(close_items)>0:
+            char_information+=f"Robot is close to: {', '.join(close_items)}. "
         return char_information
     
     def get_unknwon_list(self):
