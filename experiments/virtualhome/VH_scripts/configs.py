@@ -26,6 +26,7 @@ class OursWG:
     human_guidance: str = "LLM" # Guidance type, options: "LLM", "Manual", "None"
     scene_id: int = 0
     checkpoint: str = None
+    logger_name: str = "OursWG"
 
 
 @dataclass
@@ -42,6 +43,7 @@ class OursWOG:
     human_guidance: str = "None" # Guidance type, options: "LLM", "Manual", "None"
     scene_id: int = 0
     checkpoint: str = None
+    logger_name: str = "OursWOG"
 
 
 @dataclass
@@ -58,6 +60,7 @@ class LLMWG:
     human_guidance: str = "LLM" # Guidance type, options: "LLM", "Manual", "None"
     scene_id: int = 0
     checkpoint: str = None
+    logger_name: str = "LLMWG"
 
 
 @dataclass
@@ -74,6 +77,7 @@ class LLMWOG:
     human_guidance: str = "None" # Guidance type, options: "LLM", "Manual", "None"
     scene_id: int = 0
     checkpoint: str = None
+    logger_name: str = "LLMWOG"
 
 
 @dataclass
@@ -90,6 +94,7 @@ class LLMPlusPWG:
     human_guidance: str = "LLM" # Guidance type, options: "LLM", "Manual", "None"
     scene_id: int = 0
     checkpoint: str = None
+    logger_name: str = "LLMPlusPWG"
 
 
 @dataclass
@@ -106,6 +111,7 @@ class LLMPlusPWOG:
     human_guidance: str = "None" # Guidance type, options: "LLM", "Manual", "None"
     scene_id: int = 0
     checkpoint: str = None
+    logger_name: str = "LLMPlusPWOG"
 
 
 @dataclass
@@ -122,6 +128,7 @@ class CAPWG:
     human_guidance: str = "LLM" # Guidance type, options: "LLM", "Manual", "None"
     scene_id: int = 0
     checkpoint: str = None
+    logger_name: str = "CAPWG"
 
 
 @dataclass
@@ -138,6 +145,7 @@ class CAPWOG:
     human_guidance: str = "None" # Guidance type, options: "LLM", "Manual", "None"
     scene_id: int = 0
     checkpoint: str = None
+    logger_name: str = "CAPWOG"
 
 
 @dataclass
@@ -154,6 +162,7 @@ class WOLibrary:
     human_guidance: str = "LLM" # Guidance type, options: "LLM", "Manual", "None"
     scene_id: int = 0
     checkpoint: str = None
+    logger_name: str = "WOLibrary"
 
 
 @dataclass
@@ -170,6 +179,7 @@ class ActionLibrary:
     human_guidance: str = "LLM" # Guidance type, options: "LLM", "Manual", "None"
     scene_id: int = 0
     checkpoint: str = None
+    logger_name: str = "ActionLibrary"
 
 
 @dataclass
@@ -186,6 +196,7 @@ class WORefinement:
     human_guidance: str = "LLM" # Guidance type, options: "LLM", "Manual", "None"
     scene_id: int = 0
     checkpoint: str = None
+    logger_name: str = "WORefinement"
 
 
 @dataclass
@@ -202,11 +213,11 @@ class WOSplit:
     human_guidance: str = "LLM" # Guidance type, options: "LLM", "Manual", "None"
     scene_id: int = 0
     checkpoint: str = None
-
+    logger_name: str = "WOSplit"
 
 @dataclass
 # Ablation4 - Policy and Planning
-class WOSplit:
+class PvP:
 
     exp_name: str = "CAP"
     task_split: bool = True
@@ -218,6 +229,7 @@ class WOSplit:
     human_guidance: str = "LLM" # Guidance type, options: "LLM", "Manual", "None"
     scene_id: int = 0
     checkpoint: str = None
+    logger_name: str = "PvP"
 
 
 

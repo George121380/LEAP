@@ -25,22 +25,6 @@ from configs import OursWG, OursWOG, LLMWG, LLMWOG, LLMPlusPWG, LLMPlusPWOG, CAP
 
 sys.setrecursionlimit(1000000)
 
-#################################################
-#######          Select Configs           #######
-#################################################
-
-# config = OursWG()
-# config = OursWOG()
-config = LLMWG()
-# config = LLMWOG()
-# config = LLMPlusPWG()
-# config = LLMPlusPWOG()
-# config = CAPWG()
-# config = CAPWOG()
-
-#################################################
-
-config.checkpoint = ''
 
 DATASET_FOLDER_PATH = 'cdl_dataset/dataset'
 running_mode='test' # Set default running mode to test
@@ -113,11 +97,13 @@ def run(config,epoch_logger,epoch_path,task_path,classes,init_scene_graph):
                 
                 if evaluation_result:
                     print("Task Success")
-                    agent.lift_behaviors()
+                    if config.library: # Lift the behaviors if the library is used
+                        agent.lift_behaviors()
                     if epoch_logger:
                         task_summary_record(epoch_logger,task_logger,config.scene_id,task_data['Goal'],executed_actions,start_time,1,task_path,agent.final_important_numbers_report())
                     return True
                 else:
+                    # Task is incomplete
                     if epoch_logger:
                         task_summary_record(epoch_logger,task_logger,config.scene_id,task_data['Goal'],executed_actions,start_time,complete_rate,task_path,agent.final_important_numbers_report())
                 return True
@@ -158,7 +144,7 @@ def evaluate_single(config):
         raise Exception('Task path does not exist')
 
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    epoch_path = f'log/epoch_{timestamp}'
+    epoch_path = f'log/{config.logger_name}_{timestamp}'
     epoch_logger = setup_epoch_logger(f'log/epoch_{timestamp}')
 
     classes,init_scene_graph=load_scene(config.scene_id, epoch_path)
@@ -194,7 +180,7 @@ def evaluate_all_cross_scene(config): # main function
 
     else:
         # Create a new folder for the epoch
-        epoch_path = f'log/epoch_{timestamp}'
+        epoch_path = f'log/{config.logger_name}_{timestamp}'
         epoch_logger = setup_epoch_logger(epoch_path)
 
         if running_mode == 'test':
@@ -240,5 +226,51 @@ def evaluate_all_cross_scene(config): # main function
     epoch_logger.info('Evaluation Finished',end_time,'','','','')
 
 if __name__ == '__main__':
-    evaluate_single(config)
-    # evaluate_all_cross_scene(config)
+    """
+    Main function: Prompt user to select a config, then select whether to evaluate a single task or all tasks.
+    """
+    print("Please select the config to use:")
+    print("1) OursWG")
+    print("2) OursWOG")
+    print("3) LLMWG")
+    print("4) LLMWOG")
+    print("5) LLMPlusPWG")
+    print("6) LLMPlusPWOG")
+    print("7) CAPWG")
+    print("8) CAPWOG")
+    config_choice = input("Enter the number: ").strip()
+
+    if config_choice == '1':
+        config = OursWG()
+    elif config_choice == '2':
+        config = OursWOG()
+    elif config_choice == '3':
+        config = LLMWG()
+    elif config_choice == '4':
+        config = LLMWOG()
+    elif config_choice == '5':
+        config = LLMPlusPWG()
+    elif config_choice == '6':
+        config = LLMPlusPWOG()
+    elif config_choice == '7':
+        config = CAPWG()
+    else:
+        config = CAPWOG()
+
+    print("\nPlease select the mode:")
+    print("1) single (evaluate a single task)")
+    print("2) all    (evaluate multiple tasks)")
+    mode_choice = input("Enter the number: ").strip()
+
+    
+
+    if mode_choice == '1':
+        evaluate_single(config)
+    else:
+        print("\nDo you want to use checkpoint (y/n)?")
+        checkpoint_choice = input("Enter the letter: ").strip()
+        if checkpoint_choice == 'y':
+            config.checkpoint = input("Enter the path to the checkpoint: ").strip()
+        else:
+            config.checkpoint = ''
+        evaluate_all_cross_scene(config)

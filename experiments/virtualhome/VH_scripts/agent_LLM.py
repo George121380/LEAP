@@ -269,9 +269,12 @@ class LLM_Agent(BaseAgent):
         return description
 
     def check_action(self,action): # check if the action is executable
-        
+        print(action)
         if action.name=='grab_executor':
             # robot can not grab an item by two hands at the same time
+            if action.arguments[0].name not in self.name2opid:
+                print(f"Debug: Use an undefined object: '{action.arguments[0].name}'")
+                return False
             if self.state['inhand'][self.name2opid[action.arguments[0].name]]==True:
                 print(f"Debug: Do grab when the robot is already holding {action.arguments[0].name}")
                 return False

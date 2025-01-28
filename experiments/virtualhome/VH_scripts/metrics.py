@@ -335,7 +335,7 @@ if __name__ == '__main__':
 
     # methods_experiments.append(find_csv_files('/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/main_results/ours_rag_with_guidance'))
 
-    methods_experiments.append(find_csv_files('/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/main_results/deepseek/LLM_1_scene'))
+    methods_experiments.append(find_csv_files('/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/main_results/openai_new/LLM/epoch_20250128_130750'))
 
 
 

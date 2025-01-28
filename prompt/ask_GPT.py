@@ -18,8 +18,8 @@ with open(KEY_BANK_PATH) as f:
     Deepseek_key = api_key["Deepseek_API_Key"]
     Thirdparty_key = ""
 
-# LLM_MODEL = "gpt-4o"
-LLM_MODEL = "deepseek"
+LLM_MODEL = "gpt-4o"
+# LLM_MODEL = "deepseek"
 # LLM_MODEL = "thirdparty"
 
 # empty the log file
@@ -29,7 +29,7 @@ with open("query_log.txt", "w") as log_file:
 def ask_GPT(system,content):
     while True:
         try:
-            # print("debug")
+            start_time = time.time()
             if LLM_MODEL == "gpt-4o": # GPT-4o api
                 client = OpenAI(api_key=Openai_key)
                 
@@ -68,7 +68,7 @@ def ask_GPT(system,content):
                 log_file.write(f"Response:\n{completion.choices[0].message.content}\n\n")
                 log_file.write("Tokens: " + str(count_tokens_tiktoken(completion.choices[0].message.content)+count_tokens_tiktoken(system)+count_tokens_tiktoken(content)) + "\n")
                 log_file.write("#"*80 + "\n\n")
-            
+            print(f"Response time: {time.time() - start_time:.2f} seconds")
             return completion.choices[0].message.content
             
         except Exception as e:

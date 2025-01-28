@@ -478,6 +478,10 @@ class BaseAgent:
                 f"unKnown Objects:\n{known_str}")
     
     def regular_action_obs_update(self, observation):
+        """
+        update the agent's state based on the observation
+        Return: the effects of the action in string
+        """
         action_effects = ""
         for new_known in observation['known']:
             # record those items that are newly known

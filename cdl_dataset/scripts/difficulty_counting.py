@@ -29,6 +29,26 @@ from types import SimpleNamespace
 import argparse
 from tqdm import tqdm
 
+
+from configs import OursWG, OursWOG, LLMWG, LLMWOG, LLMPlusPWG, LLMPlusPWOG, CAPWG, CAPWOG, load_scene, set_agent
+
+sys.setrecursionlimit(1000000)
+
+#################################################
+#######          Select Configs           #######
+#################################################
+
+# config = OursWG()
+# config = OursWOG()
+config = LLMWG()
+# config = LLMWOG()
+# config = LLMPlusPWG()
+# config = LLMPlusPWOG()
+# config = CAPWG()
+# config = CAPWOG()
+
+#################################################
+
 result_dict = {}
 
 def load_scene(scene_id):
@@ -100,7 +120,7 @@ def run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph,guidance)
                     print(observation)
                     raise Exception('Syntax Error')
                 evaluator.updates(observation) #Update evaluator's state
-    json.dump(result_dict,open(f'result_{args.scene.id}.json','w'),indent=4)
+    json.dump(result_dict,open(f'result_{args.scene_id}.json','w'),indent=4)
        
 
 def counting(args):
@@ -109,7 +129,7 @@ def counting(args):
     epoch_logger = setup_task_logger(f'log/epoch_{timestamp}')
     files = tqdm(files, desc="Evaluating tasks")
     for task_file in files:
-        _,classes,init_scene_graph,guidance=load_scene(args.scene.id)
+        _,classes,init_scene_graph,guidance=load_scene(args.scene_id)
         task_path=os.path.join(dataset_folder_path,task_file)
         if task_path in result_dict:
             continue
@@ -117,11 +137,8 @@ def counting(args):
     print(result_dict)
         
 if __name__ == '__main__':
-    
-    args = load_config("experiments/virtualhome/VH_scripts/config.yaml")
-    args.scene.id = 2
-
-    if os.path.exists(f'result_{args.scene.id}.json'):
-        with open(f'result_{args.scene.id}.json') as f:
+    config.scene_id = 0
+    if os.path.exists(f'result_{config.scene_id}.json'):
+        with open(f'result_{config.scene_id}.json') as f:
             result_dict=json.load(f)
-    counting(args)
+    counting(config)
