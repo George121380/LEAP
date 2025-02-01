@@ -1,0 +1,73 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Locate the book that needs to be placed.', '2. Place the book on the coffee table in the home office.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_book_2066_around_bookshelf_233(book:item):
+    goal: not unknown(book)
+    body:
+        assert is_book(book)
+        bind bookshelf_instance:item where:
+            is_bookshelf(bookshelf_instance) and id[bookshelf_instance]==233
+        achieve close_char(char,bookshelf_instance)
+        if can_open(bookshelf_instance):
+            achieve_once open(bookshelf_instance)
+            exp(book,bookshelf_instance)
+        else:
+            exp(book,bookshelf_instance)
+    eff:
+        unknown[book]=False
+        close[book,bookshelf_instance]=True
+        close[bookshelf_instance,book]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_book_inside(room: item):
+    # Function to check if the book is inside a specific room
+    symbol inside_room=exists b: item : is_book(b) and inside(b, room)
+    return inside_room
+
+behavior __goal__():
+    body:
+        if exists room: item : is_home_office(room) and not visited(room):
+            # If the home office is found and not visited yet, observe it
+            bind room: item where:
+                is_home_office(room)
+            observe(room,"Check if the book is in the home office")
+
+        bind book_table: item where:
+            is_coffee_table(book_table) and in_kitchen(book_table) 
+        # Bind a coffee table that is inside the home office
+        foreach book: item:
+            if is_book(book) and inside(book, room):
+                walk_to(book_table)
+                grab(book)
+                put_on(book, book_table)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+Fail to generate the goal representation
+##############################
+Task Summary:
+Task Goal:
+Syntax Error
+Action History:
+[]
+Time info:
+Time consume: 69 seconds
+Exp_helper query times: 0
+Guidance query times: 0
+library scale: 0
+Task complete rate:
+Keystate: k1 - Requires: 4 steps
+Action Completion Rate: No actions required
+Scene_id: 0
+##############################

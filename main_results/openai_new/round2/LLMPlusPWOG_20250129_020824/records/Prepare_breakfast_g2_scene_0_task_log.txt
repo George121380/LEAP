@@ -1,0 +1,284 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['Scramble egg by the fryingpan.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_fryingpan_2083_around_kitchen_counter_230(fryingpan:item):
+    goal: not unknown(fryingpan)
+    body:
+        assert is_fryingpan(fryingpan)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==230
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(fryingpan,kitchen_counter_instance)
+        else:
+            exp(fryingpan,kitchen_counter_instance)
+    eff:
+        unknown[fryingpan]=False
+        close[fryingpan,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,fryingpan]=True
+    
+
+behavior find_food_egg_2020_around_fridge_289(food_egg:item):
+    goal: not unknown(food_egg)
+    body:
+        assert is_food_egg(food_egg)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_egg,fridge_instance)
+        else:
+            exp(food_egg,fridge_instance)
+    eff:
+        unknown[food_egg]=False
+        close[food_egg,fridge_instance]=True
+        close[fridge_instance,food_egg]=True
+    
+
+behavior find_clothes_scarf_2048_around_closetdrawer_384(clothes_scarf:item):
+    goal: not unknown(clothes_scarf)
+    body:
+        assert is_clothes_scarf(clothes_scarf)
+        bind closetdrawer_instance:item where:
+            is_closetdrawer(closetdrawer_instance) and id[closetdrawer_instance]==384
+        achieve close_char(char,closetdrawer_instance)
+        if can_open(closetdrawer_instance):
+            achieve_once open(closetdrawer_instance)
+            exp(clothes_scarf,closetdrawer_instance)
+        else:
+            exp(clothes_scarf,closetdrawer_instance)
+    eff:
+        unknown[clothes_scarf]=False
+        close[clothes_scarf,closetdrawer_instance]=True
+        close[closetdrawer_instance,clothes_scarf]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_on_stove(fryingpan:item):
+    # Function to check if the frying pan is on the stove
+    symbol on_stove=exists stove: item : is_stove(stove) and on(fryingpan, stove)
+    return on_stove
+
+def contains_egg(pan:item):
+    # Function to check if the frying pan contains eggs
+    symbol has_egg=exists egg: item : is_food_egg(egg) and inside(egg, pan)
+    return has_egg
+
+behavior scramble_egg_in_pan(pan:item):
+    body:
+        if not contains_egg(pan):
+            # We need to put egg in the frying pan before scrambling
+            bind egg: item where:
+                is_food_egg(egg)
+            achieve inside(egg, pan) # Put the egg inside the frying pan
+
+        achieve is_on(pan) # Ensure the pan is on and ready for scrambling
+
+behavior __goal__():
+    body:
+        bind pan: item where:
+            is_fryingpan(pan)
+        # Select a frying pan
+
+        if not is_on_stove(pan):
+            observe(pan, "Check if frying pan is on the stove")
+            # Observe the frying pan to determine if its on the stove
+        
+        scramble_egg_in_pan(pan)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+Fail to generate the goal representation
+##############################
+From agent.py
+Reset goals: The sub-goals are: 
+['Scramble egg by the fryingpan.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_egg_2020_around_fridge_289(food_egg:item):
+    goal: not unknown(food_egg)
+    body:
+        assert is_food_egg(food_egg)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_egg,fridge_instance)
+        else:
+            exp(food_egg,fridge_instance)
+    eff:
+        unknown[food_egg]=False
+        close[food_egg,fridge_instance]=True
+        close[fridge_instance,food_egg]=True
+    
+
+behavior find_fryingpan_2083_around_cupboard_229(fryingpan:item):
+    goal: not unknown(fryingpan)
+    body:
+        assert is_fryingpan(fryingpan)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==229
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(fryingpan,cupboard_instance)
+        else:
+            exp(fryingpan,cupboard_instance)
+    eff:
+        unknown[fryingpan]=False
+        close[fryingpan,cupboard_instance]=True
+        close[cupboard_instance,fryingpan]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_food_on_fryingpan(item:item):
+    # Function to check if the fryingpan has food on it
+    symbol has_food=exists o: item : is_fryingpan(item) and is_food_egg(o) and on(o, item)
+    return has_food
+
+behavior scramble_egg(fryingpan:item, egg:item):
+    body:
+        achieve inside(egg, fryingpan)
+        # Ensure the egg is placed inside the fryingpan
+
+behavior __goal__():
+    body:
+        bind fryingpan: item where:
+            is_fryingpan(fryingpan)
+        # Select the fryingpan
+
+        bind food_egg: item where:
+            is_food_egg(food_egg)
+        # Select an egg
+
+        scramble_egg(fryingpan, food_egg)
+        # Execute the task of scrambling the egg in the fryingpan
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+ 
+def is_food_on_fryingpan(item:item):
+    # Function to check if the fryingpan has food on it
+    symbol has_food=exists o: item : is_fryingpan(item) and is_food_egg(o) and on(o, item)
+    return has_food
+
+behavior scramble_egg(fryingpan:item, egg:item):
+    body:
+        achieve inside(egg, fryingpan)
+        # Ensure the egg is placed inside the fryingpan
+
+behavior __goal__():
+    body:
+        bind fryingpan: item where:
+            is_fryingpan(fryingpan)
+        # Select the fryingpan
+
+        bind food_egg: item where:
+            is_food_egg(food_egg)
+        # Select an egg
+
+        scramble_egg(fryingpan, food_egg)
+        # Execute the task of scrambling the egg in the fryingpan
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(cupboard_229)open_executor(cupboard_229)exp(fryingpan_2083, cupboard_229)walk_executor(fridge_289)switchoff_executor(fridge_289)open_executor(fridge_289)exp(food_egg_2020, fridge_289)walk_executor(food_egg_2020)grab_executor(food_egg_2020)walk_executor(fryingpan_2083)putin_executor(food_egg_2020, fryingpan_2083)
+##############################
+From agent.py
+walk_executor(cupboard_229)
+Find tray_296. Robot is inside the dining_room_201. Robot is close to the wall_211. Robot is close to the cupboard_229. Robot is no longer inside bathroom_1.
+##############################
+From agent.py
+open_executor(cupboard_229)
+Robot is inside the dining_room_201. Robot is close to the wall_211. Robot is close to the cupboard_229. 
+##############################
+From agent.py
+exp(fryingpan_2083, cupboard_229)
+Fail to find fryingpan_2083 around cupboard_229. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(kitchen_counter_230)exp(fryingpan_2083, kitchen_counter_230)walk_executor(fridge_289)switchoff_executor(fridge_289)open_executor(fridge_289)exp(food_egg_2020, fridge_289)walk_executor(food_egg_2020)grab_executor(food_egg_2020)walk_executor(fryingpan_2083)putin_executor(food_egg_2020, fryingpan_2083)
+##############################
+From agent.py
+walk_executor(kitchen_counter_230)
+Find cutting_board_2051. Find pot_2069. Find knife_2050. Find napkin_2005. Find drawing_238. Find drawing_239. Find drawing_240. Find drawing_241. Find drawing_242. Find drawing_243. Find cup_2064. Find cup_2063. Find oil_2079. Find fryingpan_2083. Robot is inside the dining_room_201. Robot is close to the kitchen_counter_230. Robot is no longer close wall_211.Robot is no longer close cupboard_229.
+##############################
+From agent.py
+exp(fryingpan_2083, kitchen_counter_230)
+Find fryingpan_2083. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(fridge_289)switchoff_executor(fridge_289)open_executor(fridge_289)exp(food_egg_2020, fridge_289)walk_executor(food_egg_2020)grab_executor(food_egg_2020)walk_executor(fryingpan_2083)putin_executor(food_egg_2020, fryingpan_2083)
+##############################
+From agent.py
+walk_executor(fridge_289)
+Find sauce_2078. Find food_steak_2008. Find food_apple_2009. Find food_bacon_2010. Find food_banana_2011. Find food_bread_2012. Find food_cake_2013. Find food_carrot_2014. Find food_cereal_2015. Find food_cheese_2016. Find food_chicken_2017. Find food_dessert_2018. Find food_donut_2019. Find food_egg_2020. Find food_fish_2021. Find food_food_2022. Find food_fruit_2023. Find food_hamburger_2024. Find food_ice_cream_2025. Find food_jam_2026. Find food_kiwi_2027. Find food_lemon_2028. Find food_noodles_2029. Find food_oatmeal_2030. Find food_orange_2031. Find food_onion_2032. Find food_peanut_butter_2033. Find food_pizza_2034. Find food_potato_2035. Find food_rice_2036. Find food_salt_2037. Find food_snack_2038. Find food_sugar_2039. Find food_turkey_2040. Find food_vegetable_2041. Find dry_pasta_2042. Find milk_2043. Robot is inside the dining_room_201. Robot is close to the sauce_2078. Robot is close to the fridge_289. Robot is close to the floor_202. Robot is close to the floor_203. Robot is close to the food_steak_2008. Robot is close to the food_apple_2009. Robot is close to the food_bacon_2010. Robot is close to the food_banana_2011. Robot is close to the food_bread_2012. Robot is close to the food_cake_2013. Robot is close to the food_carrot_2014. Robot is close to the food_cereal_2015. Robot is close to the food_cheese_2016. Robot is close to the food_chicken_2017. Robot is close to the food_dessert_2018. Robot is close to the food_donut_2019. Robot is close to the food_egg_2020. Robot is close to the food_fish_2021. Robot is close to the food_food_2022. Robot is close to the food_fruit_2023. Robot is close to the food_hamburger_2024. Robot is close to the food_ice_cream_2025. Robot is close to the food_jam_2026. Robot is close to the food_kiwi_2027. Robot is close to the food_lemon_2028. Robot is close to the food_noodles_2029. Robot is close to the food_oatmeal_2030. Robot is close to the food_orange_2031. Robot is close to the food_onion_2032. Robot is close to the food_peanut_butter_2033. Robot is close to the food_pizza_2034. Robot is close to the food_potato_2035. Robot is close to the food_rice_2036. Robot is close to the food_salt_2037. Robot is close to the food_snack_2038. Robot is close to the food_sugar_2039. Robot is close to the food_turkey_2040. Robot is close to the food_vegetable_2041. Robot is close to the dry_pasta_2042. Robot is close to the milk_2043. Robot is no longer close kitchen_counter_230.
+##############################
+From agent.py
+switchoff_executor(fridge_289)
+Find mat_22. Robot is inside the dining_room_201. Robot is close to the sauce_2078. Robot is close to the fridge_289. Robot is close to the floor_202. Robot is close to the floor_203. Robot is close to the food_steak_2008. Robot is close to the food_apple_2009. Robot is close to the food_bacon_2010. Robot is close to the food_banana_2011. Robot is close to the food_bread_2012. Robot is close to the food_cake_2013. Robot is close to the food_carrot_2014. Robot is close to the food_cereal_2015. Robot is close to the food_cheese_2016. Robot is close to the food_chicken_2017. Robot is close to the food_dessert_2018. Robot is close to the food_donut_2019. Robot is close to the food_egg_2020. Robot is close to the food_fish_2021. Robot is close to the food_food_2022. Robot is close to the food_fruit_2023. Robot is close to the food_hamburger_2024. Robot is close to the food_ice_cream_2025. Robot is close to the food_jam_2026. Robot is close to the food_kiwi_2027. Robot is close to the food_lemon_2028. Robot is close to the food_noodles_2029. Robot is close to the food_oatmeal_2030. Robot is close to the food_orange_2031. Robot is close to the food_onion_2032. Robot is close to the food_peanut_butter_2033. Robot is close to the food_pizza_2034. Robot is close to the food_potato_2035. Robot is close to the food_rice_2036. Robot is close to the food_salt_2037. Robot is close to the food_snack_2038. Robot is close to the food_sugar_2039. Robot is close to the food_turkey_2040. Robot is close to the food_vegetable_2041. Robot is close to the dry_pasta_2042. Robot is close to the milk_2043. 
+##############################
+From agent.py
+open_executor(fridge_289)
+Robot is inside the dining_room_201. Robot is close to the sauce_2078. Robot is close to the fridge_289. Robot is close to the floor_202. Robot is close to the floor_203. Robot is close to the food_steak_2008. Robot is close to the food_apple_2009. Robot is close to the food_bacon_2010. Robot is close to the food_banana_2011. Robot is close to the food_bread_2012. Robot is close to the food_cake_2013. Robot is close to the food_carrot_2014. Robot is close to the food_cereal_2015. Robot is close to the food_cheese_2016. Robot is close to the food_chicken_2017. Robot is close to the food_dessert_2018. Robot is close to the food_donut_2019. Robot is close to the food_egg_2020. Robot is close to the food_fish_2021. Robot is close to the food_food_2022. Robot is close to the food_fruit_2023. Robot is close to the food_hamburger_2024. Robot is close to the food_ice_cream_2025. Robot is close to the food_jam_2026. Robot is close to the food_kiwi_2027. Robot is close to the food_lemon_2028. Robot is close to the food_noodles_2029. Robot is close to the food_oatmeal_2030. Robot is close to the food_orange_2031. Robot is close to the food_onion_2032. Robot is close to the food_peanut_butter_2033. Robot is close to the food_pizza_2034. Robot is close to the food_potato_2035. Robot is close to the food_rice_2036. Robot is close to the food_salt_2037. Robot is close to the food_snack_2038. Robot is close to the food_sugar_2039. Robot is close to the food_turkey_2040. Robot is close to the food_vegetable_2041. Robot is close to the dry_pasta_2042. Robot is close to the milk_2043. 
+##############################
+From agent.py
+exp(food_egg_2020, fridge_289)
+Find food_egg_2020. 
+##############################
+From agent.py-> find a plan in act()
+grab_executor(food_egg_2020)walk_executor(fryingpan_2083)putin_executor(food_egg_2020, fryingpan_2083)
+##############################
+From agent.py
+grab_executor(food_egg_2020)
+Robot is inside the dining_room_201. Robot is close to the sauce_2078. Robot is close to the fridge_289. Robot is close to the floor_202. Robot is close to the floor_203. Robot is close to the food_steak_2008. Robot is close to the food_apple_2009. Robot is close to the food_bacon_2010. Robot is close to the food_banana_2011. Robot is close to the food_bread_2012. Robot is close to the food_cake_2013. Robot is close to the food_carrot_2014. Robot is close to the food_cereal_2015. Robot is close to the food_cheese_2016. Robot is close to the food_chicken_2017. Robot is close to the food_dessert_2018. Robot is close to the food_donut_2019. Robot is close to the food_egg_2020. Robot is close to the food_fish_2021. Robot is close to the food_food_2022. Robot is close to the food_fruit_2023. Robot is close to the food_hamburger_2024. Robot is close to the food_ice_cream_2025. Robot is close to the food_jam_2026. Robot is close to the food_kiwi_2027. Robot is close to the food_lemon_2028. Robot is close to the food_noodles_2029. Robot is close to the food_oatmeal_2030. Robot is close to the food_orange_2031. Robot is close to the food_onion_2032. Robot is close to the food_peanut_butter_2033. Robot is close to the food_pizza_2034. Robot is close to the food_potato_2035. Robot is close to the food_rice_2036. Robot is close to the food_salt_2037. Robot is close to the food_snack_2038. Robot is close to the food_sugar_2039. Robot is close to the food_turkey_2040. Robot is close to the food_vegetable_2041. Robot is close to the dry_pasta_2042. Robot is close to the milk_2043. Grabbing food_egg_2020 by right hand. 
+##############################
+From agent.py
+walk_executor(fryingpan_2083)
+Robot is inside the dining_room_201. Robot is close to the food_egg_2020. Robot is close to the fryingpan_2083. Robot is close to the kitchen_counter_230. Robot is no longer close sauce_2078.Robot is no longer close fridge_289.Robot is no longer close floor_202.Robot is no longer close floor_203.Robot is no longer close food_steak_2008.Robot is no longer close food_apple_2009.Robot is no longer close food_bacon_2010.Robot is no longer close food_banana_2011.Robot is no longer close food_bread_2012.Robot is no longer close food_cake_2013.Robot is no longer close food_carrot_2014.Robot is no longer close food_cereal_2015.Robot is no longer close food_cheese_2016.Robot is no longer close food_chicken_2017.Robot is no longer close food_dessert_2018.Robot is no longer close food_donut_2019.Robot is no longer close food_fish_2021.Robot is no longer close food_food_2022.Robot is no longer close food_fruit_2023.Robot is no longer close food_hamburger_2024.Robot is no longer close food_ice_cream_2025.Robot is no longer close food_jam_2026.Robot is no longer close food_kiwi_2027.Robot is no longer close food_lemon_2028.Robot is no longer close food_noodles_2029.Robot is no longer close food_oatmeal_2030.Robot is no longer close food_orange_2031.Robot is no longer close food_onion_2032.Robot is no longer close food_peanut_butter_2033.Robot is no longer close food_pizza_2034.Robot is no longer close food_potato_2035.Robot is no longer close food_rice_2036.Robot is no longer close food_salt_2037.Robot is no longer close food_snack_2038.Robot is no longer close food_sugar_2039.Robot is no longer close food_turkey_2040.Robot is no longer close food_vegetable_2041.Robot is no longer close dry_pasta_2042.Robot is no longer close milk_2043.
+##############################
+From agent.py
+putin_executor(food_egg_2020, fryingpan_2083)
+Robot is inside the dining_room_201. Robot is close to the food_egg_2020. Robot is close to the fryingpan_2083. Robot is close to the kitchen_counter_230. food_egg_2020 released by right hand. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: Yes
+The feedback instruction: None
+##############################
+Task Summary:
+Task Goal:
+Scramble egg by the fryingpan.
+Action History:
+['walk_executor(cupboard_229)', 'open_executor(cupboard_229)', 'walk_executor(kitchen_counter_230)', 'walk_executor(fridge_289)', 'switchoff_executor(fridge_289)', 'open_executor(fridge_289)', 'grab_executor(food_egg_2020)', 'walk_executor(fryingpan_2083)', 'putin_executor(food_egg_2020, fryingpan_2083)']
+Time info:
+Time consume: 99 seconds
+Exp_helper query times: 0
+Guidance query times: 0
+library scale: 0
+Task complete rate:
+Keystate: k1 - Requires: 8 steps
+Keystate: k2 - Requires: 11 steps
+Action Completion Rate: No actions required
+Scene_id: 0
+##############################

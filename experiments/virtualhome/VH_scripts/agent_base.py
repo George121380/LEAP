@@ -1,6 +1,7 @@
 import numpy as np
 import re
 import os
+from utils_eval import check_unexplorable
 
 class BaseAgent:
     def __init__(self, config, filepath, task_logger, epoch_path=None, agent_base_type="behavior",evaluation=False):
@@ -483,13 +484,21 @@ class BaseAgent:
         Return: the effects of the action in string
         """
         action_effects = ""
+        action_related_objects = []
+        for object_name in observation['action'].arguments:
+            if object_name.name in self.name2opid:
+                action_related_objects.append(object_name.name)
+
+        if len(observation['known'])>0:
+            action_effects+="Robot find: "
         for new_known in observation['known']:
             # record those items that are newly known
             if 'character' in new_known:
                 continue
             if self.exploration['unknown'][self.name2opid[new_known]]==True:
                 self.exploration['unknown'][self.name2opid[new_known]]=False
-                action_effects+=f"Find {new_known}. "
+                action_effects+=f"{new_known}, "
+        
                 
         for check_place in observation['checked']:
             if 'character' in check_place:
@@ -514,7 +523,8 @@ class BaseAgent:
                     self.state[relation_type][self.name2opid[new_relations['to_name']]]=True
 
                     if new_relations['relation_type'].lower()=='close':
-                        action_effects+=f"Robot is close to the {new_relations['to_name']}. "
+                        if not check_unexplorable(new_relations['to_name']):
+                            action_effects+=f"Robot is close to the {new_relations['to_name']}. "
                     else:
                         action_effects+=f"Robot is {new_relations['relation_type'].lower()} the {new_relations['to_name']}. "
 
@@ -523,7 +533,8 @@ class BaseAgent:
             else:
                 if self.relations[new_relations['relation_type'].lower()][self.name2opid[new_relations['from_name']]][self.name2opid[new_relations['to_name']]]!=True:
                     # means this relation is not already known
-                    # action_effects+=f"{new_relations['from_name']} is {new_relations['relation_type'].lower()} {new_relations['to_name']}. "
+                    if new_relations['from_name'] in action_related_objects and new_relations['to_name'] in action_related_objects:
+                        action_effects+=f"{new_relations['from_name']} is {new_relations['relation_type'].lower()} {new_relations['to_name']}. "
                     self.relations[new_relations['relation_type'].lower()][self.name2opid[new_relations['from_name']]][self.name2opid[new_relations['to_name']]]=True
 
         for delete_relations in observation['remove_relations']:# delete relations
@@ -543,45 +554,70 @@ class BaseAgent:
                 else:
                     relation_type=delete_relations['relation_type'].lower()+"_char"
                     if self.state[relation_type][self.name2opid[delete_relations['to_name']]]==True:
-                        action_effects+=f"Robot is no longer {delete_relations['relation_type'].lower()} {delete_relations['to_name']}."
+                        if delete_relations['from_name'] in action_related_objects and delete_relations['to_name'] in action_related_objects:
+                            action_effects+=f"Robot is no longer {delete_relations['relation_type'].lower()} {delete_relations['to_name']}."
                         self.state[relation_type][self.name2opid[delete_relations['to_name']]]=False
             elif delete_relations['to_name']=='char' and delete_relations['relation_type']=='ON':
                 self.state['on_body'][self.name2opid[delete_relations['from_name']]]=False
             else:
                 if self.relations[delete_relations['relation_type'].lower()][self.name2opid[delete_relations['from_name']]][self.name2opid[delete_relations['to_name']]]==True:
-                    # action_effects+=f"{delete_relations['from_name']} is no longer {delete_relations['relation_type'].lower()} {delete_relations['to_name']}."
+                    if delete_relations['from_name'] in action_related_objects and delete_relations['to_name'] in action_related_objects:
+                        action_effects+=f"{delete_relations['from_name']} is no longer {delete_relations['relation_type'].lower()} {delete_relations['to_name']}."
                     self.relations[delete_relations['relation_type'].lower()][self.name2opid[delete_relations['from_name']]][self.name2opid[delete_relations['to_name']]]=False
         
         for obj_name in observation['states']:
-            update_list=observation['states'][obj_name]
+            update_list = observation['states'][obj_name]
+            state_change_str = ""
+
             for update in update_list:
-                state_info=update.name.lower()
-                if state_info=='clean':
-                    self.state['clean'][self.name2opid[obj_name]]=True
-                    self.state['dirty'][self.name2opid[obj_name]]=False
-                elif state_info=='dirty':
-                    self.state['dirty'][self.name2opid[obj_name]]=True
-                    self.state['clean'][self.name2opid[obj_name]]=False
-                elif state_info=='open':
-                    self.state['open'][self.name2opid[obj_name]]=True
-                    self.state['closed'][self.name2opid[obj_name]]=False
-                elif state_info=='closed':
-                    self.state['closed'][self.name2opid[obj_name]]=True
-                    self.state['open'][self.name2opid[obj_name]]=False
-                elif state_info=='plugged_in':
-                    self.state['plugged'][self.name2opid[obj_name]]=True
-                    self.state['unplugged'][self.name2opid[obj_name]]=False
-                elif state_info=='plugged_out':
-                    self.state['unplugged'][self.name2opid[obj_name]]=True
-                    self.state['plugged'][self.name2opid[obj_name]]=False
-                elif state_info=='on':
-                    self.state['is_on'][self.name2opid[obj_name]]=True
-                    self.state['is_off'][self.name2opid[obj_name]]=False
-                elif state_info=='off':
-                    self.state['is_off'][self.name2opid[obj_name]]=True
-                    self.state['is_on'][self.name2opid[obj_name]]=False
+                state_info = update.name.lower()
+                # Here we can add descriptive text based on the state transitions
+                if state_info == 'clean':
+                    if self.state['dirty'][self.name2opid[obj_name]]==True:
+                        state_change_str += f"{obj_name} is cleaned. "
+                    self.state['clean'][self.name2opid[obj_name]] = True
+                    self.state['dirty'][self.name2opid[obj_name]] = False
+                elif state_info == 'dirty':
+                    if self.state['clean'][self.name2opid[obj_name]]==True:
+                        state_change_str += f"{obj_name} becomes dirty. "
+                    self.state['dirty'][self.name2opid[obj_name]] = True
+                    self.state['clean'][self.name2opid[obj_name]] = False
+                elif state_info == 'open':
+                    if self.state['closed'][self.name2opid[obj_name]]==True:
+                        state_change_str += f"{obj_name} is opened. "
+                    self.state['open'][self.name2opid[obj_name]] = True
+                    self.state['closed'][self.name2opid[obj_name]] = False
+                elif state_info == 'closed':
+                    if self.state['open'][self.name2opid[obj_name]]==True:
+                        state_change_str += f"{obj_name} is closed. "
+                    self.state['closed'][self.name2opid[obj_name]] = True
+                    self.state['open'][self.name2opid[obj_name]] = False
+                elif state_info == 'plugged_in':
+                    if self.state['unplugged'][self.name2opid[obj_name]]==True:
+                        state_change_str += f"{obj_name} is plugged in. "
+                    self.state['plugged'][self.name2opid[obj_name]] = True
+                    self.state['unplugged'][self.name2opid[obj_name]] = False
+                elif state_info == 'plugged_out':
+                    if self.state['plugged'][self.name2opid[obj_name]]==True:
+                        state_change_str += f"{obj_name} is unplugged. "
+                    self.state['unplugged'][self.name2opid[obj_name]] = True
+                    self.state['plugged'][self.name2opid[obj_name]] = False
+                elif state_info == 'on':
+                    if self.state['is_off'][self.name2opid[obj_name]]==True:
+                        state_change_str += f"{obj_name} is turned on. "
+                    self.state['is_on'][self.name2opid[obj_name]] = True
+                    self.state['is_off'][self.name2opid[obj_name]] = False
+                elif state_info == 'off':
+                    if self.state['is_on'][self.name2opid[obj_name]]==True:
+                        state_change_str += f"{obj_name} is turned off. "
+                    self.state['is_off'][self.name2opid[obj_name]] = True
+                    self.state['is_on'][self.name2opid[obj_name]] = False
                 else:
-                    print('error in state updates')
+                    print('Error in state updates')
+            if obj_name in action_related_objects:
+                action_effects+=state_change_str
+        # self.report_state('close_char')
+        print(action_effects)
         return action_effects
     
 
@@ -608,3 +644,23 @@ class BaseAgent:
             union_indices = rh.union(lh)
             if knife_id in union_indices:
                 self.state['cut'][target_id]=True
+
+
+
+
+    # ----------------- Debugging -----------------
+    def report_state(self, state_name):
+        # report all the related state and object name
+        print(f"State: {state_name}")
+        for object_name, object_id in self.name2opid.items():
+            if self.state[state_name][object_id]==True:
+                print(f"{object_name} has {state_name}.")
+
+    def report_relation(self, relation_name, from_name):
+        print(f"Relation: {relation_name}")
+        for object_name, object_id in self.name2opid.items():
+            if self.relations[relation_name][self.name2opid[from_name]][object_id]==True:
+                print(f"{object_name} is {relation_name} {from_name}.")
+        
+
+    

@@ -46,7 +46,7 @@ def primitive_actions():
     prompt="""Primitive Actions (The actions that you can execute):
 walk_executor(x: item): get close to the item. (Preconditions: The character must be standing, and the item must not be unknown.)
 switchoff_executor(x: item): turns off the item. (Preconditions: The item must have a switch, the character must have a free hand, and the character must be close to the item.)
-switchon_executor(x: item): turns on the item. (Preconditions: The item must have a switch, the character must have a free hand, the item must not be unknown, and if the item has a plug, it must be plugged in; if it can be opened, it must be closed, and the character must be close to the item.)
+switchon_executor(x: item): turns on the item. (Preconditions: The item must have a switch, the character must have a free hand, the item must not be unknown, and if the item has a plug, it must be plugged in; if it can be opened, it must be closed (Except for the stove), and the character must be close to the item.)
 put_executor(x: item, y: item): places the item onto the item y.(Preconditions: The items x and y must not be unknown, the character must have the item in hand, and the character must be close to the item y.)
 putin_executor(x: item, y: item): places the item inside the item y. (Preconditions: The item y must be a recipient, container, openable, or eatable; the items x and y must not be unknown; if y is openable, it must be opened; the character must have the item in hand and be close to the item y.)
 grab_executor(x: item): grabs or picks up the item. (Preconditions: The item must be grabbable or water, the item must not be unknown, the character must have a free hand, if x is inside another item and that item is openable, it must be opened, and the character must be close to the item.)
@@ -75,7 +75,7 @@ def guidance():
     - For unknown items, move to the location where they are most likely to be. If you believe the item is inside a container, such as a refrigerator, open the container to check. Once you successfully approach the item, you will receive an observation that can be used to update your knowledge.
     - Limit yourself to holding a maximum of two items at any given time.
     - Before retrieving an item from a closed container, ensure the container is opened first.
-    - To fill a container with water, hold a container (e.g., a cup), approach the faucet, turn it on, and then turn it off. Ignore the precise details, such as the exact duration the faucet should remain open. Assume that all actions are performed correctly and imidiately.
+    - To fill a container with water, if the container can be opened, open it first. Then hold the container (e.g., a cup), approach the faucet, turn it on, and then turn it off. Ignore the precise details, such as the exact duration the faucet should remain open. Assume that all actions are performed correctly and immediately.
     - If both of your hands are occupied and you need to free one, place the item on a surface.
     - To turn off an appliance, switch it off before interacting with it. When switching on an appliance, ensure it is closed first.
     - When cutting something, place it on a cutting board and hold the knife to cut.

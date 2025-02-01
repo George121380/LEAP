@@ -1,0 +1,87 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Find the book and put it on the coffee table in the home office.', '2. Prepare a cup of hot milk and put it on the same table.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_book_2067_around_bookshelf_101(book:item):
+    goal: not unknown(book)
+    body:
+        assert is_book(book)
+        bind bookshelf_instance:item where:
+            is_bookshelf(bookshelf_instance) and id[bookshelf_instance]==101
+        achieve close_char(char,bookshelf_instance)
+        if can_open(bookshelf_instance):
+            achieve_once open(bookshelf_instance)
+            exp(book,bookshelf_instance)
+        else:
+            exp(book,bookshelf_instance)
+    eff:
+        unknown[book]=False
+        close[book,bookshelf_instance]=True
+        close[bookshelf_instance,book]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def location_in_home_office(item:item):
+    # Function to check if an item is inside the home office
+    symbol inside_home_office = exists location: item : is_home_office(location) and inside(item, location)
+    return inside_home_office
+
+behavior find_and_put_book_on_table(book:item, table:item):
+    body:
+        grab(book)
+        put_on(book, table)
+
+behavior __goal__():
+    body:
+        bind book: item where:
+            is_book(book)
+        bind coffee_table: item where:
+            is_coffee_table(coffee_table) and location_in_home_office(coffee_table)
+        
+        if not exists table: item : is_coffee_table(table) and location_in_home_office(table):
+            # Check all unvisited items in search of the coffee table if not known
+            foreach table: item:
+                if is_coffee_table(table) and not visited(table):
+                    observe(table, "Check if it is the coffee table in home office")
+        
+        if not exists book: item : is_book(book) and location_in_home_office(book):
+            # Check all unvisited items in search of the book if not known
+            foreach item: item:
+                if is_book(item) and not visited(item):
+                    observe(item, "Check if it is the required book")
+                    if location_in_home_office(item):
+                        bind book: item where:
+                            is_book(book) and location_in_home_office(book)
+        
+        find_and_put_book_on_table(book, coffee_table)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+Fail to generate the goal representation
+##############################
+Task Summary:
+Task Goal:
+Syntax Error
+Action History:
+[]
+Time info:
+Time consume: 52 seconds
+Exp_helper query times: 0
+Guidance query times: 0
+library scale: 0
+Task complete rate:
+Keystate: k1 - Requires: 4 steps
+Keystate: k2 - Requires: 16 steps
+Keystate: k3 - Requires: 10 steps
+Action Completion Rate: No actions required
+Scene_id: 0
+##############################

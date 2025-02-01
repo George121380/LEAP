@@ -1,0 +1,740 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['Find a sink and wash your cat in it.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_soap_2053_around_cupboard_229(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==229
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(soap,cupboard_instance)
+        else:
+            exp(soap,cupboard_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,cupboard_instance]=True
+        close[cupboard_instance,soap]=True
+    
+
+behavior find_cat_2055_around_bathtub_30(cat:item):
+    goal: not unknown(cat)
+    body:
+        assert is_cat(cat)
+        bind bathtub_instance:item where:
+            is_bathtub(bathtub_instance) and id[bathtub_instance]==30
+        achieve close_char(char,bathtub_instance)
+        if can_open(bathtub_instance):
+            achieve_once open(bathtub_instance)
+            exp(cat,bathtub_instance)
+        else:
+            exp(cat,bathtub_instance)
+    eff:
+        unknown[cat]=False
+        close[cat,bathtub_instance]=True
+        close[bathtub_instance,cat]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def find_sink_with_water(sink:item):
+    # Function to check if a sink has water
+    symbol has_water_sink=exists faucet: item : is_faucet(faucet) and close(faucet, sink) and is_on(faucet)
+    return has_water_sink
+
+behavior clean_cat(cat:item, sink:item):
+    # Define a behavior to clean the cat in the sink with water
+    body:
+        achieve_once inside(cat, sink)
+        # Ensure the cat is placed inside the sink
+
+        if find_sink_with_water(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_on(faucet)
+            # Turn the faucet on if the sink has water
+            wash(cat) # Washing the cat
+
+            achieve_once is_off(faucet)
+            # Ensure to turn off the faucet after washing
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and find_sink_with_water(sink) 
+        # Select a sink with water
+
+        bind cat: item where:
+            is_cat(cat)
+        # Select the cat item for washing
+
+        clean_cat(cat, sink)
+
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_soap_2053_around_sink_231(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind sink_instance:item where:
+            is_sink(sink_instance) and id[sink_instance]==231
+        achieve close_char(char,sink_instance)
+        if can_open(sink_instance):
+            achieve_once open(sink_instance)
+            exp(soap,sink_instance)
+        else:
+            exp(soap,sink_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,sink_instance]=True
+        close[sink_instance,soap]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def can_wash_cat(sink:item):
+    # Function to check if a sink can be used to wash the cat
+    symbol can_wash=exists faucet: item : is_faucet(faucet) and close(faucet, sink)
+    return can_wash
+
+behavior wash_cat_in_sink(cat:item, sink:item):
+    body:
+        achieve_once inside(cat, sink)
+        # Ensure the cat is placed inside the sink
+
+        if can_wash_cat(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet,sink)
+            achieve_once is_on(faucet)
+            # If the sink has a faucet, turn it on to wash the cat
+
+        wash(cat) # Wash the cat
+
+        if can_wash_cat(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet,sink)
+            achieve_once is_off(faucet)
+            # If the sink has a faucet, turn it off after washing
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+
+        if exists sink: item : is_sink(sink) and can_wash_cat(sink):
+            # If we know a suitable sink, approach it
+            bind sink: item where:
+                is_sink(sink) and can_wash_cat(sink)
+            achieve close_char(char, sink)
+            wash_cat_in_sink(cat, sink)
+        else:
+            # Otherwise, search for a sink
+            foreach sink: item:
+                if is_sink(sink) and not visited(sink):
+                    observe(sink,"Check if the sink can be used to wash the cat")
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_cat_2055_around_sink_42(cat:item):
+    goal: not unknown(cat)
+    body:
+        assert is_cat(cat)
+        bind sink_instance:item where:
+            is_sink(sink_instance) and id[sink_instance]==42
+        achieve close_char(char,sink_instance)
+        if can_open(sink_instance):
+            achieve_once open(sink_instance)
+            exp(cat,sink_instance)
+        else:
+            exp(cat,sink_instance)
+    eff:
+        unknown[cat]=False
+        close[cat,sink_instance]=True
+        close[sink_instance,cat]=True
+    
+
+behavior find_soap_2053_around_sink_42(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind sink_instance:item where:
+            is_sink(sink_instance) and id[sink_instance]==42
+        achieve close_char(char,sink_instance)
+        if can_open(sink_instance):
+            achieve_once open(sink_instance)
+            exp(soap,sink_instance)
+        else:
+            exp(soap,sink_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,sink_instance]=True
+        close[sink_instance,soap]=True
+    
+
+behavior find_detergent_2084_around_cupboard_229(detergent:item):
+    goal: not unknown(detergent)
+    body:
+        assert is_detergent(detergent)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==229
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(detergent,cupboard_instance)
+        else:
+            exp(detergent,cupboard_instance)
+    eff:
+        unknown[detergent]=False
+        close[detergent,cupboard_instance]=True
+        close[cupboard_instance,detergent]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def has_faucet(sink:item):
+    # Determine if the sink has a faucet
+    symbol has_faucet=exists faucet:item : is_faucet(faucet) and close(faucet, sink)
+    return has_faucet
+
+behavior wash_cat_in_sink(cat:item, sink:item):
+    body:
+        achieve_once inside(cat, sink)
+        # Ensure the cat is placed inside the sink
+
+        if has_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_on(faucet)
+            # If the sink has a faucet, turn it on to wash the cat
+
+        wash(cat) # Wash the cat
+        
+        if has_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_off(faucet)
+            # Turn off the faucet after washing the cat
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        # Select the cat
+
+        if exists sink: item : is_sink(sink) and has_faucet(sink):
+            # If a sink with a faucet is known
+            bind sink: item where:
+                is_sink(sink) and has_faucet(sink)
+            wash_cat_in_sink(cat, sink)
+        else:
+            # Explore to find a suitable sink
+            foreach sink: item:
+                if is_sink(sink) and not visited(sink):
+                    observe(sink,"Check if it has a faucet suitable for washing the cat")
+                    if has_faucet(sink):
+                        wash_cat_in_sink(cat, sink)
+                        break
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "behavior_definition":
+
+Unknown variable: break; available variables: [Variable<sink: item>].
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_soap_2054_around_sink_42(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind sink_instance:item where:
+            is_sink(sink_instance) and id[sink_instance]==42
+        achieve close_char(char,sink_instance)
+        if can_open(sink_instance):
+            achieve_once open(sink_instance)
+            exp(soap,sink_instance)
+        else:
+            exp(soap,sink_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,sink_instance]=True
+        close[sink_instance,soap]=True
+    
+
+behavior find_towel_2056_around_bathroom_cabinet_40(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind bathroom_cabinet_instance:item where:
+            is_bathroom_cabinet(bathroom_cabinet_instance) and id[bathroom_cabinet_instance]==40
+        achieve close_char(char,bathroom_cabinet_instance)
+        if can_open(bathroom_cabinet_instance):
+            achieve_once open(bathroom_cabinet_instance)
+            exp(towel,bathroom_cabinet_instance)
+        else:
+            exp(towel,bathroom_cabinet_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,bathroom_cabinet_instance]=True
+        close[bathroom_cabinet_instance,towel]=True
+    
+
+#goal_representation
+ 
+def has_faucet(sink:item):
+    # Determine if the sink has a faucet
+    symbol has_faucet=exists faucet:item : is_faucet(faucet) and close(faucet, sink)
+    return has_faucet
+
+behavior wash_cat_in_sink(cat:item, sink:item):
+    body:
+        achieve_once inside(cat, sink)
+        # Ensure the cat is placed inside the sink
+
+        if has_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_on(faucet)
+            # If the sink has a faucet, turn it on to wash the cat
+
+        wash(cat) # Wash the cat
+        
+        if has_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_off(faucet)
+            # Turn off the faucet after washing the cat
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        # Select the cat
+
+        if exists sink: item : is_sink(sink) and has_faucet(sink):
+            # If a sink with a faucet is known
+            bind sink: item where:
+                is_sink(sink) and has_faucet(sink)
+            wash_cat_in_sink(cat, sink)
+        else:
+            # Explore to find a suitable sink
+            foreach sink: item:
+                if is_sink(sink) and not visited(sink):
+                    observe(sink,"Check if it has a faucet suitable for washing the cat")
+                    if has_faucet(sink):
+                        wash_cat_in_sink(cat, sink)
+                        break
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "behavior_definition":
+
+Unknown variable: break; available variables: [Variable<sink: item>].
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_soap_2053_around_cupboard_229(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==229
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(soap,cupboard_instance)
+        else:
+            exp(soap,cupboard_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,cupboard_instance]=True
+        close[cupboard_instance,soap]=True
+    
+
+behavior find_cat_2055_around_couch_352(cat:item):
+    goal: not unknown(cat)
+    body:
+        assert is_cat(cat)
+        bind couch_instance:item where:
+            is_couch(couch_instance) and id[couch_instance]==352
+        achieve close_char(char,couch_instance)
+        if can_open(couch_instance):
+            achieve_once open(couch_instance)
+            exp(cat,couch_instance)
+        else:
+            exp(cat,couch_instance)
+    eff:
+        unknown[cat]=False
+        close[cat,couch_instance]=True
+        close[couch_instance,cat]=True
+    
+
+#goal_representation
+ 
+def has_faucet(sink:item):
+    # Determine if the sink has a faucet
+    symbol has_faucet=exists faucet:item : is_faucet(faucet) and close(faucet, sink)
+    return has_faucet
+
+behavior wash_cat_in_sink(cat:item, sink:item):
+    body:
+        achieve_once inside(cat, sink)
+        # Ensure the cat is placed inside the sink
+
+        if has_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_on(faucet)
+            # If the sink has a faucet, turn it on to wash the cat
+
+        wash(cat) # Wash the cat
+        
+        if has_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_off(faucet)
+            # Turn off the faucet after washing the cat
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        # Select the cat
+
+        if exists sink: item : is_sink(sink) and has_faucet(sink):
+            # If a sink with a faucet is known
+            bind sink: item where:
+                is_sink(sink) and has_faucet(sink)
+            wash_cat_in_sink(cat, sink)
+        else:
+            # Explore to find a suitable sink
+            foreach sink: item:
+                if is_sink(sink) and not visited(sink):
+                    observe(sink,"Check if it has a faucet suitable for washing the cat")
+                    if has_faucet(sink):
+                        wash_cat_in_sink(cat, sink)
+                        break
+
+#goal_representation_end
+
+##############################
+VH_pipeline: Fail to generate a valid plan
+##############################
+From agent.py->reset_goal
+Fail to generate the goal representation
+##############################
+From agent.py -> query_LLM_human
+Record from func query_LLM_human in agent.py
+Question: Can you teach me how to "find a sink and wash your cat in it." ?
+Answer: Find the cat on the couch.
+Re-decompose: True
+
+##############################
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Find the cat on the couch.', '2. Take the cat to the sink and wash it.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_cat_2055_around_couch_352(cat:item):
+    goal: not unknown(cat)
+    body:
+        assert is_cat(cat)
+        bind couch_instance:item where:
+            is_couch(couch_instance) and id[couch_instance]==352
+        achieve close_char(char,couch_instance)
+        if can_open(couch_instance):
+            achieve_once open(couch_instance)
+            exp(cat,couch_instance)
+        else:
+            exp(cat,couch_instance)
+    eff:
+        unknown[cat]=False
+        close[cat,couch_instance]=True
+        close[couch_instance,cat]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior approach_couch(couch:item):
+    body:
+        achieve close_char(char, couch)
+        # Move the character closer to the couch
+
+behavior inspect_couch_for_cat(couch:item):
+    body:
+        observe(couch, "Check if the cat is on the couch")
+        # Observe the couch to see if the cat is present
+
+behavior __goal__():
+    body:
+        bind couch: item where:
+            is_couch(couch)
+        # Select a known couch
+        approach_couch(couch)
+        inspect_couch_for_cat(couch)
+
+#goal_representation_end
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(couch_352)obs(couch_352, Check if the cat is on the couch)
+##############################
+From agent.py
+walk_executor(couch_352)
+Find mat_401. Find remote_control_2052. Find cat_2055. Find drawing_400. Find pillow_405. Find vacuum_cleaner_2070. Find pillow_406. Find hairbrush_2002. Find clothes_jacket_2047. Robot is inside the home_office_319. Robot is close to the couch_352. Robot is close to the mat_401. Robot is no longer inside bathroom_1.
+##############################
+From agent.py
+obs(couch_352, Check if the cat is on the couch)
+Get this information:  couch_352 is close to remote_control_2052. couch_352 is close to cat_2055. couch_352 is close to drawing_400. couch_352 is close to mat_401. couch_352 is close to pillow_405. couch_352 is close to vacuum_cleaner_2070. couch_352 is close to curtain_407. couch_352 is close to pillow_406. couch_352 is close to curtain_408. couch_352 is close to curtain_409. couch_352 is close to television_410. couch_352 is close to floor_321. couch_352 is close to floor_322. couch_352 is close to floor_323. couch_352 is close to floor_324. couch_352 is close to wall_329. couch_352 is close to wall_333. couch_352 is close to wall_335. couch_352 is close to hairbrush_2002. couch_352 is close to window_348. couch_352 is close to ceilinglamp_349. couch_352 is close to walllamp_350. couch_352 is close to tvstand_353. couch_352 is close to table_355. couch_352 is close to clothes_jacket_2047. couch_352 is close to character_65. pillow_406 is inside couch_352. hairbrush_2002 is on couch_352. couch_352 is on mat_401. curtain_409 is on couch_352. couch_352 is inside home_office_319. couch_352 is facing television_410. table_355 is inside couch_352. remote_control_2052 is on couch_352. cat_2055 is on couch_352. clothes_jacket_2047 is on couch_352. couch_352 is CLEAN.
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: Yes
+The feedback instruction: None
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior move_cat_to_sink(cat:item, sink:item):
+    body:
+        achieve close(cat, sink)
+        # Bring the cat close to the sink
+
+behavior wash_cat(cat:item, sink:item):
+    body:
+        achieve_once inside(cat, sink)
+        # Place the cat inside the sink
+
+        if has_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_on(faucet)
+            # Turn on the faucet if the sink has one
+
+        wash(cat)
+        # Wash the cat
+
+        if has_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_off(faucet)
+            # Turn off the faucet after washing
+
+def has_faucet(sink:item):
+    # Determine whether the sink has a faucet
+    symbol has_faucet=exists faucet:item: is_faucet(faucet) and close(faucet, sink)
+    return has_faucet
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        bind sink: item where:
+            is_sink(sink)
+        # Select the cat and the sink
+
+        move_cat_to_sink(cat, sink)
+        wash_cat(cat, sink)
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "behavior_definition":
+
+'Function has_faucet not found. Note that recursive function calls are not supported in the current version.'
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+#goal_representation
+ 
+behavior move_cat_to_sink(cat:item, sink:item):
+    body:
+        achieve close(cat, sink)
+        # Bring the cat close to the sink
+
+behavior wash_cat(cat:item, sink:item):
+    body:
+        achieve_once inside(cat, sink)
+        # Place the cat inside the sink
+
+        if exists faucet: item : is_faucet(faucet) and close(faucet, sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_on(faucet)
+            # Turn on the faucet if the sink has one
+
+        wash(cat)
+        # Wash the cat
+
+        if exists faucet: item : is_faucet(faucet) and close(faucet, sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_off(faucet)
+            # Turn off the faucet after washing
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        bind sink: item where:
+            is_sink(sink)
+        # Select the cat and the sink
+
+        move_cat_to_sink(cat, sink)
+        wash_cat(cat, sink)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+behavior move_cat_to_sink(cat:item, sink:item):
+    body:
+        achieve close(cat, sink)
+        # Bring the cat close to the sink
+
+behavior wash_cat(cat:item, sink:item):
+    body:
+        achieve_once inside(cat, sink)
+        # Place the cat inside the sink
+
+        if exists faucet: item : is_faucet(faucet) and close(faucet, sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_on(faucet)
+            # Turn on the faucet if the sink has one
+
+        wash(cat)
+        # Wash the cat
+
+        if exists faucet: item : is_faucet(faucet) and close(faucet, sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_off(faucet)
+            # Turn off the faucet after washing
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        bind sink: item where:
+            is_sink(sink)
+        # Select the cat and the sink
+
+        move_cat_to_sink(cat, sink)
+        wash_cat(cat, sink)
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(cat_2055)grab_executor(cat_2055)walk_executor(sink_42)put_executor(cat_2055, sink_42)walk_executor(cat_2055)grab_executor(cat_2055)walk_executor(sink_42)putin_executor(cat_2055, sink_42)walk_executor(faucet_43)switchon_executor(faucet_43)walk_executor(cat_2055)wash_executor(cat_2055)
+##############################
+From agent.py
+walk_executor(cat_2055)
+Robot is inside the home_office_319. Robot is close to the couch_352. Robot is close to the cat_2055. Robot is no longer close mat_401.
+##############################
+From agent.py
+grab_executor(cat_2055)
+Robot is inside the home_office_319. Robot is close to the couch_352. Robot is close to the cat_2055. Grabbing cat_2055 by right hand. 
+##############################
+From agent.py
+walk_executor(sink_42)
+Find towel_rack_32. Find towel_rack_34. Find towel_rack_31. Find detergent_2084. Find soap_2053. Find basket_for_clothes_2006. Find cleaning_solution_2073. Robot is inside the bathroom_1. Robot is close to the cat_2055. Robot is close to the bathroom_counter_41. Robot is close to the sink_42. Robot is no longer inside home_office_319.Robot is no longer close couch_352.
+##############################
+From agent.py
+put_executor(cat_2055, sink_42)
+Find drawing_176. Robot is inside the bathroom_1. Robot is close to the cat_2055. Robot is close to the bathroom_counter_41. Robot is close to the sink_42. cat_2055 released by right hand. 
+##############################
+From agent.py
+walk_executor(cat_2055)
+Robot is inside the home_office_319. Robot is close to the cat_2055. Robot is close to the sink_42. Robot is no longer inside bathroom_1.Robot is no longer close bathroom_counter_41.
+##############################
+From agent.py
+grab_executor(cat_2055)
+Robot is inside the home_office_319. Robot is close to the cat_2055. Robot is close to the sink_42. Grabbing cat_2055 by right hand. 
+##############################
+From agent.py
+walk_executor(sink_42)
+Robot is inside the bathroom_1. Robot is close to the cat_2055. Robot is close to the sink_42. Robot is close to the bathroom_counter_41. Robot is no longer inside home_office_319.
+##############################
+From agent.py
+putin_executor(cat_2055, sink_42)
+Robot is inside the bathroom_1. Robot is close to the cat_2055. Robot is close to the sink_42. Robot is close to the bathroom_counter_41. cat_2055 released by right hand. 
+##############################
+From agent.py
+walk_executor(faucet_43)
+Robot is inside the bathroom_1. Robot is close to the bathroom_counter_41. Robot is close to the faucet_43. Robot is no longer close sink_42.Robot is no longer close cat_2055.
+##############################
+From agent.py
+switchon_executor(faucet_43)
+Robot is inside the bathroom_1. Robot is close to the bathroom_counter_41. Robot is close to the faucet_43. 
+##############################
+From agent.py
+walk_executor(cat_2055)
+Robot is inside the home_office_319. Robot is close to the sink_42. Robot is close to the cat_2055. Robot is no longer inside bathroom_1.Robot is no longer close bathroom_counter_41.Robot is no longer close faucet_43.
+##############################
+From agent.py
+wash_executor(cat_2055)
+Robot is inside the home_office_319. Robot is close to the sink_42. Robot is close to the cat_2055. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: Yes
+The feedback instruction: None
+##############################
+Task Summary:
+Task Goal:
+Wash my cat in a sink
+Action History:
+['walk_executor(couch_352)', 'walk_executor(cat_2055)', 'grab_executor(cat_2055)', 'walk_executor(sink_42)', 'put_executor(cat_2055, sink_42)', 'walk_executor(cat_2055)', 'grab_executor(cat_2055)', 'walk_executor(sink_42)', 'putin_executor(cat_2055, sink_42)', 'walk_executor(faucet_43)', 'switchon_executor(faucet_43)', 'walk_executor(cat_2055)', 'wash_executor(cat_2055)']
+Time info:
+Time consume: 126 seconds
+Exp_helper query times: 0
+Guidance query times: 1
+library scale: 2
+goal generate times: 5
+goal correct times: 3
+
+Task complete rate:
+1
+Scene_id: 0
+##############################

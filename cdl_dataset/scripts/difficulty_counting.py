@@ -56,12 +56,10 @@ def load_scene(scene_id):
     with open(scene_path) as f:
         scene=json.load(f)
     init_scene_graph = EnvironmentGraph(scene)
-    guidance_path='cdl_dataset/human_guidancea_library.json'
-    guidance=json.load(open(guidance_path))
     additional_information=''
     objects,states,relationships,properties,categories,classes,cat_statement, sizes=get_nodes_information(init_scene_graph)
     construct_cdl(init_path,objects,states,relationships,properties,cat_statement, sizes)
-    return additional_information,classes,init_scene_graph,guidance
+    return additional_information,classes,init_scene_graph
 
 def evaluation_task_loader(dataset_folder_path):
     all_files=[]
@@ -114,8 +112,15 @@ def run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph,guidance)
             plan=evaluator.complete_single_keystate(key)
             result_dict[task_path][str(combination)][key]=len(plan)
             for action in plan:
+                # print("#"*60)
                 print('Action: ',str(action))
+                if "open" in str(action):
+                    print("debug")
                 observation = env.step(action) #Execute action
+                # print(env.find_room(2069))
+                # print(env.get_visible_list())
+                # print("#"*60)
+
                 if 'You can not' in observation:
                     print(observation)
                     raise Exception('Syntax Error')
@@ -129,11 +134,11 @@ def counting(args):
     epoch_logger = setup_task_logger(f'log/epoch_{timestamp}')
     files = tqdm(files, desc="Evaluating tasks")
     for task_file in files:
-        _,classes,init_scene_graph,guidance=load_scene(args.scene_id)
+        _,classes,init_scene_graph=load_scene(args.scene_id)
         task_path=os.path.join(dataset_folder_path,task_file)
         if task_path in result_dict:
             continue
-        Debug=run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph,guidance)
+        Debug=run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph,None)
     print(result_dict)
         
 if __name__ == '__main__':

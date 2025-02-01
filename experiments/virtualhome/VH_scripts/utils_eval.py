@@ -380,7 +380,7 @@ def check_unexplorable(location_name):
     if location_name=='char':
         return True
     location_category='_'.join(location_name.split('_')[:-1])
-    unexplorable_list=['room','wall','ceiling','bathroom','bedroom','dining_room','floor']
+    unexplorable_list=['room','wall','ceiling','bathroom','bedroom','dining_room','home_office','floor']
     return location_category in unexplorable_list
 
 

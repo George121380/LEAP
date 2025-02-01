@@ -46,7 +46,12 @@ class LLM_Agent(BaseAgent):
 
         super().__init__(config, filepath, task_logger, epoch_path, agent_base_type='action')
     
-        self.model=SentenceTransformer('paraphrase-MiniLM-L6-v2')  # You can choose other models
+        if not os.path.exists('utils/models/paraphrase-MiniLM-L6-v2'):
+            self.model=SentenceTransformer('paraphrase-MiniLM-L6-v2')
+            self.model.save_pretrained('utils/models/paraphrase-MiniLM-L6-v2')
+        else:
+            print('Load paraphrase-MiniLM-L6-v2 from the local file')
+            self.model=SentenceTransformer('utils/models/paraphrase-MiniLM-L6-v2')
 
         self.scene_info=None
         # Task information
@@ -215,11 +220,10 @@ class LLM_Agent(BaseAgent):
 
     
     def select_relevant_items(self, k=100):
-        model = SentenceTransformer('paraphrase-MiniLM-L6-v2')  # You can choose other models
         task_instruction = self.goal_nl
-        task_embedding = model.encode([task_instruction])  # Convert task instruction to vector
+        task_embedding = self.model.encode([task_instruction])  # Convert task instruction to vector
         item_list=list(self.name2opid.keys()) # Get all item names
-        item_embeddings = model.encode(item_list)          # Convert each item name to vector
+        item_embeddings = self.model.encode(item_list)          # Convert each item name to vector
         
         similarities = cosine_similarity(task_embedding, item_embeddings)[0]  # 1D array of similarities
         
@@ -441,5 +445,8 @@ class LLM_Agent(BaseAgent):
             'exp_helper_query_times':self.exp_helper_query_times,
             'guidance_query_times':self.guidance_query_times,
             'library_scale': 0,
+            'goal_generate_times': 0,
+            'goal_correct_times': 0,
         }
         return info
+    

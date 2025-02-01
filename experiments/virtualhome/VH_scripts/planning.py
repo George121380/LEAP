@@ -63,15 +63,29 @@ def refinement_operation(goal_int:str,correct_times_limit:int,state_file:str,exe
                 refinement_loop_feedback(plan,long_horizon_goal,prev_sub_goal_list,current_subgoal,behavior_from_library, goal_int, add_info, classes, agent_type)
 
             if partial_observation:
-                return plan,goal_int,exploration_content
+                return plan,goal_int,exploration_content,correct_time
             else:
-                return plan,goal_int,''
+                return plan,goal_int,'',correct_time
 
         except Exception as e:
             # Refine after error
+            
             if refinement and correct_time<correct_times_limit:
                 try:
                     error_info=e.errors
+                    # write all the errors in a log file
+
+                    # ------------------------------------------
+                    with open("error_log.txt", "a") as log_file:
+                        log_file.write(f"Error: {error_info}\n")
+                        log_file.write("-"*80 + "\n")
+                        log_file.write(f"Goal: {goal_int}\n")
+                        log_file.write("-"*80 + "\n")
+                        log_file.write(f"Exploration: {exploration_content}\n")
+                        log_file.write("#"*80 + "\n\n")
+                    # ------------------------------------------
+
+
                     assert isinstance(error_info,str)
                     print("Error information: ",error_info)
                     logger.info("Inner TransformationError Debug\n"+error_info)
@@ -98,9 +112,9 @@ def refinement_operation(goal_int:str,correct_times_limit:int,state_file:str,exe
                     logger.info(f"Error is:\n{e}")
                     print(f"Error is:\n{e}")
                     print("e does not have an 'error' attribute. Directly resample")
-                    return None,None,None
+                    return None,None,None,correct_time
             else:
-                return None,None,None    
+                return None,None,None,correct_time   
 
 def VH_pipeline(state_file:str,execute_file:str,current_subgoal:str,add_info:str,long_horizon_goal:str,prev_sub_goal_list:list,classes,checked_items,behavior_from_library,partial_observation=True, agent_type="Planning", refinement=True,loop_feedback=False,logger=None):
     """
@@ -115,7 +129,6 @@ def VH_pipeline(state_file:str,execute_file:str,current_subgoal:str,add_info:str
     partial_observation: Whether the observation is partial or not
     """
     generate_time=0
-    correct_time=0
 
     generate_times_limit=3
     correct_times_limit=2
@@ -129,13 +142,12 @@ def VH_pipeline(state_file:str,execute_file:str,current_subgoal:str,add_info:str
         goal_int=goal_interpretation(current_subgoal,add_info,long_horizon_goal,classes,prev_sub_goal_list,behavior_from_library, agent_type)
         goal_int=remove_special_characters(goal_int)
 
-        if correct_time<correct_times_limit:
-            correct_time+=1
-            plan,goal_int,exploration_content=refinement_operation(goal_int,correct_times_limit,state_file,execute_file,current_subgoal,add_info,long_horizon_goal,prev_sub_goal_list,classes,checked_items,behavior_from_library,partial_observation, agent_type, refinement,loop_feedback,logger)
-            if plan is not None:
-                if len(plan)>0:
-                    if len(plan[0])>0:
-                        return plan,goal_int,exploration_content
+        plan,goal_int,exploration_content,correct_time=refinement_operation(goal_int,correct_times_limit,state_file,execute_file,current_subgoal,add_info,long_horizon_goal,prev_sub_goal_list,classes,checked_items,behavior_from_library,partial_observation, agent_type, refinement,loop_feedback,logger)
+        if plan is not None:
+            if len(plan)>0:
+                if len(plan[0])>0:
+                    return plan,goal_int,exploration_content,generate_time,correct_time
         
-    print("debug")
-    return None,None,None  
+    print("VH_pipeline: Fail to generate a valid plan")
+    logger.info("VH_pipeline: Fail to generate a valid plan")
+    return None,None,None,generate_time,correct_time

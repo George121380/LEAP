@@ -1,0 +1,91 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['Wipe the toilet with toilet paper. Then throw it into the toilet.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_toilet_paper_2090_around_bathroom_cabinet_40(toilet_paper:item):
+    goal: not unknown(toilet_paper)
+    body:
+        assert is_toilet_paper(toilet_paper)
+        bind bathroom_cabinet_instance:item where:
+            is_bathroom_cabinet(bathroom_cabinet_instance) and id[bathroom_cabinet_instance]==40
+        achieve close_char(char,bathroom_cabinet_instance)
+        if can_open(bathroom_cabinet_instance):
+            achieve_once open(bathroom_cabinet_instance)
+            exp(toilet_paper,bathroom_cabinet_instance)
+        else:
+            exp(toilet_paper,bathroom_cabinet_instance)
+    eff:
+        unknown[toilet_paper]=False
+        close[toilet_paper,bathroom_cabinet_instance]=True
+        close[bathroom_cabinet_instance,toilet_paper]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def has_toilet_paper_available():
+    # Determine if there is toilet paper available
+    symbol has_paper=exists paper: item : is_toilet_paper(paper) 
+    return has_paper
+
+def has_toilet_visited():
+    # Determine if the toilet has been visited
+    symbol visited_toilet=exists toilet: item : is_toilet(toilet) and visited(toilet)
+    return visited_toilet
+
+behavior wipe_toilet_with_paper(toilet:item, paper:item):
+    body:
+        achieve dirty(toilet) # Assume the toilet is dirty initially
+        wipe(toilet) # Use the paper to wipe the toilet
+        achieve clean(toilet) # Ensure the toilet is clean after wiping
+
+behavior throw_paper_in_toilet(paper:item, toilet:item):
+    body:
+        achieve inside(paper, toilet) # Throw the used toilet paper into the toilet
+
+behavior __goal__():
+    body:
+        if has_toilet_paper_available() and has_toilet_visited():
+            bind paper: item where:
+                is_toilet_paper(paper)
+            bind toilet: item where:
+                is_toilet(toilet) and visited(toilet)
+            
+            wipe_toilet_with_paper(toilet, paper)
+            throw_paper_in_toilet(paper, toilet)
+        
+        else:
+            if not has_toilet_paper_available():
+                observe(Check if there is any toilet paper)
+            if not has_toilet_visited():
+                foreach toilet: item:
+                    if is_toilet(toilet) and not visited(toilet):
+                        observe(toilet, "Visit the toilet")
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+Fail to generate the goal representation
+##############################
+Task Summary:
+Task Goal:
+Syntax Error
+Action History:
+[]
+Time info:
+Time consume: 57 seconds
+Exp_helper query times: 0
+Guidance query times: 0
+library scale: 0
+Task complete rate:
+Keystate: k1 - Requires: 2 steps
+Keystate: k2 - Requires: 6 steps
+Action Completion Rate: 0.0
+Scene_id: 0
+##############################

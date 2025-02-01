@@ -41,6 +41,7 @@ class VHAgent(BaseAgent):
         self.current_subtask_guidance=''
         self.add_info_action_history=[]
         self.add_info_action_history_for_evaluation=[]
+        self.add_info_action_history_for_current_subgoal=[]
         self.exploration_behavior = ""
         self.goal_representation = ""
         self.behaviors_from_library={} # all skills in library
@@ -60,6 +61,9 @@ class VHAgent(BaseAgent):
         self.save_to_file()
         self.save_to_file(self.state_file_path)
         self.exp_helper_query_times=0
+
+        self.goal_generate_times=0
+        self.goal_correct_times=0
 
     """
     Functions for maintaining the library
@@ -84,13 +88,20 @@ class VHAgent(BaseAgent):
             self.library_pool.append(info)
         
         elif self.config.record_method == 'actions':
+            action_history_str = ''
+            idx = 1
+            for action in self.add_info_action_history_for_current_subgoal:
+                action_history_str+=f"Action{idx}: {action['action']} - Effect: {action['effects']}\n"
+                idx+=1
+    
             info={
                 'task_name':self.task_name,
                 'subgoal':self.current_subgoal_nl,
-                'action_history':self.add_info_action_history_for_evaluation, # TODO: replace this history
+                'action_history':action_history_str
             }
+
+            self.add_info_action_history_for_current_subgoal = []
             self.library_pool.append(info)
-        self.library_pool
 
 
     def download_behaviors_from_library(self):
@@ -294,6 +305,7 @@ class VHAgent(BaseAgent):
             self.annotation(observation)
             self.add_info_action_history.append({'action':str(observation['action']),'effects':action_effects})
             self.add_info_action_history_for_evaluation.append({'action':str(observation['action']),'effects':action_effects})
+            self.add_info_action_history_for_current_subgoal.append({'action':str(observation['action']),'effects':action_effects})
             self.update_add_info()
             self.logger.info("From agent.py\n"+str(observation['action'])+"\n"+action_effects)
             self.record_add_info()
@@ -498,7 +510,7 @@ class VHAgent(BaseAgent):
         
         # # debug
         # return
-        _, self.goal_representation, self.exploration_behavior = VH_pipeline(
+        _, self.goal_representation, self.exploration_behavior, generate_times, correct_times = VH_pipeline(
             state_file=self.state_file_path,
             execute_file=self.internal_executable_file_path,
             current_subgoal=self.current_subgoal_nl,
@@ -514,6 +526,8 @@ class VHAgent(BaseAgent):
             loop_feedback=self.config.loop_feedback,
             logger=self.logger
         )
+        self.goal_generate_times+=generate_times
+        self.goal_correct_times+=correct_times
 
         # block while test
         goal_representation_record=self.goal_representation
@@ -533,7 +547,7 @@ class VHAgent(BaseAgent):
                 if re_decompose:
                     self.reset_goal_decomposition()
                 
-                _, self.goal_representation, self.exploration_behavior = VH_pipeline(
+                _, self.goal_representation, self.exploration_behavior, generate_times, correct_times = VH_pipeline(
                     state_file=self.state_file_path,
                     execute_file=self.internal_executable_file_path,
                     current_subgoal=self.current_subgoal_nl,
@@ -549,6 +563,8 @@ class VHAgent(BaseAgent):
                     loop_feedback=self.config.loop_feedback,
                     logger=self.logger
                 )
+                self.goal_generate_times+=generate_times
+                self.goal_correct_times+=correct_times
 
                 if self.goal_representation==None:
                     print("Fail to generate the goal representation after asking for human guidance")
@@ -557,7 +573,7 @@ class VHAgent(BaseAgent):
     def reset_sub_goal(self):
         self.need_replan=True
         
-        _, self.goal_representation, self.exploration_behavior = VH_pipeline(
+        _, self.goal_representation, self.exploration_behavior, generate_times, correct_times = VH_pipeline(
             state_file=self.state_file_path,
             execute_file=self.internal_executable_file_path,
             current_subgoal=self.current_subgoal_nl,
@@ -573,6 +589,8 @@ class VHAgent(BaseAgent):
             loop_feedback=self.config.loop_feedback,
             logger=self.logger
         )
+        self.goal_generate_times+=generate_times
+        self.goal_correct_times+=correct_times
 
         if self.goal_representation==None:
             if self.guidance_block:
@@ -585,7 +603,7 @@ class VHAgent(BaseAgent):
                 if re_decompose:
                     self.reset_goal_decomposition()
                 
-                _, self.goal_representation, self.exploration_behavior = VH_pipeline(
+                _, self.goal_representation, self.exploration_behavior, generate_times, correct_times = VH_pipeline(
                     state_file=self.state_file_path,
                     execute_file=self.internal_executable_file_path,
                     current_subgoal=self.current_subgoal_nl,
@@ -601,6 +619,8 @@ class VHAgent(BaseAgent):
                     loop_feedback=self.config.loop_feedback,
                     logger=self.logger
                 )
+                self.goal_generate_times+=generate_times
+                self.goal_correct_times+=correct_times
 
                 if self.goal_representation==None:
                     print("Fail to generate the goal representation after asking for human guidance")
@@ -633,6 +653,8 @@ class VHAgent(BaseAgent):
             'exp_helper_query_times':self.exp_helper_query_times,
             'guidance_query_times':self.guidance_query_times,
             'library_scale':len(self.library.metadata),
+            'goal_generate_times':self.goal_generate_times,
+            'goal_correct_times':self.goal_correct_times,
         }
         return info
     

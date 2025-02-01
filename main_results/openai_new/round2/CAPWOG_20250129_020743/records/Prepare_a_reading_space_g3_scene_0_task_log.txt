@@ -1,0 +1,85 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Find the book and put it on the coffee table in the home office.  ', '2. Open the window in the home office.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_book_2067_around_bookshelf_233(book:item):
+    goal: not unknown(book)
+    body:
+        assert is_book(book)
+        bind bookshelf_instance:item where:
+            is_bookshelf(bookshelf_instance) and id[bookshelf_instance]==233
+        achieve close_char(char,bookshelf_instance)
+        if can_open(bookshelf_instance):
+            achieve_once open(bookshelf_instance)
+            exp(book,bookshelf_instance)
+        else:
+            exp(book,bookshelf_instance)
+    eff:
+        unknown[book]=False
+        close[book,bookshelf_instance]=True
+        close[bookshelf_instance,book]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_in_home_office(item: item):
+    symbol in_home_office = exists room: item : is_home_office(room) and inside(item, room)
+    return in_home_office
+
+def is_coffee_table_with_book(coffee_table: item):
+    symbol has_book = exists b: item : is_book(b) and on(b, coffee_table)
+    return has_book
+
+behavior put_book_on_coffee_table(book: item, coffee_table: item):
+    body:
+        grab(book)
+        put_on(book, coffee_table)
+        empty_a_hand()
+
+behavior __goal__():
+    body:
+        bind home_office: item where:
+            is_home_office(home_office)
+
+        if exists table: item : is_coffee_table(table) and is_coffee_table_with_book(table) and inside(table, home_office):
+            bind coffee_table: item where:
+                is_coffee_table(coffee_table) and is_coffee_table_with_book(coffee_table) and inside(coffee_table, home_office)
+            walk_to(coffee_table)
+        else:
+            foreach table: item:
+                if is_coffee_table(table) and is_in_home_office(table) and not visited(table):
+                    observe(table, "Check if there is a book on the coffee table")
+                    walk_to(table)
+                    if exists book: item : is_book(book) and on(book, table):
+                        bind book: item where:
+                            is_book(book) and on(book, table)
+                        put_book_on_coffee_table(book, table)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+Fail to generate the goal representation
+##############################
+Task Summary:
+Task Goal:
+Syntax Error
+Action History:
+[]
+Time info:
+Time consume: 54 seconds
+Exp_helper query times: 0
+Guidance query times: 0
+library scale: 0
+Task complete rate:
+Keystate: k1 - Requires: 4 steps
+Keystate: k2 - Requires: 2 steps
+Action Completion Rate: No actions required
+Scene_id: 0
+##############################

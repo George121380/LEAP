@@ -281,8 +281,13 @@ def set_agent(config, init_scene_graph, task_data, classes, task_logger, epoch_p
 
     if config.exp_name in ['LLM']:
 
-        long_task = "cdl_dataset/dataset/Put_groceries_in_Fridge/g3.txt"
-        if long_task in task_data['task_path']:
+        long_task_list = [
+            "/dataset/Put_groceries_in_Fridge/g3.txt",
+            "/dataset/Put_groceries_in_Fridge/g5.txt"
+            ]
+        key_folder = "cdl_dataset"
+        task_path = task_data['task_path'].split(key_folder)[1]
+        if task_path in long_task_list:
             difficulty = 150
         else:
             difficulty = 50

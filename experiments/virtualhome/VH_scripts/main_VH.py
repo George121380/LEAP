@@ -21,7 +21,7 @@ import os
 from dataset import parse_file_to_json
 from tqdm import tqdm
 import shutil
-from configs import OursWG, OursWOG, LLMWG, LLMWOG, LLMPlusPWG, LLMPlusPWOG, CAPWG, CAPWOG, load_scene, set_agent
+from configs import OursWG, OursWOG, LLMWG, LLMWOG, LLMPlusPWG, LLMPlusPWOG, CAPWG, CAPWOG, WOLibrary, ActionLibrary, WORefinement, WOSplit, PvP, load_scene, set_agent
 
 sys.setrecursionlimit(1000000)
 
@@ -43,9 +43,9 @@ def task_summary_record(epoch_logger, task_logger, scene_id, goal, action_histor
     """
     current_time = time.time()
     time_elapsed = int(current_time - start_time) if start_time else ''
-    time_info = f"Time consume: {time_elapsed} seconds\nExp_helper query times: {final_info['exp_helper_query_times']}\nGuidance query times: {final_info['guidance_query_times']}\nlibrary scale: {final_info['library_scale']}"
+    time_info = f"Time consume: {time_elapsed} seconds\nExp_helper query times: {final_info['exp_helper_query_times']}\nGuidance query times: {final_info['guidance_query_times']}\nlibrary scale: {final_info['library_scale']}\ngoal generate times: {final_info['goal_generate_times']}\ngoal correct times: {final_info['goal_correct_times']}\n"
     epoch_logger.info(task_path, goal, action_history, time_info, complete_rate, f"Scene_id: {str(scene_id)}")
-    task_logger.info("Task Summary:\nTask Goal:\n"+goal+"\nAction History:\n"+str(action_history)+"\nTime info:\n"+time_info+"\nTask complete rate:\n"+complete_rate+"\n"+f"Scene_id: {str(scene_id)}")
+    task_logger.info("Task Summary:\nTask Goal:\n"+goal+"\nAction History:\n"+str(action_history)+"\nTime info:\n"+time_info+"\nTask complete rate:\n"+str(complete_rate)+"\n"+f"Scene_id: {str(scene_id)}")
     
 def run(config,epoch_logger,epoch_path,task_path,classes,init_scene_graph):
     """
@@ -72,7 +72,7 @@ def run(config,epoch_logger,epoch_path,task_path,classes,init_scene_graph):
 
     while True:
         try:
-            action, plan = agent.act() # Planning   
+            action, plan = agent.act() # Planning 
             if action=="human guided":
                 continue 
             if action=="Failed":
@@ -118,7 +118,8 @@ def run(config,epoch_logger,epoch_path,task_path,classes,init_scene_graph):
         except Exception as e:
             print_task_info(task_data, config.scene_id)
             print("Error happend in the execution")
-            print(e)
+            print(str(e))
+            task_logger.info("Error record: "+str(e))
             evaluation_result,complete_rate=evaluator.evaluate_final(ast=None,action_history=agent.add_info_action_history_for_evaluation,Root=True)
             executed_actions=env.report_actions()
             task_summary_record(epoch_logger,task_logger,config.scene_id,'Syntax Error',executed_actions,start_time,complete_rate,task_path,agent.final_important_numbers_report())
@@ -144,8 +145,8 @@ def evaluate_single(config):
         raise Exception('Task path does not exist')
 
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    epoch_path = f'log/{config.logger_name}_{timestamp}'
-    epoch_logger = setup_epoch_logger(f'log/epoch_{timestamp}')
+    epoch_path = f'log/{timestamp}_{config.logger_name}'
+    epoch_logger = setup_epoch_logger(f'log/{timestamp}_{config.logger_name}')
 
     classes,init_scene_graph=load_scene(config.scene_id, epoch_path)
 
@@ -180,7 +181,7 @@ def evaluate_all_cross_scene(config): # main function
 
     else:
         # Create a new folder for the epoch
-        epoch_path = f'log/{config.logger_name}_{timestamp}'
+        epoch_path = f'log/{timestamp}_{config.logger_name}'
         epoch_logger = setup_epoch_logger(epoch_path)
 
         if running_mode == 'test':
@@ -230,6 +231,7 @@ if __name__ == '__main__':
     Main function: Prompt user to select a config, then select whether to evaluate a single task or all tasks.
     """
     print("Please select the config to use:")
+    print("---------- Baselines ----------")
     print("1) OursWG")
     print("2) OursWOG")
     print("3) LLMWG")
@@ -238,6 +240,12 @@ if __name__ == '__main__':
     print("6) LLMPlusPWOG")
     print("7) CAPWG")
     print("8) CAPWOG")
+    print("---------- Ablations ----------")
+    print("9) WOLibrary")
+    print("10) ActionLibrary")
+    print("11) WORefinement")
+    print("12) WOSplit")
+    print("13) PvP")
     config_choice = input("Enter the number: ").strip()
 
     if config_choice == '1':
@@ -254,8 +262,20 @@ if __name__ == '__main__':
         config = LLMPlusPWOG()
     elif config_choice == '7':
         config = CAPWG()
-    else:
+    elif config_choice == '8':
         config = CAPWOG()
+    elif config_choice == '9':
+        config = WOLibrary()
+    elif config_choice == '10':
+        config = ActionLibrary()
+    elif config_choice == '11':
+        config = WORefinement()
+    elif config_choice == '12':
+        config = WOSplit()
+    elif config_choice == '13':
+        config = PvP()
+    else:
+        raise Exception('Invalid config choice')
 
     print("\nPlease select the mode:")
     print("1) single (evaluate a single task)")
@@ -274,3 +294,8 @@ if __name__ == '__main__':
         else:
             config.checkpoint = ''
         evaluate_all_cross_scene(config)
+
+
+        #cdl_dataset/dataset/Wash_windows/g1.txt
+        
+        #/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/cdl_dataset/dataset/Put_groceries_in_Fridge/g1.txt

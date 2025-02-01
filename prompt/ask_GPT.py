@@ -78,6 +78,6 @@ def ask_GPT(system,content):
 
 
 if __name__ == "__main__":
-    system = "Hello, how can I help you today?"
-    content = "I want to know about the history of the United States."
+    system = "You are my friend"
+    content = "How are you doing today?"
     print(ask_GPT(system, content))

@@ -69,9 +69,11 @@ def check_task_define_all(config):
 def check_task_define_single(config):
 
     config.scene_id = 0
-    Action_list=['walk_executor(soap_2054)','grab_executor(soap_2054)','walk_executor(sink_42)','putin_executor(soap_2054, sink_42)']
+    # Action_list=['walk_executor(kitchen_counter_230)','walk_executor(stove_2065)','walk_executor(sink_231)','walk_executor(faucet_232)','walk_executor(cupboard_229)','walk_executor(pot_2069)','open_executor(cupboard_229)','grab_executor(pot_2069)','walk_executor(faucet_232)','switchon_executor(faucet_232)','putin_executor(pot_2069, faucet_232)','switchoff_executor(faucet_232)']
+    Action_list=[]
 
-    task_path='/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/cdl_dataset/dataset/Cook_some_food/g1.txt'
+
+    task_path='/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/cdl_dataset/dataset/Drink/g6.txt'
 
 
     epoch_path=f'log/Debugging'   
@@ -80,7 +82,7 @@ def check_task_define_single(config):
     classes,init_scene_graph=load_scene(config.scene_id, epoch_path)
     env=VH_Env(init_scene_graph)
     evaluator.left_action_counting_for_each_keystate() # Check the task define before executing the actions
-    return
+    # return
     if len(Action_list)==0:
         return
     for action in Action_list:
@@ -91,8 +93,8 @@ def check_task_define_single(config):
 
 if __name__ == '__main__':
 
-    check_task_define_all(config)
-    # check_task_define_single(config)
+    # check_task_define_all(config)
+    check_task_define_single(config)
     # test_action_sequence(2)
 
 

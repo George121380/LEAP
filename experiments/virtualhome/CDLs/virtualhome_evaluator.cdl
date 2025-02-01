@@ -731,7 +731,7 @@ behavior switch_on(obj: item):
     achieve not unknown(obj)
     if has_plug(obj):
       achieve plugged(obj)
-    if can_open(obj):
+    if can_open(obj) and not is_stove(obj):
       achieve closed(obj)
     achieve_once close_char(char, obj)
     switchon_executor(obj)
@@ -823,6 +823,11 @@ behavior opens(obj: item):
     if has_switch(obj) and is_on(obj):
       achieve is_off(obj)
     achieve_once close_char(char, obj)
+    symbol containers=exists item1:item: inside(obj, item1) and can_open(item1)
+    if containers:
+      bind container:item where:
+        inside(obj, container) and can_open(container)
+      achieve open(container)
     open_executor(obj)
   eff:
     open[obj] = True
@@ -998,6 +1003,8 @@ behavior get_water(obj:item):
     if grabbable(obj):
       bind faucet:item where:
         is_faucet(faucet)
+      if can_open(obj):
+        achieve open(obj)
       achieve inhand(obj)
       achieve_once close_char(char, faucet)
       achieve_once is_on(faucet)

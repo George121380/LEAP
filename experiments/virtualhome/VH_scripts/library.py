@@ -35,7 +35,14 @@ class behavior_library_simple:
                 json.dump([], f)
         self.metadata = json.load(open(self.source_path, "r"))
         if self.extract_method == 'rag':
-            self.model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
+
+            if not os.path.exists('utils/models/paraphrase-MiniLM-L6-v2'):
+                self.model=SentenceTransformer('paraphrase-MiniLM-L6-v2')
+                self.model.save_pretrained('utils/models/paraphrase-MiniLM-L6-v2')
+            else:
+                print('Load paraphrase-MiniLM-L6-v2 from the local file')
+                self.model=SentenceTransformer('utils/models/paraphrase-MiniLM-L6-v2')
+                
             self.vec_metadata = []
             start_time = time.time()
             for record in self.metadata:
@@ -130,6 +137,9 @@ class behavior_library_simple:
                 return embeded_behaviors
             elif self.extract_method == 'rag':
                 self.get_similarity_score(sub_task_description)
+        
+        else:
+            return ""
 
 
     def get_similarity_score(self, sentence, k=50):

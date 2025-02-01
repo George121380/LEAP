@@ -4,6 +4,7 @@ from execution import ScriptExecutor
 from utils import load_name_equivalence
 from utils_eval import transform_action,check_unexplorable
 from scripts import *
+import time
 # from logger import logger
 
 
@@ -44,6 +45,72 @@ class VH_Env:
             if edge['from_id']==node_id and edge['relation_type']=='INSIDE' and self.graph.get_node(edge['to_id']).category=='Rooms':
                 return f"{self.graph.get_node(edge['to_id']).class_name}_{edge['to_id']}"
         return None
+    
+    # def same_room(self,node_id1,node_id2):
+    #     room1=self.find_room(node_id1)
+    #     room2=self.find_room(node_id2)
+    #     if room1==room2:
+    #         return True
+    #     else:
+    #         return False
+        
+    # def check_visable(self,node_id):
+    #     # visable means the object is in the same room with the character and not inside any other closed object
+    #     if not self.same_room(node_id,self.char.id):
+    #         return False
+    #     for edge in self.graph.get_edges():
+    #         if edge['from_id']==node_id and edge['relation_type']=='INSIDE':
+    #             to_node=self.graph.get_node(edge['to_id'])
+    #             for property in to_node.properties:
+    #                 if property.name=='CAN_OPEN':
+    #                     for state in to_node.states:
+    #                         if state.name=='CLOSED':
+    #                             return False
+    #     return True
+
+    def grabbing(self,node_id):
+        for edge in self.graph.get_edges():
+            if edge['from_id']==self.char.id and edge['to_id']==node_id and (edge['relation_type']=='HOLDS_RH' or edge['relation_type']=='HOLDS_LH'):
+                return True
+        return False
+
+    def get_visible_list(self):
+        """
+        Return a list of all node IDs that are visible to the character.
+        A node is visible if:
+        1) It is in the same room as the character.
+        2) It is not inside any container that can open but is currently closed.
+        """
+
+        visible_nodes_id = []
+        all_nodes = self.graph.get_nodes()
+        char_room = self.find_room(self.char.id)
+
+        for node in all_nodes:
+            node_id = node.id
+            inside_closed_container = False
+
+            if not self.grabbing(node_id):
+                # grabbing object is always visible
+                if not self.find_room(node_id) == char_room:
+                    continue
+                for edge in self.graph.get_edges():
+                    if edge['from_id'] == node_id and edge['relation_type'] == 'INSIDE':
+
+                        container_node = self.graph.get_node(edge['to_id'])
+
+                        can_open = any(prop.name == 'CAN_OPEN' for prop in container_node.properties)
+
+                        is_closed = any(state.name == 'CLOSED' for state in container_node.states)
+
+                        if can_open and is_closed:
+                            inside_closed_container = True
+                            break  
+            if not inside_closed_container:
+                visible_nodes_id.append(node_id)
+
+        return visible_nodes_id
+                    
 
     def extract_id(self,node_name):
         last_underscore_index = node_name.rfind('_')
@@ -62,6 +129,7 @@ class VH_Env:
             add_edge_list.append(add_relations)
 
     def step(self, action):
+        start_time = time.time()
         exp_flag=False
         exp_target=None
         exp_loc=None
@@ -76,10 +144,8 @@ class VH_Env:
         observation={}
 
         if action.name!='exp' and action.name!='obs':
-            
+            # regular action
             self.executor = ScriptExecutor(self.graph, self.name_equivalence)
-            # if 'grab' in action.name.lower():
-            #     print('debug')
 
             exe_action=transform_action(action,self.scripts_index)
             self.scripts_index+=1
@@ -87,7 +153,7 @@ class VH_Env:
             state_enum = self.executor.find_solutions(script)
             state = next(state_enum, None)
             if state is None:
-                print('Script is not executable.')
+                print(f'Env Report: {action} not executable.')
                 self.action_record.append(str(action)+' (Failed)')
                 # raise Exception('Script is not executable.')
                 if len(action.arguments)==1:
@@ -95,7 +161,7 @@ class VH_Env:
                 if len(action.arguments)==2:
                     return f"You can not {action.name.replace('_executor','')} {action.arguments[0].name} to {action.arguments[1].name}"
             else:
-                print('Script is executable')
+                print(f'Env Report: {action} is executable')
                 self.action_record.append(str(action))
             self.char=state.get_nodes_by_attr('class_name', 'character')[0]
 
@@ -112,6 +178,7 @@ class VH_Env:
                     add_new_relation['relation_type']=relation.name
                     add_new_relation['to_id']=to_id
                     new_relations.append(add_new_relation)
+
                     
             for edge in state._removed_edges_from:
                 from_id=edge[0]
@@ -127,6 +194,7 @@ class VH_Env:
 
             for node in state._new_nodes:
                 self.graph._node_map[node].states=state._new_nodes[node].states
+
         if action.name=='exp':
             exp_flag=True
             exp_target=action.arguments[0].name
@@ -150,8 +218,13 @@ class VH_Env:
         known_updates=[]
         relations_updates=[]
 
+        visable_ids=self.get_visible_list()
+
+
         for edge in self.graph.get_edges():
             if edge['from_id']==self.char.id:
+                if not edge['to_id'] in visable_ids:
+                    continue
                 add_relation={}
                 add_state={}
                 from_name='char'
@@ -169,24 +242,16 @@ class VH_Env:
                 state_updates.update(add_state)
                 state_check_set.add(to_name)
 
-        # debug=[]
-        # for edge in self.graph.get_edges():
-        #     if edge in new_relations:
-        #             print('debug')
-        #             debug.append(edge)
-        
         for edge in self.graph.get_edges():
             if ((edge['to_id'] in around_ids) or (edge['from_id'] in around_ids)) or (edge in new_relations):
-                #debug
-                # if edge in new_relations:
-                #     print('debug')
+
+                if not edge['from_id'] in visable_ids or not edge['to_id'] in visable_ids:
+                    continue
                 
                 add_relation={}
-
                 from_name=f"{self.graph.get_node(edge['from_id']).class_name}_{edge['from_id']}"
                 if 'character' in from_name:
                     continue
-
                 to_name=f"{self.graph.get_node(edge['to_id']).class_name}_{edge['to_id']}"
                 if 'character' in to_name:
                     if edge['relation_type']!='ON':
@@ -209,6 +274,7 @@ class VH_Env:
                     add_state[from_name]=list(self.graph.get_node(edge['from_id']).states)
                     state_updates.update(add_state)
                     state_check_set.add(from_name)
+                    
                     known_updates.append(from_name)
                 if to_name not in state_check_set:
                     add_state={}
@@ -235,7 +301,8 @@ class VH_Env:
         observation['obs_result']=obs_result
         observation['remove_relations']=remove_relations
         observation['action']=action
-
+        # print the time in seconds, .2f
+        print('Time taken:', round(time.time() - start_time, 2), 's')
         return observation
     
     def report_actions(self):
