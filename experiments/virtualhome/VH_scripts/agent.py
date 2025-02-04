@@ -47,7 +47,7 @@ class VHAgent(BaseAgent):
         self.behaviors_from_library={} # all skills in library
         self.library_pool = []
         
-        self.basic_domain_knowledge_file_path = 'experiments/virtualhome/toy_examples/toy_domain.cdl'
+        self.basic_domain_knowledge_file_path = 'experiments/virtualhome/CDLs/virtualhome_partial.cdl'
         self.reset_add_info_record()
         self.reset_goal_representation_record()
         self.need_replan=True # need replan, when find something new or regenerate a goal representation
@@ -353,11 +353,12 @@ class VHAgent(BaseAgent):
                 cdl_state = self.get_state()
                 #time
                 plans, stats = crow.crow_regression(
-                cdl_state.domain, cdl_state, goal=cdl_state.goal, min_search_depth=12, max_search_depth=12,
-                is_goal_ordered=True, is_goal_serializable=False, always_commit_skeleton=True, commit_skeleton_everything=self.commit_skeleton_everything,
-                enable_state_hash=False,
-                verbose=False
-            )
+                    cdl_state.domain, cdl_state, goal=cdl_state.goal,
+                    is_goal_ordered=True, is_goal_serializable=False, always_commit_skeleton=True,
+                    enable_state_hash=False,
+                    verbose=False,
+                    algo='priority_tree_v1'
+                )
 
                 if len(plans) == 0: # No plan found -> usually bind is not satisfied
                     self.empty_plan_times+=1

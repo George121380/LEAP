@@ -80,7 +80,7 @@ class LLM_Agent(BaseAgent):
         self.failed_execution_flag=False
         self.query_human_flag=False
 
-        self.difficulty=1.5*difficulty
+        self.difficulty=int((1.5*difficulty)//1)
         self.max_trying_times=3*difficulty
 
         self.exp_query_record=[] # record all the items that already queried the location
@@ -207,6 +207,9 @@ class LLM_Agent(BaseAgent):
     
 
     def ask_for_human_task_guidance(self):
+        # debug
+        print("-"*60)
+        print("Ask for human guidance")  
         self.guidance_query_times+=1
         question=f'Can you teach me how to "{self.goal_nl.lower()}" ?'
 
@@ -218,11 +221,23 @@ class LLM_Agent(BaseAgent):
 
         self.add_info_nl+=Human_Guidance
 
+        # with open('visualization/human_guidance.txt','a') as f:
+        #     f.write("Goal: "+self.goal_nl+'\n')
+        #     f.write("Guidance: "+Human_Guidance+'\n')
+        #     f.write("-"*60+'\n')
+        print(Human_Guidance)
+        print("-"*60)
+
     
     def select_relevant_items(self, k=100):
         task_instruction = self.goal_nl
         task_embedding = self.model.encode([task_instruction])  # Convert task instruction to vector
-        item_list=list(self.name2opid.keys()) # Get all item names
+        undesired_keywords = ["floor_", "ceiling_", "wall_"]
+        # item_list=list(self.name2opid.keys()) # Get all item names
+        item_list = [
+            item for item in self.name2opid.keys() 
+            if not any(keyword in item.lower() for keyword in undesired_keywords)
+        ]
         item_embeddings = self.model.encode(item_list)          # Convert each item name to vector
         
         similarities = cosine_similarity(task_embedding, item_embeddings)[0]  # 1D array of similarities
@@ -246,6 +261,9 @@ class LLM_Agent(BaseAgent):
                 description += f"  Properties: {'; '.join(properties)}.\n"
             else:
                 description += "  Properties: None.\n"
+            
+            if self.properties['has_size'][self.name2opid[item_name]] == True:
+                description += f"  Size of this object: {self.name2size[item_name]}.\n"
             
             states = [state_name.replace('_', ' ') for state_name, state_values in self.state.items() if state_values[item_id]==True]
             if states:
@@ -387,10 +405,6 @@ class LLM_Agent(BaseAgent):
                     self.logger.info("From agent_LLM.py->act: fail to find an item for more than 15 times")
                     return 'Failed',None
                         
-            if len(self.add_info_action_history)==self.difficulty==0 and not self.query_human_flag:
-                #ask for human guidance
-                self.query_human_flag=True
-                self.ask_for_human_task_guidance()
             
         if self.current_step == len(self.plan) and len(self.plan) > 0:
                 print("The plan is all executed")
@@ -406,6 +420,12 @@ class LLM_Agent(BaseAgent):
             return action, None
 
         else:
+            if len(self.add_info_action_history)>self.difficulty and not self.query_human_flag:
+                #ask for human guidance
+                self.query_human_flag=True
+                self.ask_for_human_task_guidance()
+                print("-"*60)
+            
             self.failed_execution_flag=False
             human_exp_guidance=''            
             try_times=0

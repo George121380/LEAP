@@ -292,12 +292,19 @@ class Evaluator(BaseAgent):
         with open(self.internal_executable_file_path, 'w') as file:
             file.write(executable_content)
         cdl_state = self.get_state()
+        # plans, stats = crow.crow_regression(
+        #     cdl_state.domain, cdl_state, goal=cdl_state.goal, min_search_depth=12, max_search_depth=12,
+        #     is_goal_ordered=True, is_goal_serializable=False, always_commit_skeleton=True, commit_skeleton_everything=False,
+        #     enable_state_hash=False,
+        #     verbose=False
+        # )
         plans, stats = crow.crow_regression(
-        cdl_state.domain, cdl_state, goal=cdl_state.goal, min_search_depth=12, max_search_depth=12,
-        is_goal_ordered=True, is_goal_serializable=False, always_commit_skeleton=True, commit_skeleton_everything=False,
-        enable_state_hash=False,
-        verbose=False
-    )
+            cdl_state.domain, cdl_state, goal=cdl_state.goal,
+            is_goal_ordered=True, is_goal_serializable=False, always_commit_skeleton=True,
+            enable_state_hash=False,
+            verbose=False,
+            algo='priority_tree_v1'
+        )
         if len(plans) == 0:
             print("Evaluator failed to find a plan")
             # self.logger.info("From evaluation.py\n"+self.task_file_path+f"\nChecking {key_state}\n"+"Evaluator failed to find a plan")

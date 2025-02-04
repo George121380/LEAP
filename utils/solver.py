@@ -15,7 +15,7 @@ import time
 # from concepts.dm.crow.behavior_utils import execute_behavior_effect_advanced 
 parser = jacinle.JacArgumentParser()
 # parser.add_argument('--domain', default='virtualhome.cdl')
-parser.add_argument('--domain', default='experiments/virtualhome/toy_examples/toy_domain.cdl')
+parser.add_argument('--domain', default='experiments/virtualhome/CDLs/virtualhome_partial.cdl')
 parser.add_argument('--verbose', action='store_true')
 args = parser.parse_args()
 
@@ -38,15 +38,20 @@ def plan(problem, planning=True):
         planning: bool -> True for planning, False for policy
     
     """
-
-
     goal=problem.goal
     if planning:
-        candidate_plans, search_stat = crow.crow_regression(
-            problem.domain, problem, goal=goal, min_search_depth=12, max_search_depth=12,
-            is_goal_ordered=True, is_goal_serializable=False, always_commit_skeleton=True, commit_skeleton_everything=False,
+        # candidate_plans, search_stat = crow.crow_regression(
+        #     problem.domain, problem, goal=goal, min_search_depth=12, max_search_depth=12,
+        #     is_goal_ordered=True, is_goal_serializable=False, always_commit_skeleton=True, commit_skeleton_everything=False,
+        #     enable_state_hash=False,
+        #     verbose=False
+        # )
+        plans, stats = crow.crow_regression(
+            problem.domain, problem, goal=problem.goal,
+            is_goal_ordered=True, is_goal_serializable=False, always_commit_skeleton=True,
             enable_state_hash=False,
-            verbose=False
+            verbose=False,
+            algo='priority_tree_v1'
         )
     else: # policy
         candidate_plans, search_stat = crow.crow_regression(

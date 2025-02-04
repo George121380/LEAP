@@ -288,9 +288,12 @@ def set_agent(config, init_scene_graph, task_data, classes, task_logger, epoch_p
         key_folder = "cdl_dataset"
         task_path = task_data['task_path'].split(key_folder)[1]
         if task_path in long_task_list:
+            # difficulty = 150
             difficulty = 150
         else:
             difficulty = 50
+            # difficulty = 5
+
 
         agent = LLM_Agent(
             config=config,

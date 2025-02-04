@@ -63,10 +63,12 @@ feature movable(x: item)
 feature cream(x: item)
 feature is_clothes(x: item)
 feature is_food(x: item)
+feature has_size(x: item)
 
 object_constant char:character
 
 feature id(x:item) -> int64
+feature size(x:item) -> int64
 
 #exploration
 feature unknown(x: item)
@@ -560,6 +562,8 @@ behavior put(inhand_obj: item, obj: item):
 behavior putin(inhand_obj: item, obj: item):
   body:
     assert recipient(obj) or containers(obj) or can_open(obj) or eatable(obj)
+    if has_size(obj) and has_size(inhand_obj):
+      assert size(inhand_obj) <= size(obj)
     #assert not pourable(inhand_obj) or not recipient(obj)
     achieve not unknown(obj)
     achieve not unknown(inhand_obj)
@@ -612,6 +616,7 @@ behavior empty_a_hand():
 behavior stand():
   goal: standing(char)
   body:
+    assert sitting(char) or lying(char)
     standup_executor(char)
   eff:
     sitting[char] = False
@@ -936,7 +941,6 @@ behavior wake_up():
     sleeping[char] = False
 
 behavior wipe(obj:item):
-  goal: clean(obj)
   body:
     symbol has_cleaning_solution=exists item1:item: is_towel(item1) or is_rag(item1) or is_sponge(item1) or is_paper_towel(item1) or is_cloth_napkin(item1) or is_duster(item1) or is_cleaning_solution(item1)
     if not has_cleaning_solution:

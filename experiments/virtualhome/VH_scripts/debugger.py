@@ -62,7 +62,7 @@ def check_task_define_all(config):
             config.scene_id = scene_id
             task_path=os.path.join(DATASET_FOLDER_PATH,task_file)
             print(task_path)
-
+            
             evaluator=Evaluator(config,task_path,epoch_logger,epoch_path)
             evaluator.left_action_counting_for_each_keystate()
 
@@ -73,7 +73,7 @@ def check_task_define_single(config):
     Action_list=[]
 
 
-    task_path='/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/cdl_dataset/dataset/Drink/g6.txt'
+    task_path='/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/cdl_dataset/dataset/Cook_some_food/g8_test.txt'
 
 
     epoch_path=f'log/Debugging'   

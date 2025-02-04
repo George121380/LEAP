@@ -65,8 +65,9 @@ def run(config,epoch_logger,epoch_path,task_path,classes,init_scene_graph):
 
     evaluator=Evaluator(config, task_path, task_logger, epoch_path)
 
-    agent = set_agent(config, init_scene_graph, task_data, classes, task_logger, epoch_path)    
-
+    agent = set_agent(config, init_scene_graph, task_data, classes, task_logger, epoch_path)
+    # agent.ask_for_human_task_guidance()
+    # return True
     env=VH_Env(init_scene_graph)
 
 

@@ -611,6 +611,7 @@ behavior put_inside(inhand_obj: item, obj: item):
 behavior empty_a_hand(char: character):
   goal: has_a_free_hand(char)
   body:
+    assert not has_a_free_hand(char)
     bind surf:item where:
       surfaces(surf)
     bind give_up_obj:item where:
@@ -656,7 +657,7 @@ behavior lie_somewhere(location:item):
 def obj_inside_or_on(obj1: item, obj2: item):
   return inside(obj1, obj2) or on(obj2, obj1)
 
-behavior walk(obj: item):
+behavior walk_to(obj: item):
   goal: close_char(char, obj)
   body:
     achieve standing(char)
@@ -791,6 +792,7 @@ behavior wash(obj: item):
   eff:
     dirty[obj] = False
     clean[obj] = True
+    used[obj] = True
 
 behavior scrub(obj: item):
   body:
@@ -839,6 +841,7 @@ behavior opens(obj: item):
 behavior closes(obj: item):
   goal: closed(obj)
   body:
+    assert can_open(obj)
     achieve not unknown(obj)
     achieve_once has_a_free_hand(char)
     achieve_once close_char(char, obj)
@@ -848,8 +851,8 @@ behavior closes(obj: item):
     closed[obj] = True
     used[obj] = True
 
-def pour_target(obj: item):
-  return is_hands_both(obj) or is_sponge(obj) or is_face(obj)
+#def pour_target(obj: item):
+#  return is_hands_both(obj) or is_sponge(obj) or is_face(obj)
 
 #behavior pour_in(obj: item, target: item):
 #  goal: inside(obj, target)
@@ -961,7 +964,6 @@ behavior wake_up():
     sleeping[char] = False
 
 behavior wipe(obj:item):
-  goal: clean(obj)
   body:
     symbol has_cleaning_solution=exists item1:item: is_towel(item1) or is_rag(item1) or is_sponge(item1) or is_paper_towel(item1) or is_cloth_napkin(item1) or is_duster(item1) or is_cleaning_solution(item1)
     if not has_cleaning_solution:
