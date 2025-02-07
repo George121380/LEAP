@@ -1,0 +1,169 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['Slice the chicken.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_knife_2050_around_kitchen_counter_230(knife:item):
+    goal: not unknown(knife)
+    body:
+        assert is_knife(knife)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==230
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(knife,kitchen_counter_instance)
+        else:
+            exp(knife,kitchen_counter_instance)
+    eff:
+        unknown[knife]=False
+        close[knife,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,knife]=True
+    
+
+behavior find_food_chicken_2017_around_fridge_289(food_chicken:item):
+    goal: not unknown(food_chicken)
+    body:
+        assert is_food_chicken(food_chicken)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_chicken,fridge_instance)
+        else:
+            exp(food_chicken,fridge_instance)
+    eff:
+        unknown[food_chicken]=False
+        close[food_chicken,fridge_instance]=True
+        close[fridge_instance,food_chicken]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior __goal__():
+    body:
+        bind chicken: item where:
+            is_food_chicken(chicken)
+        # Select the chicken item
+        
+        bind knife: item where:
+            is_knife(knife)
+        # Select the knife
+
+        symbol has_cutting_board=exists board: item : (is_cutting_board(board))
+        if not has_cutting_board:
+            # If there is no cutting board, check all unvisited items to find one
+            foreach board: item:
+                if is_cutting_board(board) and not visited(board):
+                    achieve close_char(char, board)
+                    break
+
+        if has_cutting_board:
+            bind board: item where:
+                is_cutting_board(board)
+            # Select the cutting board
+            achieve on(chicken, board)
+            # Place the chicken on the cutting board
+            achieve close_char(char, board)
+            # Move close to the cutting board
+        
+        achieve_once inhand(knife)
+        # Take the knife in hand for cutting
+        
+        achieve cut(chicken)
+        # Cut the chicken
+
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "behavior_definition":
+
+Unknown variable: break; available variables: [Variable<board: item>].
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_knife_2050_around_kitchen_counter_230(knife:item):
+    goal: not unknown(knife)
+    body:
+        assert is_knife(knife)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==230
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(knife,kitchen_counter_instance)
+        else:
+            exp(knife,kitchen_counter_instance)
+    eff:
+        unknown[knife]=False
+        close[knife,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,knife]=True
+    
+
+behavior find_food_chicken_2017_around_fridge_289(food_chicken:item):
+    goal: not unknown(food_chicken)
+    body:
+        assert is_food_chicken(food_chicken)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_chicken,fridge_instance)
+        else:
+            exp(food_chicken,fridge_instance)
+    eff:
+        unknown[food_chicken]=False
+        close[food_chicken,fridge_instance]=True
+        close[fridge_instance,food_chicken]=True
+    
+
+#goal_representation
+ 
+behavior __goal__():
+    body:
+        bind chicken: item where:
+            is_food_chicken(chicken)
+        # Select the chicken item
+        
+        bind knife: item where:
+            is_knife(knife)
+        # Select the knife
+
+        symbol has_cutting_board=exists board: item : (is_cutting_board(board))
+        if not has_cutting_board:
+            # If there is no cutting board, check all unvisited items to find one
+            foreach board: item:
+                if is_cutting_board(board) and not visited(board):
+                    achieve close_char(char, board)
+
+        if has_cutting_board:
+            bind board: item where:
+                is_cutting_board(board)
+            # Select the cutting board
+            achieve on(chicken, board)
+            # Place the chicken on the cutting board
+            achieve close_char(char, board)
+            # Move close to the cutting board
+        
+        achieve_once inhand(knife)
+        # Take the knife in hand for cutting
+        
+        achieve cut(chicken)
+        # Cut the chicken
+
+#goal_representation_end
+
+##############################
+Error is:
+'NoneType' object is not iterable
+##############################

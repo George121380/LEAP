@@ -1,0 +1,551 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['Make a cup of coffee using the coffee maker.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_cup_2063_around_kitchen_counter_230(cup:item):
+    goal: not unknown(cup)
+    body:
+        assert is_cup(cup)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==230
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(cup,kitchen_counter_instance)
+        else:
+            exp(cup,kitchen_counter_instance)
+    eff:
+        unknown[cup]=False
+        close[cup,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,cup]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior make_coffee(coffee_maker:item, cup:item):
+    body:
+        assert is_coffe_maker(coffee_maker)
+        assert is_cup(cup)
+        # Ensure the coffee maker and cup have been correctly identified
+
+        if not has_water(coffee_maker):
+            walk_to(coffee_maker)
+            # Approach the coffee maker if it doesnt have water
+            get_water(coffee_maker)
+            # Fill the coffee maker with water
+        
+        if not is_on(coffee_maker):
+            plugin(coffee_maker)
+            # Plug in the coffee maker if it is not plugged in 
+            switch_on(coffee_maker)
+            # Turn on the coffee maker
+
+        if not inhand(cup) and has_a_free_hand(char):
+            grab(cup)
+            # Pick up the cup if you have a free hand
+
+        put_close(coffee_maker, cup)
+        # Place the cup close to the coffee maker to receive coffee
+
+        observe(cup, "Check if coffee has been made and poured into the cup")
+        # Check the cup to see if coffee has been made and poured
+
+behavior __goal__():
+    body:
+        bind coffee_maker: item where:
+            is_coffe_maker(coffee_maker)
+        bind cup: item where:
+            is_cup(cup)
+        make_coffee(coffee_maker, cup)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_coffee_filter_2000_around_kitchen_counter_230(coffee_filter:item):
+    goal: not unknown(coffee_filter)
+    body:
+        assert is_coffee_filter(coffee_filter)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==230
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(coffee_filter,kitchen_counter_instance)
+        else:
+            exp(coffee_filter,kitchen_counter_instance)
+    eff:
+        unknown[coffee_filter]=False
+        close[coffee_filter,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,coffee_filter]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior find_and_prepare_coffee_maker():
+    body:
+        bind coffe_maker: item where:
+            is_coffe_maker(coffe_maker) and not is_on(coffe_maker)
+        # Select the coffee maker that is not yet turned on
+        switch_on(coffe_maker)
+        # Turn on the coffee maker
+
+behavior prepare_water_for_coffee():
+    body:
+        if not exists water_container: item : has_water(water_container):
+            bind container: item where:
+                containers(container) and has_a_free_hand(char)
+            # Find a container to get water
+            grab(container)
+            # Grab the container
+            get_water(container)
+            # Fill the container with water 
+
+behavior pour_water_into_coffee_maker():
+    body:
+        bind coffe_maker: item where:
+            is_coffe_maker(coffe_maker) and plugged(coffe_maker) and open(coffe_maker)
+        # Select an open and plugged coffee maker
+        foreach water_container: item:
+            if has_water(water_container) and inhand(water_container):
+                put_inside(water_container, coffe_maker)
+                # Pour water into the coffee maker
+                empty_a_hand()
+                # Empty the hand after pouring water
+
+behavior load_coffee_into_coffee_maker():
+    body:
+        bind coffe_maker: item where:
+            is_coffe_maker(coffe_maker) and open(coffe_maker)
+        # Select an open coffee maker
+        bind coffee_filter: item where:
+            is_coffee_filter(coffee_filter) and has_a_free_hand(char)
+        # Select a coffee filter
+        grab(coffee_filter)
+        # Grab the coffee filter
+        put_inside(coffee_filter, coffe_maker)
+        # Place coffee filter inside the coffee maker
+
+behavior close_and_brew_coffee():
+    body:
+        bind coffe_maker: item where:
+            is_coffe_maker(coffe_maker) and open(coffe_maker)
+        # Select the open coffee maker
+        closes(coffe_maker)
+        # Close the coffee maker to start brewing
+
+behavior __goal__():
+    body:
+        find_and_prepare_coffee_maker()
+        # Find and turn on the coffee maker
+        prepare_water_for_coffee()
+        # Prepare water for the coffee
+        pour_water_into_coffee_maker()
+        # Pour water into the coffee maker
+        load_coffee_into_coffee_maker()
+        # Load coffee into the coffee maker
+        close_and_brew_coffee()
+        # Close the coffee maker and start brewing
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_coffee_filter_2000_around_kitchen_counter_230(coffee_filter:item):
+    goal: not unknown(coffee_filter)
+    body:
+        assert is_coffee_filter(coffee_filter)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==230
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(coffee_filter,kitchen_counter_instance)
+        else:
+            exp(coffee_filter,kitchen_counter_instance)
+    eff:
+        unknown[coffee_filter]=False
+        close[coffee_filter,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,coffee_filter]=True
+    
+
+behavior find_cup_2063_around_kitchen_counter_230(cup:item):
+    goal: not unknown(cup)
+    body:
+        assert is_cup(cup)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==230
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(cup,kitchen_counter_instance)
+        else:
+            exp(cup,kitchen_counter_instance)
+    eff:
+        unknown[cup]=False
+        close[cup,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,cup]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def has_coffee_ingredients_available(coffee_maker: item):
+    # Function to check if coffee maker has coffee ingredients available
+    symbol available = exists o: item : (is_coffee_filter(o) or is_coffe_maker(o)) and close(o, coffee_maker)
+    return available
+
+behavior plug_in_and_turn_on_coffee_maker(coffee_maker: item):
+    body:
+        plugin(coffee_maker)  # Plug in the coffee maker
+        switch_on(coffee_maker)  # Turn on the coffee maker
+
+behavior make_coffee(coffee_maker: item):
+    body:
+        if has_coffee_ingredients_available(coffee_maker):
+            # Proceed to make the coffee since ingredients are available
+            walk_to(coffee_maker)  # Go to the coffee maker
+            plug_in_and_turn_on_coffee_maker(coffee_maker)  # Plug and switch on the coffee maker
+        else:
+            observe(coffee_maker, "Check for coffee ingredients and refill if necessary")
+
+behavior __goal__():
+    body:
+        bind coffee_maker: item where:
+            is_coffe_maker(coffee_maker)
+        # Select a coffee maker
+        
+        bind cup: item where:
+            is_cup(cup) and grabbable(cup)
+        # Select a grabbable cup
+
+        make_coffee(coffee_maker)  # Make a cup of coffee using the coffee maker
+        grab(cup) # Grab the cup in hand
+        put_close(cup, coffee_maker) # Place the cup close to coffee maker to collect coffee
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+ 
+def has_coffee_ingredients_available(coffee_maker: item):
+    # Function to check if coffee maker has coffee ingredients available
+    symbol available = exists o: item : (is_coffee_filter(o) or is_coffe_maker(o)) and close(o, coffee_maker)
+    return available
+
+behavior plug_in_and_turn_on_coffee_maker(coffee_maker: item):
+    body:
+        plugin(coffee_maker)  # Plug in the coffee maker
+        switch_on(coffee_maker)  # Turn on the coffee maker
+
+behavior make_coffee(coffee_maker: item):
+    body:
+        if has_coffee_ingredients_available(coffee_maker):
+            # Proceed to make the coffee since ingredients are available
+            walk_to(coffee_maker)  # Go to the coffee maker
+            plug_in_and_turn_on_coffee_maker(coffee_maker)  # Plug and switch on the coffee maker
+        else:
+            observe(coffee_maker, "Check for coffee ingredients and refill if necessary")
+
+behavior __goal__():
+    body:
+        bind coffee_maker: item where:
+            is_coffe_maker(coffee_maker)
+        # Select a coffee maker
+        
+        bind cup: item where:
+            is_cup(cup) and grabbable(cup)
+        # Select a grabbable cup
+
+        make_coffee(coffee_maker)  # Make a cup of coffee using the coffee maker
+        grab(cup) # Grab the cup in hand
+        put_close(cup, coffee_maker) # Place the cup close to coffee maker to collect coffee
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(coffe_maker_290)open_executor(coffe_maker_290)obs(coffe_maker_290, Check for coffee ingredients and refill if necessary)walk_executor(kitchen_counter_230)exp(cup_2063, kitchen_counter_230)walk_executor(cup_2063)grab_executor(cup_2063)walk_executor(coffe_maker_290)put_executor(cup_2063, coffe_maker_290)
+##############################
+From agent.py
+walk_executor(coffe_maker_290)
+Robot find: cutting_board_2051, drawing_238, drawing_239, drawing_240, drawing_241, drawing_242, drawing_243, napkin_2005, oil_2079, cup_2063, knife_2050, cup_2064, pot_2069, fryingpan_2083, Robot is close to the coffe_maker_290. Robot is close to the kitchen_counter_230. 
+##############################
+From agent.py
+open_executor(coffe_maker_290)
+Robot find: Robot is close to the coffe_maker_290. Robot is close to the kitchen_counter_230. coffe_maker_290 is opened. 
+##############################
+From agent.py
+obs(coffe_maker_290, Check for coffee ingredients and refill if necessary)
+Get this information:  coffe_maker_290 is close to stovefan_288. coffe_maker_290 is close to toaster_292. coffe_maker_290 is close to cupboard_229. coffe_maker_290 is close to kitchen_counter_230. coffe_maker_290 is close to oven_295. coffe_maker_290 is close to tray_296. coffe_maker_290 is close to faucet_232. coffe_maker_290 is close to sink_231. coffe_maker_290 is close to shower_36. coffe_maker_290 is close to floor_204. coffe_maker_290 is close to wall_11. coffe_maker_290 is close to wall_15. coffe_maker_290 is close to wall_211. coffe_maker_290 is close to wall_212. coffe_maker_290 is close to wall_215. coffe_maker_290 is close to ceiling_221. coffe_maker_290 is close to character_65. coffe_maker_290 is on kitchen_counter_230. coffe_maker_290 is inside dining_room_201. coffe_maker_290 is facing drawing_238. coffe_maker_290 is facing drawing_239. coffe_maker_290 is facing drawing_240. coffe_maker_290 is facing drawing_241. coffe_maker_290 is facing drawing_242. coffe_maker_290 is facing drawing_243. coffe_maker_290 is OPEN. coffe_maker_290 is PLUGGED_IN. coffe_maker_290 is OFF. coffe_maker_290 is CLEAN.
+##############################
+From agent.py
+walk_executor(kitchen_counter_230)
+Robot find: Robot is close to the kitchen_counter_230. 
+##############################
+From agent.py
+exp(cup_2063, kitchen_counter_230)
+Find cup_2063. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(coffe_maker_290)obs(coffe_maker_290, Check for coffee ingredients and refill if necessary)walk_executor(cup_2063)grab_executor(cup_2063)walk_executor(coffe_maker_290)put_executor(cup_2063, coffe_maker_290)
+##############################
+From agent.py
+walk_executor(coffe_maker_290)
+Robot find: Robot is close to the kitchen_counter_230. Robot is close to the coffe_maker_290. 
+##############################
+From agent.py
+obs(coffe_maker_290, Check for coffee ingredients and refill if necessary)
+Get this information:  coffe_maker_290 is close to stovefan_288. coffe_maker_290 is close to toaster_292. coffe_maker_290 is close to cupboard_229. coffe_maker_290 is close to kitchen_counter_230. coffe_maker_290 is close to oven_295. coffe_maker_290 is close to tray_296. coffe_maker_290 is close to faucet_232. coffe_maker_290 is close to sink_231. coffe_maker_290 is close to shower_36. coffe_maker_290 is close to floor_204. coffe_maker_290 is close to wall_11. coffe_maker_290 is close to wall_15. coffe_maker_290 is close to wall_211. coffe_maker_290 is close to wall_212. coffe_maker_290 is close to wall_215. coffe_maker_290 is close to ceiling_221. coffe_maker_290 is close to character_65. coffe_maker_290 is on kitchen_counter_230. coffe_maker_290 is inside dining_room_201. coffe_maker_290 is facing drawing_238. coffe_maker_290 is facing drawing_239. coffe_maker_290 is facing drawing_240. coffe_maker_290 is facing drawing_241. coffe_maker_290 is facing drawing_242. coffe_maker_290 is facing drawing_243. coffe_maker_290 is OPEN. coffe_maker_290 is PLUGGED_IN. coffe_maker_290 is OFF. coffe_maker_290 is CLEAN.
+##############################
+From agent.py
+walk_executor(cup_2063)
+Robot find: Robot is close to the kitchen_counter_230. Robot is close to the cup_2063. 
+##############################
+From agent.py
+grab_executor(cup_2063)
+Robot find: Robot is close to the kitchen_counter_230. Robot is close to the cup_2063. Grabbing cup_2063 by right hand. 
+##############################
+From agent.py
+walk_executor(coffe_maker_290)
+Robot find: Robot is close to the kitchen_counter_230. Robot is close to the cup_2063. Robot is close to the coffe_maker_290. 
+##############################
+From agent.py
+put_executor(cup_2063, coffe_maker_290)
+Robot find: Robot is close to the kitchen_counter_230. Robot is close to the cup_2063. Robot is close to the coffe_maker_290. coffe_maker_290 is close cup_2063. cup_2063 is close coffe_maker_290. cup_2063 is on coffe_maker_290. cup_2063 released by right hand. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: No
+The feedback instruction: You need to ensure that the coffee maker is turned on and has coffee ingredients available. Then, proceed to make the coffee by operating the coffee maker, and finally ensure that the cup is in the correct position to collect the brewed coffee.
+##############################
+From agent.py
+Human Instruction: You need to ensure that the coffee maker is turned on and has coffee ingredients available. Then, proceed to make the coffee by operating the coffee maker, and finally ensure that the cup is in the correct position to collect the brewed coffee.
+
+The actions you have taken:
+Action 1: Walk to coffe_maker_290.
+Action 2: Open coffe_maker_290.
+Action 3: Observe around coffe_maker_290 with the question of Check for coffee ingredients and refill if necessary.
+Action 4: Walk to kitchen_counter_230.
+Action 5: look for cup_2063 around kitchen_counter_230.
+Action 6: Walk to coffe_maker_290.
+Action 7: Observe around coffe_maker_290 with the question of Check for coffee ingredients and refill if necessary.
+Action 8: Walk to cup_2063.
+Action 9: Grab cup_2063.
+Action 10: Walk to coffe_maker_290.
+Action 11: Put cup_2063 on coffe_maker_290.
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_coffee_filter_2000_around_cupboard_229(coffee_filter:item):
+    goal: not unknown(coffee_filter)
+    body:
+        assert is_coffee_filter(coffee_filter)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==229
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(coffee_filter,cupboard_instance)
+        else:
+            exp(coffee_filter,cupboard_instance)
+    eff:
+        unknown[coffee_filter]=False
+        close[coffee_filter,cupboard_instance]=True
+        close[cupboard_instance,coffee_filter]=True
+    
+
+behavior find_food_sugar_2039_around_cupboard_229(food_sugar:item):
+    goal: not unknown(food_sugar)
+    body:
+        assert is_food_sugar(food_sugar)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==229
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(food_sugar,cupboard_instance)
+        else:
+            exp(food_sugar,cupboard_instance)
+    eff:
+        unknown[food_sugar]=False
+        close[food_sugar,cupboard_instance]=True
+        close[cupboard_instance,food_sugar]=True
+    
+
+behavior find_milk_2043_around_fridge_289(milk:item):
+    goal: not unknown(milk)
+    body:
+        assert is_milk(milk)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(milk,fridge_instance)
+        else:
+            exp(milk,fridge_instance)
+    eff:
+        unknown[milk]=False
+        close[milk,fridge_instance]=True
+        close[fridge_instance,milk]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def coffee_maker_ready(coffee_maker:item):
+    # Check if the coffee maker is on and has coffee ingredients
+    symbol ready=plugged(coffee_maker) and is_on(coffee_maker) and visited(coffee_maker)
+    return ready
+
+behavior ensure_coffee_maker_ready(coffee_maker:item):
+    body:
+        if not coffee_maker_ready(coffee_maker):
+            walk_to(coffee_maker)
+            observe(coffee_maker, "Check for coffee ingredients and refill if necessary")
+            if not is_on(coffee_maker):
+                switch_on(coffee_maker)
+
+behavior prepare_cup_and_place(coffee_maker:item, cup:item):
+    body:
+        grab(cup)
+        walk_to(coffee_maker)
+        put_on(cup, coffee_maker)
+
+behavior make_coffee(coffee_maker:item):
+    body:
+        # Assume making process is automated in the coffee maker once its turned on
+        assert is_on(coffee_maker)
+
+behavior __goal__():
+    body:
+        bind coffee_maker: item where:
+            is_coffe_maker(coffee_maker)
+        # Ensure the coffee maker is ready to brew coffee
+        ensure_coffee_maker_ready(coffee_maker)
+
+        bind cup: item where:
+            is_cup(cup)
+        # Prepare the cup and place it in position to collect coffee
+        prepare_cup_and_place(coffee_maker, cup)
+
+        # Make coffee using the coffee maker
+        make_coffee(coffee_maker)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+def coffee_maker_ready(coffee_maker:item):
+    # Check if the coffee maker is on and has coffee ingredients
+    symbol ready=plugged(coffee_maker) and is_on(coffee_maker) and visited(coffee_maker)
+    return ready
+
+behavior ensure_coffee_maker_ready(coffee_maker:item):
+    body:
+        if not coffee_maker_ready(coffee_maker):
+            walk_to(coffee_maker)
+            observe(coffee_maker, "Check for coffee ingredients and refill if necessary")
+            if not is_on(coffee_maker):
+                switch_on(coffee_maker)
+
+behavior prepare_cup_and_place(coffee_maker:item, cup:item):
+    body:
+        grab(cup)
+        walk_to(coffee_maker)
+        put_on(cup, coffee_maker)
+
+behavior make_coffee(coffee_maker:item):
+    body:
+        # Assume making process is automated in the coffee maker once its turned on
+        assert is_on(coffee_maker)
+
+behavior __goal__():
+    body:
+        bind coffee_maker: item where:
+            is_coffe_maker(coffee_maker)
+        # Ensure the coffee maker is ready to brew coffee
+        ensure_coffee_maker_ready(coffee_maker)
+
+        bind cup: item where:
+            is_cup(cup)
+        # Prepare the cup and place it in position to collect coffee
+        prepare_cup_and_place(coffee_maker, cup)
+
+        # Make coffee using the coffee maker
+        make_coffee(coffee_maker)
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(coffe_maker_290)obs(coffe_maker_290, Check for coffee ingredients and refill if necessary)close_executor(coffe_maker_290)switchon_executor(coffe_maker_290)grab_executor(cup_2063)walk_executor(coffe_maker_290)put_executor(cup_2063, coffe_maker_290)
+##############################
+From agent.py
+walk_executor(coffe_maker_290)
+Robot find: Robot is close to the kitchen_counter_230. Robot is close to the coffe_maker_290. 
+##############################
+From agent.py
+obs(coffe_maker_290, Check for coffee ingredients and refill if necessary)
+Get this information:  coffe_maker_290 is close to stovefan_288. coffe_maker_290 is close to toaster_292. coffe_maker_290 is close to cupboard_229. coffe_maker_290 is close to kitchen_counter_230. coffe_maker_290 is close to oven_295. coffe_maker_290 is close to tray_296. coffe_maker_290 is close to faucet_232. coffe_maker_290 is close to sink_231. coffe_maker_290 is close to shower_36. coffe_maker_290 is close to floor_204. coffe_maker_290 is close to wall_11. coffe_maker_290 is close to wall_15. coffe_maker_290 is close to wall_211. coffe_maker_290 is close to wall_212. coffe_maker_290 is close to wall_215. coffe_maker_290 is close to ceiling_221. coffe_maker_290 is close to character_65. coffe_maker_290 is close to cup_2063. coffe_maker_290 is on kitchen_counter_230. coffe_maker_290 is inside dining_room_201. cup_2063 is on coffe_maker_290. coffe_maker_290 is facing drawing_238. coffe_maker_290 is facing drawing_239. coffe_maker_290 is facing drawing_240. coffe_maker_290 is facing drawing_241. coffe_maker_290 is facing drawing_242. coffe_maker_290 is facing drawing_243. coffe_maker_290 is OPEN. coffe_maker_290 is PLUGGED_IN. coffe_maker_290 is OFF. coffe_maker_290 is CLEAN.
+##############################
+From agent.py
+close_executor(coffe_maker_290)
+Robot find: Robot is close to the kitchen_counter_230. Robot is close to the coffe_maker_290. coffe_maker_290 is closed. 
+##############################
+From agent.py
+switchon_executor(coffe_maker_290)
+Robot find: Robot is close to the kitchen_counter_230. Robot is close to the coffe_maker_290. coffe_maker_290 is turned on. 
+##############################
+From agent.py
+grab_executor(cup_2063)
+Robot find: Robot is close to the kitchen_counter_230. Robot is close to the coffe_maker_290. Robot is close to the cup_2063. Grabbing cup_2063 by right hand. 
+##############################
+From agent.py
+walk_executor(coffe_maker_290)
+Robot find: Robot is close to the kitchen_counter_230. Robot is close to the coffe_maker_290. Robot is close to the cup_2063. 
+##############################
+From agent.py
+put_executor(cup_2063, coffe_maker_290)
+Robot find: Robot is close to the kitchen_counter_230. Robot is close to the coffe_maker_290. Robot is close to the cup_2063. cup_2063 is close coffe_maker_290. cup_2063 is on coffe_maker_290. cup_2063 released by right hand. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: Yes
+The feedback instruction: None
+##############################
+Error record: 'str' object has no attribute 'name'
+##############################
+Task Summary:
+Task Goal:
+Syntax Error
+Action History:
+['walk_executor(coffe_maker_290)', 'open_executor(coffe_maker_290)', 'walk_executor(kitchen_counter_230)', 'walk_executor(coffe_maker_290)', 'walk_executor(cup_2063)', 'grab_executor(cup_2063)', 'walk_executor(coffe_maker_290)', 'put_executor(cup_2063, coffe_maker_290)', 'walk_executor(coffe_maker_290)', 'close_executor(coffe_maker_290)', 'switchon_executor(coffe_maker_290)', 'grab_executor(cup_2063)', 'walk_executor(coffe_maker_290)', 'put_executor(cup_2063, coffe_maker_290)']
+Time info:
+Time consume: 105 seconds
+Exp_helper query times: 0
+Guidance query times: 0
+library scale: 0
+goal generate times: 4
+goal correct times: 0
+
+Task complete rate:
+Keystate: k1 - Requires: 8 steps
+Action Completion Rate: No actions required
+Scene_id: 0
+##############################

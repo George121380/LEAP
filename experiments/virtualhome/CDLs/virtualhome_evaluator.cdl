@@ -613,7 +613,7 @@ behavior empty_a_hand(char: character):
   body:
     assert not has_a_free_hand(char)
     bind surf:item where:
-      surfaces(surf)
+      is_kitchen_counter(surf)
     bind give_up_obj:item where:
       inhand(give_up_obj)
     put(give_up_obj, surf)
@@ -766,33 +766,46 @@ behavior grab(obj: item):
     close_char[char,obj]=True
     used[obj] = True
 
+behavior wash(obj: item):
+  goal: clean(obj)
+  body:
+    assert grabbable(obj)
+    achieve not unknown(obj)
+    achieve inhand(obj)
+    symbol char_close_faucet=exists faucet:item: is_faucet(faucet) and close_char(char, faucet)
+    if not char_close_faucet:
+      bind faucet:item where:
+        is_faucet(faucet)
+      achieve_once is_on(faucet)  
+      wash_executor(obj)
+      achieve_once is_off(faucet)
+
+    else:
+      bind faucet:item where:
+        is_faucet(faucet) and close_char(char, faucet)
+      achieve_once is_on(faucet)
+      wash_executor(obj)
+      achieve_once is_off(faucet)
+  eff:
+    dirty[obj] = False
+    clean[obj] = True
+    used[obj] = True
+
+# Version: Feb 5
 #behavior wash(obj: item):
 #  goal: clean(obj)
 #  body:
-#    assert grabbable(obj) or is_water(obj)
 #    achieve not unknown(obj)
-#    achieve_once has_a_free_hand(char)
-#    achieve_once close_char(char, obj)
+#    symbol obj_inside_sink=exists sink:item: is_sink(sink) and inside(obj, sink)
+#    if not obj_inside_sink:
+#      bind sink:item where:
+#        is_sink(sink)
+#      achieve_once inside(obj, sink)
 #    wash_executor(obj)
 #  eff:
 #    dirty[obj] = False
 #    clean[obj] = True
 #    used[obj] = True
-
-behavior wash(obj: item):
-  goal: clean(obj)
-  body:
-    achieve not unknown(obj)
-    symbol obj_inside_sink=exists sink:item: is_sink(sink) and inside(obj, sink)
-    if not obj_inside_sink:
-      bind sink:item where:
-        is_sink(sink)
-      achieve_once inside(obj, sink)
-    wash_executor(obj)
-  eff:
-    dirty[obj] = False
-    clean[obj] = True
-    used[obj] = True
 
 behavior scrub(obj: item):
   body:
@@ -964,7 +977,9 @@ behavior wake_up():
     sleeping[char] = False
 
 behavior wipe(obj:item):
+  goal: clean(obj)
   body:
+    assert (not grabbable(obj) or is_cat(obj))
     symbol has_cleaning_solution=exists item1:item: is_towel(item1) or is_rag(item1) or is_sponge(item1) or is_paper_towel(item1) or is_cloth_napkin(item1) or is_duster(item1) or is_cleaning_solution(item1)
     if not has_cleaning_solution:
       bind cleaning_tool:item where:

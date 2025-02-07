@@ -74,7 +74,9 @@ def ask_GPT(system,content):
         except Exception as e:
             print(e)
             time.sleep(1)
-            continue
+            # continue
+            # stop the program
+            break
 
 
 if __name__ == "__main__":

@@ -1,0 +1,1316 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['Put pizza and hamburger on a plate. Then hot them in the microwave. Then put them on a table in dinning room.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_plate_1000_around_table_355(plate:item):
+    goal: not unknown(plate)
+    body:
+        assert is_plate(plate)
+        bind table_instance:item where:
+            is_table(table_instance) and id[table_instance]==355
+        achieve close_char(char,table_instance)
+        if can_open(table_instance):
+            achieve_once open(table_instance)
+            exp(plate,table_instance)
+        else:
+            exp(plate,table_instance)
+    eff:
+        unknown[plate]=False
+        close[plate,table_instance]=True
+        close[table_instance,plate]=True
+    
+
+behavior find_food_pizza_2034_around_fridge_289(food_pizza:item):
+    goal: not unknown(food_pizza)
+    body:
+        assert is_food_pizza(food_pizza)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_pizza,fridge_instance)
+        else:
+            exp(food_pizza,fridge_instance)
+    eff:
+        unknown[food_pizza]=False
+        close[food_pizza,fridge_instance]=True
+        close[fridge_instance,food_pizza]=True
+    
+
+behavior find_food_hamburger_2024_around_fridge_289(food_hamburger:item):
+    goal: not unknown(food_hamburger)
+    body:
+        assert is_food_hamburger(food_hamburger)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_hamburger,fridge_instance)
+        else:
+            exp(food_hamburger,fridge_instance)
+    eff:
+        unknown[food_hamburger]=False
+        close[food_hamburger,fridge_instance]=True
+        close[fridge_instance,food_hamburger]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_food_on_plate(plate:item):
+    # Function to check if there is pizza and hamburger on a specified plate
+    symbol has_pizza_and_hamburger=exists pizza: item : is_food_pizza(pizza) and on(pizza, plate) and exists hamburger: item : is_food_hamburger(hamburger) and on(hamburger, plate)
+    return has_pizza_and_hamburger
+
+behavior heat_food_in_microwave(plate:item, microwave:item):
+    body:
+        achieve inside(plate, microwave)
+        # Place the plate with food inside the microwave
+        achieve closed(microwave)
+        # Close the microwave
+        achieve is_on(microwave)
+        # Turn on the microwave
+
+behavior move_to_dining_room(plate:item, table:item):
+    body:
+        achieve on(plate, table)
+        # Place the plate with food on the table in the dining room
+
+behavior __goal__():
+    body:
+        bind plate: item where:
+            is_plate(plate)
+        # Select a plate
+
+        if not is_food_on_plate(plate):
+            foreach food_item: item:
+                if is_food_pizza(food_item) or is_food_hamburger(food_item):
+                    achieve on(food_item, plate)
+        
+        bind microwave: item where:
+            is_microwave(microwave)
+        # Select a microwave
+
+        heat_food_in_microwave(plate, microwave)
+
+        bind dining_table: item where:
+            is_table(dining_table) and exists room: item: is_dining_room(room) and inside(dining_table, room)
+        # Select a table in the dining room
+
+        move_to_dining_room(plate, dining_table)
+
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_plate_1000_around_table_355(plate:item):
+    goal: not unknown(plate)
+    body:
+        assert is_plate(plate)
+        bind table_instance:item where:
+            is_table(table_instance) and id[table_instance]==355
+        achieve close_char(char,table_instance)
+        if can_open(table_instance):
+            achieve_once open(table_instance)
+            exp(plate,table_instance)
+        else:
+            exp(plate,table_instance)
+    eff:
+        unknown[plate]=False
+        close[plate,table_instance]=True
+        close[table_instance,plate]=True
+    
+
+behavior find_food_pizza_2034_around_fridge_289(food_pizza:item):
+    goal: not unknown(food_pizza)
+    body:
+        assert is_food_pizza(food_pizza)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_pizza,fridge_instance)
+        else:
+            exp(food_pizza,fridge_instance)
+    eff:
+        unknown[food_pizza]=False
+        close[food_pizza,fridge_instance]=True
+        close[fridge_instance,food_pizza]=True
+    
+
+behavior find_food_hamburger_2024_around_fridge_289(food_hamburger:item):
+    goal: not unknown(food_hamburger)
+    body:
+        assert is_food_hamburger(food_hamburger)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_hamburger,fridge_instance)
+        else:
+            exp(food_hamburger,fridge_instance)
+    eff:
+        unknown[food_hamburger]=False
+        close[food_hamburger,fridge_instance]=True
+        close[fridge_instance,food_hamburger]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_kitchen(table:item):
+    # Function to check if a table is in the dining room
+    symbol in_dining_room=exists room: item : is_dining_room(room) and inside(table, room)
+    return in_dining_room
+
+behavior place_on_plate(item1:item, item2:item, plate:item):
+    body:
+        achieve on(item1, plate)
+        achieve on(item2, plate)
+
+behavior microwave_food(food:item, microwave:item):
+    body:
+        achieve inside(food, microwave)
+        achieve closed(microwave)
+        achieve is_on(microwave)
+
+behavior place_on_table(item:item, table:item):
+    body:
+        achieve on(item, table)
+
+behavior __goal__():
+    body:
+        bind pizza: item where:
+            is_food_pizza(pizza)
+        # Select a pizza
+
+        bind hamburger: item where:
+            is_food_hamburger(hamburger)
+        # Select a hamburger
+
+        bind plate: item where:
+            is_plate(plate)
+        # Select a plate
+
+        place_on_plate(pizza, hamburger, plate)
+
+        bind microwave: item where:
+            is_microwave(microwave)
+        # Select a microwave
+        
+        microwave_food(plate, microwave)
+
+        bind table: item where:
+            is_table(table) and is_kitchen(table)
+        # Select a table in the dining room
+
+        place_on_table(plate, table)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_plate_1000_around_table_355(plate:item):
+    goal: not unknown(plate)
+    body:
+        assert is_plate(plate)
+        bind table_instance:item where:
+            is_table(table_instance) and id[table_instance]==355
+        achieve close_char(char,table_instance)
+        if can_open(table_instance):
+            achieve_once open(table_instance)
+            exp(plate,table_instance)
+        else:
+            exp(plate,table_instance)
+    eff:
+        unknown[plate]=False
+        close[plate,table_instance]=True
+        close[table_instance,plate]=True
+    
+
+behavior find_food_pizza_2034_around_fridge_289(food_pizza:item):
+    goal: not unknown(food_pizza)
+    body:
+        assert is_food_pizza(food_pizza)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_pizza,fridge_instance)
+        else:
+            exp(food_pizza,fridge_instance)
+    eff:
+        unknown[food_pizza]=False
+        close[food_pizza,fridge_instance]=True
+        close[fridge_instance,food_pizza]=True
+    
+
+behavior find_food_hamburger_2024_around_fridge_289(food_hamburger:item):
+    goal: not unknown(food_hamburger)
+    body:
+        assert is_food_hamburger(food_hamburger)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_hamburger,fridge_instance)
+        else:
+            exp(food_hamburger,fridge_instance)
+    eff:
+        unknown[food_hamburger]=False
+        close[food_hamburger,fridge_instance]=True
+        close[fridge_instance,food_hamburger]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior put_on_plate(pizza:item, hamburger:item, plate:item):
+    body:
+        achieve_on(pizza, plate)
+        achieve_on(hamburger, plate)
+        # Place the pizza and hamburger on the plate
+
+behavior heat_in_microwave(plate:item, microwave:item):
+    body:
+        achieve inside(plate, microwave)
+        achieve is_on(microwave)
+        # Start the microwave to heat the food
+
+behavior put_on_table(plate:item, table:item):
+    body:
+        achieve on(plate, table)
+        # Place the plate with pizza and hamburger on the table
+
+behavior __goal__():
+    body:
+        bind pizza: item where:
+            is_food_pizza(pizza)
+        
+        bind hamburger: item where:
+            is_food_hamburger(hamburger)
+        
+        bind plate: item where:
+            is_plate(plate)
+        
+        bind microwave: item where:
+            is_microwave(microwave)
+        
+        bind table: item where:
+            is_table(table) and inside(table, dining_room)
+        
+        put_on_plate(pizza, hamburger, plate)
+        heat_in_microwave(plate, microwave)
+        put_on_table(plate, table)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_plate_1000_around_table_355(plate:item):
+    goal: not unknown(plate)
+    body:
+        assert is_plate(plate)
+        bind table_instance:item where:
+            is_table(table_instance) and id[table_instance]==355
+        achieve close_char(char,table_instance)
+        if can_open(table_instance):
+            achieve_once open(table_instance)
+            exp(plate,table_instance)
+        else:
+            exp(plate,table_instance)
+    eff:
+        unknown[plate]=False
+        close[plate,table_instance]=True
+        close[table_instance,plate]=True
+    
+
+behavior find_food_pizza_2034_around_fridge_289(food_pizza:item):
+    goal: not unknown(food_pizza)
+    body:
+        assert is_food_pizza(food_pizza)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_pizza,fridge_instance)
+        else:
+            exp(food_pizza,fridge_instance)
+    eff:
+        unknown[food_pizza]=False
+        close[food_pizza,fridge_instance]=True
+        close[fridge_instance,food_pizza]=True
+    
+
+behavior find_food_hamburger_2024_around_fridge_289(food_hamburger:item):
+    goal: not unknown(food_hamburger)
+    body:
+        assert is_food_hamburger(food_hamburger)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_hamburger,fridge_instance)
+        else:
+            exp(food_hamburger,fridge_instance)
+    eff:
+        unknown[food_hamburger]=False
+        close[food_hamburger,fridge_instance]=True
+        close[fridge_instance,food_hamburger]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_in_dining_room(table:item):
+    symbol in_dining_room=exists room: item : is_dining_room(room) and inside(table, room)
+    return in_dining_room
+
+behavior place_on_plate(o1:item, o2:item, plate:item):
+    body:
+        achieve on(o1, plate)
+        achieve on(o2, plate)
+
+behavior heat_in_microwave(plate:item, microwave:item):
+    body:
+        achieve inside(plate, microwave)
+        achieve_once is_on(microwave)
+        achieve_once is_off(microwave)
+
+behavior place_on_table(plate:item, table:item):
+    body:
+        achieve on(plate, table)
+
+behavior __goal__():
+    body:
+        bind pizza: item where:
+            is_food_pizza(pizza)
+        # Select the pizza item
+
+        bind hamburger: item where:
+            is_food_hamburger(hamburger)
+        # Select the hamburger item
+        
+        bind plate: item where:
+            is_plate(plate)
+        # Select a plate for items
+
+        bind microwave: item where:
+            is_microwave(microwave)
+        # Select a microwave
+
+        bind table: item where:
+            is_table(table) and is_in_dining_room(table)
+        # Select a table inside the dining room
+
+        place_on_plate(pizza, hamburger, plate)
+        heat_in_microwave(plate, microwave)
+        place_on_table(plate, table)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_plate_1000_around_table_355(plate:item):
+    goal: not unknown(plate)
+    body:
+        assert is_plate(plate)
+        bind table_instance:item where:
+            is_table(table_instance) and id[table_instance]==355
+        achieve close_char(char,table_instance)
+        if can_open(table_instance):
+            achieve_once open(table_instance)
+            exp(plate,table_instance)
+        else:
+            exp(plate,table_instance)
+    eff:
+        unknown[plate]=False
+        close[plate,table_instance]=True
+        close[table_instance,plate]=True
+    
+
+behavior find_food_pizza_2034_around_fridge_289(food_pizza:item):
+    goal: not unknown(food_pizza)
+    body:
+        assert is_food_pizza(food_pizza)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_pizza,fridge_instance)
+        else:
+            exp(food_pizza,fridge_instance)
+    eff:
+        unknown[food_pizza]=False
+        close[food_pizza,fridge_instance]=True
+        close[fridge_instance,food_pizza]=True
+    
+
+behavior find_food_hamburger_2024_around_fridge_289(food_hamburger:item):
+    goal: not unknown(food_hamburger)
+    body:
+        assert is_food_hamburger(food_hamburger)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_hamburger,fridge_instance)
+        else:
+            exp(food_hamburger,fridge_instance)
+    eff:
+        unknown[food_hamburger]=False
+        close[food_hamburger,fridge_instance]=True
+        close[fridge_instance,food_hamburger]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior put_on_plate(item:item, plate:item):
+    body:
+        achieve on(item, plate)
+
+behavior heat_in_microwave(plate:item, microwave:item):
+    body:
+        achieve inside(plate, microwave)
+        achieve closed(microwave)
+        achieve is_on(microwave)
+
+behavior place_on_table(items:list(item), table:item):
+    body:
+        foreach item: item:
+            if item in items:
+                achieve on(item, table)
+
+behavior __goal__():
+    body:
+        bind pizza: item where:
+            is_food_pizza(pizza)
+        bind hamburger: item where:
+            is_food_hamburger(hamburger)
+
+        bind plate: item where:
+            is_plate(plate)
+
+        bind microwave: item where:
+            is_microwave(microwave)
+
+        bind dining_room: item where:
+            is_dining_room(dining_room)
+
+        bind table: item where:
+            is_table(table) and inside(table, dining_room)
+
+        put_on_plate(pizza, plate)
+        put_on_plate(hamburger, plate)
+        heat_in_microwave(plate, microwave)
+        
+        symbol items = [pizza, hamburger]
+        place_on_table(items, table)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_plate_1000_around_table_355(plate:item):
+    goal: not unknown(plate)
+    body:
+        assert is_plate(plate)
+        bind table_instance:item where:
+            is_table(table_instance) and id[table_instance]==355
+        achieve close_char(char,table_instance)
+        if can_open(table_instance):
+            achieve_once open(table_instance)
+            exp(plate,table_instance)
+        else:
+            exp(plate,table_instance)
+    eff:
+        unknown[plate]=False
+        close[plate,table_instance]=True
+        close[table_instance,plate]=True
+    
+
+behavior find_food_pizza_2034_around_fridge_289(food_pizza:item):
+    goal: not unknown(food_pizza)
+    body:
+        assert is_food_pizza(food_pizza)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_pizza,fridge_instance)
+        else:
+            exp(food_pizza,fridge_instance)
+    eff:
+        unknown[food_pizza]=False
+        close[food_pizza,fridge_instance]=True
+        close[fridge_instance,food_pizza]=True
+    
+
+behavior find_food_hamburger_2024_around_fridge_289(food_hamburger:item):
+    goal: not unknown(food_hamburger)
+    body:
+        assert is_food_hamburger(food_hamburger)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_hamburger,fridge_instance)
+        else:
+            exp(food_hamburger,fridge_instance)
+    eff:
+        unknown[food_hamburger]=False
+        close[food_hamburger,fridge_instance]=True
+        close[fridge_instance,food_hamburger]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior place_food_on_plate(pizza:item, hamburger:item, plate:item):
+    body:
+        achieve on(pizza, plate)
+        achieve on(hamburger, plate)
+
+behavior heat_food_in_microwave(food:item, microwave:item):
+    body:
+        achieve inside(food, microwave)
+        achieve closed(microwave) # Ensure the microwave is closed before activation
+        achieve is_on(microwave) # Turn on the microwave to heat the food
+
+behavior place_plate_on_table(plate:item, table:item):
+    body:
+        achieve on(plate, table) # Place the plate on the table
+
+behavior __goal__():
+    body:
+        bind pizza: item where:
+            is_food_pizza(pizza)
+        # Select the pizza item
+
+        bind hamburger: item where:
+            is_food_hamburger(hamburger)
+        # Select the hamburger item
+
+        bind plate: item where:
+            is_plate(plate)
+        # Select a plate
+
+        bind microwave: item where:
+            is_microwave(microwave)
+        # Select a microwave
+
+        bind dining_table: item where:
+            is_table(dining_table) and in_dining_room(dining_table)
+        # Select a table in the dining room
+
+        place_food_on_plate(pizza, hamburger, plate)
+        # Place the pizza and hamburger on the plate
+
+        heat_food_in_microwave(plate, microwave)
+        # Heat the plate with food in the microwave
+
+        place_plate_on_table(plate, dining_table)
+        # Place the plate with heated food on the table in the dining room
+
+#goal_representation_end
+
+##############################
+VH_pipeline: Fail to generate a valid plan
+##############################
+From agent.py->reset_goal
+Fail to generate the goal representation
+##############################
+From agent.py -> query_LLM_human
+Record from func query_LLM_human in agent.py
+Question: Can you teach me how to "put pizza and hamburger on a plate. then hot them in the microwave. then put them on a table in dinning room." ?
+Answer: Find a plate to put the pizza and hamburger on. Then put them in the microwave. Turn on the microwave. After that, put the plate on the table in the dining room.
+Re-decompose: False
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_plate_1000_around_table_355(plate:item):
+    goal: not unknown(plate)
+    body:
+        assert is_plate(plate)
+        bind table_instance:item where:
+            is_table(table_instance) and id[table_instance]==355
+        achieve close_char(char,table_instance)
+        if can_open(table_instance):
+            achieve_once open(table_instance)
+            exp(plate,table_instance)
+        else:
+            exp(plate,table_instance)
+    eff:
+        unknown[plate]=False
+        close[plate,table_instance]=True
+        close[table_instance,plate]=True
+    
+
+behavior find_food_pizza_2034_around_fridge_289(food_pizza:item):
+    goal: not unknown(food_pizza)
+    body:
+        assert is_food_pizza(food_pizza)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_pizza,fridge_instance)
+        else:
+            exp(food_pizza,fridge_instance)
+    eff:
+        unknown[food_pizza]=False
+        close[food_pizza,fridge_instance]=True
+        close[fridge_instance,food_pizza]=True
+    
+
+behavior find_food_hamburger_2024_around_fridge_289(food_hamburger:item):
+    goal: not unknown(food_hamburger)
+    body:
+        assert is_food_hamburger(food_hamburger)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_hamburger,fridge_instance)
+        else:
+            exp(food_hamburger,fridge_instance)
+    eff:
+        unknown[food_hamburger]=False
+        close[food_hamburger,fridge_instance]=True
+        close[fridge_instance,food_hamburger]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_dining_room_table(table:item):
+    # Function to check if a table is in the dining room
+    symbol is_in_dining_room = exists room:item: is_dining_room(room) and inside(table, room)
+    return is_in_dining_room
+
+behavior put_on_plate(food:item, plate:item):
+    body:
+        achieve on(food, plate)
+
+behavior heat_in_microwave(plate:item, microwave:item):
+    body:
+        achieve_once inside(plate, microwave)
+        achieve closed(microwave)
+        achieve is_on(microwave)
+
+behavior place_on_table(plate:item, table:item):
+    body:
+        achieve on(plate, table)
+
+behavior __goal__():
+    body:
+        bind pizza: item where:
+            is_food_pizza(pizza)
+        # Bind the pizza item
+        bind hamburger: item where:
+            is_food_hamburger(hamburger)
+        # Bind the hamburger item
+        bind plate: item where:
+            is_plate(plate)
+        # Bind a plate item
+        bind microwave: item where:
+            is_microwave(microwave)
+        # Bind the microwave item
+        bind table: item where:
+            is_table(table) and is_dining_room_table(table)
+        # Bind a table in the dining room
+
+        put_on_plate(pizza, plate)
+        put_on_plate(hamburger, plate)
+        heat_in_microwave(plate, microwave)
+        place_on_table(plate, table)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_plate_1000_around_kitchen_counter_230(plate:item):
+    goal: not unknown(plate)
+    body:
+        assert is_plate(plate)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==230
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(plate,kitchen_counter_instance)
+        else:
+            exp(plate,kitchen_counter_instance)
+    eff:
+        unknown[plate]=False
+        close[plate,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,plate]=True
+    
+
+behavior find_food_pizza_2034_around_fridge_289(food_pizza:item):
+    goal: not unknown(food_pizza)
+    body:
+        assert is_food_pizza(food_pizza)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_pizza,fridge_instance)
+        else:
+            exp(food_pizza,fridge_instance)
+    eff:
+        unknown[food_pizza]=False
+        close[food_pizza,fridge_instance]=True
+        close[fridge_instance,food_pizza]=True
+    
+
+behavior find_food_hamburger_2024_around_fridge_289(food_hamburger:item):
+    goal: not unknown(food_hamburger)
+    body:
+        assert is_food_hamburger(food_hamburger)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_hamburger,fridge_instance)
+        else:
+            exp(food_hamburger,fridge_instance)
+    eff:
+        unknown[food_hamburger]=False
+        close[food_hamburger,fridge_instance]=True
+        close[fridge_instance,food_hamburger]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_plate_available(plate:item):
+    # Check if the plate is available
+    return is_plate(plate)
+
+def is_microwave_available(microwave:item):
+    # Check if the microwave is available
+    return is_microwave(microwave)
+
+def is_table_in_dining_room(table:item):
+    # Check if the table is in the dining room
+    symbol in_dining_room = exists room: item : is_dining_room(room) and inside(table, room)
+    return in_dining_room
+
+behavior place_food_on_plate(pizza:item, hamburger:item, plate:item):
+    body:
+        achieve on(pizza, plate)
+        achieve on(hamburger, plate)
+
+behavior heat_food_in_microwave(plate:item, microwave:item):
+    body:
+        achieve inside(plate, microwave)
+        achieve is_on(microwave)
+
+behavior move_plate_to_dining_room_table(plate:item, table:item):
+    body:
+        achieve on(plate, table)
+
+behavior __goal__():
+    body:
+        bind pizza: item where:
+            is_food_pizza(pizza)
+        # Select a pizza item
+        
+        bind hamburger: item where:
+            is_food_hamburger(hamburger)
+        # Select a hamburger item
+        
+        bind plate: item where:
+            is_plate_available(plate)
+        # Ensure the selected item is a plate
+        
+        bind microwave: item where:
+            is_microwave_available(microwave)
+        # Ensure the selected item is a microwave
+        
+        bind table: item where:
+            is_table(table) and is_table_in_dining_room(table)
+        # Ensure the selected item is a table inside the dining room
+        
+        place_food_on_plate(pizza, hamburger, plate)
+        heat_food_in_microwave(plate, microwave)
+        move_plate_to_dining_room_table(plate, table)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_plate_1000_around_dishwasher_1001(plate:item):
+    goal: not unknown(plate)
+    body:
+        assert is_plate(plate)
+        bind dishwasher_instance:item where:
+            is_dishwasher(dishwasher_instance) and id[dishwasher_instance]==1001
+        achieve close_char(char,dishwasher_instance)
+        if can_open(dishwasher_instance):
+            achieve_once open(dishwasher_instance)
+            exp(plate,dishwasher_instance)
+        else:
+            exp(plate,dishwasher_instance)
+    eff:
+        unknown[plate]=False
+        close[plate,dishwasher_instance]=True
+        close[dishwasher_instance,plate]=True
+    
+
+behavior find_food_pizza_2034_around_fridge_289(food_pizza:item):
+    goal: not unknown(food_pizza)
+    body:
+        assert is_food_pizza(food_pizza)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_pizza,fridge_instance)
+        else:
+            exp(food_pizza,fridge_instance)
+    eff:
+        unknown[food_pizza]=False
+        close[food_pizza,fridge_instance]=True
+        close[fridge_instance,food_pizza]=True
+    
+
+behavior find_food_hamburger_2024_around_fridge_289(food_hamburger:item):
+    goal: not unknown(food_hamburger)
+    body:
+        assert is_food_hamburger(food_hamburger)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_hamburger,fridge_instance)
+        else:
+            exp(food_hamburger,fridge_instance)
+    eff:
+        unknown[food_hamburger]=False
+        close[food_hamburger,fridge_instance]=True
+        close[fridge_instance,food_hamburger]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_in_dining_room(table:item):
+    # Function
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_plate_1000_around_dishwasher_1001(plate:item):
+    goal: not unknown(plate)
+    body:
+        assert is_plate(plate)
+        bind dishwasher_instance:item where:
+            is_dishwasher(dishwasher_instance) and id[dishwasher_instance]==1001
+        achieve close_char(char,dishwasher_instance)
+        if can_open(dishwasher_instance):
+            achieve_once open(dishwasher_instance)
+            exp(plate,dishwasher_instance)
+        else:
+            exp(plate,dishwasher_instance)
+    eff:
+        unknown[plate]=False
+        close[plate,dishwasher_instance]=True
+        close[dishwasher_instance,plate]=True
+    
+
+behavior find_food_pizza_2034_around_fridge_289(food_pizza:item):
+    goal: not unknown(food_pizza)
+    body:
+        assert is_food_pizza(food_pizza)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_pizza,fridge_instance)
+        else:
+            exp(food_pizza,fridge_instance)
+    eff:
+        unknown[food_pizza]=False
+        close[food_pizza,fridge_instance]=True
+        close[fridge_instance,food_pizza]=True
+    
+
+behavior find_food_hamburger_2024_around_fridge_289(food_hamburger:item):
+    goal: not unknown(food_hamburger)
+    body:
+        assert is_food_hamburger(food_hamburger)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_hamburger,fridge_instance)
+        else:
+            exp(food_hamburger,fridge_instance)
+    eff:
+        unknown[food_hamburger]=False
+        close[food_hamburger,fridge_instance]=True
+        close[fridge_instance,food_hamburger]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior heat_in_microwave(plate:item, microwave:item):
+    body:
+        achieve_once inside(plate, microwave)
+        # Place the plate containing food into the microwave
+        achieve is_on(microwave)
+        # Turn on the microwave to heat the food
+        achieve_once is_off(microwave)
+        # Turn off the microwave after heating
+
+behavior place_on_table(plate:item, table:item):
+    body:
+        achieve on(plate, table)
+        # Place the plate with food on the table
+
+behavior __goal__():
+    body:
+        bind plate: item where:
+            is_plate(plate)
+        # Select a plate
+        bind pizza: item where:
+            is_food_pizza(pizza)
+        # Select a pizza
+        bind hamburger: item where:
+            is_food_hamburger(hamburger)
+        # Select a hamburger
+        
+        symbol has_microwave=exists microwave: item : is_microwave(microwave) and has_switch(microwave)
+        # Check if a microwave with a switch is available
+        assert has_microwave
+
+        bind microwave: item where:
+            is_microwave(microwave) and has_switch(microwave)
+        # Select the available microwave
+
+        bind dining_table: item where:
+            is_table(dining_table) and in_dining_room(dining_table)
+        # Select a table in the dining room
+
+        heat_in_microwave(plate, microwave)
+        # Heat the food on the plate in the microwave
+        place_on_table(plate, dining_table)
+        # Place the heated plate on the table in the dining room
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_plate_1000_around_table_355(plate:item):
+    goal: not unknown(plate)
+    body:
+        assert is_plate(plate)
+        bind table_instance:item where:
+            is_table(table_instance) and id[table_instance]==355
+        achieve close_char(char,table_instance)
+        if can_open(table_instance):
+            achieve_once open(table_instance)
+            exp(plate,table_instance)
+        else:
+            exp(plate,table_instance)
+    eff:
+        unknown[plate]=False
+        close[plate,table_instance]=True
+        close[table_instance,plate]=True
+    
+
+behavior find_food_pizza_2034_around_fridge_289(food_pizza:item):
+    goal: not unknown(food_pizza)
+    body:
+        assert is_food_pizza(food_pizza)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_pizza,fridge_instance)
+        else:
+            exp(food_pizza,fridge_instance)
+    eff:
+        unknown[food_pizza]=False
+        close[food_pizza,fridge_instance]=True
+        close[fridge_instance,food_pizza]=True
+    
+
+behavior find_food_hamburger_2024_around_fridge_289(food_hamburger:item):
+    goal: not unknown(food_hamburger)
+    body:
+        assert is_food_hamburger(food_hamburger)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_hamburger,fridge_instance)
+        else:
+            exp(food_hamburger,fridge_instance)
+    eff:
+        unknown[food_hamburger]=False
+        close[food_hamburger,fridge_instance]=True
+        close[fridge_instance,food_hamburger]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior put_food_on_plate(plate:item, pizza:item, hamburger:item):
+    body:
+        achieve on(pizza, plate)
+        achieve on(hamburger, plate)
+
+behavior heat_food_in_microwave(microwave:item, plate:item):
+    body:
+        achieve inside(plate, microwave)
+        achieve closed(microwave)
+        achieve is_on(microwave)
+
+behavior place_food_on_table(plate:item, table:item):
+    body:
+        achieve on(plate, table)
+
+behavior __goal__():
+    body:
+        bind plate: item where:
+            is_plate(plate)
+        
+        bind pizza: item where:
+            is_food_pizza(pizza)
+        
+        bind hamburger: item where:
+            is_food_hamburger(hamburger)
+        
+        bind microwave: item where:
+            is_microwave(microwave)
+        
+        bind dining_table: item where:
+            is_table(dining_table) and exists room: item : is_dining_room(room) and inside(dining_table, room)
+        
+        put_food_on_plate(plate, pizza, hamburger)
+        heat_food_in_microwave(microwave, plate)
+        place_food_on_table(plate, dining_table)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_plate_1000_around_dishwasher_1001(plate:item):
+    goal: not unknown(plate)
+    body:
+        assert is_plate(plate)
+        bind dishwasher_instance:item where:
+            is_dishwasher(dishwasher_instance) and id[dishwasher_instance]==1001
+        achieve close_char(char,dishwasher_instance)
+        if can_open(dishwasher_instance):
+            achieve_once open(dishwasher_instance)
+            exp(plate,dishwasher_instance)
+        else:
+            exp(plate,dishwasher_instance)
+    eff:
+        unknown[plate]=False
+        close[plate,dishwasher_instance]=True
+        close[dishwasher_instance,plate]=True
+    
+
+behavior find_food_pizza_2034_around_fridge_289(food_pizza:item):
+    goal: not unknown(food_pizza)
+    body:
+        assert is_food_pizza(food_pizza)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_pizza,fridge_instance)
+        else:
+            exp(food_pizza,fridge_instance)
+    eff:
+        unknown[food_pizza]=False
+        close[food_pizza,fridge_instance]=True
+        close[fridge_instance,food_pizza]=True
+    
+
+behavior find_food_hamburger_2024_around_fridge_289(food_hamburger:item):
+    goal: not unknown(food_hamburger)
+    body:
+        assert is_food_hamburger(food_hamburger)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_hamburger,fridge_instance)
+        else:
+            exp(food_hamburger,fridge_instance)
+    eff:
+        unknown[food_hamburger]=False
+        close[food_hamburger,fridge_instance]=True
+        close[fridge_instance,food_hamburger]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior put_food_on_plate(food:item, plate:item):
+    body:
+        achieve on(food, plate)
+        # Place the food item on the plate
+
+behavior put_plate_in_microwave(plate:item, microwave:item):
+    body:
+        achieve inside(plate, microwave)
+        # Place the plate inside the microwave
+
+behavior heat_in_microwave(microwave:item):
+    body:
+        achieve plugged(microwave)
+        # Ensure that the microwave is plugged in
+
+        achieve closed(microwave)
+        # Ensure that the microwave door is closed
+
+        achieve is_on(microwave)
+        # Turn on the microwave to heat the content
+
+behavior move_plate_to_table(plate:item, table:item):
+    body:
+        achieve on(plate, table)
+        # Move the plate onto the table
+
+behavior __goal__():
+    body:
+        bind pizza: item where:
+            is_food_pizza(pizza)
+        # Select the pizza
+
+        bind hamburger: item where:
+            is_food_hamburger(hamburger)
+        # Select the hamburger
+
+        bind plate: item where:
+            is_plate(plate)
+        # Select a plate
+
+        bind microwave: item where:
+            is_microwave(microwave)
+        # Select a microwave
+
+        bind table: item where:
+            is_table(table)
+        # Select a table
+
+        put_food_on_plate(pizza, plate)
+        put_food_on_plate(hamburger, plate)
+        put_plate_in_microwave(plate, microwave)
+        heat_in_microwave(microwave)
+
+        bind dining_room: item where:
+            is_dining_room(dining_room) and inside(table, dining_room)
+        # Select the table in the dining room
+
+        move_plate_to_table(plate, table)
+
+#goal_representation_end
+
+##############################
+VH_pipeline: Fail to generate a valid plan
+##############################
+Error record: object of type 'NoneType' has no len()
+##############################
+Task Summary:
+Task Goal:
+Syntax Error
+Action History:
+[]
+Time info:
+Time consume: 332 seconds
+Exp_helper query times: 0
+Guidance query times: 1
+library scale: 0
+goal generate times: 12
+goal correct times: 0
+
+Task complete rate:
+Keystate: k1 - Requires: 20 steps
+Keystate: k2 - Requires: 4 steps
+Action Completion Rate: No actions required
+Scene_id: 0
+##############################

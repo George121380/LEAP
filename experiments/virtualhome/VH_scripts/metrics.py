@@ -461,7 +461,60 @@ def print_success_rates_descending(success_rate_list):
     for i, item in enumerate(sorted_rates, start=1):
         print(f"{i:<5} {item['task']:<{max_task_length}} {item['suc_rate']:>12.3f}")
 
+def print_compare_table(data):
+   
+    methods = sorted(data.keys())
 
+    # 2. 取出所有出现过的任务(行)
+    tasks = sorted({task for method_dict in data.values() for task in method_dict})
+
+    # 3. 构建表头: 第一列是"Task", 后面依次是各方法
+    header = ["Task"] + methods
+
+    # 4. 构建所有行
+    rows = []
+    rows.append(header)  # 第 0 行：表头
+
+    for task in tasks:
+        # 这一行的第一个元素是 任务名称
+        row = [task]
+        # 后面每一列对应一个方法
+        for m in methods:
+            val = data[m].get(task, "")  # 某些方法没有该任务时用空字符串
+            # 如果是浮点数，可以格式化下小数位
+            if isinstance(val, float):
+                val = f"{val:.2f}"
+            row.append(str(val))
+        rows.append(row)
+
+    # 5. 为对齐做准备，计算每一列的最大宽度
+    num_cols = len(header)
+    col_widths = []
+    for col_idx in range(num_cols):
+        # 找出该列在所有行中的最大字符串宽度
+        max_w = max(len(r[col_idx]) for r in rows)
+        col_widths.append(max_w)
+
+    # 6. 定义一个辅助函数：第 1 列左对齐(任务名)，后续列右对齐(数值更好看)
+    def format_row(row_data):
+        formatted = []
+        for i, cell in enumerate(row_data):
+            if i == 0:
+                # Task 这列左对齐
+                formatted.append(cell.ljust(col_widths[i]))
+            else:
+                # 方法列右对齐
+                formatted.append(cell.rjust(col_widths[i]))
+        return " | ".join(formatted)
+
+    # 7. 打印表格
+    # 7.1 表头
+    print(format_row(rows[0]))
+    # 7.2 分割线
+    print("-+-".join("-" * w for w in col_widths))
+    # 7.3 后续数据行
+    for row in rows[1:]:
+        print(format_row(row))
 
 # ------------------------------------------------------------------------------
 # 4. Main Entry Point
@@ -480,10 +533,24 @@ if __name__ == '__main__':
     # ...
 
     methods_experiments.append(find_csv_files(
-        '/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/main_results/openai_new/round2/LLMPlusPWOG_20250129_020824'
+        '/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/main_results/openai_new/round4/20250205_044047_LLMWG'
+    ))
+
+    methods_experiments.append(find_csv_files(
+        '/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/main_results/openai_new/round4/20250205_044140_LLMWOG'
+    ))
+
+    methods_experiments.append(find_csv_files(
+        '/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/main_results/openai_new/round4/20250205_175814_CAPWOG'
+    ))
+
+    methods_experiments.append(find_csv_files(
+        '/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/main_results/openai_new/round4/20250206_042201_OursWOG_continue'
     ))
 
     window_size = 10  # Example window size for moving average
+
+    compare_data = {}
 
     # Process each experiment
     for experiment in methods_experiments:
@@ -492,10 +559,18 @@ if __name__ == '__main__':
             continue
 
         exp_name, csv_file_path = experiment
+        exp_name = exp_name.split('_')[-1]
         result_list, guidance_nums = parse_completion_rates(csv_file_path)
 
         # Calculate average success rate and gather all success rates
         avg_success_rate, success_rate_dict = calculation(result_list)
+
+        success_dict_without_inner_list = {}
+        for task in success_rate_dict:
+            success_dict_without_inner_list[task['task'].replace('cdl_dataset/dataset/','')] = task['suc_rate']
+
+        compare_data[exp_name] = success_dict_without_inner_list
+
         print(f"\nExperiment: {exp_name}")
         print(f"Average Success Rate: {avg_success_rate:.3f}")
 
@@ -530,3 +605,5 @@ if __name__ == '__main__':
         )
 
         print(f"\nPlots for {exp_name} have been saved.")
+
+    print_compare_table(compare_data)

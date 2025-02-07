@@ -1,0 +1,252 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Find the shirt that needs to be hand washed.', '2. Hand wash the shirt.', '3. Iron the shirt.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_clothes_shirt_2086_around_washing_machine_2007(clothes_shirt:item):
+    goal: not unknown(clothes_shirt)
+    body:
+        assert is_clothes_shirt(clothes_shirt)
+        bind washing_machine_instance:item where:
+            is_washing_machine(washing_machine_instance) and id[washing_machine_instance]==2007
+        achieve close_char(char,washing_machine_instance)
+        if can_open(washing_machine_instance):
+            achieve_once open(washing_machine_instance)
+            exp(clothes_shirt,washing_machine_instance)
+        else:
+            exp(clothes_shirt,washing_machine_instance)
+    eff:
+        unknown[clothes_shirt]=False
+        close[clothes_shirt,washing_machine_instance]=True
+        close[washing_machine_instance,clothes_shirt]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_shirt_dirty(shirt:item):
+    # Function to check if the shirt is dirty
+    symbol is_dirty=exists o: item : is_clothes_shirt(o) and dirty(o)
+    return is_dirty
+
+behavior observe_shirt(shirt:item):
+    body:
+        if is_clothes_shirt(shirt) and not visited(shirt):
+            observe(shirt, "Determine if this shirt is the target one to be washed")
+            # Inspect to check if this is the shirt that needs washing
+
+behavior __goal__():
+    body:
+        if exists shirt: item : is_clothes_shirt(shirt) and is_shirt_dirty(shirt):
+            # If a known shirt is dirty, approach it
+            bind shirt: item where:
+                is_clothes_shirt(shirt) and is_shirt_dirty(shirt)
+            achieve close_char(char, shirt)
+        else:
+            # If no known shirt is dirty, check every unvisited shirt
+            foreach shirt: item:
+                if is_clothes_shirt(shirt) and not visited(shirt):
+                    observe_shirt(shirt)
+
+#goal_representation_end
+
+##############################
+Error is:
+Failed to rename the derived function application.
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_clothes_shirt_2086_around_washing_machine_2007(clothes_shirt:item):
+    goal: not unknown(clothes_shirt)
+    body:
+        assert is_clothes_shirt(clothes_shirt)
+        bind washing_machine_instance:item where:
+            is_washing_machine(washing_machine_instance) and id[washing_machine_instance]==2007
+        achieve close_char(char,washing_machine_instance)
+        if can_open(washing_machine_instance):
+            achieve_once open(washing_machine_instance)
+            exp(clothes_shirt,washing_machine_instance)
+        else:
+            exp(clothes_shirt,washing_machine_instance)
+    eff:
+        unknown[clothes_shirt]=False
+        close[clothes_shirt,washing_machine_instance]=True
+        close[washing_machine_instance,clothes_shirt]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_shirt_to_find(shirt: item):
+    # Function to check if the item is the shirt that needs to be hand washed
+    symbol found_shirt = is_clothes_shirt(shirt) and dirty(shirt)
+    return found_shirt
+
+behavior find_shirt_to_wash(shirt: item):
+    body:
+        achieve visited(shirt)
+
+behavior __goal__():
+    body:
+        if exists shirt: item : is_clothes_shirt(shirt) and dirty(shirt):
+            # If the shirt that needs washing is already known, approach or identify it
+            foreach shirt: item:
+                if is_clothes_shirt(shirt) and dirty(shirt):
+                    achieve visited(shirt)
+        else:
+            # Explore to find the dirty shirt that needs to be washed
+            foreach shirt: item:
+                if is_clothes_shirt(shirt) and not visited(shirt):
+                    observe(shirt, "Locate the dirty shirt that needs to be hand washed")
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+ 
+def is_shirt_to_find(shirt: item):
+    # Function to check if the item is the shirt that needs to be hand washed
+    symbol found_shirt = is_clothes_shirt(shirt) and dirty(shirt)
+    return found_shirt
+
+behavior find_shirt_to_wash(shirt: item):
+    body:
+        achieve visited(shirt)
+
+behavior __goal__():
+    body:
+        if exists shirt: item : is_clothes_shirt(shirt) and dirty(shirt):
+            # If the shirt that needs washing is already known, approach or identify it
+            foreach shirt: item:
+                if is_clothes_shirt(shirt) and dirty(shirt):
+                    achieve visited(shirt)
+        else:
+            # Explore to find the dirty shirt that needs to be washed
+            foreach shirt: item:
+                if is_clothes_shirt(shirt) and not visited(shirt):
+                    observe(shirt, "Locate the dirty shirt that needs to be hand washed")
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(washing_machine_2007)open_executor(washing_machine_2007)exp(clothes_shirt_2086, washing_machine_2007)walk_executor(clothes_shirt_2086)obs(clothes_shirt_2086, Locate the dirty shirt that needs to be hand washed)
+##############################
+From agent.py
+walk_executor(washing_machine_2007)
+Robot find: Robot is close to the washing_machine_2007. 
+##############################
+From agent.py
+open_executor(washing_machine_2007)
+Robot find: Robot is close to the washing_machine_2007. washing_machine_2007 is opened. 
+##############################
+From agent.py
+exp(clothes_shirt_2086, washing_machine_2007)
+Fail to find clothes_shirt_2086 around washing_machine_2007. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(closetdrawer_143)exp(clothes_shirt_2086, closetdrawer_143)walk_executor(clothes_shirt_2086)obs(clothes_shirt_2086, Locate the dirty shirt that needs to be hand washed)
+##############################
+From agent.py
+walk_executor(closetdrawer_143)
+Robot find: Robot is close to the dresser_123. 
+##############################
+From agent.py
+exp(clothes_shirt_2086, closetdrawer_143)
+Fail to find clothes_shirt_2086 around closetdrawer_143. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(closetdrawer_143)exp(clothes_shirt_2086, closetdrawer_143)walk_executor(clothes_shirt_2086)obs(clothes_shirt_2086, Locate the dirty shirt that needs to be hand washed)
+##############################
+From agent.py
+walk_executor(closetdrawer_143)
+Robot find: Robot is close to the dresser_123. 
+##############################
+From agent.py
+exp(clothes_shirt_2086, closetdrawer_143)
+Fail to find clothes_shirt_2086 around closetdrawer_143. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(closetdrawer_143)exp(clothes_shirt_2086, closetdrawer_143)walk_executor(clothes_shirt_2086)obs(clothes_shirt_2086, Locate the dirty shirt that needs to be hand washed)
+##############################
+From agent.py
+walk_executor(closetdrawer_143)
+Robot find: Robot is close to the dresser_123. 
+##############################
+From agent.py
+exp(clothes_shirt_2086, closetdrawer_143)
+Fail to find clothes_shirt_2086 around closetdrawer_143. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(closetdrawer_143)exp(clothes_shirt_2086, closetdrawer_143)walk_executor(clothes_shirt_2086)obs(clothes_shirt_2086, Locate the dirty shirt that needs to be hand washed)
+##############################
+From agent.py
+walk_executor(closetdrawer_143)
+Robot find: Robot is close to the dresser_123. 
+##############################
+From agent.py
+exp(clothes_shirt_2086, closetdrawer_143)
+Fail to find clothes_shirt_2086 around closetdrawer_143. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(closetdrawer_143)exp(clothes_shirt_2086, closetdrawer_143)walk_executor(clothes_shirt_2086)obs(clothes_shirt_2086, Locate the dirty shirt that needs to be hand washed)
+##############################
+From agent.py
+walk_executor(closetdrawer_143)
+Robot find: Robot is close to the dresser_123. 
+##############################
+From agent.py -> query_LLM_human
+Record from func query_LLM_human in agent.py
+Question: Can you help me to find clothes_shirt_2086 ?
+Answer: The target item, clothes_shirt_2086, can be found in bathroom_1. It is inside the basket_for_clothes_2006. Please go to bathroom_1, locate the basket_for_clothes_2006, and retrieve clothes_shirt_2086 from inside the basket.
+Re-decompose: None
+
+##############################
+From agent.py
+Human Instruction: The target item, clothes_shirt_2086, can be found in bathroom_1. It is inside the basket_for_clothes_2006. Please go to bathroom_1, locate the basket_for_clothes_2006, and retrieve clothes_shirt_2086 from inside the basket.
+
+The actions you have taken:
+Action 1: Walk to washing_machine_2007.
+Action 2: Open washing_machine_2007.
+Action 3: look for clothes_shirt_2086 around washing_machine_2007.
+Action 4: Walk to closetdrawer_143.
+Action 5: look for clothes_shirt_2086 around closetdrawer_143.
+Action 6: Walk to closetdrawer_143.
+Action 7: look for clothes_shirt_2086 around closetdrawer_143.
+Action 8: Walk to closetdrawer_143.
+Action 9: look for clothes_shirt_2086 around closetdrawer_143.
+Action 10: Walk to closetdrawer_143.
+Action 11: look for clothes_shirt_2086 around closetdrawer_143.
+Action 12: Walk to closetdrawer_143.
+
+##############################
+From agent.py
+exp(clothes_shirt_2086, closetdrawer_143)
+Fail to find clothes_shirt_2086 around closetdrawer_143. 
+##############################
+Error record: object of type 'NoneType' has no len()
+##############################
+Task Summary:
+Task Goal:
+Syntax Error
+Action History:
+['walk_executor(washing_machine_2007)', 'open_executor(washing_machine_2007)', 'walk_executor(closetdrawer_143)', 'walk_executor(closetdrawer_143)', 'walk_executor(closetdrawer_143)', 'walk_executor(closetdrawer_143)', 'walk_executor(closetdrawer_143)']
+Time info:
+Time consume: 122 seconds
+Exp_helper query times: 1
+Guidance query times: 0
+library scale: 33
+goal generate times: 2
+goal correct times: 0
+
+Task complete rate:
+Keystate: k1 - Requires: 5 steps
+Keystate: k2 - Requires: 10 steps
+Action Completion Rate: 0.0
+Scene_id: 0
+##############################

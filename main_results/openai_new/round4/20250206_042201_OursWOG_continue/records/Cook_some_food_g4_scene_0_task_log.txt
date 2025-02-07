@@ -1,0 +1,633 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Boil the vegetables in the pot.  ', '2. Store the whole pot in the fridge.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_pot_2069_around_stove_2065(pot:item):
+    goal: not unknown(pot)
+    body:
+        assert is_pot(pot)
+        bind stove_instance:item where:
+            is_stove(stove_instance) and id[stove_instance]==2065
+        achieve close_char(char,stove_instance)
+        if can_open(stove_instance):
+            achieve_once open(stove_instance)
+            exp(pot,stove_instance)
+        else:
+            exp(pot,stove_instance)
+    eff:
+        unknown[pot]=False
+        close[pot,stove_instance]=True
+        close[stove_instance,pot]=True
+    
+
+behavior find_cleaning_solution_2073_around_closetdrawer_121(cleaning_solution:item):
+    goal: not unknown(cleaning_solution)
+    body:
+        assert is_cleaning_solution(cleaning_solution)
+        bind closetdrawer_instance:item where:
+            is_closetdrawer(closetdrawer_instance) and id[closetdrawer_instance]==121
+        achieve close_char(char,closetdrawer_instance)
+        if can_open(closetdrawer_instance):
+            achieve_once open(closetdrawer_instance)
+            exp(cleaning_solution,closetdrawer_instance)
+        else:
+            exp(cleaning_solution,closetdrawer_instance)
+    eff:
+        unknown[cleaning_solution]=False
+        close[cleaning_solution,closetdrawer_instance]=True
+        close[closetdrawer_instance,cleaning_solution]=True
+    
+
+behavior find_food_vegetable_2041_around_fridge_289(food_vegetable:item):
+    goal: not unknown(food_vegetable)
+    body:
+        assert is_food_vegetable(food_vegetable)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_vegetable,fridge_instance)
+        else:
+            exp(food_vegetable,fridge_instance)
+    eff:
+        unknown[food_vegetable]=False
+        close[food_vegetable,fridge_instance]=True
+        close[fridge_instance,food_vegetable]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def has_water_container(pot:item):
+    # Function to check if the pot can hold water
+    symbol container=exists o: item : is_pot(o) and inside(o, pot)
+    return container
+
+behavior fill_pot_with_water(pot:item, sink: item):
+    body:
+        achieve inside(pot, sink) # Ensure pot is inside the sink for filling
+        if has_faucet(sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_on(faucet) # Turn on the faucet to fill the pot
+            achieve has_water(pot) # Ensure the pot has water
+            achieve_once is_off(faucet) # Turn off the faucet after filling
+
+behavior heat_pot_on_stove(pot:item, stove:item):
+    body:
+        achieve on(pot, stove) # Place the pot on the stove
+        achieve is_on(stove) # Turn the stove on to boil the water
+
+def ready_to_boil(pot:item):
+    # Function to check if vegetables are ready to boil
+    symbol ready=exists o: item : is_food_vegetable(o) and inside(o, pot) and has_water(pot)
+    return ready
+
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot)
+        # Bind the pot object
+        bind sink: item where:
+            is_sink(sink)
+        # Bind the sink object
+        fill_pot_with_water(pot, sink)
+
+        if ready_to_boil(pot):
+            bind stove: item where:
+                is_stove(stove)
+            # Bind the stove object
+            heat_pot_on_stove(pot, stove)
+
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "behavior_definition":
+
+'Function has_faucet not found. Note that recursive function calls are not supported in the current version.'
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_pot_2069_around_stove_2065(pot:item):
+    goal: not unknown(pot)
+    body:
+        assert is_pot(pot)
+        bind stove_instance:item where:
+            is_stove(stove_instance) and id[stove_instance]==2065
+        achieve close_char(char,stove_instance)
+        if can_open(stove_instance):
+            achieve_once open(stove_instance)
+            exp(pot,stove_instance)
+        else:
+            exp(pot,stove_instance)
+    eff:
+        unknown[pot]=False
+        close[pot,stove_instance]=True
+        close[stove_instance,pot]=True
+    
+
+behavior find_food_vegetable_2041_around_fridge_289(food_vegetable:item):
+    goal: not unknown(food_vegetable)
+    body:
+        assert is_food_vegetable(food_vegetable)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_vegetable,fridge_instance)
+        else:
+            exp(food_vegetable,fridge_instance)
+    eff:
+        unknown[food_vegetable]=False
+        close[food_vegetable,fridge_instance]=True
+        close[fridge_instance,food_vegetable]=True
+    
+
+#goal_representation
+ 
+def has_water_container(pot:item):
+    # Function to check if the pot can hold water
+    symbol container=exists o: item : is_pot(o) and inside(o, pot)
+    return container
+
+behavior fill_pot_with_water(pot:item, sink: item):
+    body:
+        achieve inside(pot, sink) # Ensure pot is inside the sink for filling
+        if exists faucet: item: is_faucet(faucet) and close(faucet, sink):
+            bind faucet: item where:
+                is_faucet(faucet) and close(faucet, sink)
+            achieve_once is_on(faucet) # Turn on the faucet to fill the pot
+            achieve has_water(pot) # Ensure the pot has water
+            achieve_once is_off(faucet) # Turn off the faucet after filling
+
+behavior heat_pot_on_stove(pot:item, stove:item):
+    body:
+        achieve on(pot, stove) # Place the pot on the stove
+        achieve is_on(stove) # Turn the stove on to boil the water
+
+def ready_to_boil(pot:item):
+    # Function to check if vegetables are ready to boil
+    symbol ready=exists o: item : is_food_vegetable(o) and inside(o, pot) and has_water(pot)
+    return ready
+
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot)
+        # Bind the pot object
+        bind sink: item where:
+            is_sink(sink)
+        # Bind the sink object
+        fill_pot_with_water(pot, sink)
+
+        if ready_to_boil(pot):
+            bind stove: item where:
+                is_stove(stove)
+            # Bind the stove object
+            heat_pot_on_stove(pot, stove)
+
+#goal_representation_end
+
+##############################
+Error is:
+'NoneType' object is not iterable
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_pot_2069_around_stove_2065(pot:item):
+    goal: not unknown(pot)
+    body:
+        assert is_pot(pot)
+        bind stove_instance:item where:
+            is_stove(stove_instance) and id[stove_instance]==2065
+        achieve close_char(char,stove_instance)
+        if can_open(stove_instance):
+            achieve_once open(stove_instance)
+            exp(pot,stove_instance)
+        else:
+            exp(pot,stove_instance)
+    eff:
+        unknown[pot]=False
+        close[pot,stove_instance]=True
+        close[stove_instance,pot]=True
+    
+
+behavior find_food_potato_2035_around_fridge_289(food_potato:item):
+    goal: not unknown(food_potato)
+    body:
+        assert is_food_potato(food_potato)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_potato,fridge_instance)
+        else:
+            exp(food_potato,fridge_instance)
+    eff:
+        unknown[food_potato]=False
+        close[food_potato,fridge_instance]=True
+        close[fridge_instance,food_potato]=True
+    
+
+behavior find_cleaning_solution_2073_around_closetdrawer_394(cleaning_solution:item):
+    goal: not unknown(cleaning_solution)
+    body:
+        assert is_cleaning_solution(cleaning_solution)
+        bind closetdrawer_instance:item where:
+            is_closetdrawer(closetdrawer_instance) and id[closetdrawer_instance]==394
+        achieve close_char(char,closetdrawer_instance)
+        if can_open(closetdrawer_instance):
+            achieve_once open(closetdrawer_instance)
+            exp(cleaning_solution,closetdrawer_instance)
+        else:
+            exp(cleaning_solution,closetdrawer_instance)
+    eff:
+        unknown[cleaning_solution]=False
+        close[cleaning_solution,closetdrawer_instance]=True
+        close[closetdrawer_instance,cleaning_solution]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def has_water_in_pot(pot:item):
+    # Function to check if pot has water
+    symbol has_water=exists w: item : has_water(w) and inside(w, pot)
+    return has_water
+
+behavior boil_vegetables_in_pot(vegetables:item, pot:item, stove:item):
+    body:
+        if not has_water_in_pot(pot):
+            achieve has_water(pot)
+        achieve inside(vegetables, pot)
+        if has_switch(stove):
+            achieve_once is_on(stove)
+            achieve is_on(pot)
+            # Assume pot automatically turns off when food is boiled
+            achieve_once is_off(stove)
+
+behavior __goal__():
+    body:
+        bind vegetables: item where:
+            is_food_vegetable(vegetables)
+        # Select an instance of vegetables
+        
+        bind pot: item where:
+            is_pot(pot)
+        # Select a pot for boiling
+
+        bind stove: item where:
+            is_stove(stove)
+        # Select a stove to use for boiling
+         
+        boil_vegetables_in_pot(vegetables, pot, stove)
+ 
+#goal_representation_end
+
+##############################
+Error is:
+'NoneType' object is not iterable
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_cleaning_solution_2073_around_closetdrawer_394(cleaning_solution:item):
+    goal: not unknown(cleaning_solution)
+    body:
+        assert is_cleaning_solution(cleaning_solution)
+        bind closetdrawer_instance:item where:
+            is_closetdrawer(closetdrawer_instance) and id[closetdrawer_instance]==394
+        achieve close_char(char,closetdrawer_instance)
+        if can_open(closetdrawer_instance):
+            achieve_once open(closetdrawer_instance)
+            exp(cleaning_solution,closetdrawer_instance)
+        else:
+            exp(cleaning_solution,closetdrawer_instance)
+    eff:
+        unknown[cleaning_solution]=False
+        close[cleaning_solution,closetdrawer_instance]=True
+        close[closetdrawer_instance,cleaning_solution]=True
+    
+
+behavior find_pot_2069_around_stove_2065(pot:item):
+    goal: not unknown(pot)
+    body:
+        assert is_pot(pot)
+        bind stove_instance:item where:
+            is_stove(stove_instance) and id[stove_instance]==2065
+        achieve close_char(char,stove_instance)
+        if can_open(stove_instance):
+            achieve_once open(stove_instance)
+            exp(pot,stove_instance)
+        else:
+            exp(pot,stove_instance)
+    eff:
+        unknown[pot]=False
+        close[pot,stove_instance]=True
+        close[stove_instance,pot]=True
+    
+
+behavior find_food_vegetable_2041_around_fridge_289(food_vegetable:item):
+    goal: not unknown(food_vegetable)
+    body:
+        assert is_food_vegetable(food_vegetable)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_vegetable,fridge_instance)
+        else:
+            exp(food_vegetable,fridge_instance)
+    eff:
+        unknown[food_vegetable]=False
+        close[food_vegetable,fridge_instance]=True
+        close[fridge_instance,food_vegetable]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def has_stove_and_pot_with_vegetables():
+    # Check if there is a stove available and a pot with vegetables
+    symbol has_items = exists pot: item : is_pot(pot) and exists vegetable: item : is_food_vegetable(vegetable) and inside(vegetable, pot)
+    return has_items
+
+behavior boil_vegetables(pot:item, stove:item):
+    body:
+        achieve inside(pot, stove) # Place the pot on the stove
+        if has_switch(stove):
+            achieve_once is_on(stove) # Turn on the stove to boil the vegetables
+            achieve has_water(pot) # Ensure there is water in the pot
+            # Boiling action is implicit within this state
+            achieve_once is_off(stove) # Turn off the stove after boiling
+
+behavior __goal__():
+    body:
+        if has_stove_and_pot_with_vegetables():
+            # If items are known, proceed with boiling
+            bind pot: item where:
+                is_pot(pot) and exists vegetable: item : is_food_vegetable(vegetable) and inside(vegetable, pot)
+            bind stove: item where:
+                is_stove(stove)
+            boil_vegetables(pot, stove)
+
+        else:
+            # If not known, explore to locate needed items
+            foreach pot: item:
+                if is_pot(pot) and not visited(pot):
+                    observe(pot, "Check if there are vegetables inside")
+            foreach stove: item:
+                if is_stove(stove) and not visited(stove):
+                    observe(stove, "Locate stove for boiling")
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Unexpected token Token('VARNAME', 'vegetable') at line 5673, column 66.
+Expected one of: 
+	* _NEWLINE
+	* SEMICOLON
+
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_cleaning_solution_2073_around_closetdrawer_394(cleaning_solution:item):
+    goal: not unknown(cleaning_solution)
+    body:
+        assert is_cleaning_solution(cleaning_solution)
+        bind closetdrawer_instance:item where:
+            is_closetdrawer(closetdrawer_instance) and id[closetdrawer_instance]==394
+        achieve close_char(char,closetdrawer_instance)
+        if can_open(closetdrawer_instance):
+            achieve_once open(closetdrawer_instance)
+            exp(cleaning_solution,closetdrawer_instance)
+        else:
+            exp(cleaning_solution,closetdrawer_instance)
+    eff:
+        unknown[cleaning_solution]=False
+        close[cleaning_solution,closetdrawer_instance]=True
+        close[closetdrawer_instance,cleaning_solution]=True
+    
+
+behavior find_pot_2069_around_sink_42(pot:item):
+    goal: not unknown(pot)
+    body:
+        assert is_pot(pot)
+        bind sink_instance:item where:
+            is_sink(sink_instance) and id[sink_instance]==42
+        achieve close_char(char,sink_instance)
+        if can_open(sink_instance):
+            achieve_once open(sink_instance)
+            exp(pot,sink_instance)
+        else:
+            exp(pot,sink_instance)
+    eff:
+        unknown[pot]=False
+        close[pot,sink_instance]=True
+        close[sink_instance,pot]=True
+    
+
+behavior find_food_vegetable_2041_around_fridge_289(food_vegetable:item):
+    goal: not unknown(food_vegetable)
+    body:
+        assert is_food_vegetable(food_vegetable)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_vegetable,fridge_instance)
+        else:
+            exp(food_vegetable,fridge_instance)
+    eff:
+        unknown[food_vegetable]=False
+        close[food_vegetable,fridge_instance]=True
+        close[fridge_instance,food_vegetable]=True
+    
+
+#goal_representation
+ 
+def has_stove_and_pot_with_vegetables():
+    # Check if there is a stove available and a pot with vegetables
+    symbol has_items = exists pot: item : is_pot(pot) and exists veg: item : is_food_vegetable(veg) and inside(veg, pot)
+    return has_items
+
+behavior boil_vegetables(pot:item, stove:item):
+    body:
+        achieve inside(pot, stove) # Place the pot on the stove
+        if has_switch(stove):
+            achieve_once is_on(stove) # Turn on the stove to boil the vegetables
+            achieve has_water(pot) # Ensure there is water in the pot
+            # Boiling action is implicit within this state
+            achieve_once is_off(stove) # Turn off the stove after boiling
+
+behavior __goal__():
+    body:
+        if has_stove_and_pot_with_vegetables():
+            # If items are known, proceed with boiling
+            bind pot: item where:
+                is_pot(pot) and exists veg: item : is_food_vegetable(veg) and inside(veg, pot)
+            bind stove: item where:
+                is_stove(stove)
+            boil_vegetables(pot, stove)
+
+        else:
+            # If not known, explore to locate needed items
+            foreach pot: item:
+                if is_pot(pot) and not visited(pot):
+                    observe(pot, "Check if there are vegetables inside")
+            foreach stove: item:
+                if is_stove(stove) and not visited(stove):
+                    observe(stove, "Locate stove for boiling")
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Unexpected token Token('VARNAME', 'veg') at line 5673, column 66.
+Expected one of: 
+	* _NEWLINE
+	* SEMICOLON
+
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_cleaning_solution_2073_around_closetdrawer_160(cleaning_solution:item):
+    goal: not unknown(cleaning_solution)
+    body:
+        assert is_cleaning_solution(cleaning_solution)
+        bind closetdrawer_instance:item where:
+            is_closetdrawer(closetdrawer_instance) and id[closetdrawer_instance]==160
+        achieve close_char(char,closetdrawer_instance)
+        if can_open(closetdrawer_instance):
+            achieve_once open(closetdrawer_instance)
+            exp(cleaning_solution,closetdrawer_instance)
+        else:
+            exp(cleaning_solution,closetdrawer_instance)
+    eff:
+        unknown[cleaning_solution]=False
+        close[cleaning_solution,closetdrawer_instance]=True
+        close[closetdrawer_instance,cleaning_solution]=True
+    
+
+behavior find_pot_2069_around_stove_2065(pot:item):
+    goal: not unknown(pot)
+    body:
+        assert is_pot(pot)
+        bind stove_instance:item where:
+            is_stove(stove_instance) and id[stove_instance]==2065
+        achieve close_char(char,stove_instance)
+        if can_open(stove_instance):
+            achieve_once open(stove_instance)
+            exp(pot,stove_instance)
+        else:
+            exp(pot,stove_instance)
+    eff:
+        unknown[pot]=False
+        close[pot,stove_instance]=True
+        close[stove_instance,pot]=True
+    
+
+behavior find_food_vegetable_2041_around_fridge_289(food_vegetable:item):
+    goal: not unknown(food_vegetable)
+    body:
+        assert is_food_vegetable(food_vegetable)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_vegetable,fridge_instance)
+        else:
+            exp(food_vegetable,fridge_instance)
+    eff:
+        unknown[food_vegetable]=False
+        close[food_vegetable,fridge_instance]=True
+        close[fridge_instance,food_vegetable]=True
+    
+
+#goal_representation
+ 
+def has_stove_and_pot_with_vegetables():
+    # Check if there is a stove available and a pot with vegetables
+    symbol has_items = exists pot: item : is_pot(pot) and exists veg: item : is_food_vegetable(veg) and inside(veg, pot)
+    return has_items
+
+behavior boil_vegetables(pot:item, stove:item):
+    body:
+        achieve inside(pot, stove) # Place the pot on the stove
+        if has_switch(stove):
+            achieve_once is_on(stove) # Turn on the stove to boil the vegetables
+            achieve has_water(pot) # Ensure there is water in the pot
+            # Boiling action is implicit within this state
+            achieve_once is_off(stove) # Turn off the stove after boiling
+
+behavior __goal__():
+    body:
+        if has_stove_and_pot_with_vegetables():
+            # If items are known, proceed with boiling
+            bind pot: item where:
+                is_pot(pot) and exists veg: item : is_food_vegetable(veg) and inside(veg, pot)
+            bind stove: item where:
+                is_stove(stove)
+            boil_vegetables(pot, stove)
+
+        else:
+            # If not known, explore to locate needed items
+            foreach pot: item:
+                if is_pot(pot) and not visited(pot):
+                    observe(pot, "Check if there are vegetables inside")
+            foreach stove: item:
+                if is_stove(stove) and not visited(stove):
+                    observe(stove, "Locate stove for boiling")
+
+#goal_representation_end
+
+##############################
+VH_pipeline: Fail to generate a valid plan
+##############################
+From agent.py->reset_goal
+Fail to generate the goal representation
+##############################
+Error record: Error during problem transformation
+##############################
+Task Summary:
+Task Goal:
+Syntax Error
+Action History:
+[]
+Time info:
+Time consume: 204 seconds
+Exp_helper query times: 0
+Guidance query times: 0
+library scale: 4
+goal generate times: 3
+goal correct times: 2
+
+Task complete rate:
+Keystate: k1 - Requires: 16 steps
+Keystate: k2 - Requires: 17 steps
+Keystate: k3 - Requires: 12 steps
+Action Completion Rate: 0.0
+Scene_id: 0
+##############################

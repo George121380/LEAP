@@ -46,7 +46,7 @@ def plan(problem, planning=True):
         #     enable_state_hash=False,
         #     verbose=False
         # )
-        plans, stats = crow.crow_regression(
+        candidate_plans, search_stat = crow.crow_regression(
             problem.domain, problem, goal=problem.goal,
             is_goal_ordered=True, is_goal_serializable=False, always_commit_skeleton=True,
             enable_state_hash=False,
@@ -77,7 +77,7 @@ def plan(problem, planning=True):
     return table
 
 if __name__ == '__main__':
-    goal='utils/cdl_case_study.cdl'
+    goal='/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/main_results/openai_new/round4/20250206_042201_OursWOG_continue/internal_executable.cdl'
     print('Planning:')
     goal_solver(goal, planning=True)
     print('-' * 60)

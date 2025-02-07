@@ -43,7 +43,7 @@ def task_summary_record(epoch_logger, task_logger, scene_id, goal, action_histor
     """
     current_time = time.time()
     time_elapsed = int(current_time - start_time) if start_time else ''
-    time_info = f"Time consume: {time_elapsed} seconds\nExp_helper query times: {final_info['exp_helper_query_times']}\nGuidance query times: {final_info['guidance_query_times']}\nlibrary scale: {final_info['library_scale']}\ngoal generate times: {final_info['goal_generate_times']}\ngoal correct times: {final_info['goal_correct_times']}\n"
+    time_info = f"Time consume: {time_elapsed} seconds\nExp_helper query times: {final_info['exp_helper_query_times']}\nGuidance query times: {final_info['guidance_query_times']}\nlibrary scale: {final_info['library_scale']}\ngoal generate times: {final_info['goal_generate_times']}\ngoal correct times: {final_info['goal_correct_times']}\naction_num: {len(action_history)}\n"
     epoch_logger.info(task_path, goal, action_history, time_info, complete_rate, f"Scene_id: {str(scene_id)}")
     task_logger.info("Task Summary:\nTask Goal:\n"+goal+"\nAction History:\n"+str(action_history)+"\nTime info:\n"+time_info+"\nTask complete rate:\n"+str(complete_rate)+"\n"+f"Scene_id: {str(scene_id)}")
     

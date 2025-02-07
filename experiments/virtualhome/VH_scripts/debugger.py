@@ -69,11 +69,11 @@ def check_task_define_all(config):
 def check_task_define_single(config):
 
     config.scene_id = 0
-    # Action_list=['walk_executor(kitchen_counter_230)','walk_executor(stove_2065)','walk_executor(sink_231)','walk_executor(faucet_232)','walk_executor(cupboard_229)','walk_executor(pot_2069)','open_executor(cupboard_229)','grab_executor(pot_2069)','walk_executor(faucet_232)','switchon_executor(faucet_232)','putin_executor(pot_2069, faucet_232)','switchoff_executor(faucet_232)']
-    Action_list=[]
+    Action_list=['walk_executor(fridge_289)','switchoff_executor(fridge_289)','open_executor(fridge_289)','walk_executor(food_apple_2009)','grab_executor(food_apple_2009)',"cut_executor(food_apple_2009)"]
+    # Action_list=[]
 
 
-    task_path='/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/cdl_dataset/dataset/Cook_some_food/g8_test.txt'
+    task_path='/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/cdl_dataset/dataset/Prepare_a_reading_space/g4.txt'
 
 
     epoch_path=f'log/Debugging'   

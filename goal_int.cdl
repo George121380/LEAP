@@ -1,26 +1,34 @@
  
-behavior find_pot(pot:item):
-    body:
-        achieve_once inhand(pot)
-
-behavior fill_pot_with_water(pot:item):
-    body:
-        achieve has_water(pot)
-
-behavior put_pot_on_stove(pot:item, stove:item):
-    body:
-        achieve on(pot, stove)
-
 behavior __goal__():
     body:
-        bind pot: item where:
-            is_pot(pot)
-        # Select a pot
+        bind chicken: item where:
+            is_food_chicken(chicken)
+        # Select the chicken item
         
-        bind stove: item where:
-            is_stove(stove)
-        # Select a stove
+        bind knife: item where:
+            is_knife(knife)
+        # Select the knife
 
-        find_pot(pot)
-        fill_pot_with_water(pot)
-        put_pot_on_stove(pot, stove)
+        symbol has_cutting_board=exists board: item : (is_cutting_board(board))
+        if not has_cutting_board:
+            # If there is no cutting board, check all unvisited items to find one
+            foreach board: item:
+                if is_cutting_board(board) and not visited(board):
+                    achieve close_char(char, board)
+                    break
+
+        if has_cutting_board:
+            bind board: item where:
+                is_cutting_board(board)
+            # Select the cutting board
+            achieve on(chicken, board)
+            # Place the chicken on the cutting board
+            achieve close_char(char, board)
+            # Move close to the cutting board
+        
+        achieve_once inhand(knife)
+        # Take the knife in hand for cutting
+        
+        achieve cut(chicken)
+        # Cut the chicken
+

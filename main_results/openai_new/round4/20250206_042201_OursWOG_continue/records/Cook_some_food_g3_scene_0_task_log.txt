@@ -1,0 +1,1069 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Boil the vegetables.', '2. Cool the boiled vegetables in a bowl.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_onion_2032_around_fridge_289(food_onion:item):
+    goal: not unknown(food_onion)
+    body:
+        assert is_food_onion(food_onion)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_onion,fridge_instance)
+        else:
+            exp(food_onion,fridge_instance)
+    eff:
+        unknown[food_onion]=False
+        close[food_onion,fridge_instance]=True
+        close[fridge_instance,food_onion]=True
+    
+
+behavior find_food_carrot_2014_around_kitchen_counter_230(food_carrot:item):
+    goal: not unknown(food_carrot)
+    body:
+        assert is_food_carrot(food_carrot)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==230
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_carrot,kitchen_counter_instance)
+        else:
+            exp(food_carrot,kitchen_counter_instance)
+    eff:
+        unknown[food_carrot]=False
+        close[food_carrot,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_carrot]=True
+    
+
+behavior find_food_potato_2035_around_fridge_289(food_potato:item):
+    goal: not unknown(food_potato)
+    body:
+        assert is_food_potato(food_potato)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_potato,fridge_instance)
+        else:
+            exp(food_potato,fridge_instance)
+    eff:
+        unknown[food_potato]=False
+        close[food_potato,fridge_instance]=True
+        close[fridge_instance,food_potato]=True
+    
+
+behavior find_food_vegetable_2041_around_fridge_289(food_vegetable:item):
+    goal: not unknown(food_vegetable)
+    body:
+        assert is_food_vegetable(food_vegetable)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_vegetable,fridge_instance)
+        else:
+            exp(food_vegetable,fridge_instance)
+    eff:
+        unknown[food_vegetable]=False
+        close[food_vegetable,fridge_instance]=True
+        close[fridge_instance,food_vegetable]=True
+    
+
+behavior find_pot_2069_around_cupboard_229(pot:item):
+    goal: not unknown(pot)
+    body:
+        assert is_pot(pot)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==229
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(pot,cupboard_instance)
+        else:
+            exp(pot,cupboard_instance)
+    eff:
+        unknown[pot]=False
+        close[pot,cupboard_instance]=True
+        close[cupboard_instance,pot]=True
+    
+
+behavior find_wall_clock_249_around_wallshelf_235(wall_clock:item):
+    goal: not unknown(wall_clock)
+    body:
+        assert is_wall_clock(wall_clock)
+        bind wallshelf_instance:item where:
+            is_wallshelf(wallshelf_instance) and id[wallshelf_instance]==235
+        achieve close_char(char,wallshelf_instance)
+        if can_open(wallshelf_instance):
+            achieve_once open(wallshelf_instance)
+            exp(wall_clock,wallshelf_instance)
+        else:
+            exp(wall_clock,wallshelf_instance)
+    eff:
+        unknown[wall_clock]=False
+        close[wall_clock,wallshelf_instance]=True
+        close[wallshelf_instance,wall_clock]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def has_cut_vegetables(pot: item):
+    # Check if there are cut vegetables in the specified pot
+    symbol has_cut_veg=exists o: item: is_food_vegetable(o) and cut(o) and inside(o, pot)
+    return has_cut_veg
+
+behavior place_vegetables_in_pot(vegetable: item, pot: item):
+    body:
+        achieve inside(vegetable, pot)
+        # Ensure the vegetables are placed inside the pot
+
+behavior start_boiling(pot: item, stove: item):
+    body:
+        achieve is_on(stove)
+        # Ensure the stove is turned on to boil the contents of the pot
+        achieve on(pot, stove)
+        # Ensure the pot is placed on the stove
+
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot)
+        # Select a pot
+
+        bind stove: item where:
+            is_stove(stove)
+        # Select a stove
+
+        foreach vegetable: item:
+            if is_food_vegetable(vegetable) and cut(vegetable) and not inside(vegetable, pot):
+                place_vegetables_in_pot(vegetable, pot)
+        if not has_cut_vegetables(pot):
+            # Observe if pot contains cut vegetables, otherwise place them
+            foreach vegetable: item:
+                if is_food_vegetable(vegetable) and cut(vegetable):
+                    place_vegetables_in_pot(vegetable, pot)
+        start_boiling(pot, stove)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+ 
+def has_cut_vegetables(pot: item):
+    # Check if there are cut vegetables in the specified pot
+    symbol has_cut_veg=exists o: item: is_food_vegetable(o) and cut(o) and inside(o, pot)
+    return has_cut_veg
+
+behavior place_vegetables_in_pot(vegetable: item, pot: item):
+    body:
+        achieve inside(vegetable, pot)
+        # Ensure the vegetables are placed inside the pot
+
+behavior start_boiling(pot: item, stove: item):
+    body:
+        achieve is_on(stove)
+        # Ensure the stove is turned on to boil the contents of the pot
+        achieve on(pot, stove)
+        # Ensure the pot is placed on the stove
+
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot)
+        # Select a pot
+
+        bind stove: item where:
+            is_stove(stove)
+        # Select a stove
+
+        foreach vegetable: item:
+            if is_food_vegetable(vegetable) and cut(vegetable) and not inside(vegetable, pot):
+                place_vegetables_in_pot(vegetable, pot)
+        if not has_cut_vegetables(pot):
+            # Observe if pot contains cut vegetables, otherwise place them
+            foreach vegetable: item:
+                if is_food_vegetable(vegetable) and cut(vegetable):
+                    place_vegetables_in_pot(vegetable, pot)
+        start_boiling(pot, stove)
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(stove_2065)switchon_executor(stove_2065)walk_executor(cupboard_229)open_executor(cupboard_229)exp(pot_2069, cupboard_229)walk_executor(pot_2069)grab_executor(pot_2069)walk_executor(stove_2065)put_executor(pot_2069, stove_2065)
+##############################
+From agent.py
+walk_executor(stove_2065)
+Robot find: cutting_board_2051, drawing_238, drawing_239, drawing_240, drawing_241, drawing_242, drawing_243, napkin_2005, oil_2079, cup_2063, knife_2050, cup_2064, pot_2069, fryingpan_2083, Robot is close to the stove_2065. Robot is close to the kitchen_counter_230. 
+##############################
+From agent.py
+switchon_executor(stove_2065)
+Robot find: Robot is close to the stove_2065. Robot is close to the kitchen_counter_230. stove_2065 is turned on. 
+##############################
+From agent.py
+walk_executor(cupboard_229)
+Robot find: Robot is close to the cupboard_229. 
+##############################
+From agent.py
+open_executor(cupboard_229)
+Robot find: Robot is close to the cupboard_229. cupboard_229 is opened. 
+##############################
+From agent.py
+exp(pot_2069, cupboard_229)
+Find pot_2069. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(pot_2069)grab_executor(pot_2069)walk_executor(stove_2065)put_executor(pot_2069, stove_2065)
+##############################
+From agent.py
+walk_executor(pot_2069)
+Robot find: Robot is close to the pot_2069. Robot is close to the kitchen_counter_230. 
+##############################
+From agent.py
+grab_executor(pot_2069)
+Robot find: Robot is close to the pot_2069. Robot is close to the kitchen_counter_230. Grabbing pot_2069 by right hand. 
+##############################
+From agent.py
+walk_executor(stove_2065)
+Robot find: Robot is close to the pot_2069. Robot is close to the kitchen_counter_230. Robot is close to the stove_2065. 
+##############################
+From agent.py
+put_executor(pot_2069, stove_2065)
+Robot find: Robot is close to the pot_2069. Robot is close to the kitchen_counter_230. Robot is close to the stove_2065. pot_2069 is close stove_2065. pot_2069 is on stove_2065. stove_2065 is close pot_2069. pot_2069 released by right hand. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: No
+The feedback instruction: Place the cut vegetables inside the pot on the stove and confirm they are boiling, as this is necessary to complete the boiling process.
+##############################
+From agent.py
+Human Instruction: Place the cut vegetables inside the pot on the stove and confirm they are boiling, as this is necessary to complete the boiling process.
+
+The actions you have taken:
+Action 1: Walk to stove_2065.
+Action 2: Switch on stove_2065.
+Action 3: Walk to cupboard_229.
+Action 4: Open cupboard_229.
+Action 5: look for pot_2069 around cupboard_229.
+Action 6: Walk to pot_2069.
+Action 7: Grab pot_2069.
+Action 8: Walk to stove_2065.
+Action 9: Put pot_2069 on stove_2065.
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_onion_2032_around_fridge_289(food_onion:item):
+    goal: not unknown(food_onion)
+    body:
+        assert is_food_onion(food_onion)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_onion,fridge_instance)
+        else:
+            exp(food_onion,fridge_instance)
+    eff:
+        unknown[food_onion]=False
+        close[food_onion,fridge_instance]=True
+        close[fridge_instance,food_onion]=True
+    
+
+behavior find_food_carrot_2014_around_fridge_289(food_carrot:item):
+    goal: not unknown(food_carrot)
+    body:
+        assert is_food_carrot(food_carrot)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_carrot,fridge_instance)
+        else:
+            exp(food_carrot,fridge_instance)
+    eff:
+        unknown[food_carrot]=False
+        close[food_carrot,fridge_instance]=True
+        close[fridge_instance,food_carrot]=True
+    
+
+behavior find_food_potato_2035_around_fridge_289(food_potato:item):
+    goal: not unknown(food_potato)
+    body:
+        assert is_food_potato(food_potato)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_potato,fridge_instance)
+        else:
+            exp(food_potato,fridge_instance)
+    eff:
+        unknown[food_potato]=False
+        close[food_potato,fridge_instance]=True
+        close[fridge_instance,food_potato]=True
+    
+
+behavior find_food_vegetable_2041_around_fridge_289(food_vegetable:item):
+    goal: not unknown(food_vegetable)
+    body:
+        assert is_food_vegetable(food_vegetable)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_vegetable,fridge_instance)
+        else:
+            exp(food_vegetable,fridge_instance)
+    eff:
+        unknown[food_vegetable]=False
+        close[food_vegetable,fridge_instance]=True
+        close[fridge_instance,food_vegetable]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_boiling_vegetables(pot:item):
+    # Determine if vegetables in a pot are boiling
+    symbol boiling=exists veg: item : is_food_vegetable(veg) and cut(veg) and inside(veg, pot)
+    return boiling
+
+behavior check_boiling_status(pot:item):
+    body:
+        observe(pot, "Check if the vegetables are boiling")
+
+behavior __goal__():
+    body:
+        bind stove: item where:
+            is_stove(stove) and is_on(stove)
+        # Select the stove that is turned on
+
+        bind pot: item where:
+            is_pot(pot) and on(pot, stove)
+        # Select the pot that is on the stove
+
+        if not is_boiling_vegetables(pot):
+            check_boiling_status(pot)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+def is_boiling_vegetables(pot:item):
+    # Determine if vegetables in a pot are boiling
+    symbol boiling=exists veg: item : is_food_vegetable(veg) and cut(veg) and inside(veg, pot)
+    return boiling
+
+behavior check_boiling_status(pot:item):
+    body:
+        observe(pot, "Check if the vegetables are boiling")
+
+behavior __goal__():
+    body:
+        bind stove: item where:
+            is_stove(stove) and is_on(stove)
+        # Select the stove that is turned on
+
+        bind pot: item where:
+            is_pot(pot) and on(pot, stove)
+        # Select the pot that is on the stove
+
+        if not is_boiling_vegetables(pot):
+            check_boiling_status(pot)
+
+##############################
+From agent.py-> find a plan in act()
+open_executor(pot_2069)obs(pot_2069, Check if the vegetables are boiling)
+##############################
+From agent.py
+open_executor(pot_2069)
+Robot find: Robot is close to the pot_2069. Robot is close to the kitchen_counter_230. Robot is close to the stove_2065. pot_2069 is opened. 
+##############################
+From agent.py
+obs(pot_2069, Check if the vegetables are boiling)
+Get this information:  pot_2069 is inside dining_room_201. pot_2069 is close to character_65. pot_2069 is close to stove_2065. pot_2069 is on stove_2065. pot_2069 is OPEN.
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: No
+The feedback instruction: Place the cut vegetables inside the pot on the stove and then confirm they are boiling.
+##############################
+From agent.py
+Human Instruction: Place the cut vegetables inside the pot on the stove and then confirm they are boiling.
+
+The actions you have taken:
+Action 1: Walk to stove_2065.
+Action 2: Switch on stove_2065.
+Action 3: Walk to cupboard_229.
+Action 4: Open cupboard_229.
+Action 5: look for pot_2069 around cupboard_229.
+Action 6: Walk to pot_2069.
+Action 7: Grab pot_2069.
+Action 8: Walk to stove_2065.
+Action 9: Put pot_2069 on stove_2065.
+Action 10: Open pot_2069.
+Action 11: Observe around pot_2069 with the question of Check if the vegetables are boiling.
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_vegetable_2041_around_fridge_289(food_vegetable:item):
+    goal: not unknown(food_vegetable)
+    body:
+        assert is_food_vegetable(food_vegetable)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_vegetable,fridge_instance)
+        else:
+            exp(food_vegetable,fridge_instance)
+    eff:
+        unknown[food_vegetable]=False
+        close[food_vegetable,fridge_instance]=True
+        close[fridge_instance,food_vegetable]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_vegetables_in_pot(pot: item):
+    # Function to check if there are vegetables in the specified pot
+    symbol has_vegetables=exists veg: item : is_food_vegetable(veg) and inside(veg, pot)
+    return has_vegetables
+
+behavior boil_vegetables(pot: item, stove: item):
+    body:
+        if is_vegetables_in_pot(pot):
+            achieve on(pot, stove) # Place pot on the stove
+            achieve is_on(stove) # Ensure the stove is on
+            observe(pot, "Check if the vegetables are boiling") # Confirm vegetables are boiling
+
+behavior __goal__():
+    body:
+        bind stove: item where:
+            is_stove(stove) and id[stove]==2065
+        # Select stove with ID 2065
+
+        bind pot: item where:
+            is_pot(pot) and on(pot, stove)
+        # Select pot that is on the stove
+
+        boil_vegetables(pot, stove)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_onion_2032_around_fridge_289(food_onion:item):
+    goal: not unknown(food_onion)
+    body:
+        assert is_food_onion(food_onion)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_onion,fridge_instance)
+        else:
+            exp(food_onion,fridge_instance)
+    eff:
+        unknown[food_onion]=False
+        close[food_onion,fridge_instance]=True
+        close[fridge_instance,food_onion]=True
+    
+
+behavior find_food_carrot_2014_around_fridge_289(food_carrot:item):
+    goal: not unknown(food_carrot)
+    body:
+        assert is_food_carrot(food_carrot)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_carrot,fridge_instance)
+        else:
+            exp(food_carrot,fridge_instance)
+    eff:
+        unknown[food_carrot]=False
+        close[food_carrot,fridge_instance]=True
+        close[fridge_instance,food_carrot]=True
+    
+
+behavior find_food_potato_2035_around_fridge_289(food_potato:item):
+    goal: not unknown(food_potato)
+    body:
+        assert is_food_potato(food_potato)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_potato,fridge_instance)
+        else:
+            exp(food_potato,fridge_instance)
+    eff:
+        unknown[food_potato]=False
+        close[food_potato,fridge_instance]=True
+        close[fridge_instance,food_potato]=True
+    
+
+behavior find_food_vegetable_2041_around_fridge_289(food_vegetable:item):
+    goal: not unknown(food_vegetable)
+    body:
+        assert is_food_vegetable(food_vegetable)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_vegetable,fridge_instance)
+        else:
+            exp(food_vegetable,fridge_instance)
+    eff:
+        unknown[food_vegetable]=False
+        close[food_vegetable,fridge_instance]=True
+        close[fridge_instance,food_vegetable]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_vegetables_boiling(pot:item):
+    # Function to check if the vegetables are boiling inside the pot
+    symbol boiling=exists vegetables: item : is_food_vegetable(vegetables) and inside(vegetables, pot) and is_on(stove)
+    return boiling
+
+behavior check_and_boil_vegetables(pot:item, stove:item):
+    body:
+        if not is_vegetables_boiling(pot):
+            achieve is_on(stove)
+            observe(pot, "Confirm they are boiling")
+
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot) and visited(pot) and on(pot, stove_2065)
+        # Select the pot on stove_2065 that has been visited
+
+        bind stove: item where:
+            is_stove(stove) and id[stove]==2065
+        # Select stove with ID 2065
+        
+        check_and_boil_vegetables(pot, stove)
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "function_definition":
+
+Unknown variable: stove; available variables: [Variable<pot: item>, Variable<vegetables: item>].
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_food_onion_2032_around_fridge_289(food_onion:item):
+    goal: not unknown(food_onion)
+    body:
+        assert is_food_onion(food_onion)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_onion,fridge_instance)
+        else:
+            exp(food_onion,fridge_instance)
+    eff:
+        unknown[food_onion]=False
+        close[food_onion,fridge_instance]=True
+        close[fridge_instance,food_onion]=True
+    
+
+behavior find_food_carrot_2014_around_fridge_289(food_carrot:item):
+    goal: not unknown(food_carrot)
+    body:
+        assert is_food_carrot(food_carrot)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_carrot,fridge_instance)
+        else:
+            exp(food_carrot,fridge_instance)
+    eff:
+        unknown[food_carrot]=False
+        close[food_carrot,fridge_instance]=True
+        close[fridge_instance,food_carrot]=True
+    
+
+behavior find_food_potato_2035_around_fridge_289(food_potato:item):
+    goal: not unknown(food_potato)
+    body:
+        assert is_food_potato(food_potato)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_potato,fridge_instance)
+        else:
+            exp(food_potato,fridge_instance)
+    eff:
+        unknown[food_potato]=False
+        close[food_potato,fridge_instance]=True
+        close[fridge_instance,food_potato]=True
+    
+
+behavior find_food_vegetable_2041_around_fridge_289(food_vegetable:item):
+    goal: not unknown(food_vegetable)
+    body:
+        assert is_food_vegetable(food_vegetable)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_vegetable,fridge_instance)
+        else:
+            exp(food_vegetable,fridge_instance)
+    eff:
+        unknown[food_vegetable]=False
+        close[food_vegetable,fridge_instance]=True
+        close[fridge_instance,food_vegetable]=True
+    
+
+#goal_representation
+ 
+def is_vegetables_boiling(pot:item):
+    # Function to check if the vegetables are boiling inside the pot
+    symbol boiling=exists vegetables: item : is_food_vegetable(vegetables) and inside(vegetables, pot) and is_on(stove)
+    return boiling
+
+behavior check_and_boil_vegetables(pot:item, stove:item):
+    body:
+        if not is_vegetables_boiling(pot):
+            achieve is_on(stove)
+            observe(pot, "Confirm they are boiling")
+
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot) and visited(pot) and on(pot, stove_2065)
+        # Select the pot on stove_2065 that has been visited
+
+        bind stove: item where:
+            is_stove(stove) and id[stove]==2065
+        # Select stove with ID 2065
+
+        check_and_boil_vegetables(pot, stove)
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "function_definition":
+
+Unknown variable: stove; available variables: [Variable<pot: item>, Variable<vegetables: item>].
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_food_onion_2032_around_fridge_289(food_onion:item):
+    goal: not unknown(food_onion)
+    body:
+        assert is_food_onion(food_onion)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_onion,fridge_instance)
+        else:
+            exp(food_onion,fridge_instance)
+    eff:
+        unknown[food_onion]=False
+        close[food_onion,fridge_instance]=True
+        close[fridge_instance,food_onion]=True
+    
+
+behavior find_food_carrot_2014_around_fridge_289(food_carrot:item):
+    goal: not unknown(food_carrot)
+    body:
+        assert is_food_carrot(food_carrot)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_carrot,fridge_instance)
+        else:
+            exp(food_carrot,fridge_instance)
+    eff:
+        unknown[food_carrot]=False
+        close[food_carrot,fridge_instance]=True
+        close[fridge_instance,food_carrot]=True
+    
+
+behavior find_food_potato_2035_around_fridge_289(food_potato:item):
+    goal: not unknown(food_potato)
+    body:
+        assert is_food_potato(food_potato)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_potato,fridge_instance)
+        else:
+            exp(food_potato,fridge_instance)
+    eff:
+        unknown[food_potato]=False
+        close[food_potato,fridge_instance]=True
+        close[fridge_instance,food_potato]=True
+    
+
+behavior find_food_vegetable_2041_around_fridge_289(food_vegetable:item):
+    goal: not unknown(food_vegetable)
+    body:
+        assert is_food_vegetable(food_vegetable)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_vegetable,fridge_instance)
+        else:
+            exp(food_vegetable,fridge_instance)
+    eff:
+        unknown[food_vegetable]=False
+        close[food_vegetable,fridge_instance]=True
+        close[fridge_instance,food_vegetable]=True
+    
+
+#goal_representation
+ 
+def is_vegetables_boiling(pot:item):
+    # Function to check if the vegetables are boiling inside the pot
+    symbol boiling=exists vegetables: item : is_food_vegetable(vegetables) and inside(vegetables, pot) and is_on(stove_2065)
+    return boiling
+
+behavior check_and_boil_vegetables(pot:item):
+    body:
+        if not is_vegetables_boiling(pot):
+            achieve is_on(stove_2065)
+            observe(pot, "Confirm they are boiling")
+
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot) and visited(pot) and on(pot, stove_2065)
+        check_and_boil_vegetables(pot)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_onion_2032_around_fridge_289(food_onion:item):
+    goal: not unknown(food_onion)
+    body:
+        assert is_food_onion(food_onion)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_onion,fridge_instance)
+        else:
+            exp(food_onion,fridge_instance)
+    eff:
+        unknown[food_onion]=False
+        close[food_onion,fridge_instance]=True
+        close[fridge_instance,food_onion]=True
+    
+
+behavior find_food_carrot_2014_around_fridge_289(food_carrot:item):
+    goal: not unknown(food_carrot)
+    body:
+        assert is_food_carrot(food_carrot)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_carrot,fridge_instance)
+        else:
+            exp(food_carrot,fridge_instance)
+    eff:
+        unknown[food_carrot]=False
+        close[food_carrot,fridge_instance]=True
+        close[fridge_instance,food_carrot]=True
+    
+
+behavior find_food_potato_2035_around_fridge_289(food_potato:item):
+    goal: not unknown(food_potato)
+    body:
+        assert is_food_potato(food_potato)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_potato,fridge_instance)
+        else:
+            exp(food_potato,fridge_instance)
+    eff:
+        unknown[food_potato]=False
+        close[food_potato,fridge_instance]=True
+        close[fridge_instance,food_potato]=True
+    
+
+behavior find_food_vegetable_2041_around_fridge_289(food_vegetable:item):
+    goal: not unknown(food_vegetable)
+    body:
+        assert is_food_vegetable(food_vegetable)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_vegetable,fridge_instance)
+        else:
+            exp(food_vegetable,fridge_instance)
+    eff:
+        unknown[food_vegetable]=False
+        close[food_vegetable,fridge_instance]=True
+        close[fridge_instance,food_vegetable]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def vegetables_are_boiling(pot: item):
+    # Function to check if the vegetables are boiling in the pot
+    symbol boiling=exists o: item : is_food_vegetable(o) and inside(o, pot) and is_on(stove_2065)
+    return boiling
+
+behavior __goal__():
+    body:
+        bind stove: item where:
+            is_stove(stove) and id[stove]==2065
+        achieve is_on(stove)
+        
+        bind pot: item where:
+            is_pot(pot) and on(pot, stove) and visited(pot)
+
+        if not vegetables_are_boiling(pot):
+            observe(pot, "Check if the vegetables are boiling")
+            assert vegetables_are_boiling(pot)
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "function_definition":
+
+Unknown variable: stove_2065; available variables: [Variable<pot: item>, Variable<o: item>].
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_food_onion_2032_around_fridge_289(food_onion:item):
+    goal: not unknown(food_onion)
+    body:
+        assert is_food_onion(food_onion)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_onion,fridge_instance)
+        else:
+            exp(food_onion,fridge_instance)
+    eff:
+        unknown[food_onion]=False
+        close[food_onion,fridge_instance]=True
+        close[fridge_instance,food_onion]=True
+    
+
+behavior find_food_carrot_2014_around_fridge_289(food_carrot:item):
+    goal: not unknown(food_carrot)
+    body:
+        assert is_food_carrot(food_carrot)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_carrot,fridge_instance)
+        else:
+            exp(food_carrot,fridge_instance)
+    eff:
+        unknown[food_carrot]=False
+        close[food_carrot,fridge_instance]=True
+        close[fridge_instance,food_carrot]=True
+    
+
+behavior find_food_potato_2035_around_fridge_289(food_potato:item):
+    goal: not unknown(food_potato)
+    body:
+        assert is_food_potato(food_potato)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_potato,fridge_instance)
+        else:
+            exp(food_potato,fridge_instance)
+    eff:
+        unknown[food_potato]=False
+        close[food_potato,fridge_instance]=True
+        close[fridge_instance,food_potato]=True
+    
+
+behavior find_food_vegetable_2041_around_fridge_289(food_vegetable:item):
+    goal: not unknown(food_vegetable)
+    body:
+        assert is_food_vegetable(food_vegetable)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_vegetable,fridge_instance)
+        else:
+            exp(food_vegetable,fridge_instance)
+    eff:
+        unknown[food_vegetable]=False
+        close[food_vegetable,fridge_instance]=True
+        close[fridge_instance,food_vegetable]=True
+    
+
+#goal_representation
+ 
+def vegetables_are_boiling(pot: item):
+    # Function to check if the vegetables are boiling in the pot
+    symbol boiling=exists o: item : is_food_vegetable(o) and inside(o, pot) and is_on(stove)
+    return boiling
+
+behavior __goal__():
+    body:
+        bind stove: item where:
+            is_stove(stove) and id[stove]==2065
+        achieve is_on(stove)
+        
+        bind pot: item where:
+            is_pot(pot) and on(pot, stove) and visited(pot)
+
+        if not vegetables_are_boiling(pot):
+            observe(pot, "Check if the vegetables are boiling")
+            assert vegetables_are_boiling(pot)
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "function_definition":
+
+Unknown variable: stove; available variables: [Variable<pot: item>, Variable<o: item>].
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_food_vegetable_2041_around_fridge_289(food_vegetable:item):
+    goal: not unknown(food_vegetable)
+    body:
+        assert is_food_vegetable(food_vegetable)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_vegetable,fridge_instance)
+        else:
+            exp(food_vegetable,fridge_instance)
+    eff:
+        unknown[food_vegetable]=False
+        close[food_vegetable,fridge_instance]=True
+        close[fridge_instance,food_vegetable]=True
+    
+
+#goal_representation
+ 
+def vegetables_are_boiling(pot: item):
+    # Function to check if the vegetables are boiling in the pot
+    symbol boiling=exists o: item : is_food_vegetable(o) and inside(o, pot) and is_on(stove)
+    return boiling
+
+behavior __goal__():
+    body:
+        bind stove: item where:
+            is_stove(stove) and id[stove]==2065
+        achieve is_on(stove)
+        
+        bind pot: item where:
+            is_pot(pot) and on(pot, stove) and visited(pot)
+
+        if not vegetables_are_boiling(pot):
+            observe(pot, "Check if the vegetables are boiling")
+            assert vegetables_are_boiling(pot)
+
+#goal_representation_end
+
+##############################
+VH_pipeline: Fail to generate a valid plan
+##############################
+Error record: Error during problem transformation
+##############################
+Task Summary:
+Task Goal:
+Syntax Error
+Action History:
+['walk_executor(stove_2065)', 'switchon_executor(stove_2065)', 'walk_executor(cupboard_229)', 'open_executor(cupboard_229)', 'walk_executor(pot_2069)', 'grab_executor(pot_2069)', 'walk_executor(stove_2065)', 'put_executor(pot_2069, stove_2065)', 'open_executor(pot_2069)']
+Time info:
+Time consume: 227 seconds
+Exp_helper query times: 0
+Guidance query times: 0
+library scale: 26
+goal generate times: 5
+goal correct times: 2
+
+Task complete rate:
+Keystate: k1 - Requires: 13 steps
+Keystate: k2 - Requires: 16 steps
+Keystate: k3 - Requires: 8 steps
+Action Completion Rate: 0.0
+Scene_id: 0
+##############################

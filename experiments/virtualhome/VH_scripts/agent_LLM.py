@@ -291,7 +291,7 @@ class LLM_Agent(BaseAgent):
         return description
 
     def check_action(self,action): # check if the action is executable
-        print(action)
+        # print(action)
         if action.name=='grab_executor':
             # robot can not grab an item by two hands at the same time
             if action.arguments[0].name not in self.name2opid:
@@ -406,12 +406,12 @@ class LLM_Agent(BaseAgent):
                     return 'Failed',None
                         
             
-        if self.current_step == len(self.plan) and len(self.plan) > 0:
+        if self.current_step == len(self.plan) and len(self.plan) > 0 and not self.failed_execution_flag:
                 print("The plan is all executed")
                 self.logger.info("From agent_LLM.py->act: The plan is all executed")
                 return 'over', None
             
-        elif self.plan and self.current_step <= len(self.plan) and self.check_action(self.plan[self.current_step]) and not self.failed_execution_flag:
+        elif not self.failed_execution_flag and self.plan and self.current_step <= len(self.plan) and self.check_action(self.plan[self.current_step]):
             
             # regular action
             action = self.plan[self.current_step]
