@@ -5528,31 +5528,35 @@ init:
 #exp_behavior_end
 
 #goal_representation
- 
+
+#exp_behavior_end
+
 #goal_representation
  
-def has_food_on_table(table:item):
-    # Function to check if there is food on the specified table.
-    symbol has_food=exists o: item : (is_food(o) and on(o, table))
-    return has_food
+behavior load_dishwasher(o:item, dishwasher:item):
+    body:
+        if not inside(o, dishwasher):
+            put_inside(o, dishwasher)
+            # Place the item inside the dishwasher.
+
+behavior start_dishwasher(dishwasher:item):
+    body:
+        if open(dishwasher):
+            closes(dishwasher) # Close the dishwasher door.
+            switch_on(dishwasher) # Turn on the dishwasher.
 
 behavior __goal__():
     body:
-        if exists table: item : (is_table(table) and has_food_on_table(table)):
-            # Check if there is a table with food based on the available information.
-            bind table: item where:
-                is_table(table) and has_food_on_table(table) # The condition has_food_on_table can only be used when you are certain that there is food on the table. In this case, you can be confident because you have already verified it with an if condition.
-            # Select a table that has food on it.
-            achieve close_char(char, table) 
-            # Move the character closer to the table with food.
-
-        else: 
-           # If no table with food is found, initiate exploration to locate one.
-            foreach table: item:
-                if is_table(table) and not visited(table):
-                    # Check all unvisited tables.
-                    observe(table,"Check is there any food on the table")
-                    # Observe whether each table has any food.
-
+        bind sink: item where:
+            is_sink(sink) and id[sink]==231
+        # Select sink with ID 231.
+        bind dishwasher: item where:
+            is_dishwasher(dishwasher)
+        # Select a dishwasher.
+        foreach o: item:
+        # Load all plates and cups from the sink into the dishwasher.
+            if is_plate(o) or is_cup(o) and inside(o, sink):
+                load_dishwasher(o, dishwasher)
+        start_dishwasher(dishwasher) # Start the dishwasher.
 
 #goal_representation_end

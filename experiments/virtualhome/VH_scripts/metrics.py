@@ -465,54 +465,39 @@ def print_compare_table(data):
    
     methods = sorted(data.keys())
 
-    # 2. 取出所有出现过的任务(行)
     tasks = sorted({task for method_dict in data.values() for task in method_dict})
 
-    # 3. 构建表头: 第一列是"Task", 后面依次是各方法
     header = ["Task"] + methods
 
-    # 4. 构建所有行
     rows = []
-    rows.append(header)  # 第 0 行：表头
+    rows.append(header)
 
     for task in tasks:
-        # 这一行的第一个元素是 任务名称
         row = [task]
-        # 后面每一列对应一个方法
         for m in methods:
-            val = data[m].get(task, "")  # 某些方法没有该任务时用空字符串
-            # 如果是浮点数，可以格式化下小数位
+            val = data[m].get(task, "")
             if isinstance(val, float):
                 val = f"{val:.2f}"
             row.append(str(val))
         rows.append(row)
 
-    # 5. 为对齐做准备，计算每一列的最大宽度
     num_cols = len(header)
     col_widths = []
     for col_idx in range(num_cols):
-        # 找出该列在所有行中的最大字符串宽度
         max_w = max(len(r[col_idx]) for r in rows)
         col_widths.append(max_w)
 
-    # 6. 定义一个辅助函数：第 1 列左对齐(任务名)，后续列右对齐(数值更好看)
     def format_row(row_data):
         formatted = []
         for i, cell in enumerate(row_data):
             if i == 0:
-                # Task 这列左对齐
                 formatted.append(cell.ljust(col_widths[i]))
             else:
-                # 方法列右对齐
                 formatted.append(cell.rjust(col_widths[i]))
         return " | ".join(formatted)
 
-    # 7. 打印表格
-    # 7.1 表头
     print(format_row(rows[0]))
-    # 7.2 分割线
     print("-+-".join("-" * w for w in col_widths))
-    # 7.3 后续数据行
     for row in rows[1:]:
         print(format_row(row))
 
@@ -546,6 +531,10 @@ if __name__ == '__main__':
 
     methods_experiments.append(find_csv_files(
         '/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/main_results/openai_new/round4/20250206_042201_OursWOG_continue'
+    ))
+
+    methods_experiments.append(find_csv_files(
+        '/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/main_results/openai_new/round5/20250207_164244_OursWOG'
     ))
 
     window_size = 10  # Example window size for moving average

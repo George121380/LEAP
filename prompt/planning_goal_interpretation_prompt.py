@@ -128,28 +128,32 @@ bind apple3: item where:
 # achieve
 # Usage: Specifies the state or relationship that a behavior consistently aims to maintain from start to finish. Only states and relationships can follow 'achieve', not types, properties, or other immutable content. Do not call functions or behaviors after 'achieve'; instead, call functions directly without keywords. Note that 'achieve' cannot be used with the state 'inhand'. And note that 'achieve' must be followed by a single state or relationship, not a combination of states or relationships.
 Examples: 
-achieve is_on(light) # it is used to turn on the light.
+achieve is_on(light) # it is used to turn on the light, and you hope it on all the time utill the end of this task.
 achieve has_water(cup) # it is used to fill the cup with water.
 achieve has_water(pot) # it is used to fill the pot with water.
 achieve cut(apple) # it is used to cut the apple.
-achieve on(apple, plate) # it is used to place the apple on the plate.
+achieve on(apple, plate) # it is used to place the apple on the plate, and you hope apple is on the plate all the time utill the end of this task.
 achieve inside(oil, pan) # it is used to add oil into the pan.
 
 # achieve_once
-# Usage: Specifies a temporary state or relationship that needs to be achieved only once, without maintaining it until the end of the behavior.
-Example: achieve_once inhand(apple) #Please note that 'inhand' must be used with 'achieve_once.'
+# Usage: Specifies a temporary state or relationship that needs to be achieved without requiring it to be maintained until the end of the behavior. In most cases, 'achieve_once' is a safer and more flexible option than 'achieve.' Use 'achieve_once' when it is uncertain if the state or relationship needs to be maintained for the full duration of the sub-task.
+Examples:
+achieve_once inhand(apple) #Please note that 'inhand' must be used with 'achieve_once.'
+achieve_once on(apple, plate) # This indicates placing the apple on the plate temporarily. It is often a more flexible choice than achieve on(apple, plate).
+achieve_once on(chicken, cutting_board) # This indicates placing the chicken on a cutting board temporarily.
+achieve_once inside(chicken, pot) # This indicates temporarily placing the chicken inside a pot.
 
 # foreach
 # Usage: Iterates over all objects. Do not use 'where' in a 'foreach' statement. Additionally, do not nest one foreach inside another, as this will cause the program to fail.
 Correct example:
 foreach o: item:
     if can_open(o) and is_box(o):
-        achieve closed(o)
+        achieve_once closed(o)
 
 Incorrect example:
 foreach o: item where:
     if can_open(o) and is_box(o):
-        achieve closed(o)
+        achieve_once closed(o)
 
 # behavior
 # Usage: Defines a behavior rule. The keyword 'body' must appear in the behavior, and all parameters used in the 'goal' must be included in the behavior's parameters.
@@ -173,10 +177,18 @@ Template: exists obj_name: objtype : (condition)
 Example: exists item1: item : (holds_lh(char, item1))
 To prevent potential errors, it is recommended to enclose conditions within parentheses '()'. Additionally, 'not' must not be placed before 'exists'.
 
-
 # symbol
 # Usage: Defines a symbol and binds it to the output of an expression. You can only use the symbol in the following manner:
 symbol has_cutting_board=exists item1:item: (is_cutting_board(item1))
+Common Errors:
+1. if not exists item1:item: (is_cutting_board(item1)): # Incorrect, because 'not' is placed before 'exists'.
+2. symbol no_apple_on_table=not exists item1:item: (is_apple(item1) and on(item1, table)) # Incorrect, because 'not' is placed before 'exists'.
+If you want to represent not exists, define a function to handle the negation:
+def no_apple_on_table(table:item):
+    symbol have_apple=exists item1:item: (is_apple(item1) and on(item1, table))
+    return not have_apple # Return the negation of the condition.
+Then you can call this function like:
+if no_apple_on_table(table):
 
 # def
 # Usage: Defines a function that can be used to check a condition. 
@@ -240,17 +252,17 @@ Additional information:
 3. food_peanut_butter_2008 and food_kiwi_2012 are on the table_226.
 Long-horizon task: Clean up the food on the table.
 
-Chain of thought: You have already find the table with food. Now, your current sub-task goal is to store the food on the table in the appropriate location. According to the additional information, there is no food on table_107 and table_355. However, table_226 has food_peanut_butter and food_kiwi. You can use the 'bind' keyword along with the condition 'is_table(table) and id[table] == 226' to obtain the table with the ID 226. You can also use the 'bind' keyword with the condition 'is_food_peanut_butter(food_peanut_butter)' to obtain the peanut butter. And use 'bind' keyword with the condition 'is_food_kiwi(food_kiwi)' to obtain the kiwi. Since the sub-task goal and additional information do not specify where exactly to store the food, you need to use common sense to make a decision based on the items present in the scene. Based on common sense, both food_peanut_butter and food_kiwi may require refrigeration, and since there is a fridge available in the scene, the goal is to store them in the fridge. Although it is not explicitly stated, it is common sense to ensure that the fridge door is closed after storing food inside. Therefore, you can use achieve closed(fridge) to perform the action of closing the fridge door.
+Chain of thought: You have already find the table with food. Now, your current sub-task goal is to store the food on the table in the appropriate location. According to the additional information, there is no food on table_107 and table_355. However, table_226 has food_peanut_butter and food_kiwi. You can use the 'bind' keyword along with the condition 'is_table(table) and id[table] == 226' to obtain the table with the ID 226. You can also use the 'bind' keyword with the condition 'is_food_peanut_butter(food_peanut_butter)' to obtain the peanut butter. And use 'bind' keyword with the condition 'is_food_kiwi(food_kiwi)' to obtain the kiwi. Since the sub-task goal and additional information do not specify where exactly to store the food, you need to use common sense to make a decision based on the items present in the scene. Based on common sense, both food_peanut_butter and food_kiwi may require refrigeration, and since there is a fridge available in the scene, the goal is to store them in the fridge. Although it is not explicitly stated, it is common sense to ensure that the fridge door is closed after storing food inside. Therefore, you can use achieve_once closed(fridge) to perform the action of closing the fridge door.
 
 Output:
 behavior store_in_fridge(food:item, fridge:item):
     body:
-        achieve inside(food, fridge)
+        achieve_once inside(food, fridge)
         # Place the food item inside the fridge.
 
 behavior close_the_fridge_door(fridge:item):
     body:
-        achieve closed(fridge)
+        achieve_once closed(fridge)
         # Close the fridge door.
 
 behavior __goal__():
@@ -283,25 +295,25 @@ Additional information:
 4. The peanut butter is expired, so I want to throw it away. I want to cut the kiwi and then store it in the fridge.
 Long-horizon task: Clean up the food on the table.
 
-Chain of thought: According to Additional information 4, you need to discard the peanut butter. Observing that there is an "is_trashcan" in the Available Category, you can infer that there is a trashcan in the scene, and the expired peanut butter can be thrown into the trashcan. Additional information 4 also requires that the kiwi be cut, and then stored in the fridge. You need to use "achieve cut(food_kiwi)" to cut the kiwi. After that, you can "achieve inside(food_kiwi, fridge)" to store the kiwi in the fridge. To ensure the completeness of the task, you also need to use "achieve closed(fridge)" to make sure the fridge door is closed at the end by "achieve closed(fridge)".
+Chain of thought: According to Additional information 4, you need to discard the peanut butter. Observing that there is an "is_trashcan" in the Available Category, you can infer that there is a trashcan in the scene, and the expired peanut butter can be thrown into the trashcan. Additional information 4 also requires that the kiwi be cut, and then stored in the fridge. You need to use "achieve_once cut(food_kiwi)" to cut the kiwi. After that, you can "achieve_once inside(food_kiwi, fridge)" to store the kiwi in the fridge. To ensure the completeness of the task, you also need to use "achieve_once closed(fridge)" to make sure the fridge door is closed at the end by "achieve_once closed(fridge)".
 
 Output:
 behavior throw_in_trash(food:item, trashcan:item): 
 # Define the behavior to throw food into the trash can
     body:
-        achieve inside(food, trashcan)
+        achieve_once inside(food, trashcan)
         
 behavior cut_food(food:item):
     body:
-        achieve cut(food)
+        achieve_once cut(food)
 
 behavior store_in_fridge(food:item, fridge:item):
     body:
-        achieve inside(food, fridge)
+        achieve_once inside(food, fridge)
 
 behavior close_the_fridge_door(fridge:item):
     body:
-        achieve closed(fridge)
+        achieve_once closed(fridge)
 
 behavior __goal__():
     body:
@@ -365,18 +377,18 @@ Additional information:
 Long-horizon task: Wash the plates and cups in the sink using the dishwasher. Then put them on the table in kitchen.
 
 Chain of thought:
-According to additional information, sink_42 does not contain plates or cups, while sink_231 does contain plates or cups. Now you have found the sink that contains plates or cups. The current sub-task's goal is "Wash the plates and cups using the dishwasher." Although it doesn't explicitly state that the plates and cups in the sink need to be cleaned, considering the objective of the long-horizon task, the actual goal of the current sub-task should be to clean the plates and cups in the sink. To clean the plates and cups in the sink using the dishwasher, you first need to load them into the dishwasher. Since it is unclear how many plates and cups are in the sink, the foreach keyword is used with the condition if is_plate(o) or is_cup(o) and inside(o, sink) to place all items that are plates or cups from the sink into the dishwasher. After that, you can execute achieve closed(dishwasher) and achieve is_on(dishwasher) sequentially to start the dishwasher.
+According to additional information, sink_42 does not contain plates or cups, while sink_231 does contain plates or cups. Now you have found the sink that contains plates or cups. The current sub-task's goal is "Wash the plates and cups using the dishwasher." Although it doesn't explicitly state that the plates and cups in the sink need to be cleaned, considering the objective of the long-horizon task, the actual goal of the current sub-task should be to clean the plates and cups in the sink. To clean the plates and cups in the sink using the dishwasher, you first need to load them into the dishwasher. Since it is unclear how many plates and cups are in the sink, the foreach keyword is used with the condition if is_plate(o) or is_cup(o) and inside(o, sink) to place all items that are plates or cups from the sink into the dishwasher. After that, you can execute achieve_once closed(dishwasher) and achieve_once is_on(dishwasher) sequentially to start the dishwasher.
 
 Output:
 behavior load_dishwasher(o:item, dishwasher:item):
     body:
-        achieve inside(o, dishwasher)
+        achieve_once inside(o, dishwasher)
         # Place the item inside the dishwasher.
 
 behavior start_dishwasher(dishwasher:item):
     body:
-        achieve closed(dishwasher) # Close the dishwasher door.
-        achieve is_on(dishwasher) # Turn on the dishwasher.
+        achieve_once closed(dishwasher) # Close the dishwasher door.
+        achieve_once is_on(dishwasher) # Turn on the dishwasher.
 
 behavior __goal__():
     body:
@@ -415,12 +427,12 @@ def has_plates_or_cups_inside(dishwasher:item):
 
 behavior put_on_table(o:item, table:item):
     body:
-        achieve on(o, table) # Place the item on the table.
+        achieve_once on(o, table) # Place the item on the table.
 
 behavior close_the_dishwasher(dishwasher:item):
     body:
-        achieve is_off(dishwasher) # Turn off the dishwasher.
-        achieve closed(dishwasher) # Close the dishwasher door.
+        achieve_once is_off(dishwasher) # Turn off the dishwasher.
+        achieve_once closed(dishwasher) # Close the dishwasher door.
 
 behavior __goal__():
     body:
@@ -460,7 +472,7 @@ Please note that bind requires the use of the "where keyword", while foreach mus
 eg:
 foreach c: item:
     if is_clothes(c) and inside(c,basket):
-        achieve inside(c, washing_machine)
+        achieve_once inside(c, washing_machine)
 
 bind basket: item where:
     is_basket_for_clothes(basket)
@@ -494,7 +506,7 @@ You can also use attributes, states, and other information to further refine you
 The observe(obj:item, question:string) is a powerful but resource-intensive behavior. It allows you to examine an object based on observation, during which you need to specify what information you wish to obtain from the object. Due to the high cost of using observe, the quality of your questions is crucial for improving execution efficiency. Generally speaking, information such as the type of object or its state can be obtained by referring to the methods provided in 'Available Category Determination' and 'Available States', so you usually don't need to invoke the observe behavior for these details. Some situations where observe behavior is necessary include when you want to check what items are inside or on the item you observe. For example, if you want to see what's inside the oven, you can use 'observe(oven, "What's inside the oven?")', or if you want to check what's on the table, you can use 'observe(table, "check items on the table")'. Also, feel free to ask more questions in the observe behavior to get more detailed information. For example, If you want to check what's inside the oven and whether it's on the kitchen counter, you can use 'observe(oven, "What's inside the oven? Is it on the kitchen counter?")'.
 
 # Guidance-5:
-Try to avoid using the 'inhand(x:item)' state. In most cases, the program will automatically manage the 'inhand' operations. If you define 'inhand' manually, it can easily lead to a situation where the agent is holding too many items, causing the program to crash. There is generally only one situation where you need to declare the 'inhand' operation: when you have to hold certain items all the time to complete a specific task. For example, when cleaning a mirror with a towel, you need to use 'achieve_once inhand(towel)'. Other than this, please avoid defining the 'inhand' state. In some cases, the task information may not clearly specify where certain items should be placed, such as in "gathering the food." In these cases, use your common sense to place the food in an appropriate location, like achieve 'on(food, kitchen_counter)', to avoid the issue of holding too many items. If possible, ensure that the agent's hands are empty after each sub-task is completed.
+Try to avoid using the 'inhand(x:item)' state. In most cases, the program will automatically manage the 'inhand' operations. If you define 'inhand' manually, it can easily lead to a situation where the agent is holding too many items, causing the program to crash. There is generally only one situation where you need to declare the 'inhand' operation: when you have to hold certain items all the time to complete a specific task. For example, when cleaning a mirror with a towel, you need to use 'achieve_once inhand(towel)'. Other than this, please avoid defining the 'inhand' state. In some cases, the task information may not clearly specify where certain items should be placed, such as in "gathering the food." In these cases, use your common sense to place the food in an appropriate location, like achieve_once 'on(food, kitchen_counter)', to avoid the issue of holding too many items. If possible, ensure that the agent's hands are empty after each sub-task is completed.
 
 # Guidance-6:
 You can assume that all actions you execute are successful. Additionally, you do not need to worry about object size, as a properly sized object will always be found automatically.

@@ -13,7 +13,7 @@ def get_policy_goal_inter_prompt(goal,cat_list=None,additional_information=None,
         completed_tasks="None, it is the first sub-task."
 
     prompt="""
-##Task Description: 
+## Task Description: 
 I have a long horizon task: """ + long_horizon_task + """ To approach this task effectively, I’ve divided it into several sub-tasks. The goal of the current sub-task is: """ + goal + """ The sub-tasks I have already completed include: """+completed_tasks+""" Additionally, I’ve gathered the following information to assist in completing this task: """ + additional_information + """.
 
 ## Instructions: 
@@ -21,7 +21,7 @@ Focus on the current sub-task's goal. Please analyze this goal and the additiona
 
 ## Precautions:
 - Ensure that the states, relationships, properties, and keywords used do not exceed the scope I provided. (Available states, relationships, properties, and keywords are listed below.)
-- If you invoke a function, ensure it’s properly defined, and include any necessary parameters when calling it.
+- When invoking a function, ensure it is properly defined and includes any necessary parameters. Additionally, the function must be defined before it is invoked.
 - The behavior __goal__(): is required and functions similarly to the main function in Python; it should typically be placed at the end of your output without any parameters.
 
 ## Available States:
@@ -48,8 +48,6 @@ Please note: The text following each hash symbol (#) is a comment and should not
 - inside_char(x: character, y: item) # character is inside item y (Character is you self. Any other animal like cat is an item)
 - close(x: item, y: item) # item x is close to item y
 - close_char(x: character, y: item) # character is close to item y (Character is you self. Any other animal like cat is an item)
-- facing(x: item, y: item) # item x is facing item y
-- facing_char(x: character, y: item) # character is facing item y (Character is you self. Any other animal like cat is an item)
 Important Usage Notes: In relationships with the '_char' suffix, the first parameter must always be a char. For example, 'inside' and 'inside_char', 'close' and 'close_char', 'facing' and 'facing_char'.
 
 ## Available Properties:
@@ -67,11 +65,8 @@ Please note: The text following each hash symbol (#) is a comment and should not
 - readable(x: item) # Indicates that the item can be read.
 - lookable(x: item) # Indicates that the item can be looked at.
 - containers(x: item) # Indicates that the item is a container.
-- body_part(x: item) # Indicates that the item is a body part.
-- cover_object(x: item)
 - has_plug(x: item) # Indicates that the item has a plug.
 - movable(x: item) # Indicates that the item can be moved.
-- cream(x: item) # Indicates that the item is a cream.
 - is_clothes(x: item) # Indicates that the item is clothing.
 - is_food(x: item) # Indicates that the item is food.
 Important Notes: "propertie" cannot be assigned a value; they can only return a boolean value as a predicate. For example, an apple can be grabbed, so grabbable(apple) will return true. Properties are typically used in if conditions.
@@ -173,12 +168,22 @@ else:
 
 # exists
 # Usage: Checks if there is at least one object that meets the condition and returns a boolean value.
-Template: exists obj_name: objtype : condition()
-Example: exists item1: item : holds_lh(char, item1)
+Template: exists obj_name: objtype : (condition)
+Example: exists item1: item : (holds_lh(char, item1))
+To prevent potential errors, it is recommended to enclose conditions within parentheses '()'. Additionally, 'not' must not be placed before 'exists'.
 
 # symbol
 # Usage: Defines a symbol and binds it to the output of an expression. You can only use the symbol in the following manner:
-symbol l=exists item1: item : (holds_lh(char, item1))
+symbol has_cutting_board=exists item1:item: (is_cutting_board(item1))
+Common Errors:
+1. if not exists item1:item: (is_cutting_board(item1)): # Incorrect, because 'not' is placed before 'exists'.
+2. symbol no_apple_on_table=not exists item1:item: (is_apple(item1) and on(item1, table)) # Incorrect, because 'not' is placed before 'exists'.
+If you want to represent not exists, define a function to handle the negation:
+def no_apple_on_table(table:item):
+    symbol have_apple=exists item1:item: (is_apple(item1) and on(item1, table))
+    return not have_apple # Return the negation of the condition.
+Then you can call this function like:
+if no_apple_on_table(table):
 
 # def
 # Usage: Defines a function that can be used to check a condition. 
@@ -191,13 +196,14 @@ bind basket: item where:
 observe(basket,"Check is there any clothes in the basket")
 
 If you want to know Is there any trash in the trash can in the dining room, you can use:
-def in_the_dining_room(trash_can:item):
-    symbol in_dining_room=exists room: item : (is_dining_room(room) and inside(trash_can, room))
-    return in_dining_room
+
+bind dining_room: item where:
+    is_dining_room(dining_room)
 
 bind trash_can: item where:
-    is_trash_can(trash_can) and in_the_dining_room(trash_can) # Since you already know that the trash can is located in the dining room, you can include the condition inside(trash_can, dining_room). However, if the location of the trash can is unknown, this condition must be omitted.
-observe(trash_can,"Check is there any trash in the trash can")
+    is_trash_can(trash_can) and inside(trasn_can, dining_room) # Since you already know that the trash can is located in the dining room, you can include the condition inside(trash_can, dining_room). However, if the location of the trash can is unknown, this condition must be omitted.
+observe(trash_can,"Check is there any trash in the trash can")    symbol in_dining_room=exists room: item : (is_dining_room(room) and inside(trash_can, room))
+    return in_dining_room
 
 ## Examples:
 ## Example-1-1:
@@ -206,8 +212,8 @@ The completed sub-tasks: None, it is the first sub-task.
 Additional information: None.
 Long-horizon task: Clean up the food on the table.
 Chain of thought: Your current sub-task goal is to find a table with food on it, which is the first step towards completing the long-horizon task: "Clean up the food on the table."
-According to the background knowledge, your first step should be to check if there is a known table with food on it. To do this, you need to determine whether there is food on a table. You can create a function called 'has_food_on_table(table:item)', which returns the result of the expression 'exists o: item : is_food(o) and on(o, table)'. This expression checks if there is an item classified as food that is on the table, according to your known information.
-Next, you can use the expression 'exists table: item : is_table(table) and has_food_on_table(table)' to verify if there is a table with food on it in the known information. If such a table exists, there is no need to continue searching; you can immediately use 'walk_to(table)' to have the character approach the table with food.
+According to the background knowledge, your first step should be to check if there is a known table with food on it. To do this, you need to determine whether there is food on a table. You can create a function called 'has_food_on_table(table:item)', which returns the result of the expression 'exists o: item : (is_food(o) and on(o, table))'. This expression checks if there is an item classified as food that is on the table, according to your known information.
+Next, you can use the expression 'exists table: item : (is_table(table) and has_food_on_table(table))' to verify if there is a table with food on it in the known information. If such a table exists, there is no need to continue searching; you can immediately use 'walk_to(table)' to have the character approach the table with food.
 However, if your known information does not confirm the presence of a table with food on it, you will need to inspect all unvisited items in the scene categorized as tables. To do this, you should call the 'observe' behavior to check each table. The first parameter of the 'observe' behavior should be the table you intend to inspect, and the second parameter should be the purpose of the inspection. Remember, the second parameter must be a string enclosed in double quotes ("").
 
 Output:
@@ -243,18 +249,20 @@ Additional information:
 3. food_peanut_butter_2008 and food_kiwi_2012 are on the table_226.
 Long-horizon task: Clean up the food on the table.
 
-Chain of thought: You have already find the table with food. Now, your current sub-task goal is to store the food on the table in the appropriate location. According to the additional information, there is no food on table_107 and table_355. However, table_226 has food_peanut_butter and food_kiwi.You can use the 'bind' keyword along with the condition 'is_table(table) and id[table] == 226' to obtain the table with the ID 226. You can also use the 'bind' keyword with the condition 'is_food_peanut_butter(food_peanut_butter)' to obtain the peanut butter. And use 'bind' keyword with the condition 'is_food_kiwi(food_kiwi)' to obtain the kiwi. Since the sub-task goal and additional information do not specify where exactly to store the food, you need to use common sense to make a decision based on the items present in the scene. Based on common sense, both food_peanut_butter and food_kiwi may require refrigeration, and since there is a fridge available in the scene, the goal is to store them in the fridge. Although it is not explicitly stated, it is common sense to ensure that the fridge door is closed after storing food inside. Therefore, you can use closes(fridge) to perform the action of closing the fridge door.
+Chain of thought: You have already find the table with food. Now, your current sub-task goal is to store the food on the table in the appropriate location. According to the additional information, there is no food on table_107 and table_355. However, table_226 has food_peanut_butter and food_kiwi. You can use the 'bind' keyword along with the condition 'is_table(table) and id[table] == 226' to obtain the table with the ID 226. You can also use the 'bind' keyword with the condition 'is_food_peanut_butter(food_peanut_butter)' to obtain the peanut butter. And use 'bind' keyword with the condition 'is_food_kiwi(food_kiwi)' to obtain the kiwi. Since the sub-task goal and additional information do not specify where exactly to store the food, you need to use common sense to make a decision based on the items present in the scene. Based on common sense, both food_peanut_butter and food_kiwi may require refrigeration, and since there is a fridge available in the scene, the goal is to store them in the fridge. Although it is not explicitly stated, it is common sense to ensure that the fridge door is closed after storing food inside. Therefore, you can use closes(fridge) to perform the action of closing the fridge door.
 
 Output:
 behavior store_in_fridge(food:item, fridge:item):
     body:
-        put_inside(food, fridge)
-        # Place the food item inside the fridge.
+        if not inside(food, fridge):
+            put_inside(food, fridge)
+            # Place the food item inside the fridge.
 
 behavior close_the_fridge_door(fridge:item):
     body:
-        closes(fridge)
-        # Close the fridge door.
+        if open(fridge):
+            closes(fridge)
+            # Close the fridge door if the door is opening.
 
 behavior __goal__():
     body:
@@ -264,11 +272,11 @@ behavior __goal__():
 
         bind food_peanut_butter: item where:
             is_food_peanut_butter(food_peanut_butter)
-        # Select peanut butter on the table.
+        # Select peanut butter.
 
         bind food_kiwi: item where:
             is_food_kiwi(food_kiwi)
-        # Select kiwi on the table.
+        # Select kiwi.
         
         bind fridge: item where:
             is_fridge(fridge)
@@ -292,19 +300,23 @@ Output:
 behavior throw_in_trash(food:item, trashcan:item): 
 # Define the behavior to throw food into the trash can
     body:
-        put_inside(food, trashcan)
+        if not inside(food, trashcan):
+            put_inside(food, trashcan)
         
 behavior cut_food(food:item):
     body:
-        cuts(food)
+        if not cut(food):
+            cuts(food)
 
 behavior store_in_fridge(food:item, fridge:item):
     body:
-        put_inside(food, fridge)
+        if not inside(food, fridge):
+            put_inside(food, fridge)
 
 behavior close_the_fridge_door(fridge:item):
     body:
-        closes(fridge)
+        if open(fridge):
+            closes(fridge)
 
 behavior __goal__():
     body:
@@ -325,7 +337,7 @@ behavior __goal__():
         # Select a fridge.
         throw_in_trash(food_peanut_butter, trashcan)
         cut_food(food_kiwi)
-        store_in_fridge(food_peanut_butter, fridge)
+        store_in_fridge(food_kiwi, fridge)
         close_the_fridge_door(fridge)
           
 # Example-2-1:
@@ -373,13 +385,16 @@ According to additional information, sink_42 does not contain plates or cups, wh
 Output:
 behavior load_dishwasher(o:item, dishwasher:item):
     body:
-        put_inside(o, dishwasher)
-        # Place the item inside the dishwasher.
+        if not inside(o, dishwasher):
+            put_inside(o, dishwasher)
+            # Place the item inside the dishwasher.
 
 behavior start_dishwasher(dishwasher:item):
     body:
-        closes(dishwasher) # Close the dishwasher door.
-        switch_on(dishwasher) # Turn on the dishwasher.
+        if open(dishwasher):
+            closes(dishwasher) # Close the dishwasher door.
+        if is_off(dishwasher):
+            switch_on(dishwasher) # Turn on the dishwasher.
 
 behavior __goal__():
     body:
@@ -418,12 +433,15 @@ def has_plates_or_cups_inside(dishwasher:item):
 
 behavior put_on_table(o:item, table:item):
     body:
-        put_on(o, table) # Place the item on the table.
+        if not on(o, table):
+            put_on(o, table) # Place the item on the table.
 
 behavior close_the_dishwasher(dishwasher:item):
     body:
-        switch_off(dishwasher) # Turn off the dishwasher.
-        closes(dishwasher) # Close the dishwasher door.
+        if is_on(dishwasher):
+            switch_off(dishwasher) # Turn off the dishwasher.
+        if open(dishwasher):
+            closes(dishwasher) # Close the dishwasher door.
 
 behavior __goal__():
     body:
@@ -478,6 +496,9 @@ You can also use attributes, states, and other information to further refine you
 
 # Guidance-3:
 The observe(obj:item, question:string) is a powerful but resource-intensive behavior. It allows you to examine an object based on observation, during which you need to specify what information you wish to obtain from the object. Due to the high cost of using observe, the quality of your questions is crucial for improving execution efficiency. Generally speaking, information such as the type of object or its state can be obtained by referring to the methods provided in 'Available Category Determination' and 'Available States', so you usually don't need to invoke the observe behavior for these details. Some situations where observe behavior is necessary include when you want to check what items are inside or on the item you observe. For example, if you want to see what's inside the oven, you can use 'observe(oven, "What's inside the oven?")', or if you want to check what's on the table, you can use 'observe(table, "check items on the table")'. Also, feel free to ask more questions in the observe behavior to get more detailed information. For example, If you want to check what's inside the oven and whether it's on the kitchen counter, you can use 'observe(oven, "What's inside the oven? Is it on the kitchen counter?")'.
+
+# Guidance-6:
+You can assume that all actions you execute are successful.
 
 """+behavior_from_library_embedding+"""
 

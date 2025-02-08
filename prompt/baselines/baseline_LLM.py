@@ -54,8 +54,6 @@ standup_executor(x: character): assists the character x in standing up from thei
 wash_executor(x: item): washes or cleans the item. (Preconditions: The item must not be unknown, the character must have a free hand, and the character must be close to the item.)
 scrub_executor(x: item): scrubs the item to clean it. (Preconditions: The item must not be unknown, the character must have a free hand, and the character must be close to the item.)
 rinse_executor(x: item): rinses the item with water. (Preconditions: The item must not be unknown, the character must have a free hand, and the character must be close to the item.)
-sit_executor(x: item): sits down on the item. (Preconditions: The item must be sittable, the item must not be unknown, and the character must be close to the item.)
-lie_executor(x: item): lies down on the item. (Preconditions: The item must be lieable, the item must not be unknown, and the character must be close to the item.)
 open_executor(x: item): opens the item, such as a door or container. (Preconditions: The item must be openable, the item must not be unknown, the character must have a free hand, if the item has a switch and is on, it must be off, and the character must be close to the item.)
 close_executor(x: item): closes the item, such as a door or container. (Preconditions: The item must be openable, the item must not be unknown, the character must have a free hand, and the character must be close to the item.)
 plugin_executor(x: item): plugs in the item. (Preconditions: The item must have a plug, the item must not be unknown, the character must have a free hand, and the character must be close to the item.)

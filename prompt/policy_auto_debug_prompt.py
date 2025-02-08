@@ -209,12 +209,22 @@ else:
 
 # exists
 # Usage: Checks if there is at least one object that meets the condition and returns a boolean value.
-Template: exists obj_name: objtype : condition()
-Example: exists item1: item : holds_lh(char, item1)
+Template: exists obj_name: objtype : (condition)
+Example: exists item1: item : (holds_lh(char, item1))
+To prevent potential errors, it is recommended to enclose conditions within parentheses '()'. Additionally, 'not' must not be placed before 'exists'.
 
 # symbol
 # Usage: Defines a symbol and binds it to the output of an expression. You can only use the symbol in the following manner:
-symbol l=exists item1: item : (holds_lh(char, item1))
+symbol has_cutting_board=exists item1:item: (is_cutting_board(item1))
+Common Errors:
+1. if not exists item1:item: (is_cutting_board(item1)): # Incorrect, because 'not' is placed before 'exists'.
+2. symbol no_apple_on_table=not exists item1:item: (is_apple(item1) and on(item1, table)) # Incorrect, because 'not' is placed before 'exists'.
+If you want to represent not exists, define a function to handle the negation:
+def no_apple_on_table(table:item):
+    symbol have_apple=exists item1:item: (is_apple(item1) and on(item1, table))
+    return not have_apple # Return the negation of the condition.
+Then you can call this function like:
+if no_apple_on_table(table):
 
 # def
 # Usage: Defines a function that can be used to check a condition. 
