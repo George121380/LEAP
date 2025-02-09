@@ -7,7 +7,7 @@ def Guidance_helper_prompt(task,guidance,task_info):
             Sub_goals+=sub_goal+'\n'
     prompt="""
 ### Instruction ###
-A household robot is attempting to complete a task but has encountered some difficulties. It is seeking your guidance. Below are your thoughts on how to complete the task. Based on these thoughts, provide the robot with clear guidance. The guidance you provide must be a strict subset of the steps described in "Your Thoughts." You are not allowed to add extra details or elaborate beyond the given thoughts. The actions discussed here are relatively abstract, so avoid specifying exact amounts or durations (e.g., "how much" or "how long"). If the robot’s plan significantly deviates from your thoughts, you may suggest that the robot should replan.
+A household robot is attempting to complete a task but has encountered some difficulties. It is seeking your guidance. Below are your thoughts on how to complete the task. Based on these thoughts, provide the robot with clear guidance. The guidance you provide must be a strict subset of the steps described in "Your Thoughts." You are not allowed to add extra details or elaborate beyond the given thoughts. The actions discussed here are relatively abstract, so avoid specifying exact amounts or durations (e.g., "how much" or "how long"). If the robot’s plan significantly deviates from your thoughts, you may suggest that the robot should replan. And Clearly point out the part of the plan that deviates and provide guidance based on your thoughts.
 
 ### Task Information ###
 Goal for the robot: """+Goal+""" 

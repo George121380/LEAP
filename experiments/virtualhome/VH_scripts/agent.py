@@ -616,7 +616,7 @@ class VHAgent(BaseAgent):
                     behavior_from_library=self.library.download_behaviors(self.current_subgoal_nl),
                     partial_observation=True,
                     agent_type=self.agent_type,
-                    refinement=self.config.refineme,
+                    refinement=self.config.refine,
                     loop_feedback=self.config.loop_feedback,
                     logger=self.logger
                 )

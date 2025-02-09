@@ -142,7 +142,7 @@ def counting(args):
     print(result_dict)
         
 if __name__ == '__main__':
-    config.scene_id = 1
+    config.scene_id = 0
     if os.path.exists(f'result_{config.scene_id}.json'):
         with open(f'result_{config.scene_id}.json') as f:
             result_dict=json.load(f)

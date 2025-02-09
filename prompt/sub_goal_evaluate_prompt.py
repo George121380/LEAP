@@ -16,9 +16,10 @@ Evaluate whether the current sub-task is complete by reviewing the actions perfo
 
 ### Guidance ###
 - Assume all actions listed under 'Actions Taken' have been successfully executed without error.
-- You do not need to account for physical constraints such as object size, space availability, or task execution issues (e.g., whether there is sufficient space, whether food is properly cooked, or whether a container is filled).
-- For this task, assume that all such physical conditions are perfectly resolved. Focus solely on whether the logical goals have been met based on the provided actions and information.
+- You do not need to account for physical constraints such as object size, space availability, or task execution issues (e.g., whether there is sufficient space). Assume that all such physical conditions are perfectly resolved. Focus solely on whether the logical goals have been met based on the provided actions and information.
+- You don't need to worry about the execution time of actions; we assume that all actions achieve the desired effect immediately after execution. Common misjudgments include: worry about whether food is properly cooked, or whether a container is filled
 - The length of the 'Actions Taken' list does not directly indicate task completion. A short list does not mean the sub-task is incomplete, nor does a long list guarantee completion. Use all provided information to make your evaluation.
+- The robot's possible actions are limited to the following: walk, switch off, switch on, put, put in, grab, wash, scrub, rinse, open, close, plug in, plug out, cut, wipe, touch, type, push, and pull. Complex actions such as "cook" or "wait" are not included in our problem formulation. Therefore, you should neither expect nor require the robot to perform actions beyond those listed above.
 
 ### Current Sub-Task ###
 """+current_subgoal+"""

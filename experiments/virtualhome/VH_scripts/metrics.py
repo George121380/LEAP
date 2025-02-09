@@ -518,23 +518,27 @@ if __name__ == '__main__':
     # ...
 
     methods_experiments.append(find_csv_files(
-        '/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/main_results/openai_new/round4/20250205_044047_LLMWG'
+        'main_results/openai_new/round6/20250209_021532_LLMWOG'
     ))
 
     methods_experiments.append(find_csv_files(
-        '/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/main_results/openai_new/round4/20250205_044140_LLMWOG'
+        'main_results/openai_new/round6/20250209_021552_LLMPlusPWOG'
     ))
 
     methods_experiments.append(find_csv_files(
-        '/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/main_results/openai_new/round4/20250205_175814_CAPWOG'
+        'main_results/openai_new/round6/20250209_030853_OursWOG'
     ))
 
     methods_experiments.append(find_csv_files(
-        '/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/main_results/openai_new/round4/20250206_042201_OursWOG_continue'
+        'main_results/openai_new/round6/20250209_045249_LLMWG'
     ))
 
     methods_experiments.append(find_csv_files(
-        '/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/main_results/openai_new/round5/20250207_164244_OursWOG'
+        'main_results/openai_new/round6/20250209_064630_LLMPlusPWG'
+    ))
+
+    methods_experiments.append(find_csv_files(
+        'main_results/openai_new/round6/20250209_101538_OursWG'
     ))
 
     window_size = 10  # Example window size for moving average

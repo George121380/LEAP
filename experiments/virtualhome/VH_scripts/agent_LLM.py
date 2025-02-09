@@ -80,7 +80,7 @@ class LLM_Agent(BaseAgent):
         self.failed_execution_flag=False
         self.query_human_flag=False
 
-        self.difficulty=int((1.5*difficulty)//1)
+        self.difficulty=int((1.2*difficulty)//1)
         self.max_trying_times=3*difficulty
 
         self.exp_query_record=[] # record all the items that already queried the location
@@ -200,7 +200,7 @@ class LLM_Agent(BaseAgent):
         task_info={}
         task_info['Goal']=self.goal_nl
         task_info['Subgoals']=[self.goal_nl]
-        answer=self.human_helper.QA(question,task_info)
+        answer=self.human_helper.QA_woreplan(question,task_info)
         record+=f'Answer: {answer}\n'
         self.logger.info("From agent_LLM -> query_LLM_human"+record)
         return answer

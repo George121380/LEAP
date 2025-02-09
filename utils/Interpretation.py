@@ -15,6 +15,8 @@ import time
 
 from prompt.QA.exp_helper_prompt import Exp_helper_prompt
 from prompt.QA.guidance_helper_prompt import Guidance_helper_prompt
+from prompt.QA.guidance_helper_prompt_woreplan import Guidance_helper_prompt_woreplan
+
 
 def parse_evaluation(evaluation_text):
     sub_task_completed_match = re.search(r"Sub-Task Completed:\s*(Yes|No)", evaluation_text)
@@ -116,6 +118,14 @@ def Guidance_helper(question,guidance,task_info):
             re_decompose = (match.group(1).strip().lower() == 'yes')
             guidance = match.group(2).strip()
             return guidance, re_decompose
+        
+def Guidance_helper_woreplan(question,guidance,task_info):
+    system="Imagine you are the owner of the house. You are trying to teach a house robot to finish a task. I will provide you some guidance about how to finish the task. Refer to this guidance and try to answer the robot."
+    print('=' * 60)
+    print(f"Human Guidance_helper:")
+    content=Guidance_helper_prompt_woreplan(question,guidance,task_info)
+    answer=ask_GPT(system,content)
+    return answer
 
 def refinement_loop_feedback(current_plan,full_goal,prev_sub_goal_list,current_subgoal,previous_action_history,goal_int, add_info, classes, agent_type):
     system="Imagine you are the owner of the house. You are trying to teach a house robot to finish a task. I will provide you some guidance about how to finish the task. Refer to this guidance and try to answer the robot."

@@ -5,7 +5,7 @@ import json
 from sentence_transformers import SentenceTransformer
 import faiss
 sys.path.append('/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/utils')
-from Interpretation import Exp_helper,Guidance_helper
+from Interpretation import Exp_helper,Guidance_helper, Guidance_helper_woreplan
 from environment import EnvironmentState, EnvironmentGraph
 
 import logging
@@ -78,6 +78,43 @@ class Human:
             # guidance=Guidance_helper(question,RAG_query_result)
             guidance,re_decompose=Guidance_helper(question,self.guidance,task_info)
             return guidance,re_decompose
+        
+    def QA_woreplan(self,question,task_info=None):
+        """
+        Args:
+            input: question (str)
+            Returns: LLM_answer (str)
+        """
+        if 'help me to find' in question: # exploration problem
+            target=re.search(r'find (.*?) \?', question).group(1)
+            target_id=self.name2id[target]
+            target_related_info=self.check_related_edges(target_id)
+            discription=''
+            for relation in target_related_info:
+                from_name=relation['from_name']
+                to_name=relation['to_name']
+                r=relation['relation_type']
+                if r=='CLOSE':
+                    discription+=f'- {from_name} is close to {to_name}'
+                elif r=='FACING':
+                    discription+=f'- {from_name} is facing {to_name}'
+                elif r=='INSIDE':
+                    discription+=f'- {from_name} is inside {to_name}'
+                elif r=='ON':
+                    discription+=f'- {from_name} is on {to_name}'
+                elif r=='BETWEEN':
+                    discription+=f'- {from_name} is between {to_name}'
+                discription+='\n'
+            answer=Exp_helper(target,discription)
+            print(answer)
+            return answer, None
+        
+        if 'how to' in question: # ask for guidance
+            # guidance=Guidance_helper(question,self.knowledge)
+            # RAG_query_result=self.RAG_query(question)
+            # guidance=Guidance_helper(question,RAG_query_result)
+            guidance=Guidance_helper_woreplan(question,self.guidance,task_info)
+            return guidance
     
     def check_related_edges(self,node_id):
         related_edges=[]

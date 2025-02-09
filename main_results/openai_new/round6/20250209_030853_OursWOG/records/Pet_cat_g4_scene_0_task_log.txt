@@ -1,0 +1,3650 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Find your cat and bring it to the bathing area.', '2. Gently wet the cat with lukewarm water, using a cup or a gentle stream.', '3. Apply cat-safe shampoo and lather it, avoiding the eyes and ears.', '4. Rinse off the shampoo completely with lukewarm water.', '5. Dry the cat with a towel, then brush its fur.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_soap_2054_around_shower_36(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind shower_instance:item where:
+            is_shower(shower_instance) and id[shower_instance]==36
+        achieve close_char(char,shower_instance)
+        if can_open(shower_instance):
+            achieve_once open(shower_instance)
+            exp(soap,shower_instance)
+        else:
+            exp(soap,shower_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,shower_instance]=True
+        close[shower_instance,soap]=True
+    
+
+behavior find_cat_2055_around_doorjamb_347(cat:item):
+    goal: not unknown(cat)
+    body:
+        assert is_cat(cat)
+        bind doorjamb_instance:item where:
+            is_doorjamb(doorjamb_instance) and id[doorjamb_instance]==347
+        achieve close_char(char,doorjamb_instance)
+        if can_open(doorjamb_instance):
+            achieve_once open(doorjamb_instance)
+            exp(cat,doorjamb_instance)
+        else:
+            exp(cat,doorjamb_instance)
+    eff:
+        unknown[cat]=False
+        close[cat,doorjamb_instance]=True
+        close[doorjamb_instance,cat]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior bring_cat_to_bathing_area(cat:item, bathing_area:item):
+    body:
+        achieve_once inhand(cat)
+        achieve_once inside_char(char, bathing_area)
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        # Select the cat
+        
+        bind bathing_area: item where:
+            is_bathroom(bathing_area) or is_bathtub(bathing_area)
+        # Select a bathroom or a bathtub as the bathing area
+        
+        bring_cat_to_bathing_area(cat, bathing_area)
+        # Bring the cat to the bathing area
+
+#goal_representation_end
+
+##############################
+Error is:
+'NoneType' object is not iterable
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_soap_2053_around_shower_36(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind shower_instance:item where:
+            is_shower(shower_instance) and id[shower_instance]==36
+        achieve close_char(char,shower_instance)
+        if can_open(shower_instance):
+            achieve_once open(shower_instance)
+            exp(soap,shower_instance)
+        else:
+            exp(soap,shower_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,shower_instance]=True
+        close[shower_instance,soap]=True
+    
+
+behavior find_cat_2055_around_bookshelf_101(cat:item):
+    goal: not unknown(cat)
+    body:
+        assert is_cat(cat)
+        bind bookshelf_instance:item where:
+            is_bookshelf(bookshelf_instance) and id[bookshelf_instance]==101
+        achieve close_char(char,bookshelf_instance)
+        if can_open(bookshelf_instance):
+            achieve_once open(bookshelf_instance)
+            exp(cat,bookshelf_instance)
+        else:
+            exp(cat,bookshelf_instance)
+    eff:
+        unknown[cat]=False
+        close[cat,bookshelf_instance]=True
+        close[bookshelf_instance,cat]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_cat(x: item):
+    return True  # Assume it is a cat when is_cat(x) is called, indicating the item is a cat
+
+def is_bathroom(x: item):
+    return True  # Assume it is a bathroom when is_bathroom(x) is called, indicating the item is a bathroom
+
+def has_cat_in_bathroom(bathing_area: item):
+    symbol has_cat = exists o: item : (is_cat(o) and inside(o, bathing_area))
+    return has_cat
+
+behavior __goal__():
+    body:
+        if exists bathing_area: item : (is_bathroom(bathing_area) and has_cat_in_bathroom(bathing_area)):
+            bind bathing_area: item where:
+                is_bathroom(bathing_area) and has_cat_in_bathroom(bathing_area)
+            achieve close_char(char, bathing_area)
+
+        else:
+            foreach cat: item:
+                if is_cat(cat) and not visited(cat):
+                    observe(cat, "Check if the cat is close to any bathing area")
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+ 
+def is_cat(x: item):
+    return True  # Assume it is a cat when is_cat(x) is called, indicating the item is a cat
+
+def is_bathroom(x: item):
+    return True  # Assume it is a bathroom when is_bathroom(x) is called, indicating the item is a bathroom
+
+def has_cat_in_bathroom(bathing_area: item):
+    symbol has_cat = exists o: item : (is_cat(o) and inside(o, bathing_area))
+    return has_cat
+
+behavior __goal__():
+    body:
+        if exists bathing_area: item : (is_bathroom(bathing_area) and has_cat_in_bathroom(bathing_area)):
+            bind bathing_area: item where:
+                is_bathroom(bathing_area) and has_cat_in_bathroom(bathing_area)
+            achieve close_char(char, bathing_area)
+
+        else:
+            foreach cat: item:
+                if is_cat(cat) and not visited(cat):
+                    observe(cat, "Check if the cat is close to any bathing area")
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(bookshelf_101)open_executor(bookshelf_101)exp(cat_2055, bookshelf_101)walk_executor(cat_2055)obs(cat_2055, Check if the cat is close to any bathing area)
+##############################
+From agent.py
+walk_executor(bookshelf_101)
+Robot find: drawing_174, drawing_176, Robot is close to the bookshelf_101. 
+##############################
+From agent.py
+open_executor(bookshelf_101)
+Robot find: Robot is close to the photoframe_185. Robot is close to the bookshelf_101. bookshelf_101 is opened. 
+##############################
+From agent.py
+exp(cat_2055, bookshelf_101)
+Fail to find cat_2055 around bookshelf_101. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(washing_machine_2007)open_executor(washing_machine_2007)exp(cat_2055, washing_machine_2007)walk_executor(cat_2055)obs(cat_2055, Check if the cat is close to any bathing area)
+##############################
+From agent.py
+walk_executor(washing_machine_2007)
+Robot find: Robot is close to the washing_machine_2007. 
+##############################
+From agent.py
+open_executor(washing_machine_2007)
+Robot find: Robot is close to the washing_machine_2007. washing_machine_2007 is opened. 
+##############################
+From agent.py
+exp(cat_2055, washing_machine_2007)
+Fail to find cat_2055 around washing_machine_2007. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(bathtub_30)exp(cat_2055, bathtub_30)walk_executor(cat_2055)obs(cat_2055, Check if the cat is close to any bathing area)
+##############################
+From agent.py
+walk_executor(bathtub_30)
+Robot find: towel_rack_33, Robot is close to the bathtub_30. 
+##############################
+From agent.py
+exp(cat_2055, bathtub_30)
+Fail to find cat_2055 around bathtub_30. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(shower_36)exp(cat_2055, shower_36)walk_executor(cat_2055)obs(cat_2055, Check if the cat is close to any bathing area)
+##############################
+From agent.py
+walk_executor(shower_36)
+Robot find: Robot is close to the shower_36. 
+##############################
+From agent.py
+exp(cat_2055, shower_36)
+Fail to find cat_2055 around shower_36. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(bathroom_counter_41)exp(cat_2055, bathroom_counter_41)walk_executor(cat_2055)obs(cat_2055, Check if the cat is close to any bathing area)
+##############################
+From agent.py
+walk_executor(bathroom_counter_41)
+Robot find: towel_rack_31, towel_rack_32, towel_rack_34, Robot is close to the bathroom_counter_41. 
+##############################
+From agent.py
+exp(cat_2055, bathroom_counter_41)
+Fail to find cat_2055 around bathroom_counter_41. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(basket_for_clothes_2006)exp(cat_2055, basket_for_clothes_2006)walk_executor(cat_2055)obs(cat_2055, Check if the cat is close to any bathing area)
+##############################
+From agent.py
+walk_executor(basket_for_clothes_2006)
+Robot find: clothes_pants_2085, clothes_shirt_2086, clothes_socks_2087, clothes_skirt_2088, mat_22, Robot is close to the clothes_pants_2085. Robot is close to the clothes_shirt_2086. Robot is close to the clothes_socks_2087. Robot is close to the clothes_skirt_2088. Robot is close to the basket_for_clothes_2006. 
+##############################
+From agent.py -> query_LLM_human
+Record from func query_LLM_human in agent.py
+Question: Can you help me to find cat_2055 ?
+Answer: Go to the home office labeled as home_office_319. Locate the couch labeled as couch_352. You will find cat_2055 on top of couch_352.
+Re-decompose: None
+
+##############################
+From agent.py
+Human Instruction: Go to the home office labeled as home_office_319. Locate the couch labeled as couch_352. You will find cat_2055 on top of couch_352.
+
+The actions you have taken:
+Action 1: Walk to bookshelf_101.
+Action 2: Open bookshelf_101.
+Action 3: look for cat_2055 around bookshelf_101.
+Action 4: Walk to washing_machine_2007.
+Action 5: Open washing_machine_2007.
+Action 6: look for cat_2055 around washing_machine_2007.
+Action 7: Walk to bathtub_30.
+Action 8: look for cat_2055 around bathtub_30.
+Action 9: Walk to shower_36.
+Action 10: look for cat_2055 around shower_36.
+Action 11: Walk to bathroom_counter_41.
+Action 12: look for cat_2055 around bathroom_counter_41.
+Action 13: Walk to basket_for_clothes_2006.
+
+##############################
+From agent.py
+exp(cat_2055, basket_for_clothes_2006)
+Fail to find cat_2055 around basket_for_clothes_2006. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(couch_352)exp(cat_2055, couch_352)walk_executor(cat_2055)obs(cat_2055, Check if the cat is close to any bathing area)
+##############################
+From agent.py
+walk_executor(couch_352)
+Robot find: mat_401, remote_control_2052, clothes_jacket_2047, pillow_405, cat_2055, drawing_400, pillow_406, hairbrush_2002, vacuum_cleaner_2070, Robot is close to the couch_352. Robot is close to the mat_401. 
+##############################
+From agent.py
+exp(cat_2055, couch_352)
+Find cat_2055. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(cat_2055)obs(cat_2055, Check if the cat is close to any bathing area)
+##############################
+From agent.py
+walk_executor(cat_2055)
+Robot find: Robot is close to the couch_352. Robot is close to the cat_2055. 
+##############################
+From agent.py
+obs(cat_2055, Check if the cat is close to any bathing area)
+Get this information:  cat_2055 is on couch_352. cat_2055 is inside home_office_319. cat_2055 is close to couch_352. cat_2055 is close to character_65.
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: No
+The feedback instruction: You need to bring cat_2055 to the bathing area. Although you've found the cat on the couch and verified it's not near a bathing area, the cat is not yet in a bathroom or bathing area, which is required to complete this sub-task.
+##############################
+From agent.py
+Human Instruction: You need to bring cat_2055 to the bathing area. Although you've found the cat on the couch and verified it's not near a bathing area, the cat is not yet in a bathroom or bathing area, which is required to complete this sub-task.
+
+The actions you have taken:
+Action 1: Walk to bookshelf_101.
+Action 2: Open bookshelf_101.
+Action 3: look for cat_2055 around bookshelf_101.
+Action 4: Walk to washing_machine_2007.
+Action 5: Open washing_machine_2007.
+Action 6: look for cat_2055 around washing_machine_2007.
+Action 7: Walk to bathtub_30.
+Action 8: look for cat_2055 around bathtub_30.
+Action 9: Walk to shower_36.
+Action 10: look for cat_2055 around shower_36.
+Action 11: Walk to bathroom_counter_41.
+Action 12: look for cat_2055 around bathroom_counter_41.
+Action 13: Walk to basket_for_clothes_2006.
+Action 14: look for cat_2055 around basket_for_clothes_2006.
+Action 15: Walk to couch_352.
+Action 16: look for cat_2055 around couch_352.
+Action 17: Walk to cat_2055.
+Action 18: Observe around cat_2055 with the question of Check if the cat is close to any bathing area.
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_soap_2053_around_bathroom_cabinet_40(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind bathroom_cabinet_instance:item where:
+            is_bathroom_cabinet(bathroom_cabinet_instance) and id[bathroom_cabinet_instance]==40
+        achieve close_char(char,bathroom_cabinet_instance)
+        if can_open(bathroom_cabinet_instance):
+            achieve_once open(bathroom_cabinet_instance)
+            exp(soap,bathroom_cabinet_instance)
+        else:
+            exp(soap,bathroom_cabinet_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,bathroom_cabinet_instance]=True
+        close[bathroom_cabinet_instance,soap]=True
+    
+
+behavior find_towel_2057_around_towel_rack_33(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==33
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(towel,towel_rack_instance)
+        else:
+            exp(towel,towel_rack_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,towel_rack_instance]=True
+        close[towel_rack_instance,towel]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior bring_cat_to_bathing_area(cat:item, bathing_area:item):
+    body:
+        achieve_once close_char(char, cat)
+        achieve_once inhand(cat)
+        # Pick up the cat
+        achieve_once inside(cat, bathing_area)
+        # Place the cat in the bathing area
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat) and id[cat] == 2055
+        # Select the specific cat with ID 2055
+
+        bind bathing_area: item where:
+            is_bathroom(bathing_area) or is_bathtub(bathing_area) or is_shower(bathing_area)
+        # Select a bathing area, assuming it can be a bathroom, bathtub, or shower
+
+        bring_cat_to_bathing_area(cat, bathing_area)
+
+#goal_representation_end
+
+##############################
+Error is:
+'NoneType' object is not iterable
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_soap_2054_around_bathroom_cabinet_40(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind bathroom_cabinet_instance:item where:
+            is_bathroom_cabinet(bathroom_cabinet_instance) and id[bathroom_cabinet_instance]==40
+        achieve close_char(char,bathroom_cabinet_instance)
+        if can_open(bathroom_cabinet_instance):
+            achieve_once open(bathroom_cabinet_instance)
+            exp(soap,bathroom_cabinet_instance)
+        else:
+            exp(soap,bathroom_cabinet_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,bathroom_cabinet_instance]=True
+        close[bathroom_cabinet_instance,soap]=True
+    
+
+behavior find_towel_2056_around_towel_rack_34(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==34
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(towel,towel_rack_instance)
+        else:
+            exp(towel,towel_rack_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,towel_rack_instance]=True
+        close[towel_rack_instance,towel]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior bring_cat_to_bathroom(cat:item, bathroom:item):
+    body:
+        achieve_once inside(cat, bathroom)
+        # Move the cat to the inside of the bathroom
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat) and id[cat] == 2055
+        # Select the specific cat with ID 2055
+
+        bind bathroom: item where:
+            is_bathroom(bathroom)
+        # Select a bathroom
+
+        bring_cat_to_bathroom(cat, bathroom)
+
+#goal_representation_end
+
+##############################
+Error is:
+'NoneType' object is not iterable
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior move_cat_to_bathing_area(cat:item, bathing_area:item):
+    body:
+        achieve_once inhand(cat)
+        # Ensure the cat is in hand so it can be moved
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat) and close_char(char, cat)
+        # Select the cat that is close to you
+
+        bind bathing_area: item where:
+            is_bathroom(bathing_area) or is_bathtub(bathing_area) or is_shower(bathing_area)
+        # Select a bathing area, which can be a bathroom, bathtub, or shower
+        
+        move_cat_to_bathing_area(cat, bathing_area)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+behavior move_cat_to_bathing_area(cat:item, bathing_area:item):
+    body:
+        achieve_once inhand(cat)
+        # Ensure the cat is in hand so it can be moved
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat) and close_char(char, cat)
+        # Select the cat that is close to you
+
+        bind bathing_area: item where:
+            is_bathroom(bathing_area) or is_bathtub(bathing_area) or is_shower(bathing_area)
+        # Select a bathing area, which can be a bathroom, bathtub, or shower
+        
+        move_cat_to_bathing_area(cat, bathing_area)
+
+##############################
+From agent.py-> find a plan in act()
+grab_executor(cat_2055)
+##############################
+From agent.py
+grab_executor(cat_2055)
+Robot find: Robot is close to the couch_352. Robot is close to the cat_2055. Grabbing cat_2055 by right hand. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: No
+The feedback instruction: You need to bring cat_2055 to a designated bathing area, such as a bathroom, bathtub, or shower. Currently, cat_2055 is only grabbed and not yet moved to the appropriate location.
+##############################
+From agent.py
+Human Instruction: You need to bring cat_2055 to a designated bathing area, such as a bathroom, bathtub, or shower. Currently, cat_2055 is only grabbed and not yet moved to the appropriate location.
+
+The actions you have taken:
+Action 1: Walk to bookshelf_101.
+Action 2: Open bookshelf_101.
+Action 3: look for cat_2055 around bookshelf_101.
+Action 4: Walk to washing_machine_2007.
+Action 5: Open washing_machine_2007.
+Action 6: look for cat_2055 around washing_machine_2007.
+Action 7: Walk to bathtub_30.
+Action 8: look for cat_2055 around bathtub_30.
+Action 9: Walk to shower_36.
+Action 10: look for cat_2055 around shower_36.
+Action 11: Walk to bathroom_counter_41.
+Action 12: look for cat_2055 around bathroom_counter_41.
+Action 13: Walk to basket_for_clothes_2006.
+Action 14: look for cat_2055 around basket_for_clothes_2006.
+Action 15: Walk to couch_352.
+Action 16: look for cat_2055 around couch_352.
+Action 17: Walk to cat_2055.
+Action 18: Observe around cat_2055 with the question of Check if the cat is close to any bathing area.
+Action 19: Grab cat_2055.
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior move_cat_to_bathing_area(cat: item, bathing_area: item):
+    body:
+        achieve_once close_char(char, cat)
+        achieve_once inside(cat, bathing_area)
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat) and id[cat]==2055
+        # Select cat_2055
+
+        bind bathing_area: item where:
+            is_bathroom(bathing_area) or is_bathtub(bathing_area) or is_shower(bathing_area)
+        # Select a designated bathing area
+
+        move_cat_to_bathing_area(cat, bathing_area)
+
+#goal_representation_end
+
+##############################
+Error is:
+'NoneType' object is not iterable
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior find_cat(cat:item):
+    body:
+        achieve_once close_char(char, cat)
+        # Approach the cat to grab it
+
+behavior bring_cat_to_bathing_area(cat:item, bathing_area:item):
+    body:
+        achieve_once inside(cat, bathing_area)
+        # Place the cat inside the designated bathing area
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat) and id[cat]==2055
+        # Select the cat with ID 2055
+
+        bind bathing_area: item where:
+            is_bathroom(bathing_area) or is_bathtub(bathing_area) or is_shower(bathing_area)
+        # Choose a suitable bathing area (bathroom, bathtub or shower)
+
+        find_cat(cat)
+        bring_cat_to_bathing_area(cat, bathing_area)
+
+#goal_representation_end
+
+##############################
+Error is:
+'NoneType' object is not iterable
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_toilet_paper_2090_around_bathroom_cabinet_40(toilet_paper:item):
+    goal: not unknown(toilet_paper)
+    body:
+        assert is_toilet_paper(toilet_paper)
+        bind bathroom_cabinet_instance:item where:
+            is_bathroom_cabinet(bathroom_cabinet_instance) and id[bathroom_cabinet_instance]==40
+        achieve close_char(char,bathroom_cabinet_instance)
+        if can_open(bathroom_cabinet_instance):
+            achieve_once open(bathroom_cabinet_instance)
+            exp(toilet_paper,bathroom_cabinet_instance)
+        else:
+            exp(toilet_paper,bathroom_cabinet_instance)
+    eff:
+        unknown[toilet_paper]=False
+        close[toilet_paper,bathroom_cabinet_instance]=True
+        close[bathroom_cabinet_instance,toilet_paper]=True
+    
+
+behavior find_soap_2054_around_bathroom_cabinet_40(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind bathroom_cabinet_instance:item where:
+            is_bathroom_cabinet(bathroom_cabinet_instance) and id[bathroom_cabinet_instance]==40
+        achieve close_char(char,bathroom_cabinet_instance)
+        if can_open(bathroom_cabinet_instance):
+            achieve_once open(bathroom_cabinet_instance)
+            exp(soap,bathroom_cabinet_instance)
+        else:
+            exp(soap,bathroom_cabinet_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,bathroom_cabinet_instance]=True
+        close[bathroom_cabinet_instance,soap]=True
+    
+
+behavior find_towel_2056_around_towel_rack_34(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==34
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(towel,towel_rack_instance)
+        else:
+            exp(towel,towel_rack_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,towel_rack_instance]=True
+        close[towel_rack_instance,towel]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_near_bathing_area(cat: item):
+    # Function to check if the cat is close to a bathing area
+    symbol near_bathing = exists area: item : ((is_bathtub(area) or is_shower(area) or is_bathroom(area)) and close(cat, area))
+    return near_bathing
+
+behavior grab_and_move_cat(cat: item, bathing_area: item):
+    body:
+        if not inhand(cat):
+            achieve_once inhand(cat)
+        # Temporarily grab the cat to move it to the bathing area
+        achieve_once inside(cat, bathing_area)
+        # Place the cat in the bathing area
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat) and id[cat] == 2055
+        # Select the cat with ID 2055
+
+        if exists area: item : ((is_bathtub(area) or is_shower(area) or is_bathroom(area)) and is_near_bathing_area(cat)):
+            # If the cat is confirmed to be near a bathing area, move it directly inside
+            bind bathing_area: item where:
+                (is_bathtub(bathing_area) or is_shower(bathing_area) or is_bathroom(bathing_area)) and close(cat, bathing_area)
+            grab_and_move_cat(cat, bathing_area)
+        
+        else:
+            # Explore unvisited potential bathing areas to move the cat
+            foreach area: item:
+                if (is_bathtub(area) or is_shower(area) or is_bathroom(area)) and not visited(area):
+                    observe(cat, "Check if the cat is close to any bathing area")
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+def is_near_bathing_area(cat: item):
+    # Function to check if the cat is close to a bathing area
+    symbol near_bathing = exists area: item : ((is_bathtub(area) or is_shower(area) or is_bathroom(area)) and close(cat, area))
+    return near_bathing
+
+behavior grab_and_move_cat(cat: item, bathing_area: item):
+    body:
+        if not inhand(cat):
+            achieve_once inhand(cat)
+        # Temporarily grab the cat to move it to the bathing area
+        achieve_once inside(cat, bathing_area)
+        # Place the cat in the bathing area
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat) and id[cat] == 2055
+        # Select the cat with ID 2055
+
+        if exists area: item : ((is_bathtub(area) or is_shower(area) or is_bathroom(area)) and is_near_bathing_area(cat)):
+            # If the cat is confirmed to be near a bathing area, move it directly inside
+            bind bathing_area: item where:
+                (is_bathtub(bathing_area) or is_shower(bathing_area) or is_bathroom(bathing_area)) and close(cat, bathing_area)
+            grab_and_move_cat(cat, bathing_area)
+        
+        else:
+            # Explore unvisited potential bathing areas to move the cat
+            foreach area: item:
+                if (is_bathtub(area) or is_shower(area) or is_bathroom(area)) and not visited(area):
+                    observe(cat, "Check if the cat is close to any bathing area")
+
+##############################
+From agent.py-> find a plan in act()
+obs(cat_2055, Check if the cat is close to any bathing area)obs(cat_2055, Check if the cat is close to any bathing area)obs(cat_2055, Check if the cat is close to any bathing area)obs(cat_2055, Check if the cat is close to any bathing area)
+##############################
+From agent.py
+obs(cat_2055, Check if the cat is close to any bathing area)
+Get this information:  cat_2055 is inside home_office_319. cat_2055 is close to character_65.
+##############################
+From agent.py
+obs(cat_2055, Check if the cat is close to any bathing area)
+Get this information:  cat_2055 is inside home_office_319. cat_2055 is close to character_65.
+##############################
+From agent.py
+obs(cat_2055, Check if the cat is close to any bathing area)
+Get this information:  cat_2055 is inside home_office_319. cat_2055 is close to character_65.
+##############################
+From agent.py
+obs(cat_2055, Check if the cat is close to any bathing area)
+Get this information:  cat_2055 is inside home_office_319. cat_2055 is close to character_65.
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: No
+The feedback instruction: You need to move cat_2055 to a designated bathing area, such as a bathtub, shower, or bathroom, after grabbing it. Currently, the cat has only been found and grabbed, but not yet transported to the appropriate location.
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_cup_2064_around_sink_231(cup:item):
+    goal: not unknown(cup)
+    body:
+        assert is_cup(cup)
+        bind sink_instance:item where:
+            is_sink(sink_instance) and id[sink_instance]==231
+        achieve close_char(char,sink_instance)
+        if can_open(sink_instance):
+            achieve_once open(sink_instance)
+            exp(cup,sink_instance)
+        else:
+            exp(cup,sink_instance)
+    eff:
+        unknown[cup]=False
+        close[cup,sink_instance]=True
+        close[sink_instance,cup]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior gently_wet_cat(cat:item, water_source:item):
+    body:
+        achieve_once has_water(cat)
+        # Gently add water to the cat from the water source
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat) and id[cat] == 2055
+        # Select the cat with ID 2055
+
+        bind water_source: item where:
+            is_sink(water_source) or is_shower(water_source) or is_bathtub(water_source)
+        # Select a water source, which could be a sink, shower, or bathtub
+
+        gently_wet_cat(cat, water_source)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+behavior gently_wet_cat(cat:item, water_source:item):
+    body:
+        achieve_once has_water(cat)
+        # Gently add water to the cat from the water source
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat) and id[cat] == 2055
+        # Select the cat with ID 2055
+
+        bind water_source: item where:
+            is_sink(water_source) or is_shower(water_source) or is_bathtub(water_source)
+        # Select a water source, which could be a sink, shower, or bathtub
+
+        gently_wet_cat(cat, water_source)
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(faucet_43)switchon_executor(faucet_43)switchoff_executor(faucet_43)
+##############################
+From agent.py
+walk_executor(faucet_43)
+Robot find: Robot is close to the cat_2055. Robot is close to the bathroom_counter_41. Robot is close to the faucet_43. 
+##############################
+From agent.py
+switchon_executor(faucet_43)
+Robot find: Robot is close to the cat_2055. Robot is close to the bathroom_counter_41. Robot is close to the faucet_43. faucet_43 is turned on. 
+##############################
+From agent.py
+switchoff_executor(faucet_43)
+Robot find: Robot is close to the cat_2055. Robot is close to the bathroom_counter_41. Robot is close to the faucet_43. faucet_43 is turned off. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: No
+The feedback instruction: You need to move cat_2055 to a designated bathing area such as a bathroom, bathtub, or shower, and gently wet the cat with lukewarm water, using a cup or a gentle stream, to complete the sub-task.
+##############################
+From agent.py
+Human Instruction: You need to move cat_2055 to a designated bathing area such as a bathroom, bathtub, or shower, and gently wet the cat with lukewarm water, using a cup or a gentle stream, to complete the sub-task.
+
+The actions you have taken:
+Action 1: Walk to bookshelf_101.
+Action 2: Open bookshelf_101.
+Action 3: look for cat_2055 around bookshelf_101.
+Action 4: Walk to washing_machine_2007.
+Action 5: Open washing_machine_2007.
+Action 6: look for cat_2055 around washing_machine_2007.
+Action 7: Walk to bathtub_30.
+Action 8: look for cat_2055 around bathtub_30.
+Action 9: Walk to shower_36.
+Action 10: look for cat_2055 around shower_36.
+Action 11: Walk to bathroom_counter_41.
+Action 12: look for cat_2055 around bathroom_counter_41.
+Action 13: Walk to basket_for_clothes_2006.
+Action 14: look for cat_2055 around basket_for_clothes_2006.
+Action 15: Walk to couch_352.
+Action 16: look for cat_2055 around couch_352.
+Action 17: Walk to cat_2055.
+Action 18: Observe around cat_2055 with the question of Check if the cat is close to any bathing area.
+Action 19: Grab cat_2055.
+Action 20: Observe around cat_2055 with the question of Check if the cat is close to any bathing area.
+Action 21: Observe around cat_2055 with the question of Check if the cat is close to any bathing area.
+Action 22: Observe around cat_2055 with the question of Check if the cat is close to any bathing area.
+Action 23: Observe around cat_2055 with the question of Check if the cat is close to any bathing area.
+Action 24: Walk to faucet_43.
+Action 25: Switch on faucet_43.
+Action 26: Switch off faucet_43.
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_cup_2064_around_sink_231(cup:item):
+    goal: not unknown(cup)
+    body:
+        assert is_cup(cup)
+        bind sink_instance:item where:
+            is_sink(sink_instance) and id[sink_instance]==231
+        achieve close_char(char,sink_instance)
+        if can_open(sink_instance):
+            achieve_once open(sink_instance)
+            exp(cup,sink_instance)
+        else:
+            exp(cup,sink_instance)
+    eff:
+        unknown[cup]=False
+        close[cup,sink_instance]=True
+        close[sink_instance,cup]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior gently_wet_cat(cat:item, water_source:item):
+    body:
+        achieve close_char(char, cat)
+        # Move close to the cat
+        achieve_once inhand(cat)
+        # Hold the cat
+        achieve close_char(char, water_source)
+        # Move close to the water source
+        achieve has_water(cat)
+        # Gently wet the cat with water
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        # Select the cat you need to wash
+        bind water_source: item where:
+            is_faucet(water_source)
+        # Select a water source
+        gently_wet_cat(cat, water_source)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_cup_2063_around_sink_231(cup:item):
+    goal: not unknown(cup)
+    body:
+        assert is_cup(cup)
+        bind sink_instance:item where:
+            is_sink(sink_instance) and id[sink_instance]==231
+        achieve close_char(char,sink_instance)
+        if can_open(sink_instance):
+            achieve_once open(sink_instance)
+            exp(cup,sink_instance)
+        else:
+            exp(cup,sink_instance)
+    eff:
+        unknown[cup]=False
+        close[cup,sink_instance]=True
+        close[sink_instance,cup]=True
+    
+
+behavior find_soap_2053_around_shower_38(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind shower_instance:item where:
+            is_shower(shower_instance) and id[shower_instance]==38
+        achieve close_char(char,shower_instance)
+        if can_open(shower_instance):
+            achieve_once open(shower_instance)
+            exp(soap,shower_instance)
+        else:
+            exp(soap,shower_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,shower_instance]=True
+        close[shower_instance,soap]=True
+    
+
+behavior find_towel_2056_around_towel_rack_34(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==34
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(towel,towel_rack_instance)
+        else:
+            exp(towel,towel_rack_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,towel_rack_instance]=True
+        close[towel_rack_instance,towel]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior gently_wet_cat(cat:item, water_source:item, container:item):
+    body:
+        achieve_once has_water(container)
+        # Ensure water is in the container before gently wetting the cat
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat) and close(cat, bathtub_30)
+        # Select cat that is close to the bathtub
+
+        bind water_source: item where:
+            is_faucet(water_source)
+        # Select the source of water
+
+        bind container: item where:
+            is_cup(container) or is_handpicked(container)
+        # Select an appropriate container for gentling wetting, like a cup
+
+        gently_wet_cat(cat, water_source, container)
+        # Wet the cat with lukewarm water using the container
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "behavior_definition":
+
+Unknown variable: bathtub_30; available variables: [Variable<cat: item>].
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_cup_2063_around_kitchen_counter_230(cup:item):
+    goal: not unknown(cup)
+    body:
+        assert is_cup(cup)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==230
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(cup,kitchen_counter_instance)
+        else:
+            exp(cup,kitchen_counter_instance)
+    eff:
+        unknown[cup]=False
+        close[cup,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,cup]=True
+    
+
+#goal_representation
+ 
+behavior gently_wet_cat(cat:item, water_source:item, container:item):
+    body:
+        achieve_once has_water(container)
+        # Ensure water is in the container before gently wetting the cat
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        # Select the cat
+
+        bind bathtub: item where:
+            is_bathtub(bathtub) and close(cat, bathtub)
+        # Select the bathtub that is close to the cat
+
+        bind water_source: item where:
+            is_faucet(water_source)
+        # Select the source of water
+
+        bind container: item where:
+            is_cup(container) or is_handpicked(container)
+        # Select an appropriate container for gently wetting, like a cup
+
+        gently_wet_cat(cat, water_source, container)
+        # Wet the cat with lukewarm water using the container
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "behavior_definition":
+
+'Function is_handpicked not found. Note that recursive function calls are not supported in the current version.'
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_cup_2064_around_sink_231(cup:item):
+    goal: not unknown(cup)
+    body:
+        assert is_cup(cup)
+        bind sink_instance:item where:
+            is_sink(sink_instance) and id[sink_instance]==231
+        achieve close_char(char,sink_instance)
+        if can_open(sink_instance):
+            achieve_once open(sink_instance)
+            exp(cup,sink_instance)
+        else:
+            exp(cup,sink_instance)
+    eff:
+        unknown[cup]=False
+        close[cup,sink_instance]=True
+        close[sink_instance,cup]=True
+    
+
+#goal_representation
+ 
+behavior gently_wet_cat(cat:item, water_source:item, container:item):
+    body:
+        achieve_once has_water(container)
+        # Ensure water is in the container before gently wetting the cat
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        # Select the cat
+
+        bind bathtub: item where:
+            is_bathtub(bathtub) and close(cat, bathtub)
+        # Select the bathtub that is close to the cat
+
+        bind water_source: item where:
+            is_faucet(water_source)
+        # Select the source of water
+
+        bind container: item where:
+            is_cup(container) or grabbable(container)
+        # Use a grabbable container, like a cup
+
+        gently_wet_cat(cat, water_source, container)
+        # Wet the cat with lukewarm water using the container
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_cup_2063_around_sink_231(cup:item):
+    goal: not unknown(cup)
+    body:
+        assert is_cup(cup)
+        bind sink_instance:item where:
+            is_sink(sink_instance) and id[sink_instance]==231
+        achieve close_char(char,sink_instance)
+        if can_open(sink_instance):
+            achieve_once open(sink_instance)
+            exp(cup,sink_instance)
+        else:
+            exp(cup,sink_instance)
+    eff:
+        unknown[cup]=False
+        close[cup,sink_instance]=True
+        close[sink_instance,cup]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_bathing_area(x: item):
+    # Function to check if x is a bathing area like a bathroom, bathtub, or shower
+    return is_bathroom(x) or is_bathtub(x) or is_shower(x)
+
+behavior gently_wet_cat(cat:item, bathing_area:item, faucet:item, cup:item):
+    body:
+        achieve_once inside(cat, bathing_area)
+        # Ensure the cat is inside the bathing area
+        achieve_once close(cat, faucet)
+        # Ensure the cat is close to the faucet
+        achieve_once has_water(cup)
+        # Fill the cup with water
+        achieve has_water(cat)
+        # Gently wet the cat using the cup or gentle stream
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat) and id[cat]==2055
+        # Select the cat, which is cat_2055
+        
+        bind bathing_area: item where:
+            is_bathroom(bathing_area) or is_bathtub(bathing_area) or is_shower(bathing_area)
+        # Select a bathing area
+        
+        bind faucet: item where:
+            is_faucet(faucet) and close(faucet, bathing_area)
+        # Select a faucet close to the bathing area
+        
+        bind cup: item where:
+            is_cup(cup) and has_water(cup)
+        # Select a cup that can hold water
+        
+        gently_wet_cat(cat, bathing_area, faucet, cup)
+
+#goal_representation_end
+
+##############################
+Error is:
+'NoneType' object is not iterable
+##############################
+VH_pipeline: Fail to generate a valid plan
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_cup_2063_around_sink_42(cup:item):
+    goal: not unknown(cup)
+    body:
+        assert is_cup(cup)
+        bind sink_instance:item where:
+            is_sink(sink_instance) and id[sink_instance]==42
+        achieve close_char(char,sink_instance)
+        if can_open(sink_instance):
+            achieve_once open(sink_instance)
+            exp(cup,sink_instance)
+        else:
+            exp(cup,sink_instance)
+    eff:
+        unknown[cup]=False
+        close[cup,sink_instance]=True
+        close[sink_instance,cup]=True
+    
+
+behavior find_wall_clock_249_around_wallshelf_234(wall_clock:item):
+    goal: not unknown(wall_clock)
+    body:
+        assert is_wall_clock(wall_clock)
+        bind wallshelf_instance:item where:
+            is_wallshelf(wallshelf_instance) and id[wallshelf_instance]==234
+        achieve close_char(char,wallshelf_instance)
+        if can_open(wallshelf_instance):
+            achieve_once open(wallshelf_instance)
+            exp(wall_clock,wallshelf_instance)
+        else:
+            exp(wall_clock,wallshelf_instance)
+    eff:
+        unknown[wall_clock]=False
+        close[wall_clock,wallshelf_instance]=True
+        close[wallshelf_instance,wall_clock]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior gently_wet_cat_with_water(cat: item, faucet: item):
+    body:
+        achieve close(cat, faucet)
+        # Ensure the cat is close to the faucet
+        achieve has_water(cat)
+        # Wet the cat with water
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat) and id[cat] == 2055
+        # Select the specific cat with ID 2055
+
+        bind faucet: item where:
+            is_faucet(faucet)
+        # Select a faucet
+
+        gently_wet_cat_with_water(cat, faucet)
+        # Wet the cat with lukewarm water
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+behavior gently_wet_cat_with_water(cat: item, faucet: item):
+    body:
+        achieve close(cat, faucet)
+        # Ensure the cat is close to the faucet
+        achieve has_water(cat)
+        # Wet the cat with water
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat) and id[cat] == 2055
+        # Select the specific cat with ID 2055
+
+        bind faucet: item where:
+            is_faucet(faucet)
+        # Select a faucet
+
+        gently_wet_cat_with_water(cat, faucet)
+        # Wet the cat with lukewarm water
+
+##############################
+From agent.py-> find a plan in act()
+put_executor(cat_2055, faucet_43)
+##############################
+From agent.py
+put_executor(cat_2055, faucet_43)
+Robot find: Robot is close to the cat_2055. Robot is close to the bathroom_counter_41. Robot is close to the faucet_43. cat_2055 is on faucet_43. faucet_43 is close cat_2055. cat_2055 is close faucet_43. cat_2055 released by right hand. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: No
+The feedback instruction: The robot needs to wet the cat with lukewarm water. Ensure that the cat is actually gently wetted using either a cup or a gentle stream of water from the faucet.
+##############################
+From agent.py
+Human Instruction: The robot needs to wet the cat with lukewarm water. Ensure that the cat is actually gently wetted using either a cup or a gentle stream of water from the faucet.
+
+The actions you have taken:
+Action 1: Walk to bookshelf_101.
+Action 2: Open bookshelf_101.
+Action 3: look for cat_2055 around bookshelf_101.
+Action 4: Walk to washing_machine_2007.
+Action 5: Open washing_machine_2007.
+Action 6: look for cat_2055 around washing_machine_2007.
+Action 7: Walk to bathtub_30.
+Action 8: look for cat_2055 around bathtub_30.
+Action 9: Walk to shower_36.
+Action 10: look for cat_2055 around shower_36.
+Action 11: Walk to bathroom_counter_41.
+Action 12: look for cat_2055 around bathroom_counter_41.
+Action 13: Walk to basket_for_clothes_2006.
+Action 14: look for cat_2055 around basket_for_clothes_2006.
+Action 15: Walk to couch_352.
+Action 16: look for cat_2055 around couch_352.
+Action 17: Walk to cat_2055.
+Action 18: Observe around cat_2055 with the question of Check if the cat is close to any bathing area.
+Action 19: Grab cat_2055.
+Action 20: Observe around cat_2055 with the question of Check if the cat is close to any bathing area.
+Action 21: Observe around cat_2055 with the question of Check if the cat is close to any bathing area.
+Action 22: Observe around cat_2055 with the question of Check if the cat is close to any bathing area.
+Action 23: Observe around cat_2055 with the question of Check if the cat is close to any bathing area.
+Action 24: Walk to faucet_43.
+Action 25: Switch on faucet_43.
+Action 26: Switch off faucet_43.
+Action 27: Put cat_2055 on faucet_43.
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_cup_2064_around_kitchen_counter_230(cup:item):
+    goal: not unknown(cup)
+    body:
+        assert is_cup(cup)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==230
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(cup,kitchen_counter_instance)
+        else:
+            exp(cup,kitchen_counter_instance)
+    eff:
+        unknown[cup]=False
+        close[cup,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,cup]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_wet(cat: item):
+    # Function to check if the cat is wet
+    symbol is_wet_cat = exists water: item : (has_water(cat) and water == cat)
+    return is_wet_cat
+
+behavior gently_wet(cat: item, faucet: item):
+    body:
+        achieve close_char(char, faucet) # Approach the faucet
+        achieve_once is_on(faucet) # Turn on the faucet
+        achieve_once has_water(cat) # Gently wet the cat with water from the faucet
+        achieve_once is_off(faucet) # Turn off the faucet
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat) and close(cat, faucet_43)
+        # Select a cat close to faucet 43
+        bind faucet: item where:
+            is_faucet(faucet) and id[faucet] == 43
+        # Select faucet 43
+        if not is_wet(cat):
+            gently_wet(cat, faucet)
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "behavior_definition":
+
+Unknown variable: faucet_43; available variables: [Variable<cat: item>].
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_cup_2064_around_kitchen_counter_230(cup:item):
+    goal: not unknown(cup)
+    body:
+        assert is_cup(cup)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==230
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(cup,kitchen_counter_instance)
+        else:
+            exp(cup,kitchen_counter_instance)
+    eff:
+        unknown[cup]=False
+        close[cup,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,cup]=True
+    
+
+#goal_representation
+ 
+def is_wet(cat: item):
+    # Function to check if the cat is wet
+    symbol is_wet_cat = exists water: item : (has_water(cat) and water == cat)
+    return is_wet_cat
+
+behavior gently_wet(cat: item, faucet: item):
+    body:
+        achieve close_char(char, faucet) # Approach the faucet
+        achieve_once is_on(faucet) # Turn on the faucet
+        achieve_once has_water(cat) # Gently wet the cat with water from the faucet
+        achieve_once is_off(faucet) # Turn off the faucet
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat) and close(cat, faucet)
+        # Select a cat close to a faucet
+        bind faucet: item where:
+            is_faucet(faucet) and id[faucet] == 43
+        # Select faucet 43
+        if not is_wet(cat):
+            gently_wet(cat, faucet)
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "behavior_definition":
+
+Unknown variable: faucet; available variables: [Variable<cat: item>].
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_cup_2063_around_kitchen_counter_230(cup:item):
+    goal: not unknown(cup)
+    body:
+        assert is_cup(cup)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==230
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(cup,kitchen_counter_instance)
+        else:
+            exp(cup,kitchen_counter_instance)
+    eff:
+        unknown[cup]=False
+        close[cup,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,cup]=True
+    
+
+#goal_representation
+ 
+def is_wet(cat: item):
+    # Function to check if the cat is wet
+    symbol is_wet_cat = exists water: item : (has_water(cat) and water == cat)
+    return is_wet_cat
+
+behavior gently_wet(cat: item, faucet: item):
+    body:
+        achieve close_char(char, faucet) # Approach the faucet
+        achieve_once is_on(faucet) # Turn on the faucet
+        achieve_once has_water(cat) # Gently wet the cat with water from the faucet
+        achieve_once is_off(faucet) # Turn off the faucet
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        # Select a cat
+
+        bind faucet: item where:
+            is_faucet(faucet) and id[faucet] == 43
+        # Select faucet 43
+
+        if not is_wet(cat):
+            gently_wet(cat, faucet)
+
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_cup_2063_around_sink_231(cup:item):
+    goal: not unknown(cup)
+    body:
+        assert is_cup(cup)
+        bind sink_instance:item where:
+            is_sink(sink_instance) and id[sink_instance]==231
+        achieve close_char(char,sink_instance)
+        if can_open(sink_instance):
+            achieve_once open(sink_instance)
+            exp(cup,sink_instance)
+        else:
+            exp(cup,sink_instance)
+    eff:
+        unknown[cup]=False
+        close[cup,sink_instance]=True
+        close[sink_instance,cup]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def has_lukewarm_water(faucet:item):
+    # Function to determine if lukewarm water can be supplied
+    symbol has_water=exists o: item : (is_faucet(o) and is_on(faucet))
+    return has_water
+
+behavior wet_cat_gently(cat:item, lukewarm_water_source:item):
+    body:
+        achieve_once close(cat, lukewarm_water_source)
+        # Ensure the cat is close to the water source
+        achieve_once has_water(cat)
+        # Wet the cat with lukewarm water
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        # Select the cat
+        bind faucet: item where:
+            is_faucet(faucet) and has_lukewarm_water(faucet)
+        # Select a faucet that can provide lukewarm water
+        wet_cat_gently(cat, faucet)
+
+#goal_representation_end
+
+##############################
+Error is:
+'NoneType' object is not iterable
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_cup_2063_around_sink_42(cup:item):
+    goal: not unknown(cup)
+    body:
+        assert is_cup(cup)
+        bind sink_instance:item where:
+            is_sink(sink_instance) and id[sink_instance]==42
+        achieve close_char(char,sink_instance)
+        if can_open(sink_instance):
+            achieve_once open(sink_instance)
+            exp(cup,sink_instance)
+        else:
+            exp(cup,sink_instance)
+    eff:
+        unknown[cup]=False
+        close[cup,sink_instance]=True
+        close[sink_instance,cup]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_lukewarm_water(water: item):
+    # Check if the water is lukewarm
+    return True  # Assume the water is lukewarm for the purpose of this task
+
+behavior gently_wet_cat(cat: item, water_source: item, cup: item):
+    body:
+        if has_water(cup) and is_lukewarm_water(cup):
+            # Use the cup with lukewarm water to wet the cat gently
+            achieve_once has_water(cat)
+        else:
+            # If the cup doesnt have lukewarm water, switch on faucet for a gentle stream
+            achieve_once is_on(water_source)
+            achieve_once has_water(cat)
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat) and close(cat, faucet_43)
+        # Select the cat, assuming its close to faucet_43
+
+        bind water_source: item where:
+            is_faucet(water_source) and id[water_source] == 43
+        # Select the water source, the faucet with ID 43
+
+        bind cup: item where:
+            is_cup(cup)
+        # Select a cup
+
+        gently_wet_cat(cat, water_source, cup)
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "behavior_definition":
+
+Unknown variable: faucet_43; available variables: [Variable<cat: item>].
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_cup_2063_around_sink_231(cup:item):
+    goal: not unknown(cup)
+    body:
+        assert is_cup(cup)
+        bind sink_instance:item where:
+            is_sink(sink_instance) and id[sink_instance]==231
+        achieve close_char(char,sink_instance)
+        if can_open(sink_instance):
+            achieve_once open(sink_instance)
+            exp(cup,sink_instance)
+        else:
+            exp(cup,sink_instance)
+    eff:
+        unknown[cup]=False
+        close[cup,sink_instance]=True
+        close[sink_instance,cup]=True
+    
+
+#goal_representation
+ 
+def is_lukewarm_water(water: item):
+    # Check if the water is lukewarm
+    return True  # Assume the water is lukewarm for the purpose of this task
+
+behavior gently_wet_cat(cat: item, water_source: item, cup: item):
+    body:
+        if has_water(cup) and is_lukewarm_water(cup):
+            # Use the cup with lukewarm water to wet the cat gently
+            achieve_once has_water(cat)
+        else:
+            # If the cup doesnt have lukewarm water, switch on faucet for a gentle stream
+            achieve_once is_on(water_source)
+            achieve_once has_water(cat)
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat) and close(cat, water_source)
+        # Select the cat, assuming its close to the specified water source
+
+        bind water_source: item where:
+            is_faucet(water_source) and id[water_source] == 43
+        # Select the water source, the faucet with ID 43
+
+        bind cup: item where:
+            is_cup(cup)
+        # Select a cup
+
+        gently_wet_cat(cat, water_source, cup)
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "behavior_definition":
+
+Unknown variable: water_source; available variables: [Variable<cat: item>].
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_cup_2063_around_sink_42(cup:item):
+    goal: not unknown(cup)
+    body:
+        assert is_cup(cup)
+        bind sink_instance:item where:
+            is_sink(sink_instance) and id[sink_instance]==42
+        achieve close_char(char,sink_instance)
+        if can_open(sink_instance):
+            achieve_once open(sink_instance)
+            exp(cup,sink_instance)
+        else:
+            exp(cup,sink_instance)
+    eff:
+        unknown[cup]=False
+        close[cup,sink_instance]=True
+        close[sink_instance,cup]=True
+    
+
+#goal_representation
+ 
+def is_lukewarm_water(water: item):
+    # Check if the water is lukewarm
+    return True  # Assume the water is lukewarm for the purpose of this task
+
+behavior gently_wet_cat(cat: item, water_source: item, cup: item):
+    body:
+        if has_water(cup) and is_lukewarm_water(cup):
+            # Use the cup with lukewarm water to wet the cat gently
+            achieve_once has_water(cat)
+        else:
+            # If the cup doesnt have lukewarm water, switch on faucet for a gentle stream
+            achieve_once is_on(water_source)
+            achieve_once has_water(cat)
+
+behavior __goal__():
+    body:
+        bind water_source: item where:
+            is_faucet(water_source) and id[water_source] == 43
+        # Select the water source, the faucet with ID 43
+
+        bind cat: item where:
+            is_cat(cat) and close(cat, water_source)
+        # Select the cat, assuming its close to the specified water source
+
+        bind cup: item where:
+            is_cup(cup)
+        # Select a cup
+
+        gently_wet_cat(cat, water_source, cup)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+def is_lukewarm_water(water: item):
+    # Check if the water is lukewarm
+    return True  # Assume the water is lukewarm for the purpose of this task
+
+behavior gently_wet_cat(cat: item, water_source: item, cup: item):
+    body:
+        if has_water(cup) and is_lukewarm_water(cup):
+            # Use the cup with lukewarm water to wet the cat gently
+            achieve_once has_water(cat)
+        else:
+            # If the cup doesnt have lukewarm water, switch on faucet for a gentle stream
+            achieve_once is_on(water_source)
+            achieve_once has_water(cat)
+
+behavior __goal__():
+    body:
+        bind water_source: item where:
+            is_faucet(water_source) and id[water_source] == 43
+        # Select the water source, the faucet with ID 43
+
+        bind cat: item where:
+            is_cat(cat) and close(cat, water_source)
+        # Select the cat, assuming its close to the specified water source
+
+        bind cup: item where:
+            is_cup(cup)
+        # Select a cup
+
+        gently_wet_cat(cat, water_source, cup)
+
+##############################
+From agent.py-> find a plan in act()
+switchon_executor(faucet_43)
+##############################
+From agent.py
+switchon_executor(faucet_43)
+Robot find: Robot is close to the cat_2055. Robot is close to the bathroom_counter_41. Robot is close to the faucet_43. faucet_43 is turned on. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: Yes
+The feedback instruction: None
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_cleaning_solution_2073_around_bathroom_cabinet_40(cleaning_solution:item):
+    goal: not unknown(cleaning_solution)
+    body:
+        assert is_cleaning_solution(cleaning_solution)
+        bind bathroom_cabinet_instance:item where:
+            is_bathroom_cabinet(bathroom_cabinet_instance) and id[bathroom_cabinet_instance]==40
+        achieve close_char(char,bathroom_cabinet_instance)
+        if can_open(bathroom_cabinet_instance):
+            achieve_once open(bathroom_cabinet_instance)
+            exp(cleaning_solution,bathroom_cabinet_instance)
+        else:
+            exp(cleaning_solution,bathroom_cabinet_instance)
+    eff:
+        unknown[cleaning_solution]=False
+        close[cleaning_solution,bathroom_cabinet_instance]=True
+        close[bathroom_cabinet_instance,cleaning_solution]=True
+    
+
+behavior find_soap_2054_around_bathroom_cabinet_40(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind bathroom_cabinet_instance:item where:
+            is_bathroom_cabinet(bathroom_cabinet_instance) and id[bathroom_cabinet_instance]==40
+        achieve close_char(char,bathroom_cabinet_instance)
+        if can_open(bathroom_cabinet_instance):
+            achieve_once open(bathroom_cabinet_instance)
+            exp(soap,bathroom_cabinet_instance)
+        else:
+            exp(soap,bathroom_cabinet_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,bathroom_cabinet_instance]=True
+        close[bathroom_cabinet_instance,soap]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_cat(x: item):
+    return True
+
+behavior apply_shampoo_and_lather(cat:item, shampoo:item):
+    body:
+        achieve_once has_water(cat) # Ensure the cat is wet before shampooing
+        achieve_once clean(cat) # Apply shampoo to clean the cat
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        # Select the cat to be cleaned
+
+        bind shampoo: item where:
+            is_cleaning_solution(shampoo)
+        # Select a catsafe shampoo
+
+        apply_shampoo_and_lather(cat, shampoo)
+        # Apply shampoo and lather the cat while avoiding the eyes and ears
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+def is_cat(x: item):
+    return True
+
+behavior apply_shampoo_and_lather(cat:item, shampoo:item):
+    body:
+        achieve_once has_water(cat) # Ensure the cat is wet before shampooing
+        achieve_once clean(cat) # Apply shampoo to clean the cat
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        # Select the cat to be cleaned
+
+        bind shampoo: item where:
+            is_cleaning_solution(shampoo)
+        # Select a catsafe shampoo
+
+        apply_shampoo_and_lather(cat, shampoo)
+        # Apply shampoo and lather the cat while avoiding the eyes and ears
+
+##############################
+From agent.py-> find a plan in act()
+grab_executor(cat_2055)wash_executor(cat_2055)switchoff_executor(faucet_43)
+##############################
+From agent.py
+grab_executor(cat_2055)
+Robot find: Robot is close to the cat_2055. Robot is close to the bathroom_counter_41. Robot is close to the faucet_43. Grabbing cat_2055 by right hand. 
+##############################
+From agent.py
+wash_executor(cat_2055)
+Robot find: Robot is close to the cat_2055. Robot is close to the bathroom_counter_41. Robot is close to the faucet_43. 
+##############################
+From agent.py
+switchoff_executor(faucet_43)
+Robot find: Robot is close to the cat_2055. Robot is close to the bathroom_counter_41. Robot is close to the faucet_43. faucet_43 is turned off. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: No
+The feedback instruction: You need to apply cat-safe shampoo and lather it, ensuring to avoid the cat's eyes and ears. There is no action indicating that shampoo was applied to the cat during washing.
+##############################
+From agent.py
+Human Instruction: You need to apply cat-safe shampoo and lather it, ensuring to avoid the cat's eyes and ears. There is no action indicating that shampoo was applied to the cat during washing.
+
+The actions you have taken:
+Action 1: Walk to bookshelf_101.
+Action 2: Open bookshelf_101.
+Action 3: look for cat_2055 around bookshelf_101.
+Action 4: Walk to washing_machine_2007.
+Action 5: Open washing_machine_2007.
+Action 6: look for cat_2055 around washing_machine_2007.
+Action 7: Walk to bathtub_30.
+Action 8: look for cat_2055 around bathtub_30.
+Action 9: Walk to shower_36.
+Action 10: look for cat_2055 around shower_36.
+Action 11: Walk to bathroom_counter_41.
+Action 12: look for cat_2055 around bathroom_counter_41.
+Action 13: Walk to basket_for_clothes_2006.
+Action 14: look for cat_2055 around basket_for_clothes_2006.
+Action 15: Walk to couch_352.
+Action 16: look for cat_2055 around couch_352.
+Action 17: Walk to cat_2055.
+Action 18: Observe around cat_2055 with the question of Check if the cat is close to any bathing area.
+Action 19: Grab cat_2055.
+Action 20: Observe around cat_2055 with the question of Check if the cat is close to any bathing area.
+Action 21: Observe around cat_2055 with the question of Check if the cat is close to any bathing area.
+Action 22: Observe around cat_2055 with the question of Check if the cat is close to any bathing area.
+Action 23: Observe around cat_2055 with the question of Check if the cat is close to any bathing area.
+Action 24: Walk to faucet_43.
+Action 25: Switch on faucet_43.
+Action 26: Switch off faucet_43.
+Action 27: Put cat_2055 on faucet_43.
+Action 28: Switch on faucet_43.
+Action 29: Grab cat_2055.
+Action 30: Wash cat_2055.
+Action 31: Switch off faucet_43.
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_soap_2054_around_bathroom_cabinet_40(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind bathroom_cabinet_instance:item where:
+            is_bathroom_cabinet(bathroom_cabinet_instance) and id[bathroom_cabinet_instance]==40
+        achieve close_char(char,bathroom_cabinet_instance)
+        if can_open(bathroom_cabinet_instance):
+            achieve_once open(bathroom_cabinet_instance)
+            exp(soap,bathroom_cabinet_instance)
+        else:
+            exp(soap,bathroom_cabinet_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,bathroom_cabinet_instance]=True
+        close[bathroom_cabinet_instance,soap]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior apply_cat_safe_shampoo(cat:item, shampoo:item):
+    body:
+        achieve_once clean(cat)
+        # Ensure the cat is clean, indicating the application of shampoo and lathering
+        
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        # Select the cat to be washed
+
+        bind shampoo: item where:
+            is_soap(shampoo)
+        # Select the catsafe shampoo
+
+        apply_cat_safe_shampoo(cat, shampoo)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_soap_2053_around_bathroom_cabinet_40(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind bathroom_cabinet_instance:item where:
+            is_bathroom_cabinet(bathroom_cabinet_instance) and id[bathroom_cabinet_instance]==40
+        achieve close_char(char,bathroom_cabinet_instance)
+        if can_open(bathroom_cabinet_instance):
+            achieve_once open(bathroom_cabinet_instance)
+            exp(soap,bathroom_cabinet_instance)
+        else:
+            exp(soap,bathroom_cabinet_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,bathroom_cabinet_instance]=True
+        close[bathroom_cabinet_instance,soap]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior observe_cat(cat:item, bathing_area:item, question:string):
+    body:
+        observe(bathing_area, "question")
+
+behavior apply_shampoo(cat:item, shampoo:item):
+    body:
+        achieve_once inhand(shampoo)
+        achieve_once on(shampoo, cat)
+        # Apply catsafe shampoo onto the cat
+
+behavior lather(cat:item):
+    body:
+        achieve_once dirty(cat)
+        achieve_once clean(cat)
+        # Lather the cat, making sure it is clean without dirty bits
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        # Select the cat
+
+        bind shampoo: item where:
+            is_soap(shampoo)
+        # Select catsafe shampoo
+
+        bind bathing_area: item where:
+            is_bathtub(bathing_area) 
+        # Select the bathing area
+
+        observe_cat(cat, bathing_area, Check if the cat is close to the bathing area)
+        apply_shampoo(cat, shampoo)
+        lather(cat)
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Unexpected token Token('VARNAME', 'cat') at line 5783, column 53.
+Expected one of: 
+	* ELSE
+
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_soap_2054_around_bathroom_cabinet_40(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind bathroom_cabinet_instance:item where:
+            is_bathroom_cabinet(bathroom_cabinet_instance) and id[bathroom_cabinet_instance]==40
+        achieve close_char(char,bathroom_cabinet_instance)
+        if can_open(bathroom_cabinet_instance):
+            achieve_once open(bathroom_cabinet_instance)
+            exp(soap,bathroom_cabinet_instance)
+        else:
+            exp(soap,bathroom_cabinet_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,bathroom_cabinet_instance]=True
+        close[bathroom_cabinet_instance,soap]=True
+    
+
+#goal_representation
+ 
+behavior observe_cat(cat:item, bathing_area:item, question:string):
+    body:
+        observe(bathing_area, "question")
+
+behavior apply_shampoo(cat:item, shampoo:item):
+    body:
+        achieve_once inhand(shampoo)
+        achieve_once on(shampoo, cat)
+        # Apply catsafe shampoo onto the cat
+
+behavior lather(cat:item):
+    body:
+        achieve_once clean(cat)
+        # Lather the cat, making sure it is clean without dirty bits
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        # Select the cat
+
+        bind shampoo: item where:
+            is_soap(shampoo)
+        # Select catsafe shampoo
+
+        bind bathing_area: item where:
+            is_bathtub(bathing_area)
+        # Select the bathing area
+
+        observe_cat(cat, bathing_area, Check if the cat is close to the bathing area)
+        apply_shampoo(cat, shampoo)
+        lather(cat)
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Unexpected token Token('VARNAME', 'cat') at line 5782, column 53.
+Expected one of: 
+	* ELSE
+
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_soap_2054_around_bathroom_cabinet_40(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind bathroom_cabinet_instance:item where:
+            is_bathroom_cabinet(bathroom_cabinet_instance) and id[bathroom_cabinet_instance]==40
+        achieve close_char(char,bathroom_cabinet_instance)
+        if can_open(bathroom_cabinet_instance):
+            achieve_once open(bathroom_cabinet_instance)
+            exp(soap,bathroom_cabinet_instance)
+        else:
+            exp(soap,bathroom_cabinet_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,bathroom_cabinet_instance]=True
+        close[bathroom_cabinet_instance,soap]=True
+    
+
+#goal_representation
+ 
+behavior observe_cat(cat:item, bathing_area:item, question:string):
+    body:
+        observe(bathing_area, "question")
+
+behavior apply_shampoo(cat:item, shampoo:item):
+    body:
+        achieve_once inhand(shampoo)
+        achieve_once on(shampoo, cat)
+        # Apply catsafe shampoo onto the cat
+
+behavior lather(cat:item):
+    body:
+        achieve_once clean(cat)
+        # Lather the cat, making sure it is clean without dirty bits
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        # Select the cat
+
+        bind shampoo: item where:
+            is_soap(shampoo)
+        # Select catsafe shampoo
+
+        bind bathing_area: item where:
+            is_bathtub(bathing_area)
+        # Select the bathing area
+
+        observe_cat(cat, bathing_area, Check if the cat is close to the bathing area)
+        apply_shampoo(cat, shampoo)
+        lather(cat)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_soap_2053_around_bathroom_cabinet_40(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind bathroom_cabinet_instance:item where:
+            is_bathroom_cabinet(bathroom_cabinet_instance) and id[bathroom_cabinet_instance]==40
+        achieve close_char(char,bathroom_cabinet_instance)
+        if can_open(bathroom_cabinet_instance):
+            achieve_once open(bathroom_cabinet_instance)
+            exp(soap,bathroom_cabinet_instance)
+        else:
+            exp(soap,bathroom_cabinet_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,bathroom_cabinet_instance]=True
+        close[bathroom_cabinet_instance,soap]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior apply_shampoo(cat:item):
+    body:
+        achieve_once clean(cat)
+        # Ensure that the cat is cleaned with shampoo while avoiding eyes and ears
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        # Select the cat to apply shampoo to
+        apply_shampoo(cat)
+
+
+#goal_representation_end
+
+##############################
+VH_pipeline: Fail to generate a valid plan
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_soap_2053_around_bathroom_cabinet_40(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind bathroom_cabinet_instance:item where:
+            is_bathroom_cabinet(bathroom_cabinet_instance) and id[bathroom_cabinet_instance]==40
+        achieve close_char(char,bathroom_cabinet_instance)
+        if can_open(bathroom_cabinet_instance):
+            achieve_once open(bathroom_cabinet_instance)
+            exp(soap,bathroom_cabinet_instance)
+        else:
+            exp(soap,bathroom_cabinet_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,bathroom_cabinet_instance]=True
+        close[bathroom_cabinet_instance,soap]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior apply_shampoo_and_lather(cat:item, shampoo:item):
+    body:
+        achieve_once on(shampoo, cat)
+        # Apply shampoo to the cat
+        achieve_once clean(cat)
+        # Lather the shampoo to clean the cat while avoiding eyes and ears
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        # Select the cat
+        bind shampoo: item where:
+            # Since there is no specific item type for shampoo, assume it is known
+            grabbable(shampoo)
+        # Select a catsafe shampoo
+        apply_shampoo_and_lather(cat, shampoo)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+behavior apply_shampoo_and_lather(cat:item, shampoo:item):
+    body:
+        achieve_once on(shampoo, cat)
+        # Apply shampoo to the cat
+        achieve_once clean(cat)
+        # Lather the shampoo to clean the cat while avoiding eyes and ears
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        # Select the cat
+        bind shampoo: item where:
+            # Since there is no specific item type for shampoo, assume it is known
+            grabbable(shampoo)
+        # Select a catsafe shampoo
+        apply_shampoo_and_lather(cat, shampoo)
+
+##############################
+From agent.py-> find a plan in act()
+put_executor(cat_2055, cat_2055)
+##############################
+From agent.py
+put_executor(cat_2055, cat_2055)
+Robot find: Robot is close to the cat_2055. Robot is close to the bathroom_counter_41. Robot is close to the faucet_43. cat_2055 is on cat_2055. cat_2055 is close cat_2055. cat_2055 released by right hand. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: No
+The feedback instruction: You need to apply the cat-safe shampoo onto cat_2055 and lather it, ensuring to avoid the cat's eyes and ears, as this step has not been completed yet.
+##############################
+From agent.py
+Human Instruction: You need to apply the cat-safe shampoo onto cat_2055 and lather it, ensuring to avoid the cat's eyes and ears, as this step has not been completed yet.
+
+The actions you have taken:
+Action 1: Walk to bookshelf_101.
+Action 2: Open bookshelf_101.
+Action 3: look for cat_2055 around bookshelf_101.
+Action 4: Walk to washing_machine_2007.
+Action 5: Open washing_machine_2007.
+Action 6: look for cat_2055 around washing_machine_2007.
+Action 7: Walk to bathtub_30.
+Action 8: look for cat_2055 around bathtub_30.
+Action 9: Walk to shower_36.
+Action 10: look for cat_2055 around shower_36.
+Action 11: Walk to bathroom_counter_41.
+Action 12: look for cat_2055 around bathroom_counter_41.
+Action 13: Walk to basket_for_clothes_2006.
+Action 14: look for cat_2055 around basket_for_clothes_2006.
+Action 15: Walk to couch_352.
+Action 16: look for cat_2055 around couch_352.
+Action 17: Walk to cat_2055.
+Action 18: Observe around cat_2055 with the question of Check if the cat is close to any bathing area.
+Action 19: Grab cat_2055.
+Action 20: Observe around cat_2055 with the question of Check if the cat is close to any bathing area.
+Action 21: Observe around cat_2055 with the question of Check if the cat is close to any bathing area.
+Action 22: Observe around cat_2055 with the question of Check if the cat is close to any bathing area.
+Action 23: Observe around cat_2055 with the question of Check if the cat is close to any bathing area.
+Action 24: Walk to faucet_43.
+Action 25: Switch on faucet_43.
+Action 26: Switch off faucet_43.
+Action 27: Put cat_2055 on faucet_43.
+Action 28: Switch on faucet_43.
+Action 29: Grab cat_2055.
+Action 30: Wash cat_2055.
+Action 31: Switch off faucet_43.
+Action 32: Put cat_2055 on cat_2055.
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_soap_2054_around_bathroom_cabinet_40(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind bathroom_cabinet_instance:item where:
+            is_bathroom_cabinet(bathroom_cabinet_instance) and id[bathroom_cabinet_instance]==40
+        achieve close_char(char,bathroom_cabinet_instance)
+        if can_open(bathroom_cabinet_instance):
+            achieve_once open(bathroom_cabinet_instance)
+            exp(soap,bathroom_cabinet_instance)
+        else:
+            exp(soap,bathroom_cabinet_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,bathroom_cabinet_instance]=True
+        close[bathroom_cabinet_instance,soap]=True
+    
+
+behavior find_cleaning_solution_2073_around_bathroom_cabinet_40(cleaning_solution:item):
+    goal: not unknown(cleaning_solution)
+    body:
+        assert is_cleaning_solution(cleaning_solution)
+        bind bathroom_cabinet_instance:item where:
+            is_bathroom_cabinet(bathroom_cabinet_instance) and id[bathroom_cabinet_instance]==40
+        achieve close_char(char,bathroom_cabinet_instance)
+        if can_open(bathroom_cabinet_instance):
+            achieve_once open(bathroom_cabinet_instance)
+            exp(cleaning_solution,bathroom_cabinet_instance)
+        else:
+            exp(cleaning_solution,bathroom_cabinet_instance)
+    eff:
+        unknown[cleaning_solution]=False
+        close[cleaning_solution,bathroom_cabinet_instance]=True
+        close[bathroom_cabinet_instance,cleaning_solution]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_cat(item: item):
+    # Check if the item is a cat
+    return True 
+
+behavior apply_shampoo_and_lather(cat: item, shampoo: item):
+    body:
+        achieve_once close_char(char, cat) # Approach the cat to apply shampoo
+        achieve_once inhand(shampoo) # Hold the shampoo to apply it
+        achieve_has_water(cat) # Ensure the cat is wet
+        achieve clean(cat) # Lather the shampoo on the wet fur, avoiding eyes and ears
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat) and id[cat] == 2055 # Select cat 2055
+
+        bind shampoo: item where:
+            is_cleaning_solution(shampoo) and recipient(shampoo) # Select catsafe shampoo
+
+        apply_shampoo_and_lather(cat, shampoo) # Apply shampoo to the cat and lather it
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "behavior_definition":
+
+'Function achieve_has_water not found. Note that recursive function calls are not supported in the current version.'
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_soap_2054_around_bathroom_cabinet_40(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind bathroom_cabinet_instance:item where:
+            is_bathroom_cabinet(bathroom_cabinet_instance) and id[bathroom_cabinet_instance]==40
+        achieve close_char(char,bathroom_cabinet_instance)
+        if can_open(bathroom_cabinet_instance):
+            achieve_once open(bathroom_cabinet_instance)
+            exp(soap,bathroom_cabinet_instance)
+        else:
+            exp(soap,bathroom_cabinet_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,bathroom_cabinet_instance]=True
+        close[bathroom_cabinet_instance,soap]=True
+    
+
+behavior find_cleaning_solution_2073_around_bathroom_cabinet_40(cleaning_solution:item):
+    goal: not unknown(cleaning_solution)
+    body:
+        assert is_cleaning_solution(cleaning_solution)
+        bind bathroom_cabinet_instance:item where:
+            is_bathroom_cabinet(bathroom_cabinet_instance) and id[bathroom_cabinet_instance]==40
+        achieve close_char(char,bathroom_cabinet_instance)
+        if can_open(bathroom_cabinet_instance):
+            achieve_once open(bathroom_cabinet_instance)
+            exp(cleaning_solution,bathroom_cabinet_instance)
+        else:
+            exp(cleaning_solution,bathroom_cabinet_instance)
+    eff:
+        unknown[cleaning_solution]=False
+        close[cleaning_solution,bathroom_cabinet_instance]=True
+        close[bathroom_cabinet_instance,cleaning_solution]=True
+    
+
+#goal_representation
+ 
+def is_cat(item: item):
+    # Check if the item is a cat
+    return True 
+
+behavior apply_shampoo_and_lather(cat: item, shampoo: item):
+    body:
+        achieve_once close_char(char, cat) # Approach the cat to apply shampoo
+        achieve_once inhand(shampoo) # Hold the shampoo to apply it
+        achieve has_water(cat) # Ensure the cat is wet
+        achieve clean(cat) # Lather the shampoo on the wet fur, avoiding eyes and ears
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat) and id[cat] == 2055 # Select cat 2055
+
+        bind shampoo: item where:
+            is_cleaning_solution(shampoo) and recipient(shampoo) # Select catsafe shampoo
+
+        apply_shampoo_and_lather(cat, shampoo) # Apply shampoo to the cat and lather it
+
+#goal_representation_end
+
+##############################
+Error is:
+'NoneType' object is not iterable
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_soap_2054_around_bathroom_cabinet_40(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind bathroom_cabinet_instance:item where:
+            is_bathroom_cabinet(bathroom_cabinet_instance) and id[bathroom_cabinet_instance]==40
+        achieve close_char(char,bathroom_cabinet_instance)
+        if can_open(bathroom_cabinet_instance):
+            achieve_once open(bathroom_cabinet_instance)
+            exp(soap,bathroom_cabinet_instance)
+        else:
+            exp(soap,bathroom_cabinet_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,bathroom_cabinet_instance]=True
+        close[bathroom_cabinet_instance,soap]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior apply_shampoo_and_lather(cat:item, shampoo:item):
+    body:
+        achieve_once close_char(char, cat)
+        # Approach the cat
+        achieve_once inhand(shampoo)
+        # Hold the shampoo 
+        achieve clean(cat) 
+        # Ensure the cat is clean through shampoo application and lathering
+
+behavior avoid_eyes_and_ears(cat:item):
+    body:
+        observe(cat, "Ensure shampoo is kept away from cats eyes and ears")
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat) and id[cat] == 2055
+        # Select the specific cat with ID 2055
+        bind shampoo: item where:
+            grabbable(shampoo) # Assume that shampoo is a grabbable item
+        # Select a catsafe shampoo
+        
+        apply_shampoo_and_lather(cat, shampoo)
+        avoid_eyes_and_ears(cat)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+behavior apply_shampoo_and_lather(cat:item, shampoo:item):
+    body:
+        achieve_once close_char(char, cat)
+        # Approach the cat
+        achieve_once inhand(shampoo)
+        # Hold the shampoo 
+        achieve clean(cat) 
+        # Ensure the cat is clean through shampoo application and lathering
+
+behavior avoid_eyes_and_ears(cat:item):
+    body:
+        observe(cat, "Ensure shampoo is kept away from cats eyes and ears")
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat) and id[cat] == 2055
+        # Select the specific cat with ID 2055
+        bind shampoo: item where:
+            grabbable(shampoo) # Assume that shampoo is a grabbable item
+        # Select a catsafe shampoo
+        
+        apply_shampoo_and_lather(cat, shampoo)
+        avoid_eyes_and_ears(cat)
+
+##############################
+From agent.py-> find a plan in act()
+grab_executor(cat_2055)obs(cat_2055, Ensure shampoo is kept away from cats eyes and ears)
+##############################
+From agent.py
+grab_executor(cat_2055)
+Robot find: Robot is close to the cat_2055. Robot is close to the bathroom_counter_41. Robot is close to the faucet_43. Grabbing cat_2055 by right hand. cat_2055 is no longer on cat_2055.cat_2055 is no longer close cat_2055.
+##############################
+From agent.py
+obs(cat_2055, Ensure shampoo is kept away from cats eyes and ears)
+Get this information:  cat_2055 is inside bathroom_1. cat_2055 is close to character_65. cat_2055 is CLEAN.
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: No
+The feedback instruction: You need to apply the cat-safe shampoo to cat_2055 and lather it. Make sure to avoid the cat's eyes and ears while doing this.
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_towel_2059_around_towel_rack_34(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==34
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(towel,towel_rack_instance)
+        else:
+            exp(towel,towel_rack_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,towel_rack_instance]=True
+        close[towel_rack_instance,towel]=True
+    
+
+behavior find_soap_2053_around_sink_231(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind sink_instance:item where:
+            is_sink(sink_instance) and id[sink_instance]==231
+        achieve close_char(char,sink_instance)
+        if can_open(sink_instance):
+            achieve_once open(sink_instance)
+            exp(soap,sink_instance)
+        else:
+            exp(soap,sink_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,sink_instance]=True
+        close[sink_instance,soap]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior rinse_cat(cat:item, faucet:item):
+    body:
+        achieve has_water(cat)
+        # Ensure the cat is rinsed thoroughly with water
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat) and id[cat] == 2055
+        # Select the cat with ID 2055
+        
+        bind faucet: item where:
+            is_faucet(faucet) and id[faucet] == 43
+        # Select the faucet with ID 43
+
+        rinse_cat(cat, faucet)
+        # Rinse the cat using the faucet to remove shampoo
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_soap_2054_around_bathroom_cabinet_40(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind bathroom_cabinet_instance:item where:
+            is_bathroom_cabinet(bathroom_cabinet_instance) and id[bathroom_cabinet_instance]==40
+        achieve close_char(char,bathroom_cabinet_instance)
+        if can_open(bathroom_cabinet_instance):
+            achieve_once open(bathroom_cabinet_instance)
+            exp(soap,bathroom_cabinet_instance)
+        else:
+            exp(soap,bathroom_cabinet_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,bathroom_cabinet_instance]=True
+        close[bathroom_cabinet_instance,soap]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior rinse_shampoo_off(cat:item, faucet:item):
+    body:
+        achieve_once has_water(cat)
+        # Ensure the cat is rinsed with water
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        # Select the cat
+        
+        bind faucet: item where:
+            is_faucet(faucet)
+        # Select the faucet
+
+        rinse_shampoo_off(cat, faucet)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_soap_2054_around_bathroom_cabinet_40(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind bathroom_cabinet_instance:item where:
+            is_bathroom_cabinet(bathroom_cabinet_instance) and id[bathroom_cabinet_instance]==40
+        achieve close_char(char,bathroom_cabinet_instance)
+        if can_open(bathroom_cabinet_instance):
+            achieve_once open(bathroom_cabinet_instance)
+            exp(soap,bathroom_cabinet_instance)
+        else:
+            exp(soap,bathroom_cabinet_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,bathroom_cabinet_instance]=True
+        close[bathroom_cabinet_instance,soap]=True
+    
+
+behavior find_cleaning_solution_2073_around_vacuum_cleaner_2070(cleaning_solution:item):
+    goal: not unknown(cleaning_solution)
+    body:
+        assert is_cleaning_solution(cleaning_solution)
+        bind vacuum_cleaner_instance:item where:
+            is_vacuum_cleaner(vacuum_cleaner_instance) and id[vacuum_cleaner_instance]==2070
+        achieve close_char(char,vacuum_cleaner_instance)
+        if can_open(vacuum_cleaner_instance):
+            achieve_once open(vacuum_cleaner_instance)
+            exp(cleaning_solution,vacuum_cleaner_instance)
+        else:
+            exp(cleaning_solution,vacuum_cleaner_instance)
+    eff:
+        unknown[cleaning_solution]=False
+        close[cleaning_solution,vacuum_cleaner_instance]=True
+        close[vacuum_cleaner_instance,cleaning_solution]=True
+    
+
+behavior find_towel_2057_around_towel_rack_34(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==34
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(towel,towel_rack_instance)
+        else:
+            exp(towel,towel_rack_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,towel_rack_instance]=True
+        close[towel_rack_instance,towel]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior rinse_cat(cat:item, faucet:item):
+    body:
+        achieve is_on(faucet) # Ensure the faucet is on
+        achieve has_water(cat) # Ensure water rinses the cat to remove shampoo
+        achieve clean(cat) # Ensure the shampoo is fully rinsed off and the cat is clean
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat) and id[cat] == 2055
+        # Select the cat with ID 2055
+        
+        bind faucet: item where:
+            is_faucet(faucet) and id[faucet] == 43
+        # Select the faucet with ID 43
+        
+        rinse_cat(cat, faucet) # Rinse the cat with the faucet
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+behavior rinse_cat(cat:item, faucet:item):
+    body:
+        achieve is_on(faucet) # Ensure the faucet is on
+        achieve has_water(cat) # Ensure water rinses the cat to remove shampoo
+        achieve clean(cat) # Ensure the shampoo is fully rinsed off and the cat is clean
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat) and id[cat] == 2055
+        # Select the cat with ID 2055
+        
+        bind faucet: item where:
+            is_faucet(faucet) and id[faucet] == 43
+        # Select the faucet with ID 43
+        
+        rinse_cat(cat, faucet) # Rinse the cat with the faucet
+
+##############################
+From agent.py-> find a plan in act()
+switchon_executor(faucet_43)
+##############################
+From agent.py
+switchon_executor(faucet_43)
+Robot find: Robot is close to the cat_2055. Robot is close to the bathroom_counter_41. Robot is close to the faucet_43. faucet_43 is turned on. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: Yes
+The feedback instruction: None
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_towel_2056_around_towel_rack_34(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==34
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(towel,towel_rack_instance)
+        else:
+            exp(towel,towel_rack_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,towel_rack_instance]=True
+        close[towel_rack_instance,towel]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior dry_and_brush_cat(cat:item, towel:item, brush:item):
+    body:
+        achieve_once on(cat, towel)
+        # (Dry the cat with a towel by placing the cat on it)
+        achieve clean(cat) # Ensure the cat is dry and clean
+        achieve clean(towel) # Ensure that the towel becomes wet and the cat becomes dry
+        wipe(cat) # Use a wiping action to simulate drying the cat with the towel
+        achieve clean(cat) # Ensure the cat is dry and clean
+        # (Achieve a clean state)
+        achieve once on(cat, brush)
+        (brush the cat)
+        achieve clean(cat)
+        log (cat is clean)
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat) # Select the cat
+        bind towel: item where:
+            is_towel(towel) # Select a towel
+        bind brush: item where:
+            is_hairbrush(brush) # Select a hairbrush
+        dry_and_brush_cat(cat, towel, brush)
+        # Dry the cat and then brush it
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Unexpected token Token('VARNAME', 'on') at line 5762, column 22.
+Expected one of: 
+	* _NEWLINE
+	* SEMICOLON
+
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_towel_2056_around_towel_rack_34(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==34
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(towel,towel_rack_instance)
+        else:
+            exp(towel,towel_rack_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,towel_rack_instance]=True
+        close[towel_rack_instance,towel]=True
+    
+
+#goal_representation
+ 
+behavior dry_and_brush_cat(cat:item, towel:item, brush:item):
+    body:
+        achieve_once on(cat, towel)
+        # Dry the cat with a towel by placing the cat on it
+        wipe(cat)
+        # Use a wiping action to simulate drying the cat with the towel
+        achieve_once on(cat, brush)
+        # Brush the cat
+        log (cat is clean)
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        # Select the cat
+        bind towel: item where:
+            is_towel(towel)
+        # Select a towel
+        bind brush: item where:
+            is_hairbrush(brush)
+        # Select a hairbrush
+        dry_and_brush_cat(cat, towel, brush)
+        # Dry the cat and then brush it
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Unexpected token Token('VARNAME', 'is') at line 5761, column 18.
+Expected one of: 
+	* EQUAL
+	* RPAR
+	* COMMA
+
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_towel_2058_around_towel_rack_34(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==34
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(towel,towel_rack_instance)
+        else:
+            exp(towel,towel_rack_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,towel_rack_instance]=True
+        close[towel_rack_instance,towel]=True
+    
+
+#goal_representation
+
+behavior dry_and_brush_cat(cat:item, towel:item, brush:item):
+    body:
+        achieve_once on(cat, towel)
+        # Dry the cat with a towel by placing the cat on it
+        wipe(cat)
+        # Use a wiping action to simulate drying the cat with the towel
+        achieve_once on(cat, brush)
+        # Brush the cat
+        achieve clean(cat)
+        # Ensure the cat is clean
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        # Select the cat
+        bind towel: item where:
+            is_towel(towel)
+        # Select a towel
+        bind brush: item where:
+            is_hairbrush(brush)
+        # Select a hairbrush
+        dry_and_brush_cat(cat, towel, brush)
+        # Dry the cat and then brush it
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_towel_2056_around_towel_rack_34(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==34
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(towel,towel_rack_instance)
+        else:
+            exp(towel,towel_rack_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,towel_rack_instance]=True
+        close[towel_rack_instance,towel]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior dry_cat(cat:item, towel:item):
+    body:
+        achieve_once close_char(char, cat)
+        # Ensure proximity to the cat
+        achieve_once close_char(char, towel)
+        # Ensure proximity to the towel
+        wipe(cat) 
+        # Dry the cat with the towel
+
+behavior brush_fur(cat:item, brush:item):
+    body:
+        achieve_once close_char(char, cat)
+        # Ensure proximity to the cat
+        achieve_once close_char(char, brush)
+        # Ensure proximity to the brush
+        scrub(cat)
+        # Brush the cats fur
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat) and id[cat]==2055
+        # Select cat with ID 2055
+        bind towel: item where:
+            is_towel(towel)
+        # Select a towel
+        bind brush: item where:
+            is_hairbrush(brush)
+        # Select a brush
+        dry_cat(cat, towel)
+        brush_fur(cat, brush)
+
+#goal_representation_end
+
+##############################
+Error is:
+'NoneType' object is not iterable
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_soap_2054_around_bathroom_cabinet_40(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind bathroom_cabinet_instance:item where:
+            is_bathroom_cabinet(bathroom_cabinet_instance) and id[bathroom_cabinet_instance]==40
+        achieve close_char(char,bathroom_cabinet_instance)
+        if can_open(bathroom_cabinet_instance):
+            achieve_once open(bathroom_cabinet_instance)
+            exp(soap,bathroom_cabinet_instance)
+        else:
+            exp(soap,bathroom_cabinet_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,bathroom_cabinet_instance]=True
+        close[bathroom_cabinet_instance,soap]=True
+    
+
+behavior find_towel_2057_around_towel_rack_34(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==34
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(towel,towel_rack_instance)
+        else:
+            exp(towel,towel_rack_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,towel_rack_instance]=True
+        close[towel_rack_instance,towel]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior dry_cat_with_towel(cat:item, towel:item):
+    body:
+        achieve_once on(cat, towel)
+        # Dry the cat using the towel by placing the cat on the towel
+
+behavior brush_cat_fur(cat:item, brush:item):
+    body:
+        achieve_once close_char(char, cat)
+        achieve_once close_char(char, brush)
+        # Brush the cats fur with the brush
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat) and id[cat]==2055
+        # Select the cat with ID 2055
+
+        bind towel: item where:
+            is_towel(towel)
+        # Select a towel
+
+        bind brush: item where:
+            is_hairbrush(brush)
+        # Select a hairbrush
+
+        dry_cat_with_towel(cat, towel)
+        brush_cat_fur(cat, brush)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+behavior dry_cat_with_towel(cat:item, towel:item):
+    body:
+        achieve_once on(cat, towel)
+        # Dry the cat using the towel by placing the cat on the towel
+
+behavior brush_cat_fur(cat:item, brush:item):
+    body:
+        achieve_once close_char(char, cat)
+        achieve_once close_char(char, brush)
+        # Brush the cats fur with the brush
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat) and id[cat]==2055
+        # Select the cat with ID 2055
+
+        bind towel: item where:
+            is_towel(towel)
+        # Select a towel
+
+        bind brush: item where:
+            is_hairbrush(brush)
+        # Select a hairbrush
+
+        dry_cat_with_towel(cat, towel)
+        brush_cat_fur(cat, brush)
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(towel_rack_34)exp(towel_2056, towel_rack_34)walk_executor(towel_2056)put_executor(cat_2055, towel_2056)walk_executor(cat_2055)walk_executor(hairbrush_2002)
+##############################
+From agent.py
+walk_executor(towel_rack_34)
+Robot find: towel_2059, Robot is close to the cat_2055. Robot is close to the towel_rack_34. 
+##############################
+From agent.py
+exp(towel_2056, towel_rack_34)
+Fail to find towel_2056 around towel_rack_34. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(towel_2059)put_executor(cat_2055, towel_2059)walk_executor(cat_2055)walk_executor(hairbrush_2002)
+##############################
+From agent.py
+walk_executor(towel_2059)
+Robot find: Robot is close to the cat_2055. Robot is close to the towel_rack_34. Robot is close to the towel_2059. 
+##############################
+From agent.py
+put_executor(cat_2055, towel_2059)
+Robot find: Robot is close to the cat_2055. Robot is close to the towel_rack_34. Robot is close to the towel_2059. cat_2055 is on towel_2059. cat_2055 is close towel_2059. towel_2059 is close cat_2055. cat_2055 released by right hand. 
+##############################
+From agent.py
+walk_executor(cat_2055)
+Robot find: Robot is close to the cat_2055. Robot is close to the towel_2059. 
+##############################
+From agent.py
+walk_executor(hairbrush_2002)
+Robot find: Robot is close to the couch_352. Robot is close to the hairbrush_2002. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: No
+The feedback instruction: You need to brush the cat's fur using the hairbrush. Currently, the cat has been dried with the towel, but the fur has not yet been brushed.
+##############################
+From agent.py
+Human Instruction: You need to brush the cat's fur using the hairbrush. Currently, the cat has been dried with the towel, but the fur has not yet been brushed.
+
+The actions you have taken:
+Action 1: Walk to bookshelf_101.
+Action 2: Open bookshelf_101.
+Action 3: look for cat_2055 around bookshelf_101.
+Action 4: Walk to washing_machine_2007.
+Action 5: Open washing_machine_2007.
+Action 6: look for cat_2055 around washing_machine_2007.
+Action 7: Walk to bathtub_30.
+Action 8: look for cat_2055 around bathtub_30.
+Action 9: Walk to shower_36.
+Action 10: look for cat_2055 around shower_36.
+Action 11: Walk to bathroom_counter_41.
+Action 12: look for cat_2055 around bathroom_counter_41.
+Action 13: Walk to basket_for_clothes_2006.
+Action 14: look for cat_2055 around basket_for_clothes_2006.
+Action 15: Walk to couch_352.
+Action 16: look for cat_2055 around couch_352.
+Action 17: Walk to cat_2055.
+Action 18: Observe around cat_2055 with the question of Check if the cat is close to any bathing area.
+Action 19: Grab cat_2055.
+Action 20: Observe around cat_2055 with the question of Check if the cat is close to any bathing area.
+Action 21: Observe around cat_2055 with the question of Check if the cat is close to any bathing area.
+Action 22: Observe around cat_2055 with the question of Check if the cat is close to any bathing area.
+Action 23: Observe around cat_2055 with the question of Check if the cat is close to any bathing area.
+Action 24: Walk to faucet_43.
+Action 25: Switch on faucet_43.
+Action 26: Switch off faucet_43.
+Action 27: Put cat_2055 on faucet_43.
+Action 28: Switch on faucet_43.
+Action 29: Grab cat_2055.
+Action 30: Wash cat_2055.
+Action 31: Switch off faucet_43.
+Action 32: Put cat_2055 on cat_2055.
+Action 33: Grab cat_2055.
+Action 34: Observe around cat_2055 with the question of Ensure shampoo is kept away from cats eyes and ears.
+Action 35: Switch on faucet_43.
+Action 36: Walk to towel_rack_34.
+Action 37: look for towel_2056 around towel_rack_34.
+Action 38: Walk to towel_2059.
+Action 39: Put cat_2055 on towel_2059.
+Action 40: Walk to cat_2055.
+Action 41: Walk to hairbrush_2002.
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_towel_2058_around_towel_rack_33(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==33
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(towel,towel_rack_instance)
+        else:
+            exp(towel,towel_rack_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,towel_rack_instance]=True
+        close[towel_rack_instance,towel]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_cat(x: item):
+    return True # Assume it is a cat when is_cat(x) is called, indicating the item is a cat
+
+def is_towel(x: item):
+    return True # Assume it is a towel when is_towel(x) is called, indicating the item is a towel
+
+def is_hairbrush(x: item):
+    return True # Assume it is a hairbrush when is_hairbrush(x) is called, indicating the item is a hairbrush
+
+behavior dry_cat_with_towel(cat:item, towel:item):
+    body:
+        achieve_has_dried_cat(cat, towel)
+
+behavior brush_cat_fur(cat:item, hairbrush:item):
+    body:
+        achieve_brushed_fur(cat, hairbrush)
+
+def achieve_has_dried_cat(cat: item, towel: item):
+    # Dry the cat with the towel
+    achieve_once has_dried_cat(cat, towel)
+    
+def achieve_brushed_fur(cat: item, hairbrush: item):
+    # Brush the cats fur using the hairbrush
+    achieve_once brushed_fur(cat, hairbrush)
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        # Select the cat
+
+        bind towel: item where:
+            is_towel(towel)
+        # Select a towel
+
+        bind hairbrush: item where:
+            is_hairbrush(hairbrush)
+        # Select a hairbrush
+
+        dry_cat_with_towel(cat, towel)
+        brush_cat_fur(cat, hairbrush)
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "behavior_definition":
+
+'Function achieve_has_dried_cat not found. Note that recursive function calls are not supported in the current version.'
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_towel_2056_around_towel_rack_33(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==33
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(towel,towel_rack_instance)
+        else:
+            exp(towel,towel_rack_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,towel_rack_instance]=True
+        close[towel_rack_instance,towel]=True
+    
+
+#goal_representation
+ 
+behavior dry_cat_with_towel(cat:item, towel:item):
+    body:
+        achieve_once clean(cat)
+        # Ensure the cat is dry and clean using the towel
+
+behavior brush_cat_fur(cat:item, hairbrush:item):
+    body:
+        achieve_once clean(cat)
+        # Ensure the cats fur is brushed and clean
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        # Select the cat
+
+        bind towel: item where:
+            is_towel(towel)
+        # Select a towel
+
+        bind hairbrush: item where:
+            is_hairbrush(hairbrush)
+        # Select a hairbrush
+
+        dry_cat_with_towel(cat, towel)
+        brush_cat_fur(cat, hairbrush)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_towel_2057_around_towel_rack_33(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==33
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(towel,towel_rack_instance)
+        else:
+            exp(towel,towel_rack_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,towel_rack_instance]=True
+        close[towel_rack_instance,towel]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior dry_and_brush_cat(cat:item, towel:item, hairbrush:item):
+    body:
+        achieve_once on(cat, towel)
+        # Place the cat on the towel to dry it
+        wipe(cat) # Wipe the cat to properly dry it
+        achieve_once inhand(hairbrush)
+        # Pick up the hairbrush
+        achieve clean(cat) 
+        # Brush the cats fur until it is clean
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        # Select the cat to dry and brush
+
+        bind towel: item where:
+            is_towel(towel)
+        # Select a towel to dry the cat
+
+        bind hairbrush: item where:
+            is_hairbrush(hairbrush)
+        # Select a hairbrush to brush the cat
+
+        dry_and_brush_cat(cat, towel, hairbrush)
+
+#goal_representation_end
+
+##############################
+Error is:
+'NoneType' object is not iterable
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_towel_2059_around_computer_417(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind computer_instance:item where:
+            is_computer(computer_instance) and id[computer_instance]==417
+        achieve close_char(char,computer_instance)
+        if can_open(computer_instance):
+            achieve_once open(computer_instance)
+            exp(towel,computer_instance)
+        else:
+            exp(towel,computer_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,computer_instance]=True
+        close[computer_instance,towel]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+
+behavior dry_cat_with_towel_and_brush(cat:item, towel:item, hairbrush:item):
+    body:
+        achieve_once on(cat, towel)
+        # Dry the cat with the towel
+        achieve_once inhand(hairbrush)
+        # Brush the cats fur using the hairbrush
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat) and not visited(cat)
+        # Select the cat item and ensure it is not visited
+        
+        bind towel: item where:
+            is_towel(towel)
+        # Select a towel
+
+        bind hairbrush: item where:
+            is_hairbrush(hairbrush)
+        # Select the hairbrush
+        
+        dry_cat_with_towel_and_brush(cat, towel, hairbrush)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+
+behavior dry_cat_with_towel_and_brush(cat:item, towel:item, hairbrush:item):
+    body:
+        achieve_once on(cat, towel)
+        # Dry the cat with the towel
+        achieve_once inhand(hairbrush)
+        # Brush the cats fur using the hairbrush
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat) and not visited(cat)
+        # Select the cat item and ensure it is not visited
+        
+        bind towel: item where:
+            is_towel(towel)
+        # Select a towel
+
+        bind hairbrush: item where:
+            is_hairbrush(hairbrush)
+        # Select the hairbrush
+        
+        dry_cat_with_towel_and_brush(cat, towel, hairbrush)
+
+##############################
+From agent.py-> find a plan in act()
+grab_executor(hairbrush_2002)
+##############################
+From agent.py
+grab_executor(hairbrush_2002)
+Robot find: Robot is close to the couch_352. Robot is close to the hairbrush_2002. Grabbing hairbrush_2002 by right hand. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: No
+The feedback instruction: You need to brush the cat's fur as the next step. The hairbrush is in hand, so proceed to brush the fur of the cat.
+##############################
+From agent.py
+Human Instruction: You need to brush the cat's fur as the next step. The hairbrush is in hand, so proceed to brush the fur of the cat.
+
+The actions you have taken:
+Action 1: Walk to bookshelf_101.
+Action 2: Open bookshelf_101.
+Action 3: look for cat_2055 around bookshelf_101.
+Action 4: Walk to washing_machine_2007.
+Action 5: Open washing_machine_2007.
+Action 6: look for cat_2055 around washing_machine_2007.
+Action 7: Walk to bathtub_30.
+Action 8: look for cat_2055 around bathtub_30.
+Action 9: Walk to shower_36.
+Action 10: look for cat_2055 around shower_36.
+Action 11: Walk to bathroom_counter_41.
+Action 12: look for cat_2055 around bathroom_counter_41.
+Action 13: Walk to basket_for_clothes_2006.
+Action 14: look for cat_2055 around basket_for_clothes_2006.
+Action 15: Walk to couch_352.
+Action 16: look for cat_2055 around couch_352.
+Action 17: Walk to cat_2055.
+Action 18: Observe around cat_2055 with the question of Check if the cat is close to any bathing area.
+Action 19: Grab cat_2055.
+Action 20: Observe around cat_2055 with the question of Check if the cat is close to any bathing area.
+Action 21: Observe around cat_2055 with the question of Check if the cat is close to any bathing area.
+Action 22: Observe around cat_2055 with the question of Check if the cat is close to any bathing area.
+Action 23: Observe around cat_2055 with the question of Check if the cat is close to any bathing area.
+Action 24: Walk to faucet_43.
+Action 25: Switch on faucet_43.
+Action 26: Switch off faucet_43.
+Action 27: Put cat_2055 on faucet_43.
+Action 28: Switch on faucet_43.
+Action 29: Grab cat_2055.
+Action 30: Wash cat_2055.
+Action 31: Switch off faucet_43.
+Action 32: Put cat_2055 on cat_2055.
+Action 33: Grab cat_2055.
+Action 34: Observe around cat_2055 with the question of Ensure shampoo is kept away from cats eyes and ears.
+Action 35: Switch on faucet_43.
+Action 36: Walk to towel_rack_34.
+Action 37: look for towel_2056 around towel_rack_34.
+Action 38: Walk to towel_2059.
+Action 39: Put cat_2055 on towel_2059.
+Action 40: Walk to cat_2055.
+Action 41: Walk to hairbrush_2002.
+Action 42: Grab hairbrush_2002.
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_towel_2059_around_curtain_407(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind curtain_instance:item where:
+            is_curtain(curtain_instance) and id[curtain_instance]==407
+        achieve close_char(char,curtain_instance)
+        if can_open(curtain_instance):
+            achieve_once open(curtain_instance)
+            exp(towel,curtain_instance)
+        else:
+            exp(towel,curtain_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,curtain_instance]=True
+        close[curtain_instance,towel]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior dry_and_brush_cat(cat:item, towel:item, hairbrush:item):
+    body:
+        achieve_once on(cat, towel) 
+        # Place the cat onto the towel for drying
+        achieve_once clean(cat)
+        # Use the towel to dry the cat
+        achieve_once close_char(char, cat)
+        # Ensure you are close to the cat
+        achieve_once on(hairbrush, cat)
+        # Use the hairbrush to brush the cats fur
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        # Select the cat to dry and brush
+
+        bind towel: item where:
+            is_towel(towel)
+        # Select a towel
+
+        bind hairbrush: item where:
+            is_hairbrush(hairbrush)
+        # Select a hairbrush
+
+        dry_and_brush_cat(cat, towel, hairbrush)
+        # Dry the cat and brush its fur
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+behavior dry_and_brush_cat(cat:item, towel:item, hairbrush:item):
+    body:
+        achieve_once on(cat, towel) 
+        # Place the cat onto the towel for drying
+        achieve_once clean(cat)
+        # Use the towel to dry the cat
+        achieve_once close_char(char, cat)
+        # Ensure you are close to the cat
+        achieve_once on(hairbrush, cat)
+        # Use the hairbrush to brush the cats fur
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        # Select the cat to dry and brush
+
+        bind towel: item where:
+            is_towel(towel)
+        # Select a towel
+
+        bind hairbrush: item where:
+            is_hairbrush(hairbrush)
+        # Select a hairbrush
+
+        dry_and_brush_cat(cat, towel, hairbrush)
+        # Dry the cat and brush its fur
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(cat_2055)put_executor(hairbrush_2002, cat_2055)
+##############################
+From agent.py
+walk_executor(cat_2055)
+Robot find: Robot is close to the hairbrush_2002. Robot is close to the towel_2059. Robot is close to the cat_2055. 
+##############################
+From agent.py
+put_executor(hairbrush_2002, cat_2055)
+Robot find: Robot is close to the hairbrush_2002. Robot is close to the towel_2059. Robot is close to the cat_2055. cat_2055 is close hairbrush_2002. hairbrush_2002 is close cat_2055. hairbrush_2002 is on cat_2055. hairbrush_2002 released by right hand. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: No
+The feedback instruction: The robot needs to brush the cat's fur. You should use the hairbrush to brush the cat's fur.
+##############################
+Task Summary:
+Task Goal:
+Wash my cat.
+Action History:
+['walk_executor(bookshelf_101)', 'open_executor(bookshelf_101)', 'walk_executor(washing_machine_2007)', 'open_executor(washing_machine_2007)', 'walk_executor(bathtub_30)', 'walk_executor(shower_36)', 'walk_executor(bathroom_counter_41)', 'walk_executor(basket_for_clothes_2006)', 'walk_executor(couch_352)', 'walk_executor(cat_2055)', 'grab_executor(cat_2055)', 'walk_executor(faucet_43)', 'switchon_executor(faucet_43)', 'switchoff_executor(faucet_43)', 'put_executor(cat_2055, faucet_43)', 'switchon_executor(faucet_43)', 'grab_executor(cat_2055)', 'wash_executor(cat_2055)', 'switchoff_executor(faucet_43)', 'put_executor(cat_2055, cat_2055)', 'grab_executor(cat_2055)', 'switchon_executor(faucet_43)', 'walk_executor(towel_rack_34)', 'walk_executor(towel_2059)', 'put_executor(cat_2055, towel_2059)', 'walk_executor(cat_2055)', 'walk_executor(hairbrush_2002)', 'grab_executor(hairbrush_2002)', 'walk_executor(cat_2055)', 'put_executor(hairbrush_2002, cat_2055)']
+Time info:
+Time consume: 622 seconds
+Exp_helper query times: 1
+Guidance query times: 0
+library scale: 8
+goal generate times: 33
+goal correct times: 2
+action_num: 30
+
+Task complete rate:
+1
+Scene_id: 0
+##############################
