@@ -167,7 +167,7 @@ def get_exp_behavior(goal, additional_information, problem_cdl,checked=None):
     print(f"Time for parse_file:{t1-t0:.2f}s")
     # unknown_attributes_needed = find_unknown_attributes(categories, known_objects, binds)
     unknown_attributes_needed = find_all_unknown(categories, unknown_objects)
-    if len(unknown_attributes_needed)==0:
+    if unknown_attributes_needed == None or len(unknown_attributes_needed)==0:
         return ''
     #debug
     t1 = time.time()

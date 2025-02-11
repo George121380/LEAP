@@ -1,0 +1,320 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['Wipe the toilet with toilet paper, then throw the toilet paper into the toilet.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_toilet_paper_2090_around_bathroom_counter_41(toilet_paper:item):
+    goal: not unknown(toilet_paper)
+    body:
+        assert is_toilet_paper(toilet_paper)
+        bind bathroom_counter_instance:item where:
+            is_bathroom_counter(bathroom_counter_instance) and id[bathroom_counter_instance]==41
+        achieve close_char(char,bathroom_counter_instance)
+        if can_open(bathroom_counter_instance):
+            achieve_once open(bathroom_counter_instance)
+            exp(toilet_paper,bathroom_counter_instance)
+        else:
+            exp(toilet_paper,bathroom_counter_instance)
+    eff:
+        unknown[toilet_paper]=False
+        close[toilet_paper,bathroom_counter_instance]=True
+        close[bathroom_counter_instance,toilet_paper]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior wipe_toilet(toilet_paper:item, toilet:item):
+    body:
+        achieve_once inhand(toilet_paper) # Hold the toilet paper to wipe
+        is_toilet(toilet) # Ensure the target is a toilet
+        achieve_once clean(toilet) # Clean the toilet
+
+behavior throw_in_toilet(toilet_paper:item, toilet:item):
+    body:
+        achieve_once inside(toilet_paper, toilet) # Throw toilet paper into the toilet
+
+behavior __goal__():
+    body:
+        bind toilet_paper: item where:
+            is_toilet_paper(toilet_paper)
+        # Select toilet paper
+
+        bind toilet: item where:
+            is_toilet(toilet)
+        # Select a toilet
+
+        wipe_toilet(toilet_paper, toilet) # Wipe the toilet with toilet paper
+        throw_in_toilet(toilet_paper, toilet) # Throw the toilet paper into the toilet
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "behavior_definition":
+
+Expr statements are not allowed in the current mode: SymbolicExecutionMode.BEHAVIOR
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_toilet_paper_2090_around_toilet_37(toilet_paper:item):
+    goal: not unknown(toilet_paper)
+    body:
+        assert is_toilet_paper(toilet_paper)
+        bind toilet_instance:item where:
+            is_toilet(toilet_instance) and id[toilet_instance]==37
+        achieve close_char(char,toilet_instance)
+        if can_open(toilet_instance):
+            achieve_once open(toilet_instance)
+            exp(toilet_paper,toilet_instance)
+        else:
+            exp(toilet_paper,toilet_instance)
+    eff:
+        unknown[toilet_paper]=False
+        close[toilet_paper,toilet_instance]=True
+        close[toilet_instance,toilet_paper]=True
+    
+
+#goal_representation
+
+behavior wipe_toilet(toilet_paper:item, toilet:item):
+    body:
+        achieve_once inhand(toilet_paper)
+        # Hold the toilet paper to wipe
+        achieve clean(toilet)
+        # Wipe to achieve clean toilet
+
+behavior throw_in_toilet(toilet_paper:item, toilet:item):
+    body:
+        achieve_once inside(toilet_paper, toilet)
+        # Throw toilet paper into the toilet
+
+behavior __goal__():
+    body:
+        bind toilet_paper: item where:
+            is_toilet_paper(toilet_paper)
+        # Select toilet paper
+
+        bind toilet: item where:
+            is_toilet(toilet)
+        # Select a toilet
+
+        wipe_toilet(toilet_paper, toilet)
+        # Wipe the toilet with toilet paper
+        throw_in_toilet(toilet_paper, toilet)
+        # Throw the toilet paper into the toilet
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+
+behavior wipe_toilet(toilet_paper:item, toilet:item):
+    body:
+        achieve_once inhand(toilet_paper)
+        # Hold the toilet paper to wipe
+        achieve clean(toilet)
+        # Wipe to achieve clean toilet
+
+behavior throw_in_toilet(toilet_paper:item, toilet:item):
+    body:
+        achieve_once inside(toilet_paper, toilet)
+        # Throw toilet paper into the toilet
+
+behavior __goal__():
+    body:
+        bind toilet_paper: item where:
+            is_toilet_paper(toilet_paper)
+        # Select toilet paper
+
+        bind toilet: item where:
+            is_toilet(toilet)
+        # Select a toilet
+
+        wipe_toilet(toilet_paper, toilet)
+        # Wipe the toilet with toilet paper
+        throw_in_toilet(toilet_paper, toilet)
+        # Throw the toilet paper into the toilet
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(toilet_37)open_executor(toilet_37)exp(toilet_paper_2090, toilet_37)walk_executor(toilet_paper_2090)grab_executor(toilet_paper_2090)walk_executor(toilet_37)putin_executor(toilet_paper_2090, toilet_37)
+##############################
+From agent.py
+walk_executor(toilet_37)
+Robot find: toilet_paper_2090, Robot is close to the toilet_37. 
+##############################
+From agent.py
+open_executor(toilet_37)
+Robot find: Robot is close to the toilet_37. toilet_37 is opened. 
+##############################
+From agent.py
+exp(toilet_paper_2090, toilet_37)
+Find toilet_paper_2090. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(toilet_paper_2090)grab_executor(toilet_paper_2090)walk_executor(toilet_37)putin_executor(toilet_paper_2090, toilet_37)
+##############################
+From agent.py
+walk_executor(toilet_paper_2090)
+Robot find: Robot is close to the toilet_paper_2090. 
+##############################
+From agent.py
+grab_executor(toilet_paper_2090)
+Robot find: Robot is close to the toilet_paper_2090. Grabbing toilet_paper_2090 by right hand. 
+##############################
+From agent.py
+walk_executor(toilet_37)
+Robot find: Robot is close to the toilet_paper_2090. Robot is close to the toilet_37. 
+##############################
+From agent.py
+putin_executor(toilet_paper_2090, toilet_37)
+Robot find: Robot is close to the toilet_paper_2090. Robot is close to the toilet_37. toilet_paper_2090 is inside toilet_37. toilet_paper_2090 is close toilet_37. toilet_paper_2090 released by right hand. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: No
+The feedback instruction: You need to wipe the toilet with the toilet paper before throwing it into the toilet. This step was not performed according to the actions taken, as the task only reflects putting the toilet paper directly into the toilet.
+##############################
+From agent.py
+Human Instruction: You need to wipe the toilet with the toilet paper before throwing it into the toilet. This step was not performed according to the actions taken, as the task only reflects putting the toilet paper directly into the toilet.
+
+The actions you have taken:
+Action 1: Walk to toilet_37.
+Action 2: Open toilet_37.
+Action 3: look for toilet_paper_2090 around toilet_37.
+Action 4: Walk to toilet_paper_2090.
+Action 5: Grab toilet_paper_2090.
+Action 6: Walk to toilet_37.
+Action 7: Put toilet_paper_2090 into toilet_37.
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_cleaning_solution_2073_around_bathroom_counter_41(cleaning_solution:item):
+    goal: not unknown(cleaning_solution)
+    body:
+        assert is_cleaning_solution(cleaning_solution)
+        bind bathroom_counter_instance:item where:
+            is_bathroom_counter(bathroom_counter_instance) and id[bathroom_counter_instance]==41
+        achieve close_char(char,bathroom_counter_instance)
+        if can_open(bathroom_counter_instance):
+            achieve_once open(bathroom_counter_instance)
+            exp(cleaning_solution,bathroom_counter_instance)
+        else:
+            exp(cleaning_solution,bathroom_counter_instance)
+    eff:
+        unknown[cleaning_solution]=False
+        close[cleaning_solution,bathroom_counter_instance]=True
+        close[bathroom_counter_instance,cleaning_solution]=True
+    
+
+behavior find_soap_2053_around_bathroom_counter_41(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind bathroom_counter_instance:item where:
+            is_bathroom_counter(bathroom_counter_instance) and id[bathroom_counter_instance]==41
+        achieve close_char(char,bathroom_counter_instance)
+        if can_open(bathroom_counter_instance):
+            achieve_once open(bathroom_counter_instance)
+            exp(soap,bathroom_counter_instance)
+        else:
+            exp(soap,bathroom_counter_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,bathroom_counter_instance]=True
+        close[bathroom_counter_instance,soap]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior clean_toilet_with_paper(toilet:item, toilet_paper:item):
+    body:
+        achieve_once inhand(toilet_paper) # Hold the toilet paper to wipe the toilet
+        wipe(toilet) # Wipe the toilet
+        achieve_once inside(toilet_paper, toilet) # Throw the toilet paper into the toilet
+
+behavior __goal__():
+    body:
+        bind toilet: item where:
+            is_toilet(toilet) and id[toilet]==37
+        # Select toilet with ID 37
+
+        bind toilet_paper: item where:
+            is_toilet_paper(toilet_paper) and id[toilet_paper]==2090
+        # Select toilet paper with ID 2090
+
+        clean_toilet_with_paper(toilet, toilet_paper)
+        # Clean the toilet with toilet paper and then throw the toilet paper into the toilet
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+behavior clean_toilet_with_paper(toilet:item, toilet_paper:item):
+    body:
+        achieve_once inhand(toilet_paper) # Hold the toilet paper to wipe the toilet
+        wipe(toilet) # Wipe the toilet
+        achieve_once inside(toilet_paper, toilet) # Throw the toilet paper into the toilet
+
+behavior __goal__():
+    body:
+        bind toilet: item where:
+            is_toilet(toilet) and id[toilet]==37
+        # Select toilet with ID 37
+
+        bind toilet_paper: item where:
+            is_toilet_paper(toilet_paper) and id[toilet_paper]==2090
+        # Select toilet paper with ID 2090
+
+        clean_toilet_with_paper(toilet, toilet_paper)
+        # Clean the toilet with toilet paper and then throw the toilet paper into the toilet
+
+##############################
+From agent.py-> find a plan in act()
+grab_executor(toilet_paper_2090)wipe_executor(toilet_37)putin_executor(toilet_paper_2090, toilet_37)
+##############################
+From agent.py
+grab_executor(toilet_paper_2090)
+Robot find: Robot is close to the toilet_paper_2090. Robot is close to the toilet_37. Grabbing toilet_paper_2090 by right hand. 
+##############################
+From agent.py
+wipe_executor(toilet_37)
+Robot find: Robot is close to the toilet_paper_2090. Robot is close to the toilet_37. 
+##############################
+From agent.py
+putin_executor(toilet_paper_2090, toilet_37)
+Robot find: Robot is close to the toilet_paper_2090. Robot is close to the toilet_37. toilet_paper_2090 is inside toilet_37. toilet_paper_2090 is close toilet_37. toilet_paper_2090 released by right hand. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: Yes
+The feedback instruction: None
+##############################
+Task Summary:
+Task Goal:
+Wipe the toilet with toilet paper. Then throw it into the toilet.
+Action History:
+['walk_executor(toilet_37)', 'open_executor(toilet_37)', 'walk_executor(toilet_paper_2090)', 'grab_executor(toilet_paper_2090)', 'walk_executor(toilet_37)', 'putin_executor(toilet_paper_2090, toilet_37)', 'grab_executor(toilet_paper_2090)', 'wipe_executor(toilet_37)', 'putin_executor(toilet_paper_2090, toilet_37)']
+Time info:
+Time consume: 57 seconds
+Exp_helper query times: 0
+Guidance query times: 0
+library scale: 18
+goal generate times: 2
+goal correct times: 1
+action_num: 9
+
+Task complete rate:
+1
+Scene_id: 0
+##############################

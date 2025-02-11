@@ -78,7 +78,9 @@ class LLM_Agent(BaseAgent):
         self.guidance_query_times=0 
 
         self.failed_execution_flag=False
-        self.query_human_flag=False
+
+        if self.config.human_guidance=='None': # default asked
+            self.query_human_flag=True
 
         self.difficulty=int((1.2*difficulty)//1)
         self.max_trying_times=3*difficulty
@@ -214,18 +216,17 @@ class LLM_Agent(BaseAgent):
         question=f'Can you teach me how to "{self.goal_nl.lower()}" ?'
 
         if self.config.human_guidance=='LLM':
-            Human_Guidance, re_decompose=self.query_LLM_human(question)
+            Human_Guidance = self.query_LLM_human(question)
+            self.add_info_nl+=Human_Guidance
+            print(Human_Guidance)
 
         if self.config.human_guidance=='Manual':
             print("still developing")
-
-        self.add_info_nl+=Human_Guidance
 
         # with open('visualization/human_guidance.txt','a') as f:
         #     f.write("Goal: "+self.goal_nl+'\n')
         #     f.write("Guidance: "+Human_Guidance+'\n')
         #     f.write("-"*60+'\n')
-        print(Human_Guidance)
         print("-"*60)
 
     

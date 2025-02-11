@@ -1,0 +1,918 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['Boil some rice in a pot.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_pot_2093_around_kitchen_counter_132(pot:item):
+    goal: not unknown(pot)
+    body:
+        assert is_pot(pot)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==132
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(pot,kitchen_counter_instance)
+        else:
+            exp(pot,kitchen_counter_instance)
+    eff:
+        unknown[pot]=False
+        close[pot,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,pot]=True
+    
+
+behavior find_food_rice_2067_around_kitchen_counter_129(food_rice:item):
+    goal: not unknown(food_rice)
+    body:
+        assert is_food_rice(food_rice)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==129
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_rice,kitchen_counter_instance)
+        else:
+            exp(food_rice,kitchen_counter_instance)
+    eff:
+        unknown[food_rice]=False
+        close[food_rice,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_rice]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_stove_on(stove:item):
+    # Function to check if the stove is on
+    symbol stove_is_on=is_on(stove)
+    return stove_is_on
+
+def has_pot_with_rice(pot:item):
+    # Function to check if there is rice in the pot
+    symbol pot_has_rice=exists o: item : (is_food_rice(o) and inside(o, pot))
+    return pot_has_rice
+
+behavior add_water_to_pot(pot:item):
+    body:
+        if not has_water(pot):
+            get_water(pot) # Add water to the pot
+
+behavior ensure_stove_is_on(stove:item):
+    body:
+        if not is_stove_on(stove):
+            switch_on(stove) # Turn on the stove
+
+behavior place_pot_on_stove(pot:item, stove:item):
+    body:
+        if not on(pot, stove):
+            put_on(pot, stove) # Place the pot on the stove
+
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot)
+        # Bind the pot where the rice will be boiled
+
+        bind rice: item where:
+            is_food_rice(rice) and inside(rice, pot)
+        # Bind the rice that is inside the pot
+
+        bind stove: item where:
+            is_stove(stove)
+        # Bind the stove that will be used for boiling
+
+        if has_pot_with_rice(pot):
+            add_water_to_pot(pot) # Add water to the pot with rice
+            place_pot_on_stove(pot, stove) # Place the pot on the stove
+            ensure_stove_is_on(stove) # Ensure stove is turned on
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_pot_54_around_kitchen_counter_129(pot:item):
+    goal: not unknown(pot)
+    body:
+        assert is_pot(pot)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==129
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(pot,kitchen_counter_instance)
+        else:
+            exp(pot,kitchen_counter_instance)
+    eff:
+        unknown[pot]=False
+        close[pot,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,pot]=True
+    
+
+behavior find_food_rice_2067_around_cupboard_131(food_rice:item):
+    goal: not unknown(food_rice)
+    body:
+        assert is_food_rice(food_rice)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==131
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(food_rice,cupboard_instance)
+        else:
+            exp(food_rice,cupboard_instance)
+    eff:
+        unknown[food_rice]=False
+        close[food_rice,cupboard_instance]=True
+        close[cupboard_instance,food_rice]=True
+    
+
+behavior find_food_steak_2042_around_fridge_140(food_steak:item):
+    goal: not unknown(food_steak)
+    body:
+        assert is_food_steak(food_steak)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==140
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_steak,fridge_instance)
+        else:
+            exp(food_steak,fridge_instance)
+    eff:
+        unknown[food_steak]=False
+        close[food_steak,fridge_instance]=True
+        close[fridge_instance,food_steak]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior boil_water(pot:item, stove:item):
+    body:
+        if not has_water(pot):
+            get_water(pot) # Fill the pot with water
+        if closed(stove):
+            opens(stove) # Open the stove if it is closed
+        if is_off(stove):
+            switch_on(stove) # Turn on the stove
+        if not on(pot, stove):
+            put_on(pot, stove) # Place the pot on the stove and let the water boil
+
+behavior add_rice(pot:item, rice:item):
+    body:
+        if not inside(rice, pot):
+            put_inside(rice, pot) # Add rice into the pot
+
+behavior monitor_cooking(pot:item):
+    body:
+        observe(pot, "Is the rice cooked") # Observe to check if the rice is cooked
+
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot)
+        bind rice: item where:
+            is_food_rice(rice)
+        bind stove: item where:
+            is_stove(stove)
+        
+        boil_water(pot, stove) # Boil water in the pot
+        add_rice(pot, rice) # Add rice into the boiling water
+        monitor_cooking(pot) # Monitor the cooking process
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+ 
+behavior boil_water(pot:item, stove:item):
+    body:
+        if not has_water(pot):
+            get_water(pot) # Fill the pot with water
+        if closed(stove):
+            opens(stove) # Open the stove if it is closed
+        if is_off(stove):
+            switch_on(stove) # Turn on the stove
+        if not on(pot, stove):
+            put_on(pot, stove) # Place the pot on the stove and let the water boil
+
+behavior add_rice(pot:item, rice:item):
+    body:
+        if not inside(rice, pot):
+            put_inside(rice, pot) # Add rice into the pot
+
+behavior monitor_cooking(pot:item):
+    body:
+        observe(pot, "Is the rice cooked") # Observe to check if the rice is cooked
+
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot)
+        bind rice: item where:
+            is_food_rice(rice)
+        bind stove: item where:
+            is_stove(stove)
+        
+        boil_water(pot, stove) # Boil water in the pot
+        add_rice(pot, rice) # Add rice into the boiling water
+        monitor_cooking(pot) # Monitor the cooking process
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(kitchen_counter_129)exp(pot_2093, kitchen_counter_129)walk_executor(pot_2093)open_executor(pot_2093)grab_executor(pot_2093)walk_executor(faucet_134)switchoff_executor(faucet_134)walk_executor(stove_2090)open_executor(stove_2090)switchon_executor(stove_2090)put_executor(pot_2093, stove_2090)walk_executor(cupboard_131)open_executor(cupboard_131)exp(food_rice_2067, cupboard_131)walk_executor(food_rice_2067)grab_executor(food_rice_2067)walk_executor(pot_2093)putin_executor(food_rice_2067, pot_2093)obs(pot_2093, Is the rice cooked)
+##############################
+From agent.py
+walk_executor(kitchen_counter_129)
+Robot find: fryingpan_2107, oil_2102, pot_54, pot_2093, Robot is close to the kitchen_counter_129. 
+##############################
+From agent.py
+exp(pot_2093, kitchen_counter_129)
+Find pot_2093. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(pot_2093)open_executor(pot_2093)grab_executor(pot_2093)walk_executor(faucet_134)switchoff_executor(faucet_134)walk_executor(stove_2090)open_executor(stove_2090)switchon_executor(stove_2090)put_executor(pot_2093, stove_2090)walk_executor(cupboard_131)open_executor(cupboard_131)exp(food_rice_2067, cupboard_131)walk_executor(food_rice_2067)grab_executor(food_rice_2067)walk_executor(pot_2093)putin_executor(food_rice_2067, pot_2093)obs(pot_2093, Is the rice cooked)
+##############################
+From agent.py
+walk_executor(pot_2093)
+Robot find: Robot is close to the kitchen_counter_129. Robot is close to the pot_2093. 
+##############################
+From agent.py
+open_executor(pot_2093)
+Robot find: Robot is close to the kitchen_counter_129. Robot is close to the pot_2093. pot_2093 is opened. 
+##############################
+From agent.py
+grab_executor(pot_2093)
+Robot find: Robot is close to the kitchen_counter_129. Robot is close to the pot_2093. Grabbing pot_2093 by right hand. 
+##############################
+From agent.py
+walk_executor(faucet_134)
+Robot find: Robot is close to the pot_2093. Robot is close to the kitchen_counter_132. Robot is close to the faucet_134. 
+##############################
+From agent.py
+switchoff_executor(faucet_134)
+Robot find: Robot is close to the pot_2093. Robot is close to the kitchen_counter_132. Robot is close to the faucet_134. faucet_134 is turned off. 
+##############################
+From agent.py
+walk_executor(stove_2090)
+Robot find: Robot is close to the pot_2093. Robot is close to the kitchen_counter_129. Robot is close to the stove_2090. 
+##############################
+From agent.py
+open_executor(stove_2090)
+Robot find: Robot is close to the pot_2093. Robot is close to the kitchen_counter_129. Robot is close to the stove_2090. stove_2090 is opened. 
+##############################
+From agent.py
+switchon_executor(stove_2090)
+Robot find: Robot is close to the pot_2093. Robot is close to the kitchen_counter_129. Robot is close to the stove_2090. stove_2090 is turned on. 
+##############################
+From agent.py
+put_executor(pot_2093, stove_2090)
+Robot find: Robot is close to the pot_2093. Robot is close to the kitchen_counter_129. Robot is close to the stove_2090. stove_2090 is close pot_2093. pot_2093 is close stove_2090. pot_2093 is on stove_2090. pot_2093 released by right hand. 
+##############################
+From agent.py
+walk_executor(cupboard_131)
+Robot find: Robot is close to the cupboard_131. 
+##############################
+From agent.py
+open_executor(cupboard_131)
+Robot find: Robot is close to the cupboard_131. cupboard_131 is opened. 
+##############################
+From agent.py
+exp(food_rice_2067, cupboard_131)
+Fail to find food_rice_2067 around cupboard_131. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(pot_2093)grab_executor(pot_2093)walk_executor(faucet_308)switchoff_executor(faucet_308)walk_executor(stove_2090)put_executor(pot_2093, stove_2090)walk_executor(cupboard_130)exp(food_rice_2067, cupboard_130)walk_executor(food_rice_2067)grab_executor(food_rice_2067)walk_executor(pot_2093)putin_executor(food_rice_2067, pot_2093)obs(pot_2093, Is the rice cooked)
+##############################
+From agent.py
+walk_executor(pot_2093)
+Robot find: Robot is close to the stove_2090. Robot is close to the pot_2093. 
+##############################
+From agent.py
+grab_executor(pot_2093)
+Robot find: Robot is close to the stove_2090. Robot is close to the pot_2093. Grabbing pot_2093 by right hand. 
+##############################
+From agent.py
+walk_executor(faucet_308)
+Robot find: drawing_296, towel_rack_298, Robot is close to the pot_2093. Robot is close to the bathroom_counter_306. Robot is close to the faucet_308. 
+##############################
+From agent.py
+switchoff_executor(faucet_308)
+Robot find: Robot is close to the pot_2093. Robot is close to the bathroom_counter_306. Robot is close to the faucet_308. faucet_308 is turned off. 
+##############################
+From agent.py
+walk_executor(stove_2090)
+Robot find: Robot is close to the pot_2093. Robot is close to the kitchen_counter_129. Robot is close to the stove_2090. 
+##############################
+From agent.py
+put_executor(pot_2093, stove_2090)
+Robot find: Robot is close to the pot_2093. Robot is close to the kitchen_counter_129. Robot is close to the stove_2090. pot_2093 is close stove_2090. pot_2093 is on stove_2090. pot_2093 released by right hand. 
+##############################
+From agent.py
+walk_executor(cupboard_130)
+Robot find: blender_2032, tea_bag_2017, Robot is close to the blender_2032. Robot is close to the tea_bag_2017. Robot is close to the cupboard_130. 
+##############################
+From agent.py
+exp(food_rice_2067, cupboard_130)
+Fail to find food_rice_2067 around cupboard_130. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(pot_2093)grab_executor(pot_2093)walk_executor(faucet_134)switchon_executor(faucet_134)switchoff_executor(faucet_134)walk_executor(stove_2090)put_executor(pot_2093, stove_2090)walk_executor(orchid_200)exp(food_rice_2067, orchid_200)walk_executor(food_rice_2067)grab_executor(food_rice_2067)walk_executor(pot_2093)putin_executor(food_rice_2067, pot_2093)obs(pot_2093, Is the rice cooked)
+##############################
+From agent.py
+walk_executor(pot_2093)
+Robot find: Robot is close to the stove_2090. Robot is close to the pot_2093. 
+##############################
+From agent.py
+grab_executor(pot_2093)
+Robot find: Robot is close to the stove_2090. Robot is close to the pot_2093. Grabbing pot_2093 by right hand. 
+##############################
+From agent.py
+walk_executor(faucet_134)
+Robot find: Robot is close to the pot_2093. Robot is close to the kitchen_counter_132. Robot is close to the faucet_134. 
+##############################
+From agent.py
+switchon_executor(faucet_134)
+Robot find: Robot is close to the pot_2093. Robot is close to the kitchen_counter_132. Robot is close to the faucet_134. faucet_134 is turned on. 
+##############################
+From agent.py
+switchoff_executor(faucet_134)
+Robot find: Robot is close to the pot_2093. Robot is close to the kitchen_counter_132. Robot is close to the faucet_134. faucet_134 is turned off. 
+##############################
+From agent.py
+walk_executor(stove_2090)
+Robot find: Robot is close to the pot_2093. Robot is close to the kitchen_counter_129. Robot is close to the stove_2090. 
+##############################
+From agent.py
+put_executor(pot_2093, stove_2090)
+Robot find: Robot is close to the pot_2093. Robot is close to the kitchen_counter_129. Robot is close to the stove_2090. pot_2093 is close stove_2090. pot_2093 is on stove_2090. pot_2093 released by right hand. 
+##############################
+From agent.py
+walk_executor(orchid_200)
+Robot find: dvd_player_2000, drawing_196, pillow_195, laser_pointer_2025, mat_201, mouse_2112, chair_2119, oil_2005, keyboard_2111, Robot is close to the orchid_200. Robot is close to the table_193. 
+##############################
+From agent.py
+exp(food_rice_2067, orchid_200)
+Fail to find food_rice_2067 around orchid_200. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(fridge_140)switchoff_executor(fridge_140)open_executor(fridge_140)exp(food_rice_2067, fridge_140)walk_executor(food_rice_2067)grab_executor(food_rice_2067)walk_executor(pot_2093)putin_executor(food_rice_2067, pot_2093)obs(pot_2093, Is the rice cooked)
+##############################
+From agent.py
+walk_executor(fridge_140)
+Robot find: chair_138, milk_2074, dry_pasta_2073, Robot is close to the fridge_140. 
+##############################
+From agent.py
+switchoff_executor(fridge_140)
+Robot find: Robot is close to the fridge_140. fridge_140 is turned off. 
+##############################
+From agent.py
+open_executor(fridge_140)
+Robot find: food_cereal_2048, food_cheese_2049, food_chicken_2050, food_dessert_2051, food_donut_2052, food_egg_2053, food_fish_2054, food_food_2055, food_fruit_2056, food_hamburger_2057, food_ice_cream_2058, food_jam_2059, food_kiwi_2060, food_lemon_2061, food_noodles_2062, food_oatmeal_2063, food_peanut_butter_2064, food_pizza_2065, food_potato_2066, food_rice_2067, food_salt_2068, food_snack_2069, food_sugar_2070, food_turkey_2071, food_vegetable_2072, sauce_2101, food_steak_2042, food_apple_2043, food_bacon_2044, food_banana_2045, food_cake_2046, food_carrot_2047, Robot is close to the food_cereal_2048. Robot is close to the food_cheese_2049. Robot is close to the food_chicken_2050. Robot is close to the food_dessert_2051. Robot is close to the food_donut_2052. Robot is close to the food_egg_2053. Robot is close to the food_fish_2054. Robot is close to the food_food_2055. Robot is close to the food_fruit_2056. Robot is close to the food_hamburger_2057. Robot is close to the food_ice_cream_2058. Robot is close to the food_jam_2059. Robot is close to the fridge_140. Robot is close to the food_kiwi_2060. Robot is close to the food_lemon_2061. Robot is close to the food_noodles_2062. Robot is close to the food_oatmeal_2063. Robot is close to the food_peanut_butter_2064. Robot is close to the food_pizza_2065. Robot is close to the food_potato_2066. Robot is close to the food_rice_2067. Robot is close to the food_salt_2068. Robot is close to the food_snack_2069. Robot is close to the food_sugar_2070. Robot is close to the food_turkey_2071. Robot is close to the food_vegetable_2072. Robot is close to the sauce_2101. Robot is close to the food_steak_2042. Robot is close to the food_apple_2043. Robot is close to the food_bacon_2044. Robot is close to the food_banana_2045. Robot is close to the food_cake_2046. Robot is close to the food_carrot_2047. fridge_140 is opened. 
+##############################
+From agent.py
+exp(food_rice_2067, fridge_140)
+Find food_rice_2067. 
+##############################
+From agent.py-> find a plan in act()
+grab_executor(food_rice_2067)walk_executor(pot_2093)putin_executor(food_rice_2067, pot_2093)obs(pot_2093, Is the rice cooked)
+##############################
+From agent.py
+grab_executor(food_rice_2067)
+Robot find: Robot is close to the food_cereal_2048. Robot is close to the food_cheese_2049. Robot is close to the food_chicken_2050. Robot is close to the food_dessert_2051. Robot is close to the food_donut_2052. Robot is close to the food_egg_2053. Robot is close to the food_fish_2054. Robot is close to the food_food_2055. Robot is close to the food_fruit_2056. Robot is close to the food_hamburger_2057. Robot is close to the food_ice_cream_2058. Robot is close to the food_jam_2059. Robot is close to the fridge_140. Robot is close to the food_kiwi_2060. Robot is close to the food_lemon_2061. Robot is close to the food_noodles_2062. Robot is close to the food_oatmeal_2063. Robot is close to the food_peanut_butter_2064. Robot is close to the food_pizza_2065. Robot is close to the food_potato_2066. Robot is close to the food_rice_2067. Robot is close to the food_salt_2068. Robot is close to the food_snack_2069. Robot is close to the food_sugar_2070. Robot is close to the food_turkey_2071. Robot is close to the food_vegetable_2072. Robot is close to the sauce_2101. Robot is close to the food_steak_2042. Robot is close to the food_apple_2043. Robot is close to the food_bacon_2044. Robot is close to the food_banana_2045. Robot is close to the food_cake_2046. Robot is close to the food_carrot_2047. Grabbing food_rice_2067 by right hand. 
+##############################
+From agent.py
+walk_executor(pot_2093)
+Robot find: Robot is close to the food_rice_2067. Robot is close to the stove_2090. Robot is close to the pot_2093. 
+##############################
+From agent.py
+putin_executor(food_rice_2067, pot_2093)
+Robot find: Robot is close to the food_rice_2067. Robot is close to the stove_2090. Robot is close to the pot_2093. food_rice_2067 is inside pot_2093. food_rice_2067 is close pot_2093. pot_2093 is close food_rice_2067. food_rice_2067 released by right hand. 
+##############################
+From agent.py
+obs(pot_2093, Is the rice cooked)
+Get this information:  food_rice_2067 is inside pot_2093. pot_2093 is inside dining_room_1. pot_2093 is close to stove_2090. pot_2093 is close to character_219. pot_2093 is close to food_rice_2067. pot_2093 is on stove_2090. pot_2093 is OPEN.
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: No
+The feedback instruction: The robot needs to ensure the pot is filled with water and placed on the stove with the stove turned on to boil the water before adding the rice and monitoring if it is cooked. Currently, the pot was placed on the stove, and rice is added, but there is no indication that the pot contains water or that the boiling process has occurred.
+##############################
+From agent.py
+Human Instruction: The robot needs to ensure the pot is filled with water and placed on the stove with the stove turned on to boil the water before adding the rice and monitoring if it is cooked. Currently, the pot was placed on the stove, and rice is added, but there is no indication that the pot contains water or that the boiling process has occurred.
+
+The actions you have taken:
+Action 1: Walk to kitchen_counter_129.
+Action 2: look for pot_2093 around kitchen_counter_129.
+Action 3: Walk to pot_2093.
+Action 4: Open pot_2093.
+Action 5: Grab pot_2093.
+Action 6: Walk to faucet_134.
+Action 7: Switch off faucet_134.
+Action 8: Walk to stove_2090.
+Action 9: Open stove_2090.
+Action 10: Switch on stove_2090.
+Action 11: Put pot_2093 on stove_2090.
+Action 12: Walk to cupboard_131.
+Action 13: Open cupboard_131.
+Action 14: look for food_rice_2067 around cupboard_131.
+Action 15: Walk to pot_2093.
+Action 16: Grab pot_2093.
+Action 17: Walk to faucet_308.
+Action 18: Switch off faucet_308.
+Action 19: Walk to stove_2090.
+Action 20: Put pot_2093 on stove_2090.
+Action 21: Walk to cupboard_130.
+Action 22: look for food_rice_2067 around cupboard_130.
+Action 23: Walk to pot_2093.
+Action 24: Grab pot_2093.
+Action 25: Walk to faucet_134.
+Action 26: Switch on faucet_134.
+Action 27: Switch off faucet_134.
+Action 28: Walk to stove_2090.
+Action 29: Put pot_2093 on stove_2090.
+Action 30: Walk to orchid_200.
+Action 31: look for food_rice_2067 around orchid_200.
+Action 32: Walk to fridge_140.
+Action 33: Switch off fridge_140.
+Action 34: Open fridge_140.
+Action 35: look for food_rice_2067 around fridge_140.
+Action 36: Grab food_rice_2067.
+Action 37: Walk to pot_2093.
+Action 38: Put food_rice_2067 into pot_2093.
+Action 39: Observe around pot_2093 with the question of Is the rice cooked.
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_cup_2006_around_wallshelf_187(cup:item):
+    goal: not unknown(cup)
+    body:
+        assert is_cup(cup)
+        bind wallshelf_instance:item where:
+            is_wallshelf(wallshelf_instance) and id[wallshelf_instance]==187
+        achieve close_char(char,wallshelf_instance)
+        if can_open(wallshelf_instance):
+            achieve_once open(wallshelf_instance)
+            exp(cup,wallshelf_instance)
+        else:
+            exp(cup,wallshelf_instance)
+    eff:
+        unknown[cup]=False
+        close[cup,wallshelf_instance]=True
+        close[wallshelf_instance,cup]=True
+    
+
+behavior find_cd_player_2084_around_desk_375(cd_player:item):
+    goal: not unknown(cd_player)
+    body:
+        assert is_cd_player(cd_player)
+        bind desk_instance:item where:
+            is_desk(desk_instance) and id[desk_instance]==375
+        achieve close_char(char,desk_instance)
+        if can_open(desk_instance):
+            achieve_once open(desk_instance)
+            exp(cd_player,desk_instance)
+        else:
+            exp(cd_player,desk_instance)
+    eff:
+        unknown[cd_player]=False
+        close[cd_player,desk_instance]=True
+        close[desk_instance,cd_player]=True
+    
+
+behavior find_bowl_2096_around_wallshelf_187(bowl:item):
+    goal: not unknown(bowl)
+    body:
+        assert is_bowl(bowl)
+        bind wallshelf_instance:item where:
+            is_wallshelf(wallshelf_instance) and id[wallshelf_instance]==187
+        achieve close_char(char,wallshelf_instance)
+        if can_open(wallshelf_instance):
+            achieve_once open(wallshelf_instance)
+            exp(bowl,wallshelf_instance)
+        else:
+            exp(bowl,wallshelf_instance)
+    eff:
+        unknown[bowl]=False
+        close[bowl,wallshelf_instance]=True
+        close[wallshelf_instance,bowl]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior ensure_stove_on(stove:item):
+    body:
+        if is_off(stove):
+            switch_on(stove)
+
+behavior fill_pot_with_water(pot:item, faucet:item):
+    body:
+        if not has_water(pot):
+            walk_to(faucet)
+            get_water(pot)
+
+behavior place_pot_on_stove(pot:item, stove:item):
+    body:
+        if not on(pot, stove):
+            put_on(pot, stove)
+
+behavior add_rice_to_pot(rice:item, pot:item):
+    body:
+        if not inside(rice, pot):
+            put_inside(rice, pot)
+
+behavior check_rice_cooked(pot:item):
+    body:
+        observe(pot, "Is the rice cooked")
+
+behavior __goal__():
+    body:
+        bind stove: item where:
+            is_stove(stove)
+
+        bind pot: item where:
+            is_pot(pot)
+
+        bind faucet: item where:
+            is_faucet(faucet)
+
+        bind rice: item where:
+            is_food_rice(rice)
+
+        fill_pot_with_water(pot, faucet)
+        ensure_stove_on(stove)
+        place_pot_on_stove(pot, stove)
+        add_rice_to_pot(rice, pot)
+        check_rice_cooked(pot)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+behavior ensure_stove_on(stove:item):
+    body:
+        if is_off(stove):
+            switch_on(stove)
+
+behavior fill_pot_with_water(pot:item, faucet:item):
+    body:
+        if not has_water(pot):
+            walk_to(faucet)
+            get_water(pot)
+
+behavior place_pot_on_stove(pot:item, stove:item):
+    body:
+        if not on(pot, stove):
+            put_on(pot, stove)
+
+behavior add_rice_to_pot(rice:item, pot:item):
+    body:
+        if not inside(rice, pot):
+            put_inside(rice, pot)
+
+behavior check_rice_cooked(pot:item):
+    body:
+        observe(pot, "Is the rice cooked")
+
+behavior __goal__():
+    body:
+        bind stove: item where:
+            is_stove(stove)
+
+        bind pot: item where:
+            is_pot(pot)
+
+        bind faucet: item where:
+            is_faucet(faucet)
+
+        bind rice: item where:
+            is_food_rice(rice)
+
+        fill_pot_with_water(pot, faucet)
+        ensure_stove_on(stove)
+        place_pot_on_stove(pot, stove)
+        add_rice_to_pot(rice, pot)
+        check_rice_cooked(pot)
+
+##############################
+From agent.py-> find a plan in act()
+obs(pot_2093, Is the rice cooked)
+##############################
+From agent.py
+obs(pot_2093, Is the rice cooked)
+Get this information:  food_rice_2067 is inside pot_2093. pot_2093 is inside dining_room_1. pot_2093 is close to stove_2090. pot_2093 is close to character_219. pot_2093 is close to food_rice_2067. pot_2093 is on stove_2090. pot_2093 is OPEN.
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: No
+The feedback instruction: You need to ensure that the pot contains water before placing it on the stove to boil. After that, the stove must be turned on, and only then should the rice be added to ensure it cooks properly while boiling.
+##############################
+From agent.py
+Human Instruction: You need to ensure that the pot contains water before placing it on the stove to boil. After that, the stove must be turned on, and only then should the rice be added to ensure it cooks properly while boiling.
+
+The actions you have taken:
+Action 1: Walk to kitchen_counter_129.
+Action 2: look for pot_2093 around kitchen_counter_129.
+Action 3: Walk to pot_2093.
+Action 4: Open pot_2093.
+Action 5: Grab pot_2093.
+Action 6: Walk to faucet_134.
+Action 7: Switch off faucet_134.
+Action 8: Walk to stove_2090.
+Action 9: Open stove_2090.
+Action 10: Switch on stove_2090.
+Action 11: Put pot_2093 on stove_2090.
+Action 12: Walk to cupboard_131.
+Action 13: Open cupboard_131.
+Action 14: look for food_rice_2067 around cupboard_131.
+Action 15: Walk to pot_2093.
+Action 16: Grab pot_2093.
+Action 17: Walk to faucet_308.
+Action 18: Switch off faucet_308.
+Action 19: Walk to stove_2090.
+Action 20: Put pot_2093 on stove_2090.
+Action 21: Walk to cupboard_130.
+Action 22: look for food_rice_2067 around cupboard_130.
+Action 23: Walk to pot_2093.
+Action 24: Grab pot_2093.
+Action 25: Walk to faucet_134.
+Action 26: Switch on faucet_134.
+Action 27: Switch off faucet_134.
+Action 28: Walk to stove_2090.
+Action 29: Put pot_2093 on stove_2090.
+Action 30: Walk to orchid_200.
+Action 31: look for food_rice_2067 around orchid_200.
+Action 32: Walk to fridge_140.
+Action 33: Switch off fridge_140.
+Action 34: Open fridge_140.
+Action 35: look for food_rice_2067 around fridge_140.
+Action 36: Grab food_rice_2067.
+Action 37: Walk to pot_2093.
+Action 38: Put food_rice_2067 into pot_2093.
+Action 39: Observe around pot_2093 with the question of Is the rice cooked.
+Action 40: Observe around pot_2093 with the question of Is the rice cooked.
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_bowl_2097_around_kitchen_counter_128(bowl:item):
+    goal: not unknown(bowl)
+    body:
+        assert is_bowl(bowl)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==128
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(bowl,kitchen_counter_instance)
+        else:
+            exp(bowl,kitchen_counter_instance)
+    eff:
+        unknown[bowl]=False
+        close[bowl,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,bowl]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def pot_has_water(pot:item):
+    # Function to check if a pot has water
+    symbol has_water=has_water(pot)
+    return has_water
+
+def observe_rice_cooked(pot:item):
+    # Function to observe if the rice is cooked in a pot
+    observe(pot, "Is the rice cooked")
+
+behavior add_water_to_pot(pot:item, faucet:item):
+    body:
+        if not has_water(pot):
+            if is_off(faucet):
+                switch_on(faucet)  # Ensure the faucet is on to get water
+            get_water(pot)  # Fill the pot with water
+            switch_off(faucet)  # Turn off the faucet after getting water
+
+behavior place_pot_on_stove(pot:item, stove:item):
+    body:
+        if not on(pot, stove):
+            put_on(pot, stove)  # Place the pot on the stove
+
+behavior cook_rice_in_pot(pot:item, rice:item, stove:item):
+    body:
+        if not inside(rice, pot):
+            put_inside(rice, pot)  # Add rice to the pot
+        observe_rice_cooked(pot)  # Check if the rice is cooked
+
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot)
+        bind faucet: item where:
+            is_faucet(faucet)
+        bind stove: item where:
+            is_stove(stove)
+        bind rice: item where:
+            is_food_rice(rice)
+        
+        add_water_to_pot(pot, faucet)
+        place_pot_on_stove(pot, stove)
+        cook_rice_in_pot(pot, rice, stove)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_cup_2089_around_kitchen_counter_128(cup:item):
+    goal: not unknown(cup)
+    body:
+        assert is_cup(cup)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==128
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(cup,kitchen_counter_instance)
+        else:
+            exp(cup,kitchen_counter_instance)
+    eff:
+        unknown[cup]=False
+        close[cup,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,cup]=True
+    
+
+behavior find_cd_player_2084_around_desk_375(cd_player:item):
+    goal: not unknown(cd_player)
+    body:
+        assert is_cd_player(cd_player)
+        bind desk_instance:item where:
+            is_desk(desk_instance) and id[desk_instance]==375
+        achieve close_char(char,desk_instance)
+        if can_open(desk_instance):
+            achieve_once open(desk_instance)
+            exp(cd_player,desk_instance)
+        else:
+            exp(cd_player,desk_instance)
+    eff:
+        unknown[cd_player]=False
+        close[cd_player,desk_instance]=True
+        close[desk_instance,cd_player]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior fill_with_water(pot:item, faucet:item):
+    body:
+        if not has_water(pot):
+            walk_to(faucet)
+            switch_on(faucet)
+            get_water(pot)
+            switch_off(faucet)
+
+behavior place_on_stove(pot:item, stove:item):
+    body:
+        if not on(pot, stove):
+            walk_to(stove)
+            put_on(pot, stove)
+
+behavior add_rice_to_pot(rice:item, pot:item):
+    body:
+        if not inside(rice, pot):
+            walk_to(pot)
+            put_inside(rice, pot)
+
+behavior observe_cooked_rice(pot:item):
+    body:
+        observe(pot, "Is the rice cooked")
+        
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot)
+        
+        bind faucet: item where:
+            is_faucet(faucet)
+       
+        bind stove: item where:
+            is_stove(stove)
+        
+        bind rice: item where:
+            is_food_rice(rice)
+        
+        fill_with_water(pot, faucet)
+        place_on_stove(pot, stove)
+        
+        if is_off(stove):
+            switch_on(stove)
+        
+        add_rice_to_pot(rice, pot)
+        observe_cooked_rice(pot)
+        observe_cooked_rice(pot)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+behavior fill_with_water(pot:item, faucet:item):
+    body:
+        if not has_water(pot):
+            walk_to(faucet)
+            switch_on(faucet)
+            get_water(pot)
+            switch_off(faucet)
+
+behavior place_on_stove(pot:item, stove:item):
+    body:
+        if not on(pot, stove):
+            walk_to(stove)
+            put_on(pot, stove)
+
+behavior add_rice_to_pot(rice:item, pot:item):
+    body:
+        if not inside(rice, pot):
+            walk_to(pot)
+            put_inside(rice, pot)
+
+behavior observe_cooked_rice(pot:item):
+    body:
+        observe(pot, "Is the rice cooked")
+        
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot)
+        
+        bind faucet: item where:
+            is_faucet(faucet)
+       
+        bind stove: item where:
+            is_stove(stove)
+        
+        bind rice: item where:
+            is_food_rice(rice)
+        
+        fill_with_water(pot, faucet)
+        place_on_stove(pot, stove)
+        
+        if is_off(stove):
+            switch_on(stove)
+        
+        add_rice_to_pot(rice, pot)
+        observe_cooked_rice(pot)
+        observe_cooked_rice(pot)
+
+##############################
+From agent.py-> find a plan in act()
+obs(pot_2093, Is the rice cooked)obs(pot_2093, Is the rice cooked)
+##############################
+From agent.py
+obs(pot_2093, Is the rice cooked)
+Get this information:  food_rice_2067 is inside pot_2093. pot_2093 is inside dining_room_1. pot_2093 is close to stove_2090. pot_2093 is close to character_219. pot_2093 is close to food_rice_2067. pot_2093 is on stove_2090. pot_2093 is OPEN.
+##############################
+From agent.py
+obs(pot_2093, Is the rice cooked)
+Get this information:  food_rice_2067 is inside pot_2093. pot_2093 is inside dining_room_1. pot_2093 is close to stove_2090. pot_2093 is close to character_219. pot_2093 is close to food_rice_2067. pot_2093 is on stove_2090. pot_2093 is OPEN.
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: No
+The feedback instruction: You need to ensure the pot contains water by filling it from a faucet before placing it on the stove.
+##############################
+Task Summary:
+Task Goal:
+Boil some rice by pot.
+Action History:
+['walk_executor(kitchen_counter_129)', 'walk_executor(pot_2093)', 'open_executor(pot_2093)', 'grab_executor(pot_2093)', 'walk_executor(faucet_134)', 'switchoff_executor(faucet_134)', 'walk_executor(stove_2090)', 'open_executor(stove_2090)', 'switchon_executor(stove_2090)', 'put_executor(pot_2093, stove_2090)', 'walk_executor(cupboard_131)', 'open_executor(cupboard_131)', 'walk_executor(pot_2093)', 'grab_executor(pot_2093)', 'walk_executor(faucet_308)', 'switchoff_executor(faucet_308)', 'walk_executor(stove_2090)', 'put_executor(pot_2093, stove_2090)', 'walk_executor(cupboard_130)', 'walk_executor(pot_2093)', 'grab_executor(pot_2093)', 'walk_executor(faucet_134)', 'switchon_executor(faucet_134)', 'switchoff_executor(faucet_134)', 'walk_executor(stove_2090)', 'put_executor(pot_2093, stove_2090)', 'walk_executor(orchid_200)', 'walk_executor(fridge_140)', 'switchoff_executor(fridge_140)', 'open_executor(fridge_140)', 'grab_executor(food_rice_2067)', 'walk_executor(pot_2093)', 'putin_executor(food_rice_2067, pot_2093)']
+Time info:
+Time consume: 156 seconds
+Exp_helper query times: 0
+Guidance query times: 0
+library scale: 0
+goal generate times: 5
+goal correct times: 0
+action_num: 33
+
+Task complete rate:
+1
+Scene_id: 2
+##############################

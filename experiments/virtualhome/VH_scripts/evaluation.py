@@ -305,7 +305,7 @@ class Evaluator(BaseAgent):
             verbose=False,
             algo='priority_tree_v1'
         )
-        if len(plans) == 0:
+        if plans == None or len(plans) == 0:
             print("Evaluator failed to find a plan")
             # self.logger.info("From evaluation.py\n"+self.task_file_path+f"\nChecking {key_state}\n"+"Evaluator failed to find a plan")
             return 1e9

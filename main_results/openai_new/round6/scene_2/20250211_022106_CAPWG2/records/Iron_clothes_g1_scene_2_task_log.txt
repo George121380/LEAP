@@ -1,0 +1,717 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['Iron the pair of skirt directly.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_iron_2117_around_ironing_board_2099(iron:item):
+    goal: not unknown(iron)
+    body:
+        assert is_iron(iron)
+        bind ironing_board_instance:item where:
+            is_ironing_board(ironing_board_instance) and id[ironing_board_instance]==2099
+        achieve close_char(char,ironing_board_instance)
+        if can_open(ironing_board_instance):
+            achieve_once open(ironing_board_instance)
+            exp(iron,ironing_board_instance)
+        else:
+            exp(iron,ironing_board_instance)
+    eff:
+        unknown[iron]=False
+        close[iron,ironing_board_instance]=True
+        close[ironing_board_instance,iron]=True
+    
+
+behavior find_clothes_skirt_2116_around_basket_for_clothes_2040(clothes_skirt:item):
+    goal: not unknown(clothes_skirt)
+    body:
+        assert is_clothes_skirt(clothes_skirt)
+        bind basket_for_clothes_instance:item where:
+            is_basket_for_clothes(basket_for_clothes_instance) and id[basket_for_clothes_instance]==2040
+        achieve close_char(char,basket_for_clothes_instance)
+        if can_open(basket_for_clothes_instance):
+            achieve_once open(basket_for_clothes_instance)
+            exp(clothes_skirt,basket_for_clothes_instance)
+        else:
+            exp(clothes_skirt,basket_for_clothes_instance)
+    eff:
+        unknown[clothes_skirt]=False
+        close[clothes_skirt,basket_for_clothes_instance]=True
+        close[basket_for_clothes_instance,clothes_skirt]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_suitable_iron(iron:item):
+    # Check if the iron is plugged in, switched on, and has water for steaming clothes
+    symbol suitable_iron = plugged(iron) and is_on(iron) and has_water(iron)
+    return suitable_iron
+
+behavior prepare_iron(iron:item):
+    body:
+        if not plugged(iron):
+            plugin(iron) # Plug in the iron
+        if not is_on(iron):
+            switch_on(iron) # Turn on the iron
+        if not has_water(iron):
+            get_water(iron) # Add water to the iron
+
+behavior iron_skirt(skirt:item, iron:item):
+    body:
+        if exists iron_board: item : is_ironing_board(iron_board):
+            if is_clothes(skirt) and not on(skirt, iron_board):
+                put_on(skirt, iron_board) # Place the skirt on the ironing board
+            if on(skirt, iron_board):
+                walk_to(iron_board) # Approach the ironing board
+                foreach part: item:
+                    observe(skirt, "Inspect the area on the ironing board that requires ironing") # Check the skirt parts on the board for wrinkles
+                    touch(iron) # Use the iron to press the skirt
+
+behavior __goal__():
+    body:
+        bind iron: item where:
+            is_iron(iron)
+        bind skirt: item where:
+            is_clothes_skirt(skirt)
+        if not is_suitable_iron(iron):
+            prepare_iron(iron) # Prepare the iron if its not ready
+        iron_skirt(skirt, iron) # Iron the skirt
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_iron_2117_around_ironing_board_2099(iron:item):
+    goal: not unknown(iron)
+    body:
+        assert is_iron(iron)
+        bind ironing_board_instance:item where:
+            is_ironing_board(ironing_board_instance) and id[ironing_board_instance]==2099
+        achieve close_char(char,ironing_board_instance)
+        if can_open(ironing_board_instance):
+            achieve_once open(ironing_board_instance)
+            exp(iron,ironing_board_instance)
+        else:
+            exp(iron,ironing_board_instance)
+    eff:
+        unknown[iron]=False
+        close[iron,ironing_board_instance]=True
+        close[ironing_board_instance,iron]=True
+    
+
+behavior find_clothes_skirt_2116_around_basket_for_clothes_2040(clothes_skirt:item):
+    goal: not unknown(clothes_skirt)
+    body:
+        assert is_clothes_skirt(clothes_skirt)
+        bind basket_for_clothes_instance:item where:
+            is_basket_for_clothes(basket_for_clothes_instance) and id[basket_for_clothes_instance]==2040
+        achieve close_char(char,basket_for_clothes_instance)
+        if can_open(basket_for_clothes_instance):
+            achieve_once open(basket_for_clothes_instance)
+            exp(clothes_skirt,basket_for_clothes_instance)
+        else:
+            exp(clothes_skirt,basket_for_clothes_instance)
+    eff:
+        unknown[clothes_skirt]=False
+        close[clothes_skirt,basket_for_clothes_instance]=True
+        close[basket_for_clothes_instance,clothes_skirt]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+
+def find_and_verify_iron(ironing_board: item):
+    # Function to find the iron and verify it has water and is plugged
+    symbol has_iron=exists i: item : (is_iron(i) and on(i, ironing_board))
+    return has_iron
+
+behavior plug_in_iron(iron: item):
+    body:
+        if unplugged(iron):
+            plugin(iron)  # Plug in the iron
+
+behavior fill_iron_with_water(iron: item):
+    body:
+        if not has_water(iron):
+            get_water(iron)  # Fill the iron with water
+
+behavior __goal__():
+    body:
+        bind ironing_board: item where:
+            is_ironing_board(ironing_board)
+        # Select an ironing board
+
+        if exists iron: item : is_iron(iron) and on(iron, ironing_board):
+            # Check if the iron is available on the ironing board
+            bind iron: item where:
+                is_iron(iron) and on(iron, ironing_board)
+            plug_in_iron(iron)
+            fill_iron_with_water(iron)
+            switch_on(iron)
+            # Switch the iron on
+
+        else:
+            # If no iron is found on the ironing board, need to find iron first
+            foreach item: item:
+                if is_ironing_board(item) and not visited(item):
+                    observe(item, "Find and verify if the iron is on it")
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+
+def find_and_verify_iron(ironing_board: item):
+    # Function to find the iron and verify it has water and is plugged
+    symbol has_iron=exists i: item : (is_iron(i) and on(i, ironing_board))
+    return has_iron
+
+behavior plug_in_iron(iron: item):
+    body:
+        if unplugged(iron):
+            plugin(iron)  # Plug in the iron
+
+behavior fill_iron_with_water(iron: item):
+    body:
+        if not has_water(iron):
+            get_water(iron)  # Fill the iron with water
+
+behavior __goal__():
+    body:
+        bind ironing_board: item where:
+            is_ironing_board(ironing_board)
+        # Select an ironing board
+
+        if exists iron: item : is_iron(iron) and on(iron, ironing_board):
+            # Check if the iron is available on the ironing board
+            bind iron: item where:
+                is_iron(iron) and on(iron, ironing_board)
+            plug_in_iron(iron)
+            fill_iron_with_water(iron)
+            switch_on(iron)
+            # Switch the iron on
+
+        else:
+            # If no iron is found on the ironing board, need to find iron first
+            foreach item: item:
+                if is_ironing_board(item) and not visited(item):
+                    observe(item, "Find and verify if the iron is on it")
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(ironing_board_2099)obs(ironing_board_2099, Find and verify if the iron is on it)
+##############################
+From agent.py
+walk_executor(ironing_board_2099)
+Robot find: iron_2117, Robot is close to the ironing_board_2099. 
+##############################
+From agent.py
+obs(ironing_board_2099, Find and verify if the iron is on it)
+Get this information:  ironing_board_2099 is close to bedroom_220. ironing_board_2099 is close to iron_2117. ironing_board_2099 is close to character_219. iron_2117 is on ironing_board_2099. ironing_board_2099 is inside bedroom_220.
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: No
+The feedback instruction: Plug in the iron, fill it with water if necessary, and then switch it on to prepare for ironing the skirt.
+##############################
+From agent.py
+Human Instruction: Plug in the iron, fill it with water if necessary, and then switch it on to prepare for ironing the skirt.
+
+The actions you have taken:
+Action 1: Walk to ironing_board_2099.
+Action 2: Observe around ironing_board_2099 with the question of Find and verify if the iron is on it.
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_clothes_skirt_2116_around_bed_376(clothes_skirt:item):
+    goal: not unknown(clothes_skirt)
+    body:
+        assert is_clothes_skirt(clothes_skirt)
+        bind bed_instance:item where:
+            is_bed(bed_instance) and id[bed_instance]==376
+        achieve close_char(char,bed_instance)
+        if can_open(bed_instance):
+            achieve_once open(bed_instance)
+            exp(clothes_skirt,bed_instance)
+        else:
+            exp(clothes_skirt,bed_instance)
+    eff:
+        unknown[clothes_skirt]=False
+        close[clothes_skirt,bed_instance]=True
+        close[bed_instance,clothes_skirt]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior setup_iron_for_ironing(iron:item):
+    body:
+        if not plugged(iron) and has_plug(iron):
+            plugin(iron) # Plug in the iron
+        if not has_water(iron):
+            get_water(iron) # Fill the iron with water if necessary
+        if is_off(iron) and has_switch(iron):
+            switch_on(iron) # Turn on the iron
+
+behavior iron_skirt(skirt:item):
+    body:
+        bind iron: item where:
+            is_iron(iron) and on(iron, ironing_board_2099) and visited(iron)
+        # Assuming the iron is known to be on the ironing board and verified through previous actions
+        
+        setup_iron_for_ironing(iron)
+        # Set up the iron for ironing the skirt
+
+behavior __goal__():
+    body:
+        bind skirt: item where:
+            is_clothes_skirt(skirt)
+        # Select skirt for ironing
+
+        walk_to(skirt)
+        # Move to the location of the skirt
+
+        walk_to(ironing_board_2099)
+        # Move to the ironing board
+
+        iron_skirt(skirt)
+        # Proceed with the task of ironing the skirt
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_clothes_skirt_2116_around_basket_for_clothes_2040(clothes_skirt:item):
+    goal: not unknown(clothes_skirt)
+    body:
+        assert is_clothes_skirt(clothes_skirt)
+        bind basket_for_clothes_instance:item where:
+            is_basket_for_clothes(basket_for_clothes_instance) and id[basket_for_clothes_instance]==2040
+        achieve close_char(char,basket_for_clothes_instance)
+        if can_open(basket_for_clothes_instance):
+            achieve_once open(basket_for_clothes_instance)
+            exp(clothes_skirt,basket_for_clothes_instance)
+        else:
+            exp(clothes_skirt,basket_for_clothes_instance)
+    eff:
+        unknown[clothes_skirt]=False
+        close[clothes_skirt,basket_for_clothes_instance]=True
+        close[basket_for_clothes_instance,clothes_skirt]=True
+    
+
+behavior find_clothes_shirt_2114_around_basket_for_clothes_2040(clothes_shirt:item):
+    goal: not unknown(clothes_shirt)
+    body:
+        assert is_clothes_shirt(clothes_shirt)
+        bind basket_for_clothes_instance:item where:
+            is_basket_for_clothes(basket_for_clothes_instance) and id[basket_for_clothes_instance]==2040
+        achieve close_char(char,basket_for_clothes_instance)
+        if can_open(basket_for_clothes_instance):
+            achieve_once open(basket_for_clothes_instance)
+            exp(clothes_shirt,basket_for_clothes_instance)
+        else:
+            exp(clothes_shirt,basket_for_clothes_instance)
+    eff:
+        unknown[clothes_shirt]=False
+        close[clothes_shirt,basket_for_clothes_instance]=True
+        close[basket_for_clothes_instance,clothes_shirt]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def has_skill_for_ironing(char:character):
+    # Function to determine if the character can undertake the ironing task considering required skills are ready
+    symbol prepared=exists item: item : (is_iron(item) and has_plug(item) and has_switch(item))
+    return prepared
+
+behavior iron_skirt(skirt:item, iron:item):
+    body:
+        if not exist_skirt_requiring_ironing():
+            # Return if theres no skirt needing ironing
+            return
+        
+        if not is_on(iron):
+            switch_on(iron)
+            # Switch on the iron
+
+        if has_water(iron):
+            # Proceed to iron the skirt
+            handle_ironing(skirt, iron)
+        else:
+            # Handle iron without water case
+            fill_iron_with_water(iron)
+            handle_ironing(skirt, iron)
+
+def exist_skirt_requiring_ironing():
+    # Check if there is a skirt needing to be ironed
+    symbol exists_skirt=exists o: item : (is_clothes_skirt(o) and dirty(o))
+    return exists_skirt
+
+behavior handle_ironing(skirt:item, iron:item):
+    body:
+        if dirty(skirt):
+            # If the skirt needs to be ironed, perform the action
+            grab(iron)
+            iron_skirt_action(skirt, iron)
+            # Release the iron after use
+            empty_a_hand()
+
+behavior iron_skirt_action(skirt:item, iron:item):
+    body:
+        # Simulate the action of ironing
+        observe(skirt, "Ensure skirt is smoothly pressed")
+        remove_dirt_from_skirt(skirt)
+
+behavior remove_dirt_from_skirt(skirt:item):
+    body:
+        if dirty(skirt):
+            wipe(skirt)
+            # Confirm skirt is clean after ironing process
+
+behavior fill_iron_with_water(iron:item):
+    body:
+        # Get water and fill the iron
+        if not has_water(iron):
+            get_water(iron)
+
+behavior __goal__():
+    body:
+        if has_skill_for_ironing(char):
+            bind iron: item where:
+                is_iron(iron) and close_char(char, iron)
+            # Select an iron that is close to the character
+
+            foreach skirt: item:
+                if is_clothes_skirt(skirt):
+                    iron_skirt(skirt, iron)
+        else:
+            observe(Prepare iron with necessary resources for ironing a skirt)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_clothes_skirt_2116_around_basket_for_clothes_2040(clothes_skirt:item):
+    goal: not unknown(clothes_skirt)
+    body:
+        assert is_clothes_skirt(clothes_skirt)
+        bind basket_for_clothes_instance:item where:
+            is_basket_for_clothes(basket_for_clothes_instance) and id[basket_for_clothes_instance]==2040
+        achieve close_char(char,basket_for_clothes_instance)
+        if can_open(basket_for_clothes_instance):
+            achieve_once open(basket_for_clothes_instance)
+            exp(clothes_skirt,basket_for_clothes_instance)
+        else:
+            exp(clothes_skirt,basket_for_clothes_instance)
+    eff:
+        unknown[clothes_skirt]=False
+        close[clothes_skirt,basket_for_clothes_instance]=True
+        close[basket_for_clothes_instance,clothes_skirt]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_ready_for_ironing(ironing_board: item, iron: item):
+    # Check if both the ironing board is close and the iron is on the board
+    symbol ready_for_ironing=close_char(char, ironing_board) and on(iron, ironing_board)
+    return ready_for_ironing
+
+def prepare_iron(iron: item):
+    body:
+        if not plugged(iron):
+            plugin(iron)
+        if not has_water(iron):
+            water(iron)
+        if is_off(iron):
+            switch_on(iron)
+
+behavior start_ironing_skirt(skirt: item, ironing_board: item, iron: item):
+    body:
+        if is_ready_for_ironing(ironing_board, iron):
+            if not inhand(skirt):
+                grab(skirt)
+            put_on(skirt, ironing_board)
+            # Assume ironing action here
+
+behavior __goal__():
+    body:
+        bind ironing_board: item where:
+            is_ironing_board(ironing_board)
+        bind iron: item where:
+            is_iron(iron)
+        bind skirt: item where:
+            is_clothes_skirt(skirt)
+
+        # Walk to the ironing board and make sure the iron is on it
+        walk_to(ironing_board)
+        observe(ironing_board, "Find and verify if the iron is on it")
+        
+        # Prepare the iron
+        prepare_iron(iron)
+
+        # Start ironing the skirt
+        start_ironing_skirt(skirt, ironing_board, iron)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_clothes_skirt_2116_around_basket_for_clothes_2040(clothes_skirt:item):
+    goal: not unknown(clothes_skirt)
+    body:
+        assert is_clothes_skirt(clothes_skirt)
+        bind basket_for_clothes_instance:item where:
+            is_basket_for_clothes(basket_for_clothes_instance) and id[basket_for_clothes_instance]==2040
+        achieve close_char(char,basket_for_clothes_instance)
+        if can_open(basket_for_clothes_instance):
+            achieve_once open(basket_for_clothes_instance)
+            exp(clothes_skirt,basket_for_clothes_instance)
+        else:
+            exp(clothes_skirt,basket_for_clothes_instance)
+    eff:
+        unknown[clothes_skirt]=False
+        close[clothes_skirt,basket_for_clothes_instance]=True
+        close[basket_for_clothes_instance,clothes_skirt]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_skirt_on_board():
+    # Check if a skirt is on the ironing board
+    symbol skirt_on_board=exists skirt: item : (is_clothes_skirt(skirt) and on(skirt, ironing_board))
+    return skirt_on_board
+
+behavior prepare_iron(iron:item):
+    body:
+        if not plugged(iron):
+            plugin(iron) # Plug in the iron
+        if not has_water(iron):
+            water(iron) # Fill iron with water, if necessary
+        if is_off(iron):
+            switch_on(iron) # Switch on the iron
+
+behavior __goal__():
+    body:
+        bind ironing_board: item where:
+            is_ironing_board(ironing_board)
+        # Select the ironing board
+        
+        if not visited(ironing_board):
+            observe(ironing_board, "Find and verify if the iron is on it")
+            # Verify presence of iron on ironing board
+
+        if is_skirt_on_board():
+            bind iron: item where:
+                is_iron(iron) and on(iron, ironing_board)
+            # Select the iron found on the ironing board
+            prepare_iron(iron)
+            # Prepare the iron for use
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_clothes_skirt_2116_around_basket_for_clothes_2040(clothes_skirt:item):
+    goal: not unknown(clothes_skirt)
+    body:
+        assert is_clothes_skirt(clothes_skirt)
+        bind basket_for_clothes_instance:item where:
+            is_basket_for_clothes(basket_for_clothes_instance) and id[basket_for_clothes_instance]==2040
+        achieve close_char(char,basket_for_clothes_instance)
+        if can_open(basket_for_clothes_instance):
+            achieve_once open(basket_for_clothes_instance)
+            exp(clothes_skirt,basket_for_clothes_instance)
+        else:
+            exp(clothes_skirt,basket_for_clothes_instance)
+    eff:
+        unknown[clothes_skirt]=False
+        close[clothes_skirt,basket_for_clothes_instance]=True
+        close[basket_for_clothes_instance,clothes_skirt]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def prepare_iron(iron:item):
+    # Ensures the iron is ready for ironing
+    if is_off(iron):
+        switch_on(iron)
+    if unplugged(iron):
+        plugin(iron)
+    if not has_water(iron):
+        get_water(iron)
+
+def check_if_ready(iron:item):
+    # Checks the readiness of iron
+    prepare_iron(iron)
+    observe(iron, "Verify if the iron is on and ready for use")
+
+behavior __goal__():
+    body:
+        bind iron: item where:
+            is_iron(iron) and on(iron, ironing_board_2099)
+        check_if_ready(iron)
+        # Prepare the iron on the ironing board for use
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_clothes_skirt_2116_around_basket_for_clothes_2040(clothes_skirt:item):
+    goal: not unknown(clothes_skirt)
+    body:
+        assert is_clothes_skirt(clothes_skirt)
+        bind basket_for_clothes_instance:item where:
+            is_basket_for_clothes(basket_for_clothes_instance) and id[basket_for_clothes_instance]==2040
+        achieve close_char(char,basket_for_clothes_instance)
+        if can_open(basket_for_clothes_instance):
+            achieve_once open(basket_for_clothes_instance)
+            exp(clothes_skirt,basket_for_clothes_instance)
+        else:
+            exp(clothes_skirt,basket_for_clothes_instance)
+    eff:
+        unknown[clothes_skirt]=False
+        close[clothes_skirt,basket_for_clothes_instance]=True
+        close[basket_for_clothes_instance,clothes_skirt]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def prepare_iron(iron:item):
+    # Function to ensure the iron is ready for use
+    symbol ready=plugged(iron) and is_on(iron) and has_water(iron)
+    return ready
+
+behavior plugin_and_fill_iron(iron:item):
+    body:
+        if not plugged(iron):
+            plugin(iron)
+        if not has_water(iron):
+            get_water(iron)
+        if is_off(iron):
+            switch_on(iron)
+
+behavior iron_skirt(skirt:item, iron:item, ironing_board:item):
+    body:
+        if not on(skirt, ironing_board):
+            put_on(skirt, ironing_board) # Ensure the skirt is on the ironing board for ironing
+        if prepare_iron(iron):
+            put_close(iron, skirt) # Position the iron close to the skirt to iron it
+
+behavior __goal__():
+    body:
+        bind ironing_board: item where:
+            is_ironing_board(ironing_board) and visited(ironing_board)
+        # The ironing board item has already been identified
+        
+        bind iron: item where:
+            is_iron(iron) and close(iron, ironing_board)
+        # Bind to the iron that is close to the identified ironing board
+
+        bind skirt: item where:
+            is_clothes_skirt(skirt)
+        # Identify the skirt to be ironed
+
+        plugin_and_fill_iron(iron) # Plugin and prepare the iron for use
+        iron_skirt(skirt, iron, ironing_board) # Perform the ironing action
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+def prepare_iron(iron:item):
+    # Function to ensure the iron is ready for use
+    symbol ready=plugged(iron) and is_on(iron) and has_water(iron)
+    return ready
+
+behavior plugin_and_fill_iron(iron:item):
+    body:
+        if not plugged(iron):
+            plugin(iron)
+        if not has_water(iron):
+            get_water(iron)
+        if is_off(iron):
+            switch_on(iron)
+
+behavior iron_skirt(skirt:item, iron:item, ironing_board:item):
+    body:
+        if not on(skirt, ironing_board):
+            put_on(skirt, ironing_board) # Ensure the skirt is on the ironing board for ironing
+        if prepare_iron(iron):
+            put_close(iron, skirt) # Position the iron close to the skirt to iron it
+
+behavior __goal__():
+    body:
+        bind ironing_board: item where:
+            is_ironing_board(ironing_board) and visited(ironing_board)
+        # The ironing board item has already been identified
+        
+        bind iron: item where:
+            is_iron(iron) and close(iron, ironing_board)
+        # Bind to the iron that is close to the identified ironing board
+
+        bind skirt: item where:
+            is_clothes_skirt(skirt)
+        # Identify the skirt to be ironed
+
+        plugin_and_fill_iron(iron) # Plugin and prepare the iron for use
+        iron_skirt(skirt, iron, ironing_board) # Perform the ironing action
+
+##############################
+Error record: object of type 'NoneType' has no len()
+##############################
+Task Summary:
+Task Goal:
+Syntax Error
+Action History:
+['walk_executor(ironing_board_2099)']
+Time info:
+Time consume: 125 seconds
+Exp_helper query times: 0
+Guidance query times: 0
+library scale: 0
+goal generate times: 8
+goal correct times: 0
+action_num: 1
+
+Task complete rate:
+Keystate: k1 - Requires: 10 steps
+Action Completion Rate: 0.0
+Scene_id: 2
+##############################

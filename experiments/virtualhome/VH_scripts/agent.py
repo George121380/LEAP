@@ -360,7 +360,7 @@ class VHAgent(BaseAgent):
                     algo='priority_tree_v1'
                 )
 
-                if len(plans) == 0: # No plan found -> usually bind is not satisfied
+                if plans == None or len(plans) == 0: # No plan found -> usually bind is not satisfied
                     self.empty_plan_times+=1
                     if self.empty_plan_times==self.max_replan_num:
                         print(f'Try to generate the plan for {self.max_replan_num} times, but failed.')
@@ -628,7 +628,8 @@ class VHAgent(BaseAgent):
                     return "Failed", None
                 
         # block while test
-        self.logger.info("From agent.py->reset_sub_goal\n"+self.goal_representation)
+        if self.goal_representation != None:
+            self.logger.info("From agent.py->reset_sub_goal\n"+self.goal_representation)
         self.reset_visited()
         self.record_goal_representation()
         self.save_to_file()

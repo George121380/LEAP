@@ -4,9 +4,9 @@ from action_explaination import controller_to_natural_language
 
 def sub_goal_evaluate_prompt(goal_representation,action_history,current_subgoal,full_goal, next_subgoal,collected_information,obj_list):
     actions=''
-
-    for id in range(len(action_history)):
-        actions+=f'action{id+1}: '+controller_to_natural_language(action_history[id]['action'])+'-> effect: '+action_history[id]['effects']+'\n'
+    if action_history!=None:
+        for id in range(len(action_history)):
+            actions+=f'action{id+1}: '+controller_to_natural_language(action_history[id]['action'])+'-> effect: '+action_history[id]['effects']+'\n'
     objs=''
     for obj in list(obj_list):
         objs+=str(obj)+'\n' 

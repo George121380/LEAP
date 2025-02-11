@@ -1,0 +1,465 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Find a sink in the bathroom.', '2. Fill the sink with water and add soap to create soapy water.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_inside_bathroom(sink:item):
+    # Function to check if a sink is in the bathroom
+    symbol inside_bathroom=exists room: item : (is_bathroom(room) and inside(sink, room))
+    return inside_bathroom
+
+behavior __goal__():
+    body:
+        if exists sink: item : is_sink(sink) and is_inside_bathroom(sink):
+            # If we have already found a sink in the bathroom, we can directly approach it
+            bind sink: item where:
+                is_sink(sink) and is_inside_bathroom(sink)
+            walk_to(sink)
+
+        else:
+            # Check all sinks in the scene that have not been visited
+            foreach sink: item:
+                if is_sink(sink) and not visited(sink):
+                    observe(sink,"Check if this sink is in the bathroom")
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+ 
+def is_inside_bathroom(sink:item):
+    # Function to check if a sink is in the bathroom
+    symbol inside_bathroom=exists room: item : (is_bathroom(room) and inside(sink, room))
+    return inside_bathroom
+
+behavior __goal__():
+    body:
+        if exists sink: item : is_sink(sink) and is_inside_bathroom(sink):
+            # If we have already found a sink in the bathroom, we can directly approach it
+            bind sink: item where:
+                is_sink(sink) and is_inside_bathroom(sink)
+            walk_to(sink)
+
+        else:
+            # Check all sinks in the scene that have not been visited
+            foreach sink: item:
+                if is_sink(sink) and not visited(sink):
+                    observe(sink,"Check if this sink is in the bathroom")
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(sink_307)
+##############################
+From agent.py
+walk_executor(sink_307)
+Robot find: detergent_2108, drawing_296, towel_rack_298, Robot is close to the bathroom_counter_306. Robot is close to the sink_307. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: Yes
+The feedback instruction: None
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_soap_2037_around_bathroom_cabinet_305(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind bathroom_cabinet_instance:item where:
+            is_bathroom_cabinet(bathroom_cabinet_instance) and id[bathroom_cabinet_instance]==305
+        achieve close_char(char,bathroom_cabinet_instance)
+        if can_open(bathroom_cabinet_instance):
+            achieve_once open(bathroom_cabinet_instance)
+            exp(soap,bathroom_cabinet_instance)
+        else:
+            exp(soap,bathroom_cabinet_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,bathroom_cabinet_instance]=True
+        close[bathroom_cabinet_instance,soap]=True
+    
+
+behavior find_cleaning_solution_2098_around_bathroom_cabinet_305(cleaning_solution:item):
+    goal: not unknown(cleaning_solution)
+    body:
+        assert is_cleaning_solution(cleaning_solution)
+        bind bathroom_cabinet_instance:item where:
+            is_bathroom_cabinet(bathroom_cabinet_instance) and id[bathroom_cabinet_instance]==305
+        achieve close_char(char,bathroom_cabinet_instance)
+        if can_open(bathroom_cabinet_instance):
+            achieve_once open(bathroom_cabinet_instance)
+            exp(cleaning_solution,bathroom_cabinet_instance)
+        else:
+            exp(cleaning_solution,bathroom_cabinet_instance)
+    eff:
+        unknown[cleaning_solution]=False
+        close[cleaning_solution,bathroom_cabinet_instance]=True
+        close[bathroom_cabinet_instance,cleaning_solution]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior fill_sink_with_water(sink:item):
+    body:
+        if not has_water(sink):
+            water(sink)
+
+behavior add_soap_to_sink(sink:item, soap:item):
+    body:
+        if not visited(soap):
+            observe(soap, "Ensure it is soap and check its location")
+        if not has_water(sink):
+            fill_sink_with_water(sink)
+        if not inhand(soap):
+            grab(soap)
+        put_inside(soap, sink)
+        empty_a_hand()
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and close_char(char, sink)
+        bind soap: item where:
+            is_soap(soap)
+        add_soap_to_sink(sink, soap)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_soap_2037_around_bathroom_cabinet_305(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind bathroom_cabinet_instance:item where:
+            is_bathroom_cabinet(bathroom_cabinet_instance) and id[bathroom_cabinet_instance]==305
+        achieve close_char(char,bathroom_cabinet_instance)
+        if can_open(bathroom_cabinet_instance):
+            achieve_once open(bathroom_cabinet_instance)
+            exp(soap,bathroom_cabinet_instance)
+        else:
+            exp(soap,bathroom_cabinet_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,bathroom_cabinet_instance]=True
+        close[bathroom_cabinet_instance,soap]=True
+    
+
+behavior find_cleaning_solution_2098_around_bathroom_cabinet_305(cleaning_solution:item):
+    goal: not unknown(cleaning_solution)
+    body:
+        assert is_cleaning_solution(cleaning_solution)
+        bind bathroom_cabinet_instance:item where:
+            is_bathroom_cabinet(bathroom_cabinet_instance) and id[bathroom_cabinet_instance]==305
+        achieve close_char(char,bathroom_cabinet_instance)
+        if can_open(bathroom_cabinet_instance):
+            achieve_once open(bathroom_cabinet_instance)
+            exp(cleaning_solution,bathroom_cabinet_instance)
+        else:
+            exp(cleaning_solution,bathroom_cabinet_instance)
+    eff:
+        unknown[cleaning_solution]=False
+        close[cleaning_solution,bathroom_cabinet_instance]=True
+        close[bathroom_cabinet_instance,cleaning_solution]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def has_soap_and_water(sink: item):
+    # Check if the sink already has soap and water
+    symbol has_soap_or_water=exists o: item : ((is_soap(o) or has_water(o)) and inside(o, sink))
+    return has_soap_or_water
+
+behavior prepare_soapy_water(sink: item, soap: item):
+    body:
+        if not has_water(sink):
+            water(sink) # Fill the sink with water
+        if not inside(soap, sink):
+            put_inside(soap, sink) # Add soap to the sink to create soapy water
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and id[sink] == 307
+        # Select sink with ID 307
+        
+        bind soap: item where:
+            is_soap(soap)
+        # Select a soap
+        
+        if not has_soap_and_water(sink):
+            prepare_soapy_water(sink, soap)
+        # If the sink does not already have soap and water, prepare soapy water
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_soap_2037_around_bathroom_cabinet_305(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind bathroom_cabinet_instance:item where:
+            is_bathroom_cabinet(bathroom_cabinet_instance) and id[bathroom_cabinet_instance]==305
+        achieve close_char(char,bathroom_cabinet_instance)
+        if can_open(bathroom_cabinet_instance):
+            achieve_once open(bathroom_cabinet_instance)
+            exp(soap,bathroom_cabinet_instance)
+        else:
+            exp(soap,bathroom_cabinet_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,bathroom_cabinet_instance]=True
+        close[bathroom_cabinet_instance,soap]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def has_soap():
+    # Function to check if soap exists
+    symbol exists_soap = exists soap: item : (is_soap(soap))
+    return exists_soap
+
+behavior fill_sink_with_water(sink: item):
+    body:
+        if not has_water(sink):
+            water(sink) # Fill the sink with water
+
+behavior add_soap_to_sink(soap: item, sink: item):
+    body:
+        if has_soap() and not close(soap, sink):
+            put_close(soap, sink) # Place soap close to the sink
+        if not inside(soap, sink):
+            put_inside(soap, sink) # Add soap to the sink
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and id[sink] == 307
+        # Select sink with ID 307
+        
+        fill_sink_with_water(sink)
+
+        bind soap: item where:
+            is_soap(soap)
+        # Select a soap
+            
+        add_soap_to_sink(soap, sink)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_soap_2038_around_bathroom_cabinet_305(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind bathroom_cabinet_instance:item where:
+            is_bathroom_cabinet(bathroom_cabinet_instance) and id[bathroom_cabinet_instance]==305
+        achieve close_char(char,bathroom_cabinet_instance)
+        if can_open(bathroom_cabinet_instance):
+            achieve_once open(bathroom_cabinet_instance)
+            exp(soap,bathroom_cabinet_instance)
+        else:
+            exp(soap,bathroom_cabinet_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,bathroom_cabinet_instance]=True
+        close[bathroom_cabinet_instance,soap]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior fill_sink_with_water(sink:item):
+    body:
+        if not has_water(sink):
+            water(sink)
+
+behavior add_soap(sink:item, soap:item):
+    body:
+        if not clean(sink):
+            put_close(soap, sink)
+
+behavior create_soapy_water(sink:item, soap:item):
+    body:
+        fill_sink_with_water(sink)
+        add_soap(sink, soap)
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and id[sink]==307
+        bind soap: item where:
+            is_soap(soap)
+        create_soapy_water(sink, soap)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_soap_2037_around_bathroom_cabinet_305(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind bathroom_cabinet_instance:item where:
+            is_bathroom_cabinet(bathroom_cabinet_instance) and id[bathroom_cabinet_instance]==305
+        achieve close_char(char,bathroom_cabinet_instance)
+        if can_open(bathroom_cabinet_instance):
+            achieve_once open(bathroom_cabinet_instance)
+            exp(soap,bathroom_cabinet_instance)
+        else:
+            exp(soap,bathroom_cabinet_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,bathroom_cabinet_instance]=True
+        close[bathroom_cabinet_instance,soap]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior fill_sink_with_water_and_soap(sink: item, soap: item):
+    body:
+        if not has_water(sink):
+            water(sink)
+            # Fill the sink with water
+        if is_soap(soap):
+            if not inhand(soap):
+                grab(soap)
+            if close_char(char, sink):
+                # Add soap to the water in the sink to create soapy water
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and id[sink]==307
+        # Select the sink with ID 307
+        
+        bind soap: item where:
+            is_soap(soap)
+        # Select an item that is soap
+
+        fill_sink_with_water_and_soap(sink, soap)
+
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_soap_2038_around_bathroom_cabinet_305(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind bathroom_cabinet_instance:item where:
+            is_bathroom_cabinet(bathroom_cabinet_instance) and id[bathroom_cabinet_instance]==305
+        achieve close_char(char,bathroom_cabinet_instance)
+        if can_open(bathroom_cabinet_instance):
+            achieve_once open(bathroom_cabinet_instance)
+            exp(soap,bathroom_cabinet_instance)
+        else:
+            exp(soap,bathroom_cabinet_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,bathroom_cabinet_instance]=True
+        close[bathroom_cabinet_instance,soap]=True
+    
+
+behavior find_cleaning_solution_2098_around_bathroom_cabinet_305(cleaning_solution:item):
+    goal: not unknown(cleaning_solution)
+    body:
+        assert is_cleaning_solution(cleaning_solution)
+        bind bathroom_cabinet_instance:item where:
+            is_bathroom_cabinet(bathroom_cabinet_instance) and id[bathroom_cabinet_instance]==305
+        achieve close_char(char,bathroom_cabinet_instance)
+        if can_open(bathroom_cabinet_instance):
+            achieve_once open(bathroom_cabinet_instance)
+            exp(cleaning_solution,bathroom_cabinet_instance)
+        else:
+            exp(cleaning_solution,bathroom_cabinet_instance)
+    eff:
+        unknown[cleaning_solution]=False
+        close[cleaning_solution,bathroom_cabinet_instance]=True
+        close[bathroom_cabinet_instance,cleaning_solution]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior fill_sink_with_water_and_soap(sink:item, soap:item):
+    body:
+        if closed(sink):
+            opens(sink)
+        if not has_water(sink):
+            get_water(sink)
+        if not has_water(sink) or not is_cleaning_solution(soap):
+            empty_a_hand()
+            grab(soap)
+            squeeze(soap)
+            
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and id[sink]==307
+        bind soap: item where:
+            is_soap(soap)
+        fill_sink_with_water_and_soap(sink, soap)
+
+#goal_representation_end
+
+##############################
+VH_pipeline: Fail to generate a valid plan
+##############################
+Error record: object of type 'NoneType' has no len()
+##############################
+Task Summary:
+Task Goal:
+Syntax Error
+Action History:
+['walk_executor(sink_307)']
+Time info:
+Time consume: 94 seconds
+Exp_helper query times: 0
+Guidance query times: 0
+library scale: 0
+goal generate times: 7
+goal correct times: 0
+action_num: 1
+
+Task complete rate:
+Keystate: k1 - Requires: 4 steps
+Action Completion Rate: 0.0
+Scene_id: 2
+##############################

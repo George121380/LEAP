@@ -145,8 +145,9 @@ def VH_pipeline(state_file:str,execute_file:str,current_subgoal:str,add_info:str
         plan,goal_int,exploration_content,correct_time=refinement_operation(goal_int,correct_times_limit,state_file,execute_file,current_subgoal,add_info,long_horizon_goal,prev_sub_goal_list,classes,checked_items,behavior_from_library,partial_observation, agent_type, refinement,loop_feedback,logger)
         if plan is not None:
             if len(plan)>0:
-                if len(plan[0])>0:
-                    return plan,goal_int,exploration_content,generate_time,correct_time
+                if plan[0] is not None:
+                    if len(plan[0])>0:
+                        return plan,goal_int,exploration_content,generate_time,correct_time
         
     print("VH_pipeline: Fail to generate a valid plan")
     logger.info("VH_pipeline: Fail to generate a valid plan")

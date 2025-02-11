@@ -2,7 +2,7 @@ def sub_goal_prompt(overall_goal,completed_subgoal_list,human_guidance):
 
     completed_subgoals=''
     guidance=''
-    if len(completed_subgoal_list) == 0:
+    if completed_subgoal_list==None or len(completed_subgoal_list) == 0:
         completed_subgoals = "No subgoals have been completed yet."
     else:
         for subgoal in completed_subgoal_list:

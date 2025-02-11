@@ -1,0 +1,1280 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['Boil the vegetables with a pot on the stove.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_vegetable_2113_around_fridge_126(food_vegetable:item):
+    goal: not unknown(food_vegetable)
+    body:
+        assert is_food_vegetable(food_vegetable)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==126
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_vegetable,fridge_instance)
+        else:
+            exp(food_vegetable,fridge_instance)
+    eff:
+        unknown[food_vegetable]=False
+        close[food_vegetable,fridge_instance]=True
+        close[fridge_instance,food_vegetable]=True
+    
+
+behavior find_pot_78_around_cupboard_118(pot:item):
+    goal: not unknown(pot)
+    body:
+        assert is_pot(pot)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==118
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(pot,cupboard_instance)
+        else:
+            exp(pot,cupboard_instance)
+    eff:
+        unknown[pot]=False
+        close[pot,cupboard_instance]=True
+        close[cupboard_instance,pot]=True
+    
+
+behavior find_food_banana_2083_around_kitchen_counter_119(food_banana:item):
+    goal: not unknown(food_banana)
+    body:
+        assert is_food_banana(food_banana)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==119
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_banana,kitchen_counter_instance)
+        else:
+            exp(food_banana,kitchen_counter_instance)
+    eff:
+        unknown[food_banana]=False
+        close[food_banana,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_banana]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_stove_on(stove:item):
+    # Function to check if the stove is turned on
+    return is_on(stove)
+
+def stove_has_pot_with_water(stove:item, pot:item):
+    # Function to check if there is a pot with water on the stove
+    return on(pot, stove) and has_water(pot)
+
+def vegetables_on_stove_with_pot(vegetables:item, pot:item, stove:item):
+    # Function to check if the vegetables are on the stove with the pot
+    return inside(vegetables, pot) and on(pot, stove)
+
+behavior boil_vegetables(vegetables:item, pot:item, stove:item):
+    body:
+        # First, check if the stove is off before turning it on
+        if not is_stove_on(stove):
+            switch_on(stove)
+        # Check if there is a pot with water on the stove
+        if not stove_has_pot_with_water(stove, pot):
+            if not has_water(pot):
+                get_water(pot)
+            if not on(pot, stove):
+                put_on(pot, stove)
+        # Check if the vegetables are already on the stove with the pot
+        if not vegetables_on_stove_with_pot(vegetables, pot, stove):
+            put_inside(vegetables, pot)
+
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot)
+        bind stove: item where:
+            is_stove(stove)
+        bind vegetables: item where:
+            is_food_vegetable(vegetables)
+        boil_vegetables(vegetables, pot, stove)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_vegetable_2113_around_fridge_126(food_vegetable:item):
+    goal: not unknown(food_vegetable)
+    body:
+        assert is_food_vegetable(food_vegetable)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==126
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_vegetable,fridge_instance)
+        else:
+            exp(food_vegetable,fridge_instance)
+    eff:
+        unknown[food_vegetable]=False
+        close[food_vegetable,fridge_instance]=True
+        close[fridge_instance,food_vegetable]=True
+    
+
+behavior find_pot_78_around_cupboard_118(pot:item):
+    goal: not unknown(pot)
+    body:
+        assert is_pot(pot)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==118
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(pot,cupboard_instance)
+        else:
+            exp(pot,cupboard_instance)
+    eff:
+        unknown[pot]=False
+        close[pot,cupboard_instance]=True
+        close[cupboard_instance,pot]=True
+    
+
+behavior find_food_banana_2083_around_kitchen_counter_119(food_banana:item):
+    goal: not unknown(food_banana)
+    body:
+        assert is_food_banana(food_banana)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==119
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_banana,kitchen_counter_instance)
+        else:
+            exp(food_banana,kitchen_counter_instance)
+    eff:
+        unknown[food_banana]=False
+        close[food_banana,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_banana]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def has_vegetables_in_pot(pot:item):
+    # Function to check if there are vegetables in a specified pot
+    symbol has_vegetables=exists v: item : (is_food_vegetable(v) and inside(v, pot))
+    return has_vegetables
+
+behavior add_water_to_pot(pot:item):
+    body:
+        if not has_water(pot):
+            get_water(pot)
+            # Add water to the pot
+
+behavior start_stove(stove:item):
+    body:
+        if is_off(stove):
+            switch_on(stove)
+            # Turn on the stove
+
+behavior boil_vegetables(pot:item, stove:item):
+    body:
+        if not on(pot, stove):
+            put_on(pot, stove)
+            # Put the pot on the stove
+        if not exists v: item : (is_food_vegetable(v) and inside(v, pot) and is_on(stove)):
+            start_stove(stove)
+            # Start the stove
+
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot) and has_vegetables_in_pot(pot)
+        bind stove: item where:
+            is_stove(stove)
+        add_water_to_pot(pot)
+        boil_vegetables(pot, stove)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_vegetable_2113_around_kitchen_counter_122(food_vegetable:item):
+    goal: not unknown(food_vegetable)
+    body:
+        assert is_food_vegetable(food_vegetable)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==122
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_vegetable,kitchen_counter_instance)
+        else:
+            exp(food_vegetable,kitchen_counter_instance)
+    eff:
+        unknown[food_vegetable]=False
+        close[food_vegetable,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_vegetable]=True
+    
+
+behavior find_pot_2040_around_stove_2135(pot:item):
+    goal: not unknown(pot)
+    body:
+        assert is_pot(pot)
+        bind stove_instance:item where:
+            is_stove(stove_instance) and id[stove_instance]==2135
+        achieve close_char(char,stove_instance)
+        if can_open(stove_instance):
+            achieve_once open(stove_instance)
+            exp(pot,stove_instance)
+        else:
+            exp(pot,stove_instance)
+    eff:
+        unknown[pot]=False
+        close[pot,stove_instance]=True
+        close[stove_instance,pot]=True
+    
+
+behavior find_food_banana_2083_around_kitchen_counter_119(food_banana:item):
+    goal: not unknown(food_banana)
+    body:
+        assert is_food_banana(food_banana)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==119
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_banana,kitchen_counter_instance)
+        else:
+            exp(food_banana,kitchen_counter_instance)
+    eff:
+        unknown[food_banana]=False
+        close[food_banana,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_banana]=True
+    
+
+behavior find_clothes_gloves_2118_around_basket_for_clothes_2078(clothes_gloves:item):
+    goal: not unknown(clothes_gloves)
+    body:
+        assert is_clothes_gloves(clothes_gloves)
+        bind basket_for_clothes_instance:item where:
+            is_basket_for_clothes(basket_for_clothes_instance) and id[basket_for_clothes_instance]==2078
+        achieve close_char(char,basket_for_clothes_instance)
+        if can_open(basket_for_clothes_instance):
+            achieve_once open(basket_for_clothes_instance)
+            exp(clothes_gloves,basket_for_clothes_instance)
+        else:
+            exp(clothes_gloves,basket_for_clothes_instance)
+    eff:
+        unknown[clothes_gloves]=False
+        close[clothes_gloves,basket_for_clothes_instance]=True
+        close[basket_for_clothes_instance,clothes_gloves]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior fill_pot_with_water(pot:item, source:item):
+    body:
+        if not has_water(pot):
+            if is_faucet(source) or is_sink(source):
+                walk_to(source)
+                get_water(pot) # Fill the pot with water from the source
+
+behavior heat_vegetables_on_stove(pot:item, stove:item):
+    body:
+        if is_off(stove):
+            switch_on(stove) # Turn on the stove
+        if not on(pot, stove):
+            put_on(pot, stove) # Place the pot on the stove
+        if is_food_vegetable(v) and inside(v, pot):
+            watch(stove) # Monitor the stove process
+
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot)
+        bind vegetable: item where:
+            is_food_vegetable(vegetable) and not inside(vegetable, pot)
+        bind stove: item where:
+            is_stove(stove)
+        bind source: item where:
+            is_sink(source) or is_faucet(source)
+        grab(vegetable)
+        put_inside(vegetable, pot)
+        empty_a_hand()
+        fill_pot_with_water(pot, source)
+        heat_vegetables_on_stove(pot, stove)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_vegetable_2113_around_kitchen_counter_123(food_vegetable:item):
+    goal: not unknown(food_vegetable)
+    body:
+        assert is_food_vegetable(food_vegetable)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==123
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_vegetable,kitchen_counter_instance)
+        else:
+            exp(food_vegetable,kitchen_counter_instance)
+    eff:
+        unknown[food_vegetable]=False
+        close[food_vegetable,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_vegetable]=True
+    
+
+behavior find_pot_2040_around_stove_2135(pot:item):
+    goal: not unknown(pot)
+    body:
+        assert is_pot(pot)
+        bind stove_instance:item where:
+            is_stove(stove_instance) and id[stove_instance]==2135
+        achieve close_char(char,stove_instance)
+        if can_open(stove_instance):
+            achieve_once open(stove_instance)
+            exp(pot,stove_instance)
+        else:
+            exp(pot,stove_instance)
+    eff:
+        unknown[pot]=False
+        close[pot,stove_instance]=True
+        close[stove_instance,pot]=True
+    
+
+behavior find_food_banana_2083_around_kitchen_counter_119(food_banana:item):
+    goal: not unknown(food_banana)
+    body:
+        assert is_food_banana(food_banana)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==119
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_banana,kitchen_counter_instance)
+        else:
+            exp(food_banana,kitchen_counter_instance)
+    eff:
+        unknown[food_banana]=False
+        close[food_banana,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_banana]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def filled_with_water(pot:item):
+    # Function to check if a pot is filled with water
+    symbol has_water=has_water(pot)
+    return has_water
+
+behavior fill_with_water(pot:item):
+    body:
+        if not filled_with_water(pot):
+            get_water(pot) # Fill the pot with water
+
+behavior place_pot_on_stove(pot:item, stove:item):
+    body:
+        if not on(pot, stove):
+            put_on(pot, stove) # Place the pot on the stove
+
+behavior turn_stove_on(stove:item):
+    body:
+        if is_off(stove):
+            switch_on(stove) # Turn on the stove
+
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot)
+        # Select a pot
+        bind vegetables: item where:
+            is_food_vegetable(vegetables)
+        # Select vegetables
+        bind stove: item where:
+            is_stove(stove)
+        # Select a stove
+        fill_with_water(pot)
+        put_inside(vegetables, pot) # Put the vegetables inside the pot
+        place_pot_on_stove(pot, stove)
+        turn_stove_on(stove)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_vegetable_2113_around_fridge_126(food_vegetable:item):
+    goal: not unknown(food_vegetable)
+    body:
+        assert is_food_vegetable(food_vegetable)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==126
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_vegetable,fridge_instance)
+        else:
+            exp(food_vegetable,fridge_instance)
+    eff:
+        unknown[food_vegetable]=False
+        close[food_vegetable,fridge_instance]=True
+        close[fridge_instance,food_vegetable]=True
+    
+
+behavior find_knife_2122_around_knifeblock_76(knife:item):
+    goal: not unknown(knife)
+    body:
+        assert is_knife(knife)
+        bind knifeblock_instance:item where:
+            is_knifeblock(knifeblock_instance) and id[knifeblock_instance]==76
+        achieve close_char(char,knifeblock_instance)
+        if can_open(knifeblock_instance):
+            achieve_once open(knifeblock_instance)
+            exp(knife,knifeblock_instance)
+        else:
+            exp(knife,knifeblock_instance)
+    eff:
+        unknown[knife]=False
+        close[knife,knifeblock_instance]=True
+        close[knifeblock_instance,knife]=True
+    
+
+behavior find_pot_78_around_cupboard_118(pot:item):
+    goal: not unknown(pot)
+    body:
+        assert is_pot(pot)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==118
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(pot,cupboard_instance)
+        else:
+            exp(pot,cupboard_instance)
+    eff:
+        unknown[pot]=False
+        close[pot,cupboard_instance]=True
+        close[cupboard_instance,pot]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior prepare_vegetables(pot:item, stove:item, vegetables:item):
+    body:
+        bind cutting_board: item where:
+            is_cutting_board(cutting_board)
+        bind knife: item where:
+            is_knife(knife)
+            
+        if not cut(vegetables):
+            grab(knife)
+            cuts(vegetables)
+            empty_a_hand() # Empty hand after cutting
+        if not inside(vegetables, pot):
+            put_inside(vegetables, pot)
+
+behavior boil_vegetables(pot:item, stove:item):
+    body:
+        if not has_water(pot):
+            get_water(pot)
+        if not on(pot, stove):
+            put_on(pot, stove)
+        if is_off(stove):
+            switch_on(stove)
+
+behavior __goal__():
+    body:
+        bind vegetables: item where:
+            is_food_vegetable(vegetables)
+        bind pot: item where:
+            is_pot(pot)
+        bind stove: item where:
+            is_stove(stove)
+        
+        prepare_vegetables(pot, stove, vegetables)
+        boil_vegetables(pot, stove)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_vegetable_2113_around_fridge_126(food_vegetable:item):
+    goal: not unknown(food_vegetable)
+    body:
+        assert is_food_vegetable(food_vegetable)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==126
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_vegetable,fridge_instance)
+        else:
+            exp(food_vegetable,fridge_instance)
+    eff:
+        unknown[food_vegetable]=False
+        close[food_vegetable,fridge_instance]=True
+        close[fridge_instance,food_vegetable]=True
+    
+
+behavior find_pot_78_around_cupboard_118(pot:item):
+    goal: not unknown(pot)
+    body:
+        assert is_pot(pot)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==118
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(pot,cupboard_instance)
+        else:
+            exp(pot,cupboard_instance)
+    eff:
+        unknown[pot]=False
+        close[pot,cupboard_instance]=True
+        close[cupboard_instance,pot]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_stove_on(stove:item):
+    # Function to check if the stove is on
+    return is_on(stove)
+
+behavior fill_pot_with_water(pot:item):
+    body:
+        if not has_water(pot):
+            get_water(pot)
+            # Fill the pot with water if it is not already filled
+
+behavior put_vegetables_in_pot(vegetables:item, pot:item):
+    body:
+        if not inside(vegetables, pot):
+            put_inside(vegetables, pot)
+            # Put vegetables in the pot if they are not already inside
+
+behavior place_pot_on_stove(pot:item, stove:item):
+    body:
+        if not on(pot, stove):
+            put_on(pot, stove) 
+            # Place the pot on the stove if it is not already on it
+
+behavior turn_on_stove(stove:item):
+    body:
+        if is_off(stove):
+            switch_on(stove)
+            # Turn on the stove if it is off
+
+behavior boil_vegetables(pot:item, vegetables:item, stove:item):
+    body:
+        fill_pot_with_water(pot)
+        put_vegetables_in_pot(vegetables, pot)
+        place_pot_on_stove(pot, stove)
+        if not is_stove_on(stove):
+            turn_on_stove(stove)
+        # Ensure the stove is on to boil the vegetables
+
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot)
+        # Select a pot
+        bind stove: item where:
+            is_stove(stove)
+        # Select a stove
+        bind vegetables: item where:
+            is_food_vegetable(vegetables)
+        # Select vegetables
+        boil_vegetables(pot, vegetables, stove)
+
+#goal_representation_end
+
+##############################
+VH_pipeline: Fail to generate a valid plan
+##############################
+From agent.py->reset_goal
+Fail to generate the goal representation
+##############################
+From agent.py -> query_LLM_human
+Record from func query_LLM_human in agent.py
+Question: Can you teach me how to "boil the vegetables with a pot on the stove." ?
+Answer: Clean the vegetables. Fill a pot with water. Put the pot on the stove. Turn on the stove. Put vegetables in the pot.
+Re-decompose: False
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_vegetable_2113_around_kitchen_counter_123(food_vegetable:item):
+    goal: not unknown(food_vegetable)
+    body:
+        assert is_food_vegetable(food_vegetable)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==123
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_vegetable,kitchen_counter_instance)
+        else:
+            exp(food_vegetable,kitchen_counter_instance)
+    eff:
+        unknown[food_vegetable]=False
+        close[food_vegetable,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_vegetable]=True
+    
+
+behavior find_pot_2040_around_kitchen_counter_123(pot:item):
+    goal: not unknown(pot)
+    body:
+        assert is_pot(pot)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==123
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(pot,kitchen_counter_instance)
+        else:
+            exp(pot,kitchen_counter_instance)
+    eff:
+        unknown[pot]=False
+        close[pot,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,pot]=True
+    
+
+behavior find_food_banana_2083_around_kitchen_counter_119(food_banana:item):
+    goal: not unknown(food_banana)
+    body:
+        assert is_food_banana(food_banana)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==119
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_banana,kitchen_counter_instance)
+        else:
+            exp(food_banana,kitchen_counter_instance)
+    eff:
+        unknown[food_banana]=False
+        close[food_banana,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_banana]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior clean_vegetables(vegetables:item):
+    body:
+        if dirty(vegetables):
+            wash(vegetables)
+
+behavior fill_pot_with_water(pot:item):
+    body:
+        if not has_water(pot):
+            get_water(pot)
+
+behavior boil_vegetables(pot:item, vegetables:item, stove:item):
+    body:
+        if not on(pot, stove):
+            put_on(pot, stove)
+        if is_off(stove):
+            switch_on(stove)
+        if not inside(vegetables, pot):
+            put_inside(vegetables, pot)
+
+behavior __goal__():
+    body:
+        bind vegetables: item where:
+            is_food_vegetable(vegetables)
+
+        bind pot: item where:
+            is_pot(pot)
+
+        bind stove: item where:
+            is_stove(stove)
+
+        clean_vegetables(vegetables)
+        fill_pot_with_water(pot)
+        boil_vegetables(pot, vegetables, stove)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_vegetable_2113_around_fridge_126(food_vegetable:item):
+    goal: not unknown(food_vegetable)
+    body:
+        assert is_food_vegetable(food_vegetable)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==126
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_vegetable,fridge_instance)
+        else:
+            exp(food_vegetable,fridge_instance)
+    eff:
+        unknown[food_vegetable]=False
+        close[food_vegetable,fridge_instance]=True
+        close[fridge_instance,food_vegetable]=True
+    
+
+behavior find_pot_2040_around_cupboard_118(pot:item):
+    goal: not unknown(pot)
+    body:
+        assert is_pot(pot)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==118
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(pot,cupboard_instance)
+        else:
+            exp(pot,cupboard_instance)
+    eff:
+        unknown[pot]=False
+        close[pot,cupboard_instance]=True
+        close[cupboard_instance,pot]=True
+    
+
+behavior find_food_banana_2083_around_kitchen_counter_123(food_banana:item):
+    goal: not unknown(food_banana)
+    body:
+        assert is_food_banana(food_banana)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==123
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_banana,kitchen_counter_instance)
+        else:
+            exp(food_banana,kitchen_counter_instance)
+    eff:
+        unknown[food_banana]=False
+        close[food_banana,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_banana]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior clean_vegetables(vegetable:item):
+    body:
+        if dirty(vegetable):
+            wash(vegetable)
+            # Wash vegetables if they are dirty
+
+behavior fill_pot_with_water(pot:item):
+    body:
+        if not has_water(pot):
+            get_water(pot)
+            # Fill pot with water if it is empty
+
+behavior place_pot_on_stove(pot:item, stove:item):
+    body:
+        if not on(pot, stove):
+            put_on(pot, stove)
+            # Place the pot on the stove
+
+behavior turn_on_stove(stove:item):
+    body:
+        if is_off(stove):
+            switch_on(stove)
+            # Turn on the stove
+
+behavior boil_vegetables(pot:item, vegetable:item):
+    body:
+        if not inside(vegetable, pot):
+            put_inside(vegetable, pot)
+            # Place vegetables into the pot for boiling
+
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot)
+        # Select a pot
+        
+        bind stove: item where:
+            is_stove(stove)
+        # Select a stove
+        
+        bind vegetable: item where:
+            is_food_vegetable(vegetable)
+        # Select a vegetable
+
+        clean_vegetables(vegetable)
+        fill_pot_with_water(pot)
+        place_pot_on_stove(pot, stove)
+        turn_on_stove(stove)
+        boil_vegetables(pot, vegetable)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_vegetable_2113_around_kitchen_counter_122(food_vegetable:item):
+    goal: not unknown(food_vegetable)
+    body:
+        assert is_food_vegetable(food_vegetable)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==122
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_vegetable,kitchen_counter_instance)
+        else:
+            exp(food_vegetable,kitchen_counter_instance)
+    eff:
+        unknown[food_vegetable]=False
+        close[food_vegetable,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_vegetable]=True
+    
+
+behavior find_pot_2040_around_cupboard_118(pot:item):
+    goal: not unknown(pot)
+    body:
+        assert is_pot(pot)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==118
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(pot,cupboard_instance)
+        else:
+            exp(pot,cupboard_instance)
+    eff:
+        unknown[pot]=False
+        close[pot,cupboard_instance]=True
+        close[cupboard_instance,pot]=True
+    
+
+behavior find_food_banana_2083_around_kitchen_counter_123(food_banana:item):
+    goal: not unknown(food_banana)
+    body:
+        assert is_food_banana(food_banana)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==123
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_banana,kitchen_counter_instance)
+        else:
+            exp(food_banana,kitchen_counter_instance)
+    eff:
+        unknown[food_banana]=False
+        close[food_banana,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_banana]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def clean_vegetables(vegetables: item):
+    body:
+        if dirty(vegetables):
+            wash(vegetables)
+
+behavior fill_pot_with_water(pot: item):
+    body:
+        if not has_water(pot):
+            get_water(pot)
+
+behavior place_pot_on_stove(pot: item, stove: item):
+    body:
+        if not on(pot, stove):
+            put_on(pot, stove)
+
+behavior turn_on_stove(stove: item):
+    body:
+        if is_off(stove) and has_switch(stove):
+            switch_on(stove)
+
+behavior boil_vegetables(vegetables: item, pot: item):
+    body:
+        if not inside(vegetables, pot):
+            put_inside(vegetables, pot)
+
+behavior __goal__():
+    body:
+        bind vegetables: item where:
+            is_food_vegetable(vegetables)
+
+        bind pot: item where:
+            is_pot(pot)
+
+        bind stove: item where:
+            is_stove(stove)
+
+        clean_vegetables(vegetables)
+        fill_pot_with_water(pot)
+        place_pot_on_stove(pot, stove)
+        turn_on_stove(stove)
+        boil_vegetables(vegetables, pot)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_vegetable_2113_around_fridge_126(food_vegetable:item):
+    goal: not unknown(food_vegetable)
+    body:
+        assert is_food_vegetable(food_vegetable)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==126
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_vegetable,fridge_instance)
+        else:
+            exp(food_vegetable,fridge_instance)
+    eff:
+        unknown[food_vegetable]=False
+        close[food_vegetable,fridge_instance]=True
+        close[fridge_instance,food_vegetable]=True
+    
+
+behavior find_pot_2138_around_cupboard_118(pot:item):
+    goal: not unknown(pot)
+    body:
+        assert is_pot(pot)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==118
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(pot,cupboard_instance)
+        else:
+            exp(pot,cupboard_instance)
+    eff:
+        unknown[pot]=False
+        close[pot,cupboard_instance]=True
+        close[cupboard_instance,pot]=True
+    
+
+behavior find_food_banana_2083_around_kitchen_counter_119(food_banana:item):
+    goal: not unknown(food_banana)
+    body:
+        assert is_food_banana(food_banana)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==119
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_banana,kitchen_counter_instance)
+        else:
+            exp(food_banana,kitchen_counter_instance)
+    eff:
+        unknown[food_banana]=False
+        close[food_banana,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_banana]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior clean_vegetables(vegetables:item):
+    body:
+        if dirty(vegetables):
+            wash(vegetables)
+            # Wash the vegetables to make them clean
+
+behavior fill_pot_with_water(pot:item):
+    body:
+        if not has_water(pot):
+            get_water(pot)
+            # Fill the pot with water
+
+behavior place_pot_on_stove(pot:item, stove:item):
+    body:
+        if not on(pot, stove):
+            put_on(pot, stove)
+            # Place the pot on the stove
+
+behavior switch_on_stove(stove:item):
+    body:
+        if is_off(stove):
+            switch_on(stove)
+            # Turn on the stove
+
+behavior put_vegetables_in_pot(vegetables:item, pot:item):
+    body:
+        if not inside(vegetables, pot):
+            put_inside(vegetables, pot)
+            # Put the vegetables into the pot
+
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot)
+        # Select a pot
+        bind stove: item where:
+            is_stove(stove)
+        # Select a stove
+        bind vegetables: item where:
+            is_food_vegetable(vegetables)
+        # Select vegetables
+        
+        clean_vegetables(vegetables)
+        fill_pot_with_water(pot)
+        place_pot_on_stove(pot, stove)
+        switch_on_stove(stove)
+        put_vegetables_in_pot(vegetables, pot)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_vegetable_2113_around_kitchen_counter_122(food_vegetable:item):
+    goal: not unknown(food_vegetable)
+    body:
+        assert is_food_vegetable(food_vegetable)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==122
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_vegetable,kitchen_counter_instance)
+        else:
+            exp(food_vegetable,kitchen_counter_instance)
+    eff:
+        unknown[food_vegetable]=False
+        close[food_vegetable,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_vegetable]=True
+    
+
+behavior find_pot_2138_around_cupboard_118(pot:item):
+    goal: not unknown(pot)
+    body:
+        assert is_pot(pot)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==118
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(pot,cupboard_instance)
+        else:
+            exp(pot,cupboard_instance)
+    eff:
+        unknown[pot]=False
+        close[pot,cupboard_instance]=True
+        close[cupboard_instance,pot]=True
+    
+
+behavior find_food_banana_2083_around_kitchen_counter_119(food_banana:item):
+    goal: not unknown(food_banana)
+    body:
+        assert is_food_banana(food_banana)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==119
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_banana,kitchen_counter_instance)
+        else:
+            exp(food_banana,kitchen_counter_instance)
+    eff:
+        unknown[food_banana]=False
+        close[food_banana,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_banana]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior clean_vegetables(vegetable:item):
+    body:
+        if dirty(vegetable):
+            wash(vegetable)
+
+behavior fill_pot_with_water(pot:item):
+    body:
+        if not has_water(pot):
+            get_water(pot)
+
+behavior place_pot_on_stove(pot:item, stove:item):
+    body:
+        if not on(pot, stove):
+            put_on(pot, stove)
+
+behavior turn_on_stove(stove:item):
+    body:
+        if is_off(stove):
+            switch_on(stove)
+
+behavior put_vegetables_in_pot(vegetable:item, pot:item):
+    body:
+        if not inside(vegetable, pot):
+            put_inside(vegetable, pot)
+
+behavior __goal__():
+    body:
+        bind vegetable: item where:
+            is_food_vegetable(vegetable)
+        bind pot: item where:
+            is_pot(pot)
+        bind stove: item where:
+            is_stove(stove)
+
+        clean_vegetables(vegetable)
+        fill_pot_with_water(pot)
+        place_pot_on_stove(pot, stove)
+        turn_on_stove(stove)
+        put_vegetables_in_pot(vegetable, pot)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_vegetable_2113_around_kitchen_counter_122(food_vegetable:item):
+    goal: not unknown(food_vegetable)
+    body:
+        assert is_food_vegetable(food_vegetable)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==122
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_vegetable,kitchen_counter_instance)
+        else:
+            exp(food_vegetable,kitchen_counter_instance)
+    eff:
+        unknown[food_vegetable]=False
+        close[food_vegetable,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_vegetable]=True
+    
+
+behavior find_pot_2138_around_kitchen_counter_123(pot:item):
+    goal: not unknown(pot)
+    body:
+        assert is_pot(pot)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==123
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(pot,kitchen_counter_instance)
+        else:
+            exp(pot,kitchen_counter_instance)
+    eff:
+        unknown[pot]=False
+        close[pot,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,pot]=True
+    
+
+behavior find_food_banana_2083_around_kitchen_counter_119(food_banana:item):
+    goal: not unknown(food_banana)
+    body:
+        assert is_food_banana(food_banana)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==119
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_banana,kitchen_counter_instance)
+        else:
+            exp(food_banana,kitchen_counter_instance)
+    eff:
+        unknown[food_banana]=False
+        close[food_banana,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_banana]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior boil_vegetables(vegetables:item, pot:item, stove:item):
+    body:
+        if not has_water(pot):
+            get_water(pot)
+        if not on(vegetables, pot):
+            put_on(vegetables, pot)
+        if is_off(stove):
+            switch_on(stove)
+        if not is_hot(pot):
+            watch(pot)
+
+behavior __goal__():
+    body:
+        bind vegetables: item where:
+            is_food_vegetable(vegetables)
+        bind pot: item where:
+            is_pot(pot)
+        bind stove: item where:
+            is_stove(stove)
+        boil_vegetables(vegetables, pot, stove)
+
+#goal_representation_end
+
+##############################
+VH_pipeline: Fail to generate a valid plan
+##############################
+Error record: Error during problem transformation
+##############################
+Task Summary:
+Task Goal:
+Syntax Error
+Action History:
+[]
+Time info:
+Time consume: 171 seconds
+Exp_helper query times: 0
+Guidance query times: 1
+library scale: 0
+goal generate times: 12
+goal correct times: 0
+action_num: 0
+
+Task complete rate:
+Keystate: k1 - Requires: 22 steps
+Keystate: k2 - Requires: 14 steps
+Action Completion Rate: 0.0
+Scene_id: 1
+##############################

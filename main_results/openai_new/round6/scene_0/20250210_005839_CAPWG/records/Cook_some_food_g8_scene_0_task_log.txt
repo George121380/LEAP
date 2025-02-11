@@ -1,0 +1,3480 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Boil the eggs.', '2. Wash and chop the vegetables.', '3. Squeeze the lemon juice.', '4. Mix the boiled eggs, chopped vegetables, and lemon juice in a bowl to make the salad.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_egg_2020_around_fridge_289(food_egg:item):
+    goal: not unknown(food_egg)
+    body:
+        assert is_food_egg(food_egg)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_egg,fridge_instance)
+        else:
+            exp(food_egg,fridge_instance)
+    eff:
+        unknown[food_egg]=False
+        close[food_egg,fridge_instance]=True
+        close[fridge_instance,food_egg]=True
+    
+
+behavior find_pot_2069_around_kitchen_counter_230(pot:item):
+    goal: not unknown(pot)
+    body:
+        assert is_pot(pot)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==230
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(pot,kitchen_counter_instance)
+        else:
+            exp(pot,kitchen_counter_instance)
+    eff:
+        unknown[pot]=False
+        close[pot,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,pot]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior boil_eggs(pot:item, stove:item, eggs:list):
+    body:
+        if not has_water(pot):
+            get_water(pot)
+        if not on(pot, stove):
+            put_on(pot, stove)
+        if is_off(stove):
+            switch_on(stove)
+
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot)
+        bind stove: item where:
+            is_stove(stove)
+        foreach egg: item:
+            if is_food_egg(egg) and not inside(egg, pot):
+                put_inside(egg, pot)
+        eggs = [egg for egg in item_list if is_food_egg(egg) and inside(egg, pot)]
+        boil_eggs(pot, stove, eggs)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_egg_2020_around_fridge_289(food_egg:item):
+    goal: not unknown(food_egg)
+    body:
+        assert is_food_egg(food_egg)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_egg,fridge_instance)
+        else:
+            exp(food_egg,fridge_instance)
+    eff:
+        unknown[food_egg]=False
+        close[food_egg,fridge_instance]=True
+        close[fridge_instance,food_egg]=True
+    
+
+behavior find_pot_2069_around_kitchen_counter_230(pot:item):
+    goal: not unknown(pot)
+    body:
+        assert is_pot(pot)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==230
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(pot,kitchen_counter_instance)
+        else:
+            exp(pot,kitchen_counter_instance)
+    eff:
+        unknown[pot]=False
+        close[pot,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,pot]=True
+    
+
+behavior find_food_steak_2008_around_fridge_289(food_steak:item):
+    goal: not unknown(food_steak)
+    body:
+        assert is_food_steak(food_steak)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_steak,fridge_instance)
+        else:
+            exp(food_steak,fridge_instance)
+    eff:
+        unknown[food_steak]=False
+        close[food_steak,fridge_instance]=True
+        close[fridge_instance,food_steak]=True
+    
+
+behavior find_tray_296_around_table_107(tray:item):
+    goal: not unknown(tray)
+    body:
+        assert is_tray(tray)
+        bind table_instance:item where:
+            is_table(table_instance) and id[table_instance]==107
+        achieve close_char(char,table_instance)
+        if can_open(table_instance):
+            achieve_once open(table_instance)
+            exp(tray,table_instance)
+        else:
+            exp(tray,table_instance)
+    eff:
+        unknown[tray]=False
+        close[tray,table_instance]=True
+        close[table_instance,tray]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+
+def is_pot_of_water(pot:item):
+    symbol pot_with_water=exists pot:item: (is_pot(pot) and has_water(pot))
+    return pot_with_water
+
+behavior fill_pot_with_water(pot:item, faucet:item):
+    body:
+        if not has_water(pot):
+            get_water(pot)
+
+behavior boil_water(pot:item, stove:item):
+    body:
+        put_on(pot, stove)
+        if is_off(stove):
+            switch_on(stove)
+
+behavior __goal__():
+    body:
+        bind egg: item where:
+            is_food_egg(egg)
+        # Select the egg
+        
+        bind pot: item where:
+            is_pot(pot) and is_food_egg(egg)
+        # Select a pot Assume the pot is close to the egg
+        
+        bind stove: item where:
+            is_stove(stove)
+        # Select a stove
+        
+        bind faucet: item where:
+            is_faucet(faucet) and close(faucet, pot)
+        # Select a faucet close to the pot
+
+        if not is_pot_of_water(pot):
+            fill_pot_with_water(pot, faucet)
+
+        boil_water(pot, stove)
+        # Boil water with the pot placed on the stove
+
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_egg_2020_around_fridge_289(food_egg:item):
+    goal: not unknown(food_egg)
+    body:
+        assert is_food_egg(food_egg)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_egg,fridge_instance)
+        else:
+            exp(food_egg,fridge_instance)
+    eff:
+        unknown[food_egg]=False
+        close[food_egg,fridge_instance]=True
+        close[fridge_instance,food_egg]=True
+    
+
+behavior find_pot_2069_around_kitchen_counter_230(pot:item):
+    goal: not unknown(pot)
+    body:
+        assert is_pot(pot)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==230
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(pot,kitchen_counter_instance)
+        else:
+            exp(pot,kitchen_counter_instance)
+    eff:
+        unknown[pot]=False
+        close[pot,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,pot]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_boiled(item:item):
+    # Mock function to check if an egg is boiled
+    # Assuming that is_food_egg and has_water states can verify if an item is boiled
+    symbol boiled = is_food_egg(item) and has_water(item) and plugged(stove) and is_on(stove)
+    return boiled
+
+behavior boil_egg(egg:item, pot:item, stove:item):
+    body:
+        if not clean(pot):
+            wash(pot)
+        if not has_water(pot):
+            get_water(pot)
+        if not inside(egg, pot):
+            put_inside(egg, pot)
+        if not on(pot, stove):
+            put_on(pot, stove)
+        if unplugged(stove):
+            plugin(stove)
+        if is_off(stove):
+            switch_on(stove)
+        # Assume eggs will be boiled because of invoke actions
+
+behavior __goal__():
+    body:
+        bind egg: item where:
+            is_food_egg(egg)
+        bind pot: item where:
+            is_pot(pot)
+        bind stove: item where:
+            is_stove(stove)
+        if not is_boiled(egg):
+            boil_egg(egg, pot, stove)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_egg_2020_around_fridge_289(food_egg:item):
+    goal: not unknown(food_egg)
+    body:
+        assert is_food_egg(food_egg)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_egg,fridge_instance)
+        else:
+            exp(food_egg,fridge_instance)
+    eff:
+        unknown[food_egg]=False
+        close[food_egg,fridge_instance]=True
+        close[fridge_instance,food_egg]=True
+    
+
+behavior find_pot_2069_around_kitchen_counter_230(pot:item):
+    goal: not unknown(pot)
+    body:
+        assert is_pot(pot)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==230
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(pot,kitchen_counter_instance)
+        else:
+            exp(pot,kitchen_counter_instance)
+    eff:
+        unknown[pot]=False
+        close[pot,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,pot]=True
+    
+
+behavior find_food_steak_2008_around_fridge_289(food_steak:item):
+    goal: not unknown(food_steak)
+    body:
+        assert is_food_steak(food_steak)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_steak,fridge_instance)
+        else:
+            exp(food_steak,fridge_instance)
+    eff:
+        unknown[food_steak]=False
+        close[food_steak,fridge_instance]=True
+        close[fridge_instance,food_steak]=True
+    
+
+behavior find_tray_296_around_table_107(tray:item):
+    goal: not unknown(tray)
+    body:
+        assert is_tray(tray)
+        bind table_instance:item where:
+            is_table(table_instance) and id[table_instance]==107
+        achieve close_char(char,table_instance)
+        if can_open(table_instance):
+            achieve_once open(table_instance)
+            exp(tray,table_instance)
+        else:
+            exp(tray,table_instance)
+    eff:
+        unknown[tray]=False
+        close[tray,table_instance]=True
+        close[table_instance,tray]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior boil_eggs(eggs:item, pot:item, stove:item):
+    body:
+        bind water_source: item where:
+            is_faucet(water_source)
+        # Select a water source
+        
+        if not has_water(pot):
+            walk_to(water_source)
+            get_water(pot)
+            # Fill the pot with water
+        
+        if not inside(eggs, pot):
+            put_inside(eggs, pot)
+            # Place the eggs inside the pot
+            
+        if is_off(stove):
+            plugin(stove)
+            switch_on(stove)
+            # Turn on the stove
+
+        if not on(pot, stove):
+            put_on(pot, stove)
+            # Place the pot on the stove
+
+behavior __goal__():
+    body:
+        bind eggs: item where:
+            is_food_egg(eggs)
+        # Select eggs
+
+        bind pot: item where:
+            is_pot(pot)
+        # Select a pot
+
+        bind stove: item where:
+            is_stove(stove)
+        # Select a stove
+        
+        boil_eggs(eggs, pot, stove)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_egg_2020_around_fridge_289(food_egg:item):
+    goal: not unknown(food_egg)
+    body:
+        assert is_food_egg(food_egg)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_egg,fridge_instance)
+        else:
+            exp(food_egg,fridge_instance)
+    eff:
+        unknown[food_egg]=False
+        close[food_egg,fridge_instance]=True
+        close[fridge_instance,food_egg]=True
+    
+
+behavior find_pot_2069_around_kitchen_counter_230(pot:item):
+    goal: not unknown(pot)
+    body:
+        assert is_pot(pot)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==230
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(pot,kitchen_counter_instance)
+        else:
+            exp(pot,kitchen_counter_instance)
+    eff:
+        unknown[pot]=False
+        close[pot,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,pot]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior boil_eggs(pot:item, stove:item, eggs:list):
+    body:
+        foreach egg: item in eggs:
+            if not inside(egg, pot):
+                put_inside(egg, pot)
+                # Place each egg inside the pot
+
+        if not has_water(pot):
+            get_water(pot)
+            # Fill the pot with water
+
+        if not plugged(stove):
+            plugin(stove)
+            # Ensure the stove is plugged in
+
+        if is_off(stove):
+            switch_on(stove)
+            # Turn on the stove to start boiling the eggs
+
+Behavior collect_eggs(eggs:list):
+    body:
+        foreach egg: item in eggs:
+            if not inhand(egg):
+                grab(egg)
+                # Grab each egg
+
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot)
+        # Select a pot
+
+        bind stove: item where:
+            is_stove(stove)
+        # Select a stove
+
+        bind egg1: item where:
+            is_food_egg(egg1)
+        # Select the first egg
+
+        bind egg2: item where:
+            is_food_egg(egg2) and egg1=egg2
+        # Select the second egg, ensuring it is not the same as the first
+
+        collect_eggs([egg1, egg2])
+        boil_eggs(pot, stove, [egg1, egg2])
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_pot_2069_around_kitchen_counter_230(pot:item):
+    goal: not unknown(pot)
+    body:
+        assert is_pot(pot)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==230
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(pot,kitchen_counter_instance)
+        else:
+            exp(pot,kitchen_counter_instance)
+    eff:
+        unknown[pot]=False
+        close[pot,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,pot]=True
+    
+
+behavior find_food_steak_2008_around_fridge_289(food_steak:item):
+    goal: not unknown(food_steak)
+    body:
+        assert is_food_steak(food_steak)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_steak,fridge_instance)
+        else:
+            exp(food_steak,fridge_instance)
+    eff:
+        unknown[food_steak]=False
+        close[food_steak,fridge_instance]=True
+        close[fridge_instance,food_steak]=True
+    
+
+behavior find_food_egg_2020_around_fridge_289(food_egg:item):
+    goal: not unknown(food_egg)
+    body:
+        assert is_food_egg(food_egg)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_egg,fridge_instance)
+        else:
+            exp(food_egg,fridge_instance)
+    eff:
+        unknown[food_egg]=False
+        close[food_egg,fridge_instance]=True
+        close[fridge_instance,food_egg]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior boil_eggs(pot:item, stove:item):
+    body:
+        if is_off(stove):
+            switch_on(stove) # Turn on the stove
+        if not has_water(pot):
+            get_water(pot) # Fill the pot with water
+        if not inhand(pot):
+            grab(pot)
+        put_on(pot, stove) # Place the pot of water on the stove
+
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot)
+        bind stove: item where:
+            is_stove(stove)
+        boil_eggs(pot, stove) # Start boiling the eggs
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+ 
+behavior boil_eggs(pot:item, stove:item):
+    body:
+        if is_off(stove):
+            switch_on(stove) # Turn on the stove
+        if not has_water(pot):
+            get_water(pot) # Fill the pot with water
+        if not inhand(pot):
+            grab(pot)
+        put_on(pot, stove) # Place the pot of water on the stove
+
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot)
+        bind stove: item where:
+            is_stove(stove)
+        boil_eggs(pot, stove) # Start boiling the eggs
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(stove_2065)switchon_executor(stove_2065)walk_executor(kitchen_counter_230)exp(pot_2069, kitchen_counter_230)walk_executor(pot_2069)open_executor(pot_2069)grab_executor(pot_2069)walk_executor(faucet_43)switchon_executor(faucet_43)switchoff_executor(faucet_43)walk_executor(stove_2065)put_executor(pot_2069, stove_2065)
+##############################
+From agent.py
+walk_executor(stove_2065)
+Robot find: drawing_238, drawing_239, drawing_240, drawing_241, drawing_242, drawing_243, napkin_2005, oil_2079, cup_2063, knife_2050, cup_2064, pot_2069, fryingpan_2083, Robot is close to the stove_2065. Robot is close to the kitchen_counter_230. 
+##############################
+From agent.py
+switchon_executor(stove_2065)
+Robot find: Robot is close to the stove_2065. Robot is close to the kitchen_counter_230. stove_2065 is turned on. 
+##############################
+From agent.py
+walk_executor(kitchen_counter_230)
+Robot find: Robot is close to the kitchen_counter_230. 
+##############################
+From agent.py
+exp(pot_2069, kitchen_counter_230)
+Find pot_2069. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(pot_2069)open_executor(pot_2069)grab_executor(pot_2069)walk_executor(faucet_43)switchon_executor(faucet_43)switchoff_executor(faucet_43)walk_executor(stove_2065)put_executor(pot_2069, stove_2065)
+##############################
+From agent.py
+walk_executor(pot_2069)
+Robot find: Robot is close to the kitchen_counter_230. Robot is close to the pot_2069. 
+##############################
+From agent.py
+open_executor(pot_2069)
+Robot find: Robot is close to the kitchen_counter_230. Robot is close to the pot_2069. pot_2069 is opened. 
+##############################
+From agent.py
+grab_executor(pot_2069)
+Robot find: Robot is close to the kitchen_counter_230. Robot is close to the pot_2069. Grabbing pot_2069 by right hand. 
+##############################
+From agent.py
+walk_executor(faucet_43)
+Robot find: towel_rack_31, towel_rack_32, towel_rack_34, Robot is close to the pot_2069. Robot is close to the bathroom_counter_41. Robot is close to the faucet_43. 
+##############################
+From agent.py
+switchon_executor(faucet_43)
+Robot find: Robot is close to the pot_2069. Robot is close to the bathroom_counter_41. Robot is close to the faucet_43. faucet_43 is turned on. 
+##############################
+From agent.py
+switchoff_executor(faucet_43)
+Robot find: Robot is close to the pot_2069. Robot is close to the bathroom_counter_41. Robot is close to the faucet_43. faucet_43 is turned off. 
+##############################
+From agent.py
+walk_executor(stove_2065)
+Robot find: Robot is close to the pot_2069. Robot is close to the stove_2065. Robot is close to the kitchen_counter_230. 
+##############################
+From agent.py
+put_executor(pot_2069, stove_2065)
+Robot find: Robot is close to the pot_2069. Robot is close to the stove_2065. Robot is close to the kitchen_counter_230. pot_2069 is close stove_2065. pot_2069 is on stove_2065. stove_2065 is close pot_2069. pot_2069 released by right hand. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: No
+The feedback instruction: You need to add water to the pot before placing it on the stove for the eggs to boil.
+##############################
+From agent.py
+Human Instruction: You need to add water to the pot before placing it on the stove for the eggs to boil.
+
+The actions you have taken:
+Action 1: Walk to stove_2065.
+Action 2: Switch on stove_2065.
+Action 3: Walk to kitchen_counter_230.
+Action 4: look for pot_2069 around kitchen_counter_230.
+Action 5: Walk to pot_2069.
+Action 6: Open pot_2069.
+Action 7: Grab pot_2069.
+Action 8: Walk to faucet_43.
+Action 9: Switch on faucet_43.
+Action 10: Switch off faucet_43.
+Action 11: Walk to stove_2065.
+Action 12: Put pot_2069 on stove_2065.
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_egg_2020_around_fridge_289(food_egg:item):
+    goal: not unknown(food_egg)
+    body:
+        assert is_food_egg(food_egg)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_egg,fridge_instance)
+        else:
+            exp(food_egg,fridge_instance)
+    eff:
+        unknown[food_egg]=False
+        close[food_egg,fridge_instance]=True
+        close[fridge_instance,food_egg]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior fill_pot_with_water(pot: item, faucet: item):
+    body:
+        if not has_water(pot):
+            walk_to(faucet)
+            grab(pot)
+            get_water(pot)
+            
+behavior boil_eggs(pot: item, stove: item):
+    body:
+        if not is_on(stove):
+            switch_on(stove)
+        if not on(pot, stove):
+            walk_to(stove)
+            put_on(pot, stove)
+
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot)
+        bind stove: item where:
+            is_stove(stove) and id[stove] == 2065
+        bind faucet: item where:
+            is_faucet(faucet) and id[faucet] == 43
+        fill_pot_with_water(pot, faucet)
+        boil_eggs(pot, stove)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_egg_2020_around_fridge_289(food_egg:item):
+    goal: not unknown(food_egg)
+    body:
+        assert is_food_egg(food_egg)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_egg,fridge_instance)
+        else:
+            exp(food_egg,fridge_instance)
+    eff:
+        unknown[food_egg]=False
+        close[food_egg,fridge_instance]=True
+        close[fridge_instance,food_egg]=True
+    
+
+behavior find_food_salt_2037_around_cupboard_229(food_salt:item):
+    goal: not unknown(food_salt)
+    body:
+        assert is_food_salt(food_salt)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==229
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(food_salt,cupboard_instance)
+        else:
+            exp(food_salt,cupboard_instance)
+    eff:
+        unknown[food_salt]=False
+        close[food_salt,cupboard_instance]=True
+        close[cupboard_instance,food_salt]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_pot_empty(pot:item):
+    # Function to verify if the pot has water in it
+    return not has_water(pot)
+
+behavior get_pot_with_water(faucet:item, stove:item):
+    body:
+        bind pot: item where:
+            is_pot(pot) and inhand(pot)
+        # Ensure the pot is empty before adding water
+        if is_pot_empty(pot) and inhand(pot):
+            walk_to(faucet)
+            get_water(pot)
+            walk_to(stove)
+            put_on(pot, stove)
+
+behavior __goal__():
+    body:
+        bind stove: item where:
+            is_stove(stove) and id[stove]==2065
+        # Select stove with ID 2065
+
+        bind faucet: item where:
+            is_faucet(faucet) and id[faucet]==43
+        # Select faucet with ID 43
+
+        bind pot: item where:
+            is_pot(pot)
+        # Select pot with ID 2069
+
+        walk_to(stove)
+        switch_on(stove) # Turn on the stove
+        walk_to(pot)
+        opens(pot)
+        grab(pot)
+        get_pot_with_water(faucet, stove) # Fill the pot with water and place it on the stove
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+def is_pot_empty(pot:item):
+    # Function to verify if the pot has water in it
+    return not has_water(pot)
+
+behavior get_pot_with_water(faucet:item, stove:item):
+    body:
+        bind pot: item where:
+            is_pot(pot) and inhand(pot)
+        # Ensure the pot is empty before adding water
+        if is_pot_empty(pot) and inhand(pot):
+            walk_to(faucet)
+            get_water(pot)
+            walk_to(stove)
+            put_on(pot, stove)
+
+behavior __goal__():
+    body:
+        bind stove: item where:
+            is_stove(stove) and id[stove]==2065
+        # Select stove with ID 2065
+
+        bind faucet: item where:
+            is_faucet(faucet) and id[faucet]==43
+        # Select faucet with ID 43
+
+        bind pot: item where:
+            is_pot(pot)
+        # Select pot with ID 2069
+
+        walk_to(stove)
+        switch_on(stove) # Turn on the stove
+        walk_to(pot)
+        opens(pot)
+        grab(pot)
+        get_pot_with_water(faucet, stove) # Fill the pot with water and place it on the stove
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(stove_2065)switchon_executor(stove_2065)walk_executor(pot_2069)open_executor(pot_2069)grab_executor(pot_2069)
+##############################
+From agent.py
+walk_executor(stove_2065)
+Robot find: Robot is close to the stove_2065. Robot is close to the kitchen_counter_230. 
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_egg_2020_around_fridge_289(food_egg:item):
+    goal: not unknown(food_egg)
+    body:
+        assert is_food_egg(food_egg)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_egg,fridge_instance)
+        else:
+            exp(food_egg,fridge_instance)
+    eff:
+        unknown[food_egg]=False
+        close[food_egg,fridge_instance]=True
+        close[fridge_instance,food_egg]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_pot_available():
+    # Check if pot is available
+    symbol has_pot=exists pot: item : (is_pot(pot) and movable(pot))
+    return has_pot
+
+def is_faucet_available():
+    # Check if faucet is available
+    symbol has_faucet=exists faucet: item : (is_faucet(faucet))
+    return has_faucet
+
+def is_stove_available():
+    # Check if stove is available
+    symbol has_stove=exists stove: item : (is_stove(stove) and has_switch(stove))
+    return has_stove
+
+behavior get_pot_filled_with_water(pot:item, faucet:item):
+    body:
+        walk_to(pot)
+        if not inhand(pot) and has_a_free_hand(char):
+            grab(pot)
+        walk_to(faucet)
+        get_water(pot)
+        empty_a_hand()
+        # Fill pot with water
+
+behavior place_pot_on_stove(pot:item, stove:item):
+    body:
+        walk_to(pot)
+        if not inhand(pot) and has_a_free_hand(char):
+            grab(pot)
+        walk_to(stove)
+        put_on(pot, stove)
+        empty_a_hand()
+        # Place pot on stove
+
+behavior switch_on_stove(stove:item):
+    body:
+        if is_off(stove):
+            switch_on(stove)
+        # Switch on stove if its off
+
+behavior __goal__():
+    body:
+        if is_pot_available() and is_faucet_available() and is_stove_available():
+            # If pot, faucet, and stove are available
+            bind pot: item where:
+                is_pot(pot)
+            bind faucet: item where:
+                is_faucet(faucet)
+            bind stove: item where:
+                is_stove(stove) and has_switch(stove)
+
+            get_pot_filled_with_water(pot, faucet)
+            place_pot_on_stove(pot, stove)
+            switch_on_stove(stove)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_kiwi_2027_around_fridge_289(food_kiwi:item):
+    goal: not unknown(food_kiwi)
+    body:
+        assert is_food_kiwi(food_kiwi)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_kiwi,fridge_instance)
+        else:
+            exp(food_kiwi,fridge_instance)
+    eff:
+        unknown[food_kiwi]=False
+        close[food_kiwi,fridge_instance]=True
+        close[fridge_instance,food_kiwi]=True
+    
+
+behavior find_food_egg_2020_around_fridge_289(food_egg:item):
+    goal: not unknown(food_egg)
+    body:
+        assert is_food_egg(food_egg)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_egg,fridge_instance)
+        else:
+            exp(food_egg,fridge_instance)
+    eff:
+        unknown[food_egg]=False
+        close[food_egg,fridge_instance]=True
+        close[fridge_instance,food_egg]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior boil_eggs(pot:item, faucet:item, stove:item):
+    body:
+        if not has_water(pot):
+            get_water(pot) # Fill the pot with water
+        put_on(pot, stove) # Place the pot on the stove
+        if is_off(stove):
+            switch_on(stove) # Turn on the stove
+
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot) and grabbable(pot)
+        bind faucet: item where:
+            is_faucet(faucet) and has_switch(faucet)
+        bind stove: item where:
+            is_stove(stove) and has_switch(stove)
+        boil_eggs(pot, faucet, stove)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+behavior boil_eggs(pot:item, faucet:item, stove:item):
+    body:
+        if not has_water(pot):
+            get_water(pot) # Fill the pot with water
+        put_on(pot, stove) # Place the pot on the stove
+        if is_off(stove):
+            switch_on(stove) # Turn on the stove
+
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot) and grabbable(pot)
+        bind faucet: item where:
+            is_faucet(faucet) and has_switch(faucet)
+        bind stove: item where:
+            is_stove(stove) and has_switch(stove)
+        boil_eggs(pot, faucet, stove)
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(pot_2069)grab_executor(pot_2069)walk_executor(stove_2065)put_executor(pot_2069, stove_2065)
+##############################
+From agent.py
+walk_executor(pot_2069)
+Robot find: Robot is close to the stove_2065. Robot is close to the pot_2069. 
+##############################
+From agent.py
+grab_executor(pot_2069)
+Robot find: Robot is close to the stove_2065. Robot is close to the pot_2069. Grabbing pot_2069 by right hand. 
+##############################
+From agent.py
+walk_executor(stove_2065)
+Robot find: Robot is close to the stove_2065. Robot is close to the pot_2069. Robot is close to the kitchen_counter_230. 
+##############################
+From agent.py
+put_executor(pot_2069, stove_2065)
+Robot find: Robot is close to the stove_2065. Robot is close to the pot_2069. Robot is close to the kitchen_counter_230. pot_2069 is close stove_2065. pot_2069 is on stove_2065. pot_2069 released by right hand. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: No
+The feedback instruction: You need to ensure that water is added to the pot before placing it on the stove, as the current steps do not confirm that the pot has been filled with water.
+##############################
+From agent.py
+Human Instruction: You need to ensure that water is added to the pot before placing it on the stove, as the current steps do not confirm that the pot has been filled with water.
+
+Trial and Error: You can not switchon stove_2065
+The actions you have taken:
+Action 1: Walk to stove_2065.
+Action 2: Switch on stove_2065.
+Action 3: Walk to kitchen_counter_230.
+Action 4: look for pot_2069 around kitchen_counter_230.
+Action 5: Walk to pot_2069.
+Action 6: Open pot_2069.
+Action 7: Grab pot_2069.
+Action 8: Walk to faucet_43.
+Action 9: Switch on faucet_43.
+Action 10: Switch off faucet_43.
+Action 11: Walk to stove_2065.
+Action 12: Put pot_2069 on stove_2065.
+Action 13: Walk to stove_2065.
+Action 14: Walk to pot_2069.
+Action 15: Grab pot_2069.
+Action 16: Walk to stove_2065.
+Action 17: Put pot_2069 on stove_2065.
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_egg_2020_around_fridge_289(food_egg:item):
+    goal: not unknown(food_egg)
+    body:
+        assert is_food_egg(food_egg)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_egg,fridge_instance)
+        else:
+            exp(food_egg,fridge_instance)
+    eff:
+        unknown[food_egg]=False
+        close[food_egg,fridge_instance]=True
+        close[fridge_instance,food_egg]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior fill_pot_with_water(pot:item, faucet:item):
+    body:
+        if not has_water(pot):
+            walk_to(faucet)
+            grab(pot)
+            get_water(pot)
+
+behavior place_pot_on_stove(pot:item, stove:item):
+    body:
+        if not on(pot, stove):
+            put_on(pot, stove)
+
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot)
+        # Select a pot
+
+        bind stove: item where:
+            is_stove(stove)
+        # Select a stove
+
+        bind faucet: item where:
+            is_faucet(faucet)
+        # Select a faucet
+
+        fill_pot_with_water(pot, faucet)
+        place_pot_on_stove(pot, stove)
+        # Check if the stove is switched on and can be operated
+        if has_switch(stove) and not is_on(stove):
+            switch_on(stove)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_egg_2020_around_fridge_289(food_egg:item):
+    goal: not unknown(food_egg)
+    body:
+        assert is_food_egg(food_egg)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_egg,fridge_instance)
+        else:
+            exp(food_egg,fridge_instance)
+    eff:
+        unknown[food_egg]=False
+        close[food_egg,fridge_instance]=True
+        close[fridge_instance,food_egg]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_set_up_to_boil(pot: item, stove: item):
+    # Function to check if the pot is filled with water and placed on the stove
+    symbol on_stove = on(pot, stove)
+    symbol has_water_in_pot = has_water(pot)
+    return on_stove and has_water_in_pot
+
+behavior fill_pot_with_water_and_place_on_stove(pot: item, stove: item):
+    body:
+        if not has_water(pot):
+            walk_to(pot)
+            grab(pot)
+            walk_to(faucet_43)
+            switch_on(faucet_43)
+            get_water(pot)
+            switch_off(faucet_43)
+            walk_to(stove)
+            put_on(pot, stove)   
+            
+behavior switch_on_stove(stove: item):
+    body:
+        if not is_on(stove) and has_switch(stove):
+            switch_on(stove)
+            
+behavior __goal__():
+    body:
+        bind stove: item where:
+            is_stove(stove) and id[stove] == 2065
+        bind pot: item where:
+            is_pot(pot) and id[pot] == 2069
+
+        if not is_set_up_to_boil(pot, stove):
+            fill_pot_with_water_and_place_on_stove(pot, stove)
+
+        switch_on_stove(stove)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_egg_2020_around_fridge_289(food_egg:item):
+    goal: not unknown(food_egg)
+    body:
+        assert is_food_egg(food_egg)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_egg,fridge_instance)
+        else:
+            exp(food_egg,fridge_instance)
+    eff:
+        unknown[food_egg]=False
+        close[food_egg,fridge_instance]=True
+        close[fridge_instance,food_egg]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior fill_pot_with_water(pot: item, faucet: item):
+    body:
+        if not has_water(pot):
+            walk_to(faucet)
+            open(faucet)
+            get_water(pot)
+            switch_off(faucet)
+
+behavior place_pot_on_stove(pot: item, stove: item):
+    body:
+        if not on(pot, stove):
+            walk_to(stove)
+            put_on(pot, stove)
+
+def stove_has_switch_issue(stove: item):
+    symbol issue = not has_switch(stove) or is_off(stove)
+    return issue
+
+behavior boil_eggs():
+    body:
+        bind stove: item where:
+            is_stove(stove)
+
+        bind pot: item where:
+            is_pot(pot)
+
+        bind faucet: item where:
+            is_faucet(faucet)
+
+        fill_pot_with_water(pot, faucet)
+        place_pot_on_stove(pot, stove)
+
+        if stove_has_switch_issue(stove):
+            # Assume a fallback action since stove_2065 cannot be turned on
+            observe(stove, "Check if the stove can be fixed or find an alternative")
+
+behavior __goal__():
+    body:
+        boil_eggs()
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_egg_2020_around_fridge_289(food_egg:item):
+    goal: not unknown(food_egg)
+    body:
+        assert is_food_egg(food_egg)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_egg,fridge_instance)
+        else:
+            exp(food_egg,fridge_instance)
+    eff:
+        unknown[food_egg]=False
+        close[food_egg,fridge_instance]=True
+        close[fridge_instance,food_egg]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior fill_pot_with_water(pot:item):
+    body:
+        if not has_water(pot):
+            get_water(pot)
+
+behavior activate_stove(stove:item):
+    body:
+        if is_off(stove) and has_switch(stove):
+            switch_on(stove)
+
+behavior boil_eggs(pot:item, stove:item):
+    body:
+        fill_pot_with_water(pot)
+        put_on(pot, stove)
+        activate_stove(stove)
+
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot)
+        bind stove: item where:
+            is_stove(stove) and has_switch(stove)
+        boil_eggs(pot, stove)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+behavior fill_pot_with_water(pot:item):
+    body:
+        if not has_water(pot):
+            get_water(pot)
+
+behavior activate_stove(stove:item):
+    body:
+        if is_off(stove) and has_switch(stove):
+            switch_on(stove)
+
+behavior boil_eggs(pot:item, stove:item):
+    body:
+        fill_pot_with_water(pot)
+        put_on(pot, stove)
+        activate_stove(stove)
+
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot)
+        bind stove: item where:
+            is_stove(stove) and has_switch(stove)
+        boil_eggs(pot, stove)
+
+##############################
+From agent.py-> find a plan in act()
+grab_executor(pot_2069)put_executor(pot_2069, stove_2065)
+##############################
+From agent.py
+grab_executor(pot_2069)
+Robot find: Robot is close to the stove_2065. Robot is close to the pot_2069. Robot is close to the kitchen_counter_230. Grabbing pot_2069 by right hand. 
+##############################
+From agent.py
+put_executor(pot_2069, stove_2065)
+Robot find: Robot is close to the stove_2065. Robot is close to the pot_2069. Robot is close to the kitchen_counter_230. pot_2069 is close stove_2065. pot_2069 is on stove_2065. pot_2069 released by right hand. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: No
+The feedback instruction: Add water to pot_2069 before putting it on stove_2065 and make sure the stove is switched on.
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_vegetable_2041_around_fridge_289(food_vegetable:item):
+    goal: not unknown(food_vegetable)
+    body:
+        assert is_food_vegetable(food_vegetable)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_vegetable,fridge_instance)
+        else:
+            exp(food_vegetable,fridge_instance)
+    eff:
+        unknown[food_vegetable]=False
+        close[food_vegetable,fridge_instance]=True
+        close[fridge_instance,food_vegetable]=True
+    
+
+behavior find_food_onion_2032_around_fridge_289(food_onion:item):
+    goal: not unknown(food_onion)
+    body:
+        assert is_food_onion(food_onion)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_onion,fridge_instance)
+        else:
+            exp(food_onion,fridge_instance)
+    eff:
+        unknown[food_onion]=False
+        close[food_onion,fridge_instance]=True
+        close[fridge_instance,food_onion]=True
+    
+
+behavior find_food_potato_2035_around_fridge_289(food_potato:item):
+    goal: not unknown(food_potato)
+    body:
+        assert is_food_potato(food_potato)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_potato,fridge_instance)
+        else:
+            exp(food_potato,fridge_instance)
+    eff:
+        unknown[food_potato]=False
+        close[food_potato,fridge_instance]=True
+        close[fridge_instance,food_potato]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_vegetable_clean(vegetable:item):
+    # Function to check if a vegetable is clean
+    return clean(vegetable)
+
+behavior wash_vegetable(vegetable:item):
+    body:
+        if not clean(vegetable):
+            wash(vegetable)
+
+behavior chop_vegetable(vegetable:item):
+    body:
+        if not cut(vegetable):
+            cuts(vegetable)
+
+behavior __goal__():
+    body:
+        foreach vegetable: item:
+            if is_food_vegetable(vegetable):
+                if not visited(vegetable):
+                    observe(vegetable, "Is the vegetable clean and uncut")
+                if not is_vegetable_clean(vegetable):
+                    wash_vegetable(vegetable)
+                chop_vegetable(vegetable)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+def is_vegetable_clean(vegetable:item):
+    # Function to check if a vegetable is clean
+    return clean(vegetable)
+
+behavior wash_vegetable(vegetable:item):
+    body:
+        if not clean(vegetable):
+            wash(vegetable)
+
+behavior chop_vegetable(vegetable:item):
+    body:
+        if not cut(vegetable):
+            cuts(vegetable)
+
+behavior __goal__():
+    body:
+        foreach vegetable: item:
+            if is_food_vegetable(vegetable):
+                if not visited(vegetable):
+                    observe(vegetable, "Is the vegetable clean and uncut")
+                if not is_vegetable_clean(vegetable):
+                    wash_vegetable(vegetable)
+                chop_vegetable(vegetable)
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(fridge_289)switchoff_executor(fridge_289)open_executor(fridge_289)exp(food_vegetable_2041, fridge_289)walk_executor(food_vegetable_2041)obs(food_vegetable_2041, Is the vegetable clean and uncut)grab_executor(food_vegetable_2041)walk_executor(faucet_43)switchon_executor(faucet_43)wash_executor(food_vegetable_2041)switchoff_executor(faucet_43)walk_executor(cutting_board_2051)put_executor(food_vegetable_2041, cutting_board_2051)walk_executor(knife_2050)grab_executor(knife_2050)walk_executor(food_vegetable_2041)cut_executor(food_vegetable_2041)
+##############################
+From agent.py
+walk_executor(fridge_289)
+Robot find: Robot is close to the fridge_289. 
+##############################
+From agent.py
+switchoff_executor(fridge_289)
+Robot find: Robot is close to the fridge_289. fridge_289 is turned off. 
+##############################
+From agent.py
+open_executor(fridge_289)
+Robot find: sauce_2078, food_steak_2008, food_apple_2009, food_bacon_2010, food_banana_2011, food_bread_2012, food_cake_2013, food_carrot_2014, food_cereal_2015, food_cheese_2016, food_chicken_2017, food_dessert_2018, food_donut_2019, food_egg_2020, food_fish_2021, food_food_2022, food_fruit_2023, food_hamburger_2024, food_ice_cream_2025, food_jam_2026, food_kiwi_2027, food_lemon_2028, food_noodles_2029, food_oatmeal_2030, food_orange_2031, food_onion_2032, food_peanut_butter_2033, food_pizza_2034, food_potato_2035, food_rice_2036, food_salt_2037, food_snack_2038, food_sugar_2039, food_turkey_2040, food_vegetable_2041, dry_pasta_2042, milk_2043, Robot is close to the sauce_2078. Robot is close to the fridge_289. Robot is close to the food_steak_2008. Robot is close to the food_apple_2009. Robot is close to the food_bacon_2010. Robot is close to the food_banana_2011. Robot is close to the food_bread_2012. Robot is close to the food_cake_2013. Robot is close to the food_carrot_2014. Robot is close to the food_cereal_2015. Robot is close to the food_cheese_2016. Robot is close to the food_chicken_2017. Robot is close to the food_dessert_2018. Robot is close to the food_donut_2019. Robot is close to the food_egg_2020. Robot is close to the food_fish_2021. Robot is close to the food_food_2022. Robot is close to the food_fruit_2023. Robot is close to the food_hamburger_2024. Robot is close to the food_ice_cream_2025. Robot is close to the food_jam_2026. Robot is close to the food_kiwi_2027. Robot is close to the food_lemon_2028. Robot is close to the food_noodles_2029. Robot is close to the food_oatmeal_2030. Robot is close to the food_orange_2031. Robot is close to the food_onion_2032. Robot is close to the food_peanut_butter_2033. Robot is close to the food_pizza_2034. Robot is close to the food_potato_2035. Robot is close to the food_rice_2036. Robot is close to the food_salt_2037. Robot is close to the food_snack_2038. Robot is close to the food_sugar_2039. Robot is close to the food_turkey_2040. Robot is close to the food_vegetable_2041. Robot is close to the dry_pasta_2042. Robot is close to the milk_2043. fridge_289 is opened. 
+##############################
+From agent.py
+exp(food_vegetable_2041, fridge_289)
+Find food_vegetable_2041. 
+##############################
+From agent.py-> find a plan in act()
+obs(food_vegetable_2041, Is the vegetable clean and uncut)grab_executor(food_vegetable_2041)walk_executor(faucet_43)switchon_executor(faucet_43)wash_executor(food_vegetable_2041)switchoff_executor(faucet_43)walk_executor(cutting_board_2051)put_executor(food_vegetable_2041, cutting_board_2051)walk_executor(knife_2050)grab_executor(knife_2050)walk_executor(food_vegetable_2041)cut_executor(food_vegetable_2041)
+##############################
+From agent.py
+obs(food_vegetable_2041, Is the vegetable clean and uncut)
+Get this information:  food_vegetable_2041 is inside fridge_289. food_vegetable_2041 is inside dining_room_201. food_vegetable_2041 is close to fridge_289. food_vegetable_2041 is close to character_65. food_vegetable_2041 is DIRTY.
+##############################
+From agent.py
+grab_executor(food_vegetable_2041)
+Robot find: Robot is close to the sauce_2078. Robot is close to the fridge_289. Robot is close to the food_steak_2008. Robot is close to the food_apple_2009. Robot is close to the food_bacon_2010. Robot is close to the food_banana_2011. Robot is close to the food_bread_2012. Robot is close to the food_cake_2013. Robot is close to the food_carrot_2014. Robot is close to the food_cereal_2015. Robot is close to the food_cheese_2016. Robot is close to the food_chicken_2017. Robot is close to the food_dessert_2018. Robot is close to the food_donut_2019. Robot is close to the food_egg_2020. Robot is close to the food_fish_2021. Robot is close to the food_food_2022. Robot is close to the food_fruit_2023. Robot is close to the food_hamburger_2024. Robot is close to the food_ice_cream_2025. Robot is close to the food_jam_2026. Robot is close to the food_kiwi_2027. Robot is close to the food_lemon_2028. Robot is close to the food_noodles_2029. Robot is close to the food_oatmeal_2030. Robot is close to the food_orange_2031. Robot is close to the food_onion_2032. Robot is close to the food_peanut_butter_2033. Robot is close to the food_pizza_2034. Robot is close to the food_potato_2035. Robot is close to the food_rice_2036. Robot is close to the food_salt_2037. Robot is close to the food_snack_2038. Robot is close to the food_sugar_2039. Robot is close to the food_turkey_2040. Robot is close to the food_vegetable_2041. Robot is close to the dry_pasta_2042. Robot is close to the milk_2043. Grabbing food_vegetable_2041 by right hand. 
+##############################
+From agent.py
+walk_executor(faucet_43)
+Robot find: Robot is close to the food_vegetable_2041. Robot is close to the bathroom_counter_41. Robot is close to the faucet_43. 
+##############################
+From agent.py
+switchon_executor(faucet_43)
+Robot find: Robot is close to the food_vegetable_2041. Robot is close to the bathroom_counter_41. Robot is close to the faucet_43. faucet_43 is turned on. 
+##############################
+From agent.py
+wash_executor(food_vegetable_2041)
+Robot find: Robot is close to the food_vegetable_2041. Robot is close to the bathroom_counter_41. Robot is close to the faucet_43. food_vegetable_2041 is cleaned. 
+##############################
+From agent.py
+switchoff_executor(faucet_43)
+Robot find: Robot is close to the food_vegetable_2041. Robot is close to the bathroom_counter_41. Robot is close to the faucet_43. faucet_43 is turned off. 
+##############################
+From agent.py
+walk_executor(cutting_board_2051)
+Robot find: Robot is close to the food_vegetable_2041. Robot is close to the cutting_board_2051. Robot is close to the kitchen_counter_230. 
+##############################
+From agent.py
+put_executor(food_vegetable_2041, cutting_board_2051)
+Robot find: Robot is close to the food_vegetable_2041. Robot is close to the cutting_board_2051. Robot is close to the kitchen_counter_230. cutting_board_2051 is close food_vegetable_2041. food_vegetable_2041 is close cutting_board_2051. food_vegetable_2041 is on cutting_board_2051. food_vegetable_2041 released by right hand. 
+##############################
+From agent.py
+walk_executor(knife_2050)
+Robot find: Robot is close to the kitchen_counter_230. Robot is close to the knife_2050. 
+##############################
+From agent.py
+grab_executor(knife_2050)
+Robot find: Robot is close to the kitchen_counter_230. Robot is close to the knife_2050. Grabbing knife_2050 by right hand. 
+##############################
+From agent.py
+walk_executor(food_vegetable_2041)
+Robot find: Robot is close to the knife_2050. Robot is close to the food_vegetable_2041. Robot is close to the cutting_board_2051. 
+##############################
+From agent.py
+cut_executor(food_vegetable_2041)
+Robot find: Robot is close to the knife_2050. Robot is close to the food_vegetable_2041. Robot is close to the cutting_board_2051. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: Yes
+The feedback instruction: None
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior squeeze_lemon(lemon:item):
+    body:
+        if not cut(lemon):
+            cuts(lemon) # Cut the lemon if it is not already cut
+        squeeze(lemon) # Squeeze the lemon
+
+behavior __goal__():
+    body:
+        bind lemon: item where:
+            is_food_lemon(lemon)
+        squeeze_lemon(lemon) # Perform the squeeze action on the lemon
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+behavior squeeze_lemon(lemon:item):
+    body:
+        if not cut(lemon):
+            cuts(lemon) # Cut the lemon if it is not already cut
+        squeeze(lemon) # Squeeze the lemon
+
+behavior __goal__():
+    body:
+        bind lemon: item where:
+            is_food_lemon(lemon)
+        squeeze_lemon(lemon) # Perform the squeeze action on the lemon
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(food_lemon_2028)grab_executor(food_lemon_2028)walk_executor(cutting_board_2051)put_executor(food_lemon_2028, cutting_board_2051)walk_executor(food_lemon_2028)cut_executor(food_lemon_2028)
+##############################
+From agent.py
+walk_executor(food_lemon_2028)
+Robot find: Robot is close to the knife_2050. Robot is close to the fridge_289. Robot is close to the food_lemon_2028. 
+##############################
+From agent.py
+grab_executor(food_lemon_2028)
+Robot find: Robot is close to the knife_2050. Robot is close to the fridge_289. Robot is close to the food_lemon_2028. Grabbing food_lemon_2028 by left hand. 
+##############################
+From agent.py
+walk_executor(cutting_board_2051)
+Robot find: Robot is close to the knife_2050. Robot is close to the food_lemon_2028. Robot is close to the cutting_board_2051. Robot is close to the kitchen_counter_230. 
+##############################
+From agent.py
+put_executor(food_lemon_2028, cutting_board_2051)
+Robot find: Robot is close to the knife_2050. Robot is close to the food_lemon_2028. Robot is close to the cutting_board_2051. Robot is close to the kitchen_counter_230. cutting_board_2051 is close food_lemon_2028. food_lemon_2028 is close cutting_board_2051. food_lemon_2028 is on cutting_board_2051. food_lemon_2028 released by left hand. 
+##############################
+From agent.py
+walk_executor(food_lemon_2028)
+Robot find: Robot is close to the knife_2050. Robot is close to the food_lemon_2028. Robot is close to the cutting_board_2051. 
+##############################
+From agent.py
+cut_executor(food_lemon_2028)
+Robot find: Robot is close to the knife_2050. Robot is close to the food_lemon_2028. Robot is close to the cutting_board_2051. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: No
+The feedback instruction: You need to squeeze the cut lemon to complete the task of squeezing lemon juice.
+##############################
+From agent.py
+Human Instruction: You need to squeeze the cut lemon to complete the task of squeezing lemon juice.
+
+Trial and Error: You can not switchon stove_2065
+The actions you have taken:
+Action 1: Walk to stove_2065.
+Action 2: Switch on stove_2065.
+Action 3: Walk to kitchen_counter_230.
+Action 4: look for pot_2069 around kitchen_counter_230.
+Action 5: Walk to pot_2069.
+Action 6: Open pot_2069.
+Action 7: Grab pot_2069.
+Action 8: Walk to faucet_43.
+Action 9: Switch on faucet_43.
+Action 10: Switch off faucet_43.
+Action 11: Walk to stove_2065.
+Action 12: Put pot_2069 on stove_2065.
+Action 13: Walk to stove_2065.
+Action 14: Walk to pot_2069.
+Action 15: Grab pot_2069.
+Action 16: Walk to stove_2065.
+Action 17: Put pot_2069 on stove_2065.
+Action 18: Grab pot_2069.
+Action 19: Put pot_2069 on stove_2065.
+Action 20: Walk to fridge_289.
+Action 21: Switch off fridge_289.
+Action 22: Open fridge_289.
+Action 23: look for food_vegetable_2041 around fridge_289.
+Action 24: Observe around food_vegetable_2041 with the question of Is the vegetable clean and uncut.
+Action 25: Grab food_vegetable_2041.
+Action 26: Walk to faucet_43.
+Action 27: Switch on faucet_43.
+Action 28: Wash food_vegetable_2041.
+Action 29: Switch off faucet_43.
+Action 30: Walk to cutting_board_2051.
+Action 31: Put food_vegetable_2041 on cutting_board_2051.
+Action 32: Walk to knife_2050.
+Action 33: Grab knife_2050.
+Action 34: Walk to food_vegetable_2041.
+Action 35: Cut food_vegetable_2041.
+Action 36: Walk to food_lemon_2028.
+Action 37: Grab food_lemon_2028.
+Action 38: Walk to cutting_board_2051.
+Action 39: Put food_lemon_2028 on cutting_board_2051.
+Action 40: Walk to food_lemon_2028.
+Action 41: Cut food_lemon_2028.
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+#exp_behavior_end
+
+#goal_representation
+
+behavior grab_lemon(food_lemon:item):
+    body:
+        if not inhand(food_lemon):
+            grab(food_lemon)
+            # Grab the lemon if it is not already in hand
+
+behavior squeeze_lemon(food_lemon:item):
+    body:
+        if cut(food_lemon):
+            squeeze(food_lemon)
+            # Squeeze the lemon if it is already cut
+
+behavior __goal__():
+    body:
+        bind food_lemon: item where:
+            is_food_lemon(food_lemon) and cut(food_lemon)
+        # Select lemon that is already cut
+        grab_lemon(food_lemon)
+        squeeze_lemon(food_lemon)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+
+behavior grab_lemon(food_lemon:item):
+    body:
+        if not inhand(food_lemon):
+            grab(food_lemon)
+            # Grab the lemon if it is not already in hand
+
+behavior squeeze_lemon(food_lemon:item):
+    body:
+        if cut(food_lemon):
+            squeeze(food_lemon)
+            # Squeeze the lemon if it is already cut
+
+behavior __goal__():
+    body:
+        bind food_lemon: item where:
+            is_food_lemon(food_lemon) and cut(food_lemon)
+        # Select lemon that is already cut
+        grab_lemon(food_lemon)
+        squeeze_lemon(food_lemon)
+
+##############################
+From agent.py-> find a plan in act()
+grab_executor(food_lemon_2028)
+##############################
+From agent.py
+grab_executor(food_lemon_2028)
+Robot find: Robot is close to the knife_2050. Robot is close to the food_lemon_2028. Robot is close to the cutting_board_2051. Grabbing food_lemon_2028 by left hand. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: No
+The feedback instruction: You need to squeeze the cut lemon to complete the task of squeezing lemon juice.
+##############################
+From agent.py
+Human Instruction: You need to squeeze the cut lemon to complete the task of squeezing lemon juice.
+
+Trial and Error: You can not switchon stove_2065
+The actions you have taken:
+Action 1: Walk to stove_2065.
+Action 2: Switch on stove_2065.
+Action 3: Walk to kitchen_counter_230.
+Action 4: look for pot_2069 around kitchen_counter_230.
+Action 5: Walk to pot_2069.
+Action 6: Open pot_2069.
+Action 7: Grab pot_2069.
+Action 8: Walk to faucet_43.
+Action 9: Switch on faucet_43.
+Action 10: Switch off faucet_43.
+Action 11: Walk to stove_2065.
+Action 12: Put pot_2069 on stove_2065.
+Action 13: Walk to stove_2065.
+Action 14: Walk to pot_2069.
+Action 15: Grab pot_2069.
+Action 16: Walk to stove_2065.
+Action 17: Put pot_2069 on stove_2065.
+Action 18: Grab pot_2069.
+Action 19: Put pot_2069 on stove_2065.
+Action 20: Walk to fridge_289.
+Action 21: Switch off fridge_289.
+Action 22: Open fridge_289.
+Action 23: look for food_vegetable_2041 around fridge_289.
+Action 24: Observe around food_vegetable_2041 with the question of Is the vegetable clean and uncut.
+Action 25: Grab food_vegetable_2041.
+Action 26: Walk to faucet_43.
+Action 27: Switch on faucet_43.
+Action 28: Wash food_vegetable_2041.
+Action 29: Switch off faucet_43.
+Action 30: Walk to cutting_board_2051.
+Action 31: Put food_vegetable_2041 on cutting_board_2051.
+Action 32: Walk to knife_2050.
+Action 33: Grab knife_2050.
+Action 34: Walk to food_vegetable_2041.
+Action 35: Cut food_vegetable_2041.
+Action 36: Walk to food_lemon_2028.
+Action 37: Grab food_lemon_2028.
+Action 38: Walk to cutting_board_2051.
+Action 39: Put food_lemon_2028 on cutting_board_2051.
+Action 40: Walk to food_lemon_2028.
+Action 41: Cut food_lemon_2028.
+Action 42: Grab food_lemon_2028.
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_bowl_2072_around_table_107(bowl:item):
+    goal: not unknown(bowl)
+    body:
+        assert is_bowl(bowl)
+        bind table_instance:item where:
+            is_table(table_instance) and id[table_instance]==107
+        achieve close_char(char,table_instance)
+        if can_open(table_instance):
+            achieve_once open(table_instance)
+            exp(bowl,table_instance)
+        else:
+            exp(bowl,table_instance)
+    eff:
+        unknown[bowl]=False
+        close[bowl,table_instance]=True
+        close[table_instance,bowl]=True
+    
+
+behavior find_plate_1000_around_cupboard_229(plate:item):
+    goal: not unknown(plate)
+    body:
+        assert is_plate(plate)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==229
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(plate,cupboard_instance)
+        else:
+            exp(plate,cupboard_instance)
+    eff:
+        unknown[plate]=False
+        close[plate,cupboard_instance]=True
+        close[cupboard_instance,plate]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior squeeze_lemon(food_lemon:item):
+    body:
+        squeeze(food_lemon)
+        # Squeeze the lemon
+
+behavior __goal__():
+    body:
+        bind food_lemon: item where:
+            is_food_lemon(food_lemon) and cut(food_lemon)
+        # Select the cut lemon
+        squeeze_lemon(food_lemon)
+        # Squeeze the lemon juice from the cut lemon
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+behavior squeeze_lemon(food_lemon:item):
+    body:
+        squeeze(food_lemon)
+        # Squeeze the lemon
+
+behavior __goal__():
+    body:
+        bind food_lemon: item where:
+            is_food_lemon(food_lemon) and cut(food_lemon)
+        # Select the cut lemon
+        squeeze_lemon(food_lemon)
+        # Squeeze the lemon juice from the cut lemon
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(kitchen_counter_230)put_executor(food_lemon_2028, kitchen_counter_230)walk_executor(food_lemon_2028)
+##############################
+From agent.py
+walk_executor(kitchen_counter_230)
+Robot find: Robot is close to the knife_2050. Robot is close to the food_lemon_2028. Robot is close to the kitchen_counter_230. 
+##############################
+From agent.py
+put_executor(food_lemon_2028, kitchen_counter_230)
+Robot find: Robot is close to the knife_2050. Robot is close to the food_lemon_2028. Robot is close to the kitchen_counter_230. food_lemon_2028 is close kitchen_counter_230. kitchen_counter_230 is close food_lemon_2028. food_lemon_2028 is on kitchen_counter_230. food_lemon_2028 released by left hand. 
+##############################
+From agent.py
+walk_executor(food_lemon_2028)
+Robot find: Robot is close to the knife_2050. Robot is close to the food_lemon_2028. Robot is close to the kitchen_counter_230. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: No
+The feedback instruction: You need to squeeze the cut lemon to complete the task of squeezing lemon juice.
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_bowl_2071_around_cupboard_229(bowl:item):
+    goal: not unknown(bowl)
+    body:
+        assert is_bowl(bowl)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==229
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(bowl,cupboard_instance)
+        else:
+            exp(bowl,cupboard_instance)
+    eff:
+        unknown[bowl]=False
+        close[bowl,cupboard_instance]=True
+        close[cupboard_instance,bowl]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+
+behavior mix_in_bowl(eggs:item, vegetables:item, lemon_juice:item, bowl:item):
+    body:
+        if not inside(eggs, bowl):
+            put_inside(eggs, bowl)
+        if not inside(vegetables, bowl):
+            put_inside(vegetables, bowl)
+        if not inside(lemon_juice, bowl):
+            put_inside(lemon_juice, bowl)
+
+behavior __goal__():
+    body:
+        bind eggs: item where:
+            is_food_egg(eggs) and cut(eggs)
+        # Select the chopped boiled eggs
+        bind vegetables: item where:
+            is_food_vegetable(vegetables) and cut(vegetables)
+        # Select the chopped vegetables
+        bind lemon_juice: item where:
+            is_food_lemon(lemon_juice) and cut(lemon_juice)
+        # Select the squeezed lemon juice
+        bind bowl: item where:
+            is_bowl(bowl)
+        # Select the bowl
+        mix_in_bowl(eggs, vegetables, lemon_juice, bowl)
+        # Mix the ingredients in the bowl to make the salad
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_bowl_2071_around_cupboard_229(bowl:item):
+    goal: not unknown(bowl)
+    body:
+        assert is_bowl(bowl)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==229
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(bowl,cupboard_instance)
+        else:
+            exp(bowl,cupboard_instance)
+    eff:
+        unknown[bowl]=False
+        close[bowl,cupboard_instance]=True
+        close[cupboard_instance,bowl]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior grab_boiled_eggs(eggs:item):
+    body:
+        if not inhand(eggs):
+            grab(eggs)
+
+behavior grab_vegetables(vegetables:item):
+    body:
+        if not inhand(vegetables):
+            grab(vegetables)
+
+behavior grab_lemon_juice(lemon:item):
+    body:
+        if not inhand(lemon):
+            grab(lemon)
+
+behavior empty_hands():
+    body:
+        if not has_a_free_hand(char):
+            empty_a_hand()
+
+behavior mix_items(eggs:item, vegetables:item, lemon:item, bowl:item):
+    body:
+        if not inside(eggs, bowl):
+            put_inside(eggs, bowl)
+        if not inside(vegetables, bowl):
+            put_inside(vegetables, bowl)
+        if not inside(lemon, bowl):
+            put_inside(lemon, bowl)
+
+behavior __goal__():
+    body:
+        bind eggs: item where:
+            is_food_egg(eggs) and cut(eggs)
+        bind vegetables: item where:
+            is_food_vegetable(vegetables) and cut(vegetables)
+        bind lemon_juice: item where:
+            is_food_lemon(lemon_juice)
+        bind bowl: item where:
+            is_bowl(bowl)
+        
+        grab_boiled_eggs(eggs)
+        empty_hands()
+        grab_vegetables(vegetables)
+        empty_hands()
+        grab_lemon_juice(lemon_juice)
+        empty_hands()
+        
+        mix_items(eggs, vegetables, lemon_juice, bowl)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_bowl_2071_around_cupboard_229(bowl:item):
+    goal: not unknown(bowl)
+    body:
+        assert is_bowl(bowl)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==229
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(bowl,cupboard_instance)
+        else:
+            exp(bowl,cupboard_instance)
+    eff:
+        unknown[bowl]=False
+        close[bowl,cupboard_instance]=True
+        close[cupboard_instance,bowl]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior grab_items_for_salad(egg:item, vegetable:item, lemon_juice:item):
+    body:
+        if not inhand(egg):
+            grab(egg)
+        if not inhand(vegetable) and has_a_free_hand(char):
+            grab(vegetable)
+        if not inhand(lemon_juice) and has_a_free_hand(char):
+            grab(lemon_juice)
+
+behavior mix_salad_contents(bowl:item):
+    body:
+        put_on(egg, bowl)
+        put_on(vegetable, bowl)
+        put_on(lemon_juice, bowl)
+
+behavior __goal__():
+    body:
+        bind egg: item where:
+            is_food_egg(egg) and cut(egg)
+        bind vegetable: item where:
+            is_food_vegetable(vegetable) and cut(vegetable)
+        bind lemon_juice: item where:
+            is_food_lemon(lemon_juice) and drinkable(lemon_juice)
+        bind bowl: item where:
+            is_bowl(bowl) and surfaces(bowl)
+        
+        grab_items_for_salad(egg, vegetable, lemon_juice)
+        walk_to(bowl)
+        mix_salad_contents(bowl)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_fork_2081_around_cupboard_229(fork:item):
+    goal: not unknown(fork)
+    body:
+        assert is_fork(fork)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==229
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(fork,cupboard_instance)
+        else:
+            exp(fork,cupboard_instance)
+    eff:
+        unknown[fork]=False
+        close[fork,cupboard_instance]=True
+        close[cupboard_instance,fork]=True
+    
+
+behavior find_bowl_2072_around_cupboard_229(bowl:item):
+    goal: not unknown(bowl)
+    body:
+        assert is_bowl(bowl)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==229
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(bowl,cupboard_instance)
+        else:
+            exp(bowl,cupboard_instance)
+    eff:
+        unknown[bowl]=False
+        close[bowl,cupboard_instance]=True
+        close[cupboard_instance,bowl]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior mix_ingredients(boiled_eggs:item, chopped_vegetables:item, lemon_juice:item, bowl:item):
+    body:
+        if not inside(boiled_eggs, bowl):
+            put_inside(boiled_eggs, bowl)
+        if not inside(chopped_vegetables, bowl):
+            put_inside(chopped_vegetables, bowl)
+        if not inside(lemon_juice, bowl):
+            put_inside(lemon_juice, bowl)
+
+behavior __goal__():
+    body:
+        bind boiled_eggs: item where:
+            is_food_egg(boiled_eggs)
+        # Assume boiled eggs have been prepared
+
+        bind chopped_vegetables: item where:
+            is_food_vegetable(chopped_vegetables)
+        # Assume vegetables have been chopped
+
+        bind lemon_juice: item where:
+            is_food_lemon(lemon_juice)
+        # Assume lemon juice has been squeezed
+
+        bind bowl: item where:
+            is_bowl(bowl)
+        # Assume a bowl is available
+
+        mix_ingredients(boiled_eggs, chopped_vegetables, lemon_juice, bowl)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_bowl_2072_around_cupboard_229(bowl:item):
+    goal: not unknown(bowl)
+    body:
+        assert is_bowl(bowl)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==229
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(bowl,cupboard_instance)
+        else:
+            exp(bowl,cupboard_instance)
+    eff:
+        unknown[bowl]=False
+        close[bowl,cupboard_instance]=True
+        close[cupboard_instance,bowl]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior mix_ingredients(boiled_eggs: item, vegetables: item, lemon_juice: item, bowl: item):
+    body:
+        if not inside(boiled_eggs, bowl):
+            put_inside(boiled_eggs, bowl)
+            # Put boiled eggs inside the bowl
+        if not inside(vegetables, bowl):
+            put_inside(vegetables, bowl)
+            # Put chopped vegetables inside the bowl
+        if not inside(lemon_juice, bowl):
+            put_on(lemon_juice, bowl)
+            # Add lemon juice to the bowl
+
+behavior __goal__():
+    body:
+        bind boiled_eggs: item where:
+            is_food_egg(boiled_eggs) and cut(boiled_eggs)
+        # Bind the boiled and cut eggs
+
+        bind vegetables: item where:
+            is_food_vegetable(vegetables) and cut(vegetables)
+        # Bind the washed and chopped vegetables
+
+        bind lemon_juice: item where:
+            is_food_lemon(lemon_juice) and pourable(lemon_juice)
+        # Bind the lemon juice
+
+        bind bowl: item where:
+            is_bowl(bowl) and recipient(bowl)
+        # Bind the bowl to mix the ingredients
+
+        mix_ingredients(boiled_eggs, vegetables, lemon_juice, bowl)
+        # Call the behavior to mix all ingredients in the bowl
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_bowl_2071_around_cupboard_229(bowl:item):
+    goal: not unknown(bowl)
+    body:
+        assert is_bowl(bowl)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==229
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(bowl,cupboard_instance)
+        else:
+            exp(bowl,cupboard_instance)
+    eff:
+        unknown[bowl]=False
+        close[bowl,cupboard_instance]=True
+        close[cupboard_instance,bowl]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+
+behavior mix_items(bowl:item, item1:item, item2:item, item3:item):
+    body:
+        put_on(item1, bowl) # Put boiled eggs in the bowl
+        put_on(item2, bowl) # Put chopped vegetables in the bowl
+        put_on(item3, bowl) # Add lemon juice to the bowl
+
+behavior __goal__():
+    body:
+        bind bowl: item where:
+            is_bowl(bowl)
+        # Select a bowl for the salad
+        bind boiled_eggs: item where:
+            is_food_egg(boiled_eggs) and cut(boiled_eggs)
+        # Select the boiled and cut eggs
+        bind chopped_vegetables: item where:
+            is_food_vegetable(chopped_vegetables) and cut(chopped_vegetables)
+        # Select the chopped vegetables
+        bind lemon_juice: item where:
+            is_food_lemon(lemon_juice) and cut(lemon_juice)
+        # Select the lemon juice
+        mix_items(bowl, boiled_eggs, chopped_vegetables, lemon_juice)
+        # Mix the selected ingredients in the bowl
+
+#goal_representation_end
+
+##############################
+VH_pipeline: Fail to generate a valid plan
+##############################
+From agent.py -> query_LLM_human
+Record from func query_LLM_human in agent.py
+Question: Can you teach me how to "4. mix the boiled eggs, chopped vegetables, and lemon juice in a bowl to make the salad." ?
+Answer: Put the egg in a bowl. Put the lemon in the bowl. Put the vegetables in the bowl.
+Re-decompose: False
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_fork_2080_around_cupboard_229(fork:item):
+    goal: not unknown(fork)
+    body:
+        assert is_fork(fork)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==229
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(fork,cupboard_instance)
+        else:
+            exp(fork,cupboard_instance)
+    eff:
+        unknown[fork]=False
+        close[fork,cupboard_instance]=True
+        close[cupboard_instance,fork]=True
+    
+
+behavior find_bowl_2071_around_cupboard_229(bowl:item):
+    goal: not unknown(bowl)
+    body:
+        assert is_bowl(bowl)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==229
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(bowl,cupboard_instance)
+        else:
+            exp(bowl,cupboard_instance)
+    eff:
+        unknown[bowl]=False
+        close[bowl,cupboard_instance]=True
+        close[cupboard_instance,bowl]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior grab_ingredients(food_egg: item, food_vegetable: item, food_lemon: item):
+    body:
+        if not inhand(food_egg):
+            grab(food_egg)
+        
+        if not inhand(food_vegetable):
+            grab(food_vegetable)
+        
+        if not inhand(food_lemon):
+            grab(food_lemon)
+
+behavior mix_ingredients(food_egg: item, food_vegetable: item, food_lemon: item, bowl: item):
+    body:
+        if not on(food_egg, bowl):
+            put_on(food_egg, bowl)
+        
+        if not on(food_vegetable, bowl):
+            put_on(food_vegetable, bowl)
+        
+        if not on(food_lemon, bowl):
+            put_on(food_lemon, bowl)
+
+behavior __goal__():
+    body:
+        bind food_egg: item where:
+            is_food_egg(food_egg)
+        bind food_vegetable: item where:
+            is_food_vegetable(food_vegetable)
+        bind food_lemon: item where:
+            is_food_lemon(food_lemon)
+        bind bowl: item where:
+            is_bowl(bowl)
+        
+        grab_ingredients(food_egg, food_vegetable, food_lemon)
+        mix_ingredients(food_egg, food_vegetable, food_lemon, bowl)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+behavior grab_ingredients(food_egg: item, food_vegetable: item, food_lemon: item):
+    body:
+        if not inhand(food_egg):
+            grab(food_egg)
+        
+        if not inhand(food_vegetable):
+            grab(food_vegetable)
+        
+        if not inhand(food_lemon):
+            grab(food_lemon)
+
+behavior mix_ingredients(food_egg: item, food_vegetable: item, food_lemon: item, bowl: item):
+    body:
+        if not on(food_egg, bowl):
+            put_on(food_egg, bowl)
+        
+        if not on(food_vegetable, bowl):
+            put_on(food_vegetable, bowl)
+        
+        if not on(food_lemon, bowl):
+            put_on(food_lemon, bowl)
+
+behavior __goal__():
+    body:
+        bind food_egg: item where:
+            is_food_egg(food_egg)
+        bind food_vegetable: item where:
+            is_food_vegetable(food_vegetable)
+        bind food_lemon: item where:
+            is_food_lemon(food_lemon)
+        bind bowl: item where:
+            is_bowl(bowl)
+        
+        grab_ingredients(food_egg, food_vegetable, food_lemon)
+        mix_ingredients(food_egg, food_vegetable, food_lemon, bowl)
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(food_egg_2020)grab_executor(food_egg_2020)walk_executor(food_vegetable_2041)grab_executor(food_vegetable_2041)walk_executor(kitchen_counter_230)put_executor(food_egg_2020, kitchen_counter_230)grab_executor(food_lemon_2028)walk_executor(cupboard_229)open_executor(cupboard_229)exp(bowl_2071, cupboard_229)walk_executor(food_egg_2020)grab_executor(food_egg_2020)walk_executor(bowl_2071)put_executor(food_egg_2020, bowl_2071)put_executor(food_vegetable_2041, bowl_2071)put_executor(food_lemon_2028, bowl_2071)
+##############################
+From agent.py
+walk_executor(food_egg_2020)
+Robot find: Robot is close to the knife_2050. Robot is close to the fridge_289. Robot is close to the food_egg_2020. 
+##############################
+From agent.py
+grab_executor(food_egg_2020)
+Robot find: Robot is close to the knife_2050. Robot is close to the fridge_289. Robot is close to the food_egg_2020. Grabbing food_egg_2020 by left hand. 
+##############################
+From agent.py
+walk_executor(food_vegetable_2041)
+Robot find: Robot is close to the knife_2050. Robot is close to the food_egg_2020. Robot is close to the food_vegetable_2041. Robot is close to the cutting_board_2051. 
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_fork_2081_around_cupboard_229(fork:item):
+    goal: not unknown(fork)
+    body:
+        assert is_fork(fork)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==229
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(fork,cupboard_instance)
+        else:
+            exp(fork,cupboard_instance)
+    eff:
+        unknown[fork]=False
+        close[fork,cupboard_instance]=True
+        close[cupboard_instance,fork]=True
+    
+
+behavior find_bowl_2071_around_cupboard_229(bowl:item):
+    goal: not unknown(bowl)
+    body:
+        assert is_bowl(bowl)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==229
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(bowl,cupboard_instance)
+        else:
+            exp(bowl,cupboard_instance)
+    eff:
+        unknown[bowl]=False
+        close[bowl,cupboard_instance]=True
+        close[cupboard_instance,bowl]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior mix_ingredients(bowl:item, egg:item, vegetable:item, lemon_juice:item):
+    body:
+        if not inside(egg, bowl):
+            put_inside(egg, bowl)
+        if not inside(vegetable, bowl):
+            put_inside(vegetable, bowl)
+        if not inside(lemon_juice, bowl):
+            put_inside(lemon_juice, bowl)
+
+behavior __goal__():
+    body:
+        bind bowl: item where:
+            is_bowl(bowl)
+        bind egg: item where:
+            is_food_egg(egg)
+        bind vegetable: item where:
+            is_food_vegetable(vegetable)
+        bind lemon_juice: item where:
+            is_food_lemon(lemon_juice)
+        
+        mix_ingredients(bowl, egg, vegetable, lemon_juice)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_bowl_2071_around_cupboard_229(bowl:item):
+    goal: not unknown(bowl)
+    body:
+        assert is_bowl(bowl)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==229
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(bowl,cupboard_instance)
+        else:
+            exp(bowl,cupboard_instance)
+    eff:
+        unknown[bowl]=False
+        close[bowl,cupboard_instance]=True
+        close[cupboard_instance,bowl]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior put_ingredients_in_bowl(bowl:item, egg:item, vegetable:item, lemon:item):
+    body:
+        if not on(egg, bowl):
+            put_on(egg, bowl)
+        if not on(vegetable, bowl):
+            put_on(vegetable, bowl)
+        if not on(lemon, bowl):
+            put_on(lemon, bowl)
+
+behavior mix_ingredients(bowl:item):
+    body:
+        # This function would specify the mixing process, assuming it is defined elsewhere
+        pass
+
+behavior __goal__():
+    body:
+        bind bowl: item where:
+            is_bowl(bowl)
+        # Target a bowl
+        bind egg: item where:
+            is_food_egg(egg) and cut(egg) # Assuming cut(egg) to mean the egg is prepped for salad
+        # Target boiled egg
+        bind vegetable: item where:
+            is_food_vegetable(vegetable) and cut(vegetable) # Ensure vegetables are chopped
+        # Target chopped vegetables
+        bind lemon: item where:
+            is_food_lemon(lemon) and cut(lemon) # Ensure lemon juice has been squeezed
+        # Target lemon juice
+        put_ingredients_in_bowl(bowl, egg, vegetable, lemon)
+        mix_ingredients(bowl)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_fork_2080_around_cupboard_229(fork:item):
+    goal: not unknown(fork)
+    body:
+        assert is_fork(fork)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==229
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(fork,cupboard_instance)
+        else:
+            exp(fork,cupboard_instance)
+    eff:
+        unknown[fork]=False
+        close[fork,cupboard_instance]=True
+        close[cupboard_instance,fork]=True
+    
+
+behavior find_bowl_2071_around_cupboard_229(bowl:item):
+    goal: not unknown(bowl)
+    body:
+        assert is_bowl(bowl)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==229
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(bowl,cupboard_instance)
+        else:
+            exp(bowl,cupboard_instance)
+    eff:
+        unknown[bowl]=False
+        close[bowl,cupboard_instance]=True
+        close[cupboard_instance,bowl]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior grab_items(egg:item, vegetable:item):
+    body:
+        if not inhand(egg):
+            grab(egg)
+        if not inhand(vegetable) and has_a_free_hand(char):
+            grab(vegetable)
+
+behavior put_items_in_bowl(egg:item, vegetable:item, lemon:item, bowl:item):
+    body:
+        if close_char(char, bowl):
+            if inhand(egg):
+                put_on(egg, bowl)
+            if inhand(vegetable):
+                put_on(vegetable, bowl)
+            if inhand(lemon):
+                put_on(lemon, bowl)
+        else:
+            walk_to(bowl)
+            if inhand(egg):
+                put_on(egg, bowl)
+            if inhand(vegetable):
+                put_on(vegetable, bowl)
+            if inhand(lemon):
+                put_on(lemon, bowl)
+
+behavior __goal__():
+    body:
+        bind egg: item where:
+            is_food_egg(egg)
+        bind vegetable: item where:
+            is_food_vegetable(vegetable)
+        bind lemon: item where:
+            is_food_lemon(lemon)
+        bind bowl: item where:
+            is_bowl(bowl)
+        
+        grab_items(egg, vegetable)
+        
+        if not inhand(lemon):
+            grab(lemon)
+
+        put_items_in_bowl(egg, vegetable, lemon, bowl)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+behavior grab_items(egg:item, vegetable:item):
+    body:
+        if not inhand(egg):
+            grab(egg)
+        if not inhand(vegetable) and has_a_free_hand(char):
+            grab(vegetable)
+
+behavior put_items_in_bowl(egg:item, vegetable:item, lemon:item, bowl:item):
+    body:
+        if close_char(char, bowl):
+            if inhand(egg):
+                put_on(egg, bowl)
+            if inhand(vegetable):
+                put_on(vegetable, bowl)
+            if inhand(lemon):
+                put_on(lemon, bowl)
+        else:
+            walk_to(bowl)
+            if inhand(egg):
+                put_on(egg, bowl)
+            if inhand(vegetable):
+                put_on(vegetable, bowl)
+            if inhand(lemon):
+                put_on(lemon, bowl)
+
+behavior __goal__():
+    body:
+        bind egg: item where:
+            is_food_egg(egg)
+        bind vegetable: item where:
+            is_food_vegetable(vegetable)
+        bind lemon: item where:
+            is_food_lemon(lemon)
+        bind bowl: item where:
+            is_bowl(bowl)
+        
+        grab_items(egg, vegetable)
+        
+        if not inhand(lemon):
+            grab(lemon)
+
+        put_items_in_bowl(egg, vegetable, lemon, bowl)
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(kitchen_counter_230)put_executor(food_egg_2020, kitchen_counter_230)grab_executor(food_lemon_2028)walk_executor(cupboard_229)open_executor(cupboard_229)exp(bowl_2071, cupboard_229)walk_executor(bowl_2071)put_executor(food_lemon_2028, bowl_2071)
+##############################
+From agent.py
+walk_executor(kitchen_counter_230)
+Robot find: Robot is close to the knife_2050. Robot is close to the food_egg_2020. Robot is close to the kitchen_counter_230. 
+##############################
+From agent.py
+put_executor(food_egg_2020, kitchen_counter_230)
+Robot find: Robot is close to the knife_2050. Robot is close to the food_egg_2020. Robot is close to the kitchen_counter_230. kitchen_counter_230 is close food_egg_2020. food_egg_2020 is close kitchen_counter_230. food_egg_2020 is on kitchen_counter_230. food_egg_2020 released by left hand. 
+##############################
+From agent.py
+grab_executor(food_lemon_2028)
+Robot find: Robot is close to the knife_2050. Robot is close to the food_egg_2020. Robot is close to the kitchen_counter_230. Robot is close to the food_lemon_2028. Grabbing food_lemon_2028 by left hand. 
+##############################
+From agent.py
+walk_executor(cupboard_229)
+Robot find: Robot is close to the knife_2050. Robot is close to the food_lemon_2028. Robot is close to the cupboard_229. 
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_bowl_2071_around_dishwasher_1001(bowl:item):
+    goal: not unknown(bowl)
+    body:
+        assert is_bowl(bowl)
+        bind dishwasher_instance:item where:
+            is_dishwasher(dishwasher_instance) and id[dishwasher_instance]==1001
+        achieve close_char(char,dishwasher_instance)
+        if can_open(dishwasher_instance):
+            achieve_once open(dishwasher_instance)
+            exp(bowl,dishwasher_instance)
+        else:
+            exp(bowl,dishwasher_instance)
+    eff:
+        unknown[bowl]=False
+        close[bowl,dishwasher_instance]=True
+        close[dishwasher_instance,bowl]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior mix_ingredients(egg:item, vegetable:item, lemon:item, bowl:item):
+    body:
+        if not on(egg, bowl) and not on(vegetable, bowl) and not on(lemon, bowl):
+            put_on(egg, bowl)
+            put_on(vegetable, bowl)
+            put_on(lemon, bowl)
+
+behavior __goal__():
+    body:
+        bind egg: item where:
+            is_food_egg(egg) and cut(egg) and clean(egg)
+        # Select a boiled, cut, and clean egg item
+
+        bind vegetable: item where:
+            is_food_vegetable(vegetable) and cut(vegetable) and clean(vegetable)
+        # Select chopped and clean vegetables
+
+        bind lemon: item where:
+            is_food_lemon(lemon) and cut(lemon) and clean(lemon)
+        # Select cut and clean lemon
+
+        bind bowl: item where:
+            is_bowl(bowl) and clean(bowl)
+        # Select a clean bowl
+
+        mix_ingredients(egg, vegetable, lemon, bowl)
+        # Mix the ingredients into the bowl to make the salad
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_bowl_2071_around_dishwasher_1001(bowl:item):
+    goal: not unknown(bowl)
+    body:
+        assert is_bowl(bowl)
+        bind dishwasher_instance:item where:
+            is_dishwasher(dishwasher_instance) and id[dishwasher_instance]==1001
+        achieve close_char(char,dishwasher_instance)
+        if can_open(dishwasher_instance):
+            achieve_once open(dishwasher_instance)
+            exp(bowl,dishwasher_instance)
+        else:
+            exp(bowl,dishwasher_instance)
+    eff:
+        unknown[bowl]=False
+        close[bowl,dishwasher_instance]=True
+        close[dishwasher_instance,bowl]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior grab_item(inhand_obj:item): 
+    body: 
+        if not inhand(inhand_obj): 
+            grab(inhand_obj)
+
+behavior walk_and_put_in_bowl(inhand_obj:item, bowl:item): 
+    body: 
+        if not on(inhand_obj, bowl): 
+            walk_to(bowl) 
+            put_on(inhand_obj, bowl)
+
+behavior __goal__(): 
+    body: 
+        bind boiled_eggs: item where: 
+            is_food_egg(boiled_eggs) 
+        
+        bind vegetables: item where: 
+            is_food_vegetable(vegetables) 
+
+        bind lemon_juice: item where: 
+            is_food_lemon(lemon_juice) 
+        
+        bind bowl: item where: 
+            is_bowl(bowl)
+
+        grab_item(boiled_eggs)
+        walk_and_put_in_bowl(boiled_eggs, bowl)
+        empty_a_hand() 
+
+        grab_item(vegetables)
+        walk_and_put_in_bowl(vegetables, bowl) 
+        empty_a_hand() 
+
+        grab_item(lemon_juice)
+        walk_and_put_in_bowl(lemon_juice, bowl) 
+        empty_a_hand()
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_bowl_2071_around_wallshelf_35(bowl:item):
+    goal: not unknown(bowl)
+    body:
+        assert is_bowl(bowl)
+        bind wallshelf_instance:item where:
+            is_wallshelf(wallshelf_instance) and id[wallshelf_instance]==35
+        achieve close_char(char,wallshelf_instance)
+        if can_open(wallshelf_instance):
+            achieve_once open(wallshelf_instance)
+            exp(bowl,wallshelf_instance)
+        else:
+            exp(bowl,wallshelf_instance)
+    eff:
+        unknown[bowl]=False
+        close[bowl,wallshelf_instance]=True
+        close[wallshelf_instance,bowl]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior put_in_bowl(inhand_obj: item, bowl: item):
+    body:
+        if not inside(inhand_obj, bowl):
+            put_inside(inhand_obj, bowl)  # Put the item inside the bowl
+
+behavior grab_and_put_in_bowl(obj1: item, obj2: item, bowl: item):
+    body:
+        if not inhand(obj1) and not inhand(obj2) and has_a_free_hand(char):
+            grab(obj1)
+            put_in_bowl(obj1, bowl)
+            if has_a_free_hand(char):
+                grab(obj2)
+                put_in_bowl(obj2, bowl)
+
+behavior __goal__():
+    body:
+        bind boiled_egg: item where:
+            is_food_egg(boiled_egg)
+
+        bind chopped_vegetables: item where:
+            is_food_vegetable(chopped_vegetables)
+
+        bind lemon_juice: item where:
+            is_food_lemon(lemon_juice)
+
+        bind bowl: item where:
+            is_bowl(bowl)
+
+        grab_and_put_in_bowl(boiled_egg, chopped_vegetables, bowl)
+        grab_and_put_in_bowl(lemon_juice, bowl, bowl)  # In case lemon_juice is not already in the bowl
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_bowl_2071_around_wallshelf_234(bowl:item):
+    goal: not unknown(bowl)
+    body:
+        assert is_bowl(bowl)
+        bind wallshelf_instance:item where:
+            is_wallshelf(wallshelf_instance) and id[wallshelf_instance]==234
+        achieve close_char(char,wallshelf_instance)
+        if can_open(wallshelf_instance):
+            achieve_once open(wallshelf_instance)
+            exp(bowl,wallshelf_instance)
+        else:
+            exp(bowl,wallshelf_instance)
+    eff:
+        unknown[bowl]=False
+        close[bowl,wallshelf_instance]=True
+        close[wallshelf_instance,bowl]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior gather_ingredients(egg:item, vegetable:item, lemon:item, bowl:item):
+    body:
+        if not inhand(egg):
+            grab(egg)
+        if not inhand(vegetable):
+            if has_a_free_hand(char):
+                grab(vegetable)
+        put_on(egg, bowl)
+        put_on(vegetable, bowl)
+        if inhand(lemon):
+            put_on(lemon, bowl)
+
+def is_ready_for_mixing(bowl:item):
+    symbol egg_in_bowl=exists egg: item : (is_food_egg(egg) and on(egg, bowl))
+    symbol vegetable_in_bowl=exists vegetable: item : (is_food_vegetable(vegetable) and on(vegetable, bowl))
+    symbol lemon_in_bowl=exists lemon: item : (is_food_lemon(lemon) and on(lemon, bowl))
+    return egg_in_bowl and vegetable_in_bowl and lemon_in_bowl
+
+behavior mix_ingredients(bowl:item):
+    body:
+        if is_ready_for_mixing(bowl):
+            # Logic for mixing the ingredients together
+            # As we dont have a specific behavior for mixing, we consider the task completed by having all ingredients in the bowl
+
+behavior __goal__():
+    body:
+        bind egg: item where:
+            is_food_egg(egg)
+        bind vegetable: item where:
+            is_food_vegetable(vegetable)
+        bind lemon: item where:
+            is_food_lemon(lemon)
+        bind bowl: item where:
+            is_bowl(bowl)
+        gather_ingredients(egg, vegetable, lemon, bowl)
+        mix_ingredients(bowl)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_bowl_2071_around_wallshelf_35(bowl:item):
+    goal: not unknown(bowl)
+    body:
+        assert is_bowl(bowl)
+        bind wallshelf_instance:item where:
+            is_wallshelf(wallshelf_instance) and id[wallshelf_instance]==35
+        achieve close_char(char,wallshelf_instance)
+        if can_open(wallshelf_instance):
+            achieve_once open(wallshelf_instance)
+            exp(bowl,wallshelf_instance)
+        else:
+            exp(bowl,wallshelf_instance)
+    eff:
+        unknown[bowl]=False
+        close[bowl,wallshelf_instance]=True
+        close[wallshelf_instance,bowl]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior put_in_bowl(item:item, bowl:item):
+    body:
+        if not inside(item, bowl):
+            put_inside(item, bowl)
+
+behavior __goal__():
+    body:
+        bind bowl: item where:
+            is_bowl(bowl)
+        
+        bind egg: item where:
+            is_food_egg(egg)
+        
+        bind vegetables: item where:
+            is_food_vegetable(vegetables)
+        
+        bind lemon: item where:
+            is_food_lemon(lemon)
+        
+        # Ensure all ingredients are placed into the bowl
+        put_in_bowl(egg, bowl)
+        put_in_bowl(vegetables, bowl)
+        put_in_bowl(lemon, bowl)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_bowl_2072_around_dishwasher_1001(bowl:item):
+    goal: not unknown(bowl)
+    body:
+        assert is_bowl(bowl)
+        bind dishwasher_instance:item where:
+            is_dishwasher(dishwasher_instance) and id[dishwasher_instance]==1001
+        achieve close_char(char,dishwasher_instance)
+        if can_open(dishwasher_instance):
+            achieve_once open(dishwasher_instance)
+            exp(bowl,dishwasher_instance)
+        else:
+            exp(bowl,dishwasher_instance)
+    eff:
+        unknown[bowl]=False
+        close[bowl,dishwasher_instance]=True
+        close[dishwasher_instance,bowl]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_bowl_ready(bowl:item):
+    # Determine if a bowl is ready to be used for mixing
+    symbol bowl_ready=exists o: item : (inside(bowl, o) and is_bowl(o))
+    return bowl_ready
+
+behavior grab_items_for_salad(egg:item, vegetables:item, lemon_juice:item, bowl:item):
+    body:
+        if not inhand(egg):
+            grab(egg)
+        if not inhand(vegetables):
+            grab(vegetables)
+        walk_to(bowl)
+        # Approaching the bowl to put items in it
+        if not inhand(egg) or not inhand(vegetables):
+            put_on(egg, bowl)
+            put_on(vegetables, bowl)
+            
+behavior mix_ingredients_in_bowl(egg:item, vegetables:item, lemon_juice:item, bowl:item):
+    body:
+        if not on(egg, bowl):
+            put_on(egg, bowl)
+        if not on(vegetables, bowl):
+            put_on(vegetables, bowl)
+        if not on(lemon_juice, bowl):
+            squeeze(lemon_juice)
+        # Squeeze the lemon juice into the bowl
+
+behavior __goal__():
+    body:
+        bind egg: item where:
+            is_food_egg(egg)
+        bind vegetables: item where:
+            is_food_vegetable(vegetables)
+        bind lemon_juice: item where:
+            is_food_lemon(lemon_juice)
+        bind bowl: item where:
+            is_bowl(bowl) and is_bowl_ready(bowl)
+        
+        grab_items_for_salad(egg, vegetables, lemon_juice, bowl)
+        mix_ingredients_in_bowl(egg, vegetables, lemon_juice, bowl)
+
+#goal_representation_end
+
+##############################
+VH_pipeline: Fail to generate a valid plan
+##############################
+From agent.py -> query_LLM_human
+Record from func query_LLM_human in agent.py
+Question: Can you teach me how to "4. mix the boiled eggs, chopped vegetables, and lemon juice in a bowl to make the salad." ?
+Answer: Put the boiled egg pieces in a bowl, then add the chopped vegetables, and finally include the lemon juice to complete the salad.
+Re-decompose: False
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_fork_2081_around_dishwasher_1001(fork:item):
+    goal: not unknown(fork)
+    body:
+        assert is_fork(fork)
+        bind dishwasher_instance:item where:
+            is_dishwasher(dishwasher_instance) and id[dishwasher_instance]==1001
+        achieve close_char(char,dishwasher_instance)
+        if can_open(dishwasher_instance):
+            achieve_once open(dishwasher_instance)
+            exp(fork,dishwasher_instance)
+        else:
+            exp(fork,dishwasher_instance)
+    eff:
+        unknown[fork]=False
+        close[fork,dishwasher_instance]=True
+        close[dishwasher_instance,fork]=True
+    
+
+behavior find_bowl_2071_around_dishwasher_1001(bowl:item):
+    goal: not unknown(bowl)
+    body:
+        assert is_bowl(bowl)
+        bind dishwasher_instance:item where:
+            is_dishwasher(dishwasher_instance) and id[dishwasher_instance]==1001
+        achieve close_char(char,dishwasher_instance)
+        if can_open(dishwasher_instance):
+            achieve_once open(dishwasher_instance)
+            exp(bowl,dishwasher_instance)
+        else:
+            exp(bowl,dishwasher_instance)
+    eff:
+        unknown[bowl]=False
+        close[bowl,dishwasher_instance]=True
+        close[dishwasher_instance,bowl]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior prepare_egg_salad(egg:item, vegetables:item, lemon_juice:item, bowl:item):
+    body:
+        if not inside(egg, bowl):
+            put_inside(egg, bowl)
+
+        if not inside(vegetables, bowl):
+            put_inside(vegetables, bowl)
+
+        if not inside(lemon_juice, bowl):
+            put_inside(lemon_juice, bowl)
+
+behavior __goal__():
+    body:
+        bind egg: item where:
+            is_food_egg(egg) and cut(egg)
+        
+        bind vegetables: item where:
+            is_food_vegetable(vegetables) and cut(vegetables)
+        
+        bind lemon_juice: item where:
+            is_food_lemon(lemon_juice)
+        
+        bind bowl: item where:
+            is_bowl(bowl)
+
+        prepare_egg_salad(egg, vegetables, lemon_juice, bowl)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_bowl_2071_around_wallshelf_234(bowl:item):
+    goal: not unknown(bowl)
+    body:
+        assert is_bowl(bowl)
+        bind wallshelf_instance:item where:
+            is_wallshelf(wallshelf_instance) and id[wallshelf_instance]==234
+        achieve close_char(char,wallshelf_instance)
+        if can_open(wallshelf_instance):
+            achieve_once open(wallshelf_instance)
+            exp(bowl,wallshelf_instance)
+        else:
+            exp(bowl,wallshelf_instance)
+    eff:
+        unknown[bowl]=False
+        close[bowl,wallshelf_instance]=True
+        close[wallshelf_instance,bowl]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior put_in_bowl(ingredient:item, bowl:item):
+    body:
+        if not inside(ingredient, bowl):
+            put_inside(ingredient, bowl) # Place the ingredient in the bowl
+
+behavior __goal__():
+    body:
+        bind bowl: item where:
+            is_bowl(bowl)
+        # Select a bowl
+
+        bind egg: item where:
+            is_food_egg(egg)
+        # Select a boiled egg
+
+        bind vegetables: item where:
+            is_food_vegetable(vegetables)
+        # Select chopped vegetables
+
+        bind lemon: item where:
+            is_food_lemon(lemon)
+        # Select lemon with juice squeezed
+
+        put_in_bowl(egg, bowl)
+        put_in_bowl(vegetables, bowl)
+        put_in_bowl(lemon, bowl)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_bowl_2071_around_wallshelf_234(bowl:item):
+    goal: not unknown(bowl)
+    body:
+        assert is_bowl(bowl)
+        bind wallshelf_instance:item where:
+            is_wallshelf(wallshelf_instance) and id[wallshelf_instance]==234
+        achieve close_char(char,wallshelf_instance)
+        if can_open(wallshelf_instance):
+            achieve_once open(wallshelf_instance)
+            exp(bowl,wallshelf_instance)
+        else:
+            exp(bowl,wallshelf_instance)
+    eff:
+        unknown[bowl]=False
+        close[bowl,wallshelf_instance]=True
+        close[wallshelf_instance,bowl]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior mix_salad(eggs:item, vegetables:item, lemon_juice:item, bowl:item):
+    body:
+        # Ensure eggs, vegetables, and lemon juice are inside the bowl to make the salad
+        if not inside(eggs, bowl):
+            put_inside(eggs, bowl)
+        if not inside(vegetables, bowl):
+            put_inside(vegetables, bowl)
+        if not inside(lemon_juice, bowl):
+            put_inside(lemon_juice, bowl)
+
+behavior __goal__():
+    body:
+        # Bind items necessary for making the salad
+        bind eggs: item where:
+            is_food_egg(eggs)
+        bind vegetables: item where:
+            is_food_vegetable(vegetables)
+        bind lemon_juice: item where:
+            is_food_lemon(lemon_juice)
+        bind bowl: item where:
+            is_bowl(bowl)
+        # Make the egg salad
+        mix_salad(eggs, vegetables, lemon_juice, bowl)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_bowl_2071_around_wallshelf_234(bowl:item):
+    goal: not unknown(bowl)
+    body:
+        assert is_bowl(bowl)
+        bind wallshelf_instance:item where:
+            is_wallshelf(wallshelf_instance) and id[wallshelf_instance]==234
+        achieve close_char(char,wallshelf_instance)
+        if can_open(wallshelf_instance):
+            achieve_once open(wallshelf_instance)
+            exp(bowl,wallshelf_instance)
+        else:
+            exp(bowl,wallshelf_instance)
+    eff:
+        unknown[bowl]=False
+        close[bowl,wallshelf_instance]=True
+        close[wallshelf_instance,bowl]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior mix_items(egg:item, vegetables:item, lemon:item, bowl:item):
+    body:
+        if not inside(egg, bowl):
+            put_inside(egg, bowl)
+        if not inside(vegetables, bowl):
+            put_inside(vegetables, bowl)
+        if not inside(lemon, bowl):
+            put_inside(lemon, bowl)
+
+behavior __goal__():
+    body:
+        bind egg:item where:
+            is_food_egg(egg) and cut(egg)
+        # Select boiled, cut egg
+        
+        bind vegetables:item where:
+            is_food_vegetable(vegetables) and cut(vegetables)
+        # Select washed and chopped vegetables
+
+        bind lemon:item where:
+            is_food_lemon(lemon) and squeeze(lemon)
+        # Select the squeezed lemon
+
+        bind bowl:item where:
+            is_bowl(bowl)
+        # Select a bowl
+
+        mix_items(egg, vegetables, lemon, bowl)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_fork_2080_around_dishwasher_1001(fork:item):
+    goal: not unknown(fork)
+    body:
+        assert is_fork(fork)
+        bind dishwasher_instance:item where:
+            is_dishwasher(dishwasher_instance) and id[dishwasher_instance]==1001
+        achieve close_char(char,dishwasher_instance)
+        if can_open(dishwasher_instance):
+            achieve_once open(dishwasher_instance)
+            exp(fork,dishwasher_instance)
+        else:
+            exp(fork,dishwasher_instance)
+    eff:
+        unknown[fork]=False
+        close[fork,dishwasher_instance]=True
+        close[dishwasher_instance,fork]=True
+    
+
+behavior find_bowl_2072_around_wallshelf_234(bowl:item):
+    goal: not unknown(bowl)
+    body:
+        assert is_bowl(bowl)
+        bind wallshelf_instance:item where:
+            is_wallshelf(wallshelf_instance) and id[wallshelf_instance]==234
+        achieve close_char(char,wallshelf_instance)
+        if can_open(wallshelf_instance):
+            achieve_once open(wallshelf_instance)
+            exp(bowl,wallshelf_instance)
+        else:
+            exp(bowl,wallshelf_instance)
+    eff:
+        unknown[bowl]=False
+        close[bowl,wallshelf_instance]=True
+        close[wallshelf_instance,bowl]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior grab_ingredients(egg:item, vegetable:item, lemon:item):
+    body:
+        if not inhand(egg):
+            grab(egg)
+        if not inhand(vegetable):
+            grab(vegetable)
+        if not inhand(lemon):
+            grab(lemon)
+
+behavior put_ingredients_in_bowl(egg:item, vegetable:item, lemon:item, bowl:item):
+    body:
+        if not inside(egg, bowl):
+            put_on(egg, bowl)
+        if not inside(vegetable, bowl):
+            put_on(vegetable, bowl)
+        if not inside(lemon, bowl):
+            put_on(lemon, bowl)
+
+behavior mix_ingredients(bowl:item):
+    body:
+        # Assuming mixing is done by ensuring all ingredients are recognized as on or inside the bowl
+        # This behavior acts as a placeholder for physical mixing actions
+        pass
+
+behavior __goal__():
+    body:
+        bind egg: item where:
+            is_food_egg(egg) and cut(egg)
+        bind vegetable: item where:
+            is_food_vegetable(vegetable) and clean(vegetable) and cut(vegetable)
+        bind lemon: item where:
+            is_food_lemon(lemon) and cut(lemon)
+        bind bowl: item where:
+            is_bowl(bowl) and recipient(bowl)
+
+        grab_ingredients(egg, vegetable, lemon)
+        put_ingredients_in_bowl(egg, vegetable, lemon, bowl)
+        mix_ingredients(bowl)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_bowl_2072_around_cup_2063(bowl:item):
+    goal: not unknown(bowl)
+    body:
+        assert is_bowl(bowl)
+        bind cup_instance:item where:
+            is_cup(cup_instance) and id[cup_instance]==2063
+        achieve close_char(char,cup_instance)
+        if can_open(cup_instance):
+            achieve_once open(cup_instance)
+            exp(bowl,cup_instance)
+        else:
+            exp(bowl,cup_instance)
+    eff:
+        unknown[bowl]=False
+        close[bowl,cup_instance]=True
+        close[cup_instance,bowl]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior mix_ingredients(boiled_egg:item, vegetables:item, lemon_juice:item, bowl:item):
+    body:
+        if not inside(boiled_egg, bowl):
+            put_inside(boiled_egg, bowl)
+        if not inside(vegetables, bowl):
+            put_inside(vegetables, bowl)
+        if not inside(lemon_juice, bowl):
+            put_inside(lemon_juice, bowl)
+
+behavior __goal__():
+    body:
+        bind boiled_egg: item where:
+            is_food_egg(boiled_egg)
+        bind vegetables: item where:
+            is_food_vegetable(vegetables)
+        bind lemon_juice: item where:
+            is_food_lemon(lemon_juice)
+        bind bowl: item where:
+            is_bowl(bowl)
+        mix_ingredients(boiled_egg, vegetables, lemon_juice, bowl)
+
+#goal_representation_end
+
+##############################
+VH_pipeline: Fail to generate a valid plan
+##############################
+From agent.py-> find a plan in act()
+walk_executor(cup_2063)exp(bowl_2072, cup_2063)walk_executor(kitchen_counter_230)put_executor(knife_2050, kitchen_counter_230)grab_executor(food_egg_2020)walk_executor(bowl_2072)putin_executor(food_egg_2020, bowl_2072)walk_executor(food_vegetable_2041)grab_executor(food_vegetable_2041)walk_executor(bowl_2072)putin_executor(food_vegetable_2041, bowl_2072)putin_executor(food_lemon_2028, bowl_2072)
+##############################
+From agent.py
+walk_executor(cup_2063)
+Robot find: Robot is close to the knife_2050. Robot is close to the food_lemon_2028. Robot is close to the kitchen_counter_230. Robot is close to the cup_2063. 
+##############################
+Error record: write() argument must be str, not None
+##############################
+Task Summary:
+Task Goal:
+Syntax Error
+Action History:
+['walk_executor(stove_2065)', 'switchon_executor(stove_2065)', 'walk_executor(kitchen_counter_230)', 'walk_executor(pot_2069)', 'open_executor(pot_2069)', 'grab_executor(pot_2069)', 'walk_executor(faucet_43)', 'switchon_executor(faucet_43)', 'switchoff_executor(faucet_43)', 'walk_executor(stove_2065)', 'put_executor(pot_2069, stove_2065)', 'walk_executor(stove_2065)', 'switchon_executor(stove_2065) (Failed)', 'walk_executor(pot_2069)', 'grab_executor(pot_2069)', 'walk_executor(stove_2065)', 'put_executor(pot_2069, stove_2065)', 'grab_executor(pot_2069)', 'put_executor(pot_2069, stove_2065)', 'walk_executor(fridge_289)', 'switchoff_executor(fridge_289)', 'open_executor(fridge_289)', 'grab_executor(food_vegetable_2041)', 'walk_executor(faucet_43)', 'switchon_executor(faucet_43)', 'wash_executor(food_vegetable_2041)', 'switchoff_executor(faucet_43)', 'walk_executor(cutting_board_2051)', 'put_executor(food_vegetable_2041, cutting_board_2051)', 'walk_executor(knife_2050)', 'grab_executor(knife_2050)', 'walk_executor(food_vegetable_2041)', 'cut_executor(food_vegetable_2041)', 'walk_executor(food_lemon_2028)', 'grab_executor(food_lemon_2028)', 'walk_executor(cutting_board_2051)', 'put_executor(food_lemon_2028, cutting_board_2051)', 'walk_executor(food_lemon_2028)', 'cut_executor(food_lemon_2028)', 'grab_executor(food_lemon_2028)', 'walk_executor(kitchen_counter_230)', 'put_executor(food_lemon_2028, kitchen_counter_230)', 'walk_executor(food_lemon_2028)', 'walk_executor(food_egg_2020)', 'grab_executor(food_egg_2020)', 'walk_executor(food_vegetable_2041)', 'grab_executor(food_vegetable_2041) (Failed)', 'walk_executor(kitchen_counter_230)', 'put_executor(food_egg_2020, kitchen_counter_230)', 'grab_executor(food_lemon_2028)', 'walk_executor(cupboard_229)', 'open_executor(cupboard_229) (Failed)', 'walk_executor(cup_2063)']
+Time info:
+Time consume: 695 seconds
+Exp_helper query times: 0
+Guidance query times: 2
+library scale: 0
+goal generate times: 40
+goal correct times: 0
+action_num: 53
+
+Task complete rate:
+Keystate: k1 - Requires: 5 steps
+Keystate: k2 - Requires: 10 steps
+Action Completion Rate: No actions required
+Scene_id: 0
+##############################

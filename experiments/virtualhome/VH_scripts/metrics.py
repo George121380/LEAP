@@ -225,9 +225,12 @@ def calculation(result_list):
                         current_solution_keystate_completion_rate += steps_left
 
                     # Convert from "steps left" to "steps completed ratio"
-                    current_solution_keystate_completion_rate = (
-                        solution_steps_num - current_solution_keystate_completion_rate
-                    ) / solution_steps_num
+                    if solution_steps_num == 0:
+                        current_solution_keystate_completion_rate = 1
+                    else:
+                        current_solution_keystate_completion_rate = (
+                            solution_steps_num - current_solution_keystate_completion_rate
+                        ) / solution_steps_num
 
                     max_keystate_completion_rate = max(
                         max_keystate_completion_rate, 
@@ -462,9 +465,7 @@ def print_success_rates_descending(success_rate_list):
         print(f"{i:<5} {item['task']:<{max_task_length}} {item['suc_rate']:>12.3f}")
 
 def print_compare_table(data):
-   
     methods = sorted(data.keys())
-
     tasks = sorted({task for method_dict in data.values() for task in method_dict})
 
     header = ["Task"] + methods
@@ -472,15 +473,17 @@ def print_compare_table(data):
     rows = []
     rows.append(header)
 
+    # Add all task success rates to the table
     for task in tasks:
         row = [task]
         for m in methods:
             val = data[m].get(task, "")
             if isinstance(val, float):
-                val = f"{val:.2f}"
+                val = f"{val:.3f}"
             row.append(str(val))
         rows.append(row)
 
+    # Prepare column widths for formatting
     num_cols = len(header)
     col_widths = []
     for col_idx in range(num_cols):
@@ -496,10 +499,27 @@ def print_compare_table(data):
                 formatted.append(cell.rjust(col_widths[i]))
         return " | ".join(formatted)
 
+    # Print the table header
     print(format_row(rows[0]))
     print("-+-".join("-" * w for w in col_widths))
+
+    # Print all task rows
     for row in rows[1:]:
         print(format_row(row))
+
+    # Calculate the average success rate for each method and add it to the last row
+    avg_row = ["Avg."]
+    for m in methods:
+        rates = data[m].values()
+        if rates:  # Handle empty case to prevent errors
+            avg_rate = sum(rates) / len(rates)
+        else:
+            avg_rate = 0.0
+        avg_row.append(f"{avg_rate:.3f}")
+
+    # Print the average success rate row
+    print(format_row(avg_row))
+
 
 # ------------------------------------------------------------------------------
 # 4. Main Entry Point
@@ -517,29 +537,89 @@ if __name__ == '__main__':
     # methods_experiments.append(find_csv_files('/path/to/experiment_B'))
     # ...
 
+    # Scene_0
+
+    # methods_experiments.append(find_csv_files(
+    #     'main_results/openai_new/round6/scene_0/20250209_021532_LLMWOG'
+    # ))
+
+    # methods_experiments.append(find_csv_files(
+    #     'main_results/openai_new/round6/scene_0/20250209_171439_LLMWG'
+    # ))
+
+    # methods_experiments.append(find_csv_files(
+    #     'main_results/openai_new/round6/scene_0/20250209_021552_LLMPlusPWOG'
+    # ))
+
+    # methods_experiments.append(find_csv_files(
+    #     'main_results/openai_new/round6/scene_0/20250210_005803_LLMPlusPWG'
+    # ))
+
+    # methods_experiments.append(find_csv_files(
+    #     'main_results/openai_new/round6/scene_0/20250209_065056_CAPWOG'
+    # ))
+
+    # methods_experiments.append(find_csv_files(
+    #     'main_results/openai_new/round6/scene_0/20250210_005839_CAPWG'
+    # ))
+
+    # methods_experiments.append(find_csv_files(
+    #     'main_results/openai_new/round6/scene_0/20250209_030853_OursWOG'
+    # ))
+
+    # methods_experiments.append(find_csv_files(
+    #     'main_results/openai_new/round6/scene_0/20250209_171511_OursWG'
+    # ))
+
+
+    # Scene_1
+
     methods_experiments.append(find_csv_files(
-        'main_results/openai_new/round6/20250209_021532_LLMWOG'
+        'main_results/openai_new/round6/scene_1/20250209_083202_LLMWOG1'
     ))
 
     methods_experiments.append(find_csv_files(
-        'main_results/openai_new/round6/20250209_021552_LLMPlusPWOG'
+        'main_results/openai_new/round6/scene_1/20250209_165553_LLMWG1'
     ))
 
     methods_experiments.append(find_csv_files(
-        'main_results/openai_new/round6/20250209_030853_OursWOG'
+        'main_results/openai_new/round6/scene_1/20250210_154842_LLMPlusPWOG1'
     ))
 
     methods_experiments.append(find_csv_files(
-        'main_results/openai_new/round6/20250209_045249_LLMWG'
+        'main_results/openai_new/round6/scene_1/20250210_084239_CAPWOG1'
     ))
 
     methods_experiments.append(find_csv_files(
-        'main_results/openai_new/round6/20250209_064630_LLMPlusPWG'
+        'main_results/openai_new/round6/scene_1/20250210_154927_CAPWG1'
+    ))
+
+    # Scene_2
+    
+    methods_experiments.append(find_csv_files(
+        'main_results/openai_new/round6/scene_2/20250210_071206_LLMWOG2'
     ))
 
     methods_experiments.append(find_csv_files(
-        'main_results/openai_new/round6/20250209_101538_OursWG'
+        'main_results/openai_new/round6/scene_2/20250209_165744_LLMWG2'
     ))
+
+    methods_experiments.append(find_csv_files(
+        'main_results/openai_new/round6/scene_2/20250210_110634_LLMPlusPWOG2'
+    ))
+
+    methods_experiments.append(find_csv_files(
+        'main_results/openai_new/round6/scene_2/20250210_002715_LLMPlusPWG2'
+    ))
+
+    methods_experiments.append(find_csv_files(
+        'main_results/openai_new/round6/scene_2/20250211_022135_CAPWOG2'
+    ))
+
+    methods_experiments.append(find_csv_files(
+        'main_results/openai_new/round6/scene_2/20250211_022106_CAPWG2'
+    ))
+
 
     window_size = 10  # Example window size for moving average
 
