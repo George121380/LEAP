@@ -25,6 +25,8 @@ from logic_parser import parse_logic_from_file_path
 import yaml 
 init_path="experiments/virtualhome/CDLs/init_scene_PO.cdl"
 dataset_folder_path='cdl_dataset/dataset'
+# dataset_folder_path='cdl_dataset/cooking'
+
 from types import SimpleNamespace
 import argparse
 from tqdm import tqdm
@@ -128,22 +130,89 @@ def run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph,guidance)
     json.dump(result_dict,open(f'result_{args.scene_id}.json','w'),indent=4)
        
 
-def counting(args):
-    files=evaluation_task_loader(dataset_folder_path)
-    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    epoch_logger = setup_task_logger(f'log/epoch_{timestamp}')
-    files = tqdm(files, desc="Evaluating tasks")
-    for task_file in files:
-        _,classes,init_scene_graph=load_scene(args.scene_id)
-        task_path=os.path.join(dataset_folder_path,task_file)
-        if task_path in result_dict:
-            continue
-        Debug=run(args,epoch_logger,timestamp,task_path,classes,init_scene_graph,None)
+def counting(args, task_path=None):
+    """
+    Count the difficulty of tasks.
+    
+    Args:
+        args: Configuration arguments
+        task_path (str, optional): Path to a specific task to count. If None, counts all tasks.
+    """
+    if task_path:
+        # Count single task
+        print(f"Counting difficulty for task: {task_path}")
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        epoch_logger = setup_task_logger(f'log/epoch_{timestamp}')
+        _, classes, init_scene_graph = load_scene(args.scene_id)
+        run(args, epoch_logger, timestamp, task_path, classes, init_scene_graph, None)
+    else:
+        # Count all tasks
+        files = evaluation_task_loader(dataset_folder_path)
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        epoch_logger = setup_task_logger(f'log/epoch_{timestamp}')
+        files = tqdm(files, desc="Evaluating tasks")
+        for task_file in files:
+            _, classes, init_scene_graph = load_scene(args.scene_id)
+            task_path = os.path.join(dataset_folder_path, task_file)
+            if task_path in result_dict:
+                continue
+            run(args, epoch_logger, timestamp, task_path, classes, init_scene_graph, None)
+    
     print(result_dict)
         
 if __name__ == '__main__':
-    config.scene_id = 1
+    # Interactive input for scene selection
+    print("\nAvailable scenes:")
+    scenes = [f for f in os.listdir('cdl_dataset/scenes') if f.startswith('Scene_')]
+    for i, scene in enumerate(scenes):
+        print(f"{i+1}. {scene}")
+    
+    while True:
+        try:
+            scene_idx = int(input("\nPlease select a scene number (1-{}): ".format(len(scenes)))) - 1
+            if 0 <= scene_idx < len(scenes):
+                break
+            print("Invalid selection. Please try again.")
+        except ValueError:
+            print("Please enter a valid number.")
+    
+    config.scene_id = scene_idx
+    
+    # Load existing results if available
     if os.path.exists(f'result_{config.scene_id}.json'):
         with open(f'result_{config.scene_id}.json') as f:
-            result_dict=json.load(f)
-    counting(config)
+            result_dict = json.load(f)
+    
+    # Interactive input for task selection
+    print("\nTask selection options:")
+    print("1. Count all tasks")
+    print("2. Count a specific task")
+    
+    while True:
+        try:
+            choice = int(input("\nPlease select an option (1-2): "))
+            if choice in [1, 2]:
+                break
+            print("Invalid selection. Please try again.")
+        except ValueError:
+            print("Please enter a valid number.")
+    
+    task_path = None
+    if choice == 2:
+        # Show available tasks
+        print("\nAvailable tasks:")
+        files = evaluation_task_loader(dataset_folder_path)
+        for i, file in enumerate(files):
+            print(f"{i+1}. {file}")
+        
+        while True:
+            try:
+                task_idx = int(input("\nPlease select a task number (1-{}): ".format(len(files)))) - 1
+                if 0 <= task_idx < len(files):
+                    task_path = os.path.join(dataset_folder_path, files[task_idx])
+                    break
+                print("Invalid selection. Please try again.")
+            except ValueError:
+                print("Please enter a valid number.")
+    
+    counting(config, task_path)

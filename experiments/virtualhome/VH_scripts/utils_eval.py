@@ -490,3 +490,10 @@ def get_difficulty_dict():
     difficulty_dict = {'scene_0': diff_0, 'scene_1': diff_1, 'scene_2': diff_2}
     return difficulty_dict
 
+def get_cooking_difficulty_dict():
+    # used in metric and main_VH
+    diff_0 = json.load(open('cdl_dataset/scenes/cooking_diff_0.json'))
+    diff_1 = json.load(open('cdl_dataset/scenes/cooking_diff_1.json'))
+    diff_2 = json.load(open('cdl_dataset/scenes/cooking_diff_2.json'))
+    difficulty_dict = {'scene_0': diff_0, 'scene_1': diff_1, 'scene_2': diff_2}
+    return difficulty_dict

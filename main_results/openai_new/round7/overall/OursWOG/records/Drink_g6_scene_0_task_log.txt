@@ -1,0 +1,1442 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Find a lemon, water, and sugar in the kitchen.', '2. Squeeze the lemon into a cup and add water and sugar.', '3. Stir the mixture to dissolve the sugar and prepare the lemon water.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_sugar_2039_around_kitchen_counter_230(food_sugar:item):
+    goal: not unknown(food_sugar)
+    body:
+        assert is_food_sugar(food_sugar)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==230
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_sugar,kitchen_counter_instance)
+        else:
+            exp(food_sugar,kitchen_counter_instance)
+    eff:
+        unknown[food_sugar]=False
+        close[food_sugar,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_sugar]=True
+    
+
+behavior find_food_lemon_2028_around_kitchen_counter_230(food_lemon:item):
+    goal: not unknown(food_lemon)
+    body:
+        assert is_food_lemon(food_lemon)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==230
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_lemon,kitchen_counter_instance)
+        else:
+            exp(food_lemon,kitchen_counter_instance)
+    eff:
+        unknown[food_lemon]=False
+        close[food_lemon,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_lemon]=True
+    
+
+behavior find_food_jam_2026_around_cupboard_229(food_jam:item):
+    goal: not unknown(food_jam)
+    body:
+        assert is_food_jam(food_jam)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==229
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(food_jam,cupboard_instance)
+        else:
+            exp(food_jam,cupboard_instance)
+    eff:
+        unknown[food_jam]=False
+        close[food_jam,cupboard_instance]=True
+        close[cupboard_instance,food_jam]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def has_food_ingredients_kitchen():
+    # Function to check if lemon, water, or sugar are located in the kitchen
+    symbol found_ingredients=exists o: item : ((is_food_lemon(o) or has_water(o) or is_food_sugar(o)) and inside(o, kitchen))
+    return found_ingredients
+
+behavior __goal__():
+    body:
+        # If any of the ingredients lemon, water, or sugar are already located in the kitchen,
+        # focus on finding them If not, proceed with exploration
+        if has_food_ingredients_kitchen():
+            # Attempt to find lemon, water, or sugar in the kitchen
+            bind item: item where:
+                (is_food_lemon(item) or has_water(item) or is_food_sugar(item)) and inside(item, kitchen)
+            achieve close_char(char, item)
+
+        else:
+            # Explore the kitchen for lemon, water, and sugar by observing unvisited items
+            foreach o: item:
+                if (is_food_lemon(o) or is_food_sugar(o)) and not visited(o):
+                    observe(o, "Find lemon or sugar in the kitchen")
+
+            foreach o: item:
+                if is_sink(o) and not visited(o):
+                    observe(o, "Find a source of water in the kitchen")
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "function_definition":
+
+Unknown variable: kitchen; available variables: [Variable<o: item>].
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_food_sugar_2039_around_kitchen_counter_230(food_sugar:item):
+    goal: not unknown(food_sugar)
+    body:
+        assert is_food_sugar(food_sugar)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==230
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_sugar,kitchen_counter_instance)
+        else:
+            exp(food_sugar,kitchen_counter_instance)
+    eff:
+        unknown[food_sugar]=False
+        close[food_sugar,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_sugar]=True
+    
+
+behavior find_food_lemon_2028_around_kitchen_counter_230(food_lemon:item):
+    goal: not unknown(food_lemon)
+    body:
+        assert is_food_lemon(food_lemon)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==230
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_lemon,kitchen_counter_instance)
+        else:
+            exp(food_lemon,kitchen_counter_instance)
+    eff:
+        unknown[food_lemon]=False
+        close[food_lemon,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_lemon]=True
+    
+
+#goal_representation
+ 
+def has_food_ingredients_in_kitchen(kitchen:item):
+    # Function to check if lemon, water, or sugar are located in the specified kitchen
+    symbol found_ingredients=exists o: item : ((is_food_lemon(o) or has_water(o) or is_food_sugar(o)) and inside(o, kitchen))
+    return found_ingredients
+
+behavior __goal__():
+    body:
+        bind kitchen: item where:
+            inside_char(char, kitchen)
+
+        if has_food_ingredients_in_kitchen(kitchen):
+            # Attempt to find lemon, water, or sugar in the kitchen
+            bind item: item where:
+                (is_food_lemon(item) or has_water(item) or is_food_sugar(item)) and inside(item, kitchen)
+            achieve close_char(char, item)
+
+        else:
+            # Explore the kitchen for lemon, water, and sugar by observing unvisited items
+            foreach o: item:
+                if (is_food_lemon(o) or is_food_sugar(o)) and not visited(o):
+                    observe(o, "Find lemon or sugar in the kitchen")
+
+            foreach o: item:
+                if is_sink(o) and not visited(o):
+                    observe(o, "Find a source of water in the kitchen")
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+ 
+def has_food_ingredients_in_kitchen(kitchen:item):
+    # Function to check if lemon, water, or sugar are located in the specified kitchen
+    symbol found_ingredients=exists o: item : ((is_food_lemon(o) or has_water(o) or is_food_sugar(o)) and inside(o, kitchen))
+    return found_ingredients
+
+behavior __goal__():
+    body:
+        bind kitchen: item where:
+            inside_char(char, kitchen)
+
+        if has_food_ingredients_in_kitchen(kitchen):
+            # Attempt to find lemon, water, or sugar in the kitchen
+            bind item: item where:
+                (is_food_lemon(item) or has_water(item) or is_food_sugar(item)) and inside(item, kitchen)
+            achieve close_char(char, item)
+
+        else:
+            # Explore the kitchen for lemon, water, and sugar by observing unvisited items
+            foreach o: item:
+                if (is_food_lemon(o) or is_food_sugar(o)) and not visited(o):
+                    observe(o, "Find lemon or sugar in the kitchen")
+
+            foreach o: item:
+                if is_sink(o) and not visited(o):
+                    observe(o, "Find a source of water in the kitchen")
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(kitchen_counter_230)exp(food_lemon_2028, kitchen_counter_230)walk_executor(food_lemon_2028)obs(food_lemon_2028, Find lemon or sugar in the kitchen)walk_executor(kitchen_counter_230)exp(food_sugar_2039, kitchen_counter_230)walk_executor(food_sugar_2039)obs(food_sugar_2039, Find lemon or sugar in the kitchen)walk_executor(sink_42)obs(sink_42, Find a source of water in the kitchen)walk_executor(sink_231)obs(sink_231, Find a source of water in the kitchen)
+##############################
+From agent.py
+walk_executor(kitchen_counter_230)
+Robot find: drawing_238, drawing_239, drawing_240, drawing_241, drawing_242, drawing_243, napkin_2005, oil_2079, cup_2063, knife_2050, cup_2064, pot_2069, fryingpan_2083, Robot is close to the kitchen_counter_230. 
+##############################
+From agent.py
+exp(food_lemon_2028, kitchen_counter_230)
+Fail to find food_lemon_2028 around kitchen_counter_230. 
+##############################
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Find a lemon, water source, and sugar.  ', '2. Slice the lemon and dissolve sugar in water.  ', '3. Combine sliced lemon and sugar water in a cup.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_carrot_2014_around_cupboard_229(food_carrot:item):
+    goal: not unknown(food_carrot)
+    body:
+        assert is_food_carrot(food_carrot)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==229
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(food_carrot,cupboard_instance)
+        else:
+            exp(food_carrot,cupboard_instance)
+    eff:
+        unknown[food_carrot]=False
+        close[food_carrot,cupboard_instance]=True
+        close[cupboard_instance,food_carrot]=True
+    
+
+behavior find_food_dessert_2018_around_cupboard_229(food_dessert:item):
+    goal: not unknown(food_dessert)
+    body:
+        assert is_food_dessert(food_dessert)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==229
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(food_dessert,cupboard_instance)
+        else:
+            exp(food_dessert,cupboard_instance)
+    eff:
+        unknown[food_dessert]=False
+        close[food_dessert,cupboard_instance]=True
+        close[cupboard_instance,food_dessert]=True
+    
+
+behavior find_hanger_115_around_closetdrawer_117(hanger:item):
+    goal: not unknown(hanger)
+    body:
+        assert is_hanger(hanger)
+        bind closetdrawer_instance:item where:
+            is_closetdrawer(closetdrawer_instance) and id[closetdrawer_instance]==117
+        achieve close_char(char,closetdrawer_instance)
+        if can_open(closetdrawer_instance):
+            achieve_once open(closetdrawer_instance)
+            exp(hanger,closetdrawer_instance)
+        else:
+            exp(hanger,closetdrawer_instance)
+    eff:
+        unknown[hanger]=False
+        close[hanger,closetdrawer_instance]=True
+        close[closetdrawer_instance,hanger]=True
+    
+
+behavior find_food_sugar_2039_around_cupboard_229(food_sugar:item):
+    goal: not unknown(food_sugar)
+    body:
+        assert is_food_sugar(food_sugar)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==229
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(food_sugar,cupboard_instance)
+        else:
+            exp(food_sugar,cupboard_instance)
+    eff:
+        unknown[food_sugar]=False
+        close[food_sugar,cupboard_instance]=True
+        close[cupboard_instance,food_sugar]=True
+    
+
+behavior find_food_lemon_2028_around_cupboard_229(food_lemon:item):
+    goal: not unknown(food_lemon)
+    body:
+        assert is_food_lemon(food_lemon)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==229
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(food_lemon,cupboard_instance)
+        else:
+            exp(food_lemon,cupboard_instance)
+    eff:
+        unknown[food_lemon]=False
+        close[food_lemon,cupboard_instance]=True
+        close[cupboard_instance,food_lemon]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def has_lemon_water_sugar_nearby():
+    # Function to check if a lemon, water source, or sugar has been identified nearby
+    symbol available=exists o: item : ((is_food_lemon(o) or has_water(o) or is_food_sugar(o)) and visited(o))
+    return available
+
+behavior __goal__():
+    body:
+        if has_lemon_water_sugar_nearby():
+            # If we have already found a lemon, water source, or sugar based on known information
+            bind item: item where:
+                (is_food_lemon(item) or has_water(item) or is_food_sugar(item)) and visited(item)
+            achieve close_char(char, item)
+
+        else:
+            # If no lemon, water source, or sugar is found in the visited areas, start exploring
+            foreach o: item:
+                if (is_food_lemon(o) or has_water(o) or is_food_sugar(o)) and not visited(o):
+                    observe(o, "Check the location of the lemon, water source, or sugar")
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+ 
+def has_lemon_water_sugar_nearby():
+    # Function to check if a lemon, water source, or sugar has been identified nearby
+    symbol available=exists o: item : ((is_food_lemon(o) or has_water(o) or is_food_sugar(o)) and visited(o))
+    return available
+
+behavior __goal__():
+    body:
+        if has_lemon_water_sugar_nearby():
+            # If we have already found a lemon, water source, or sugar based on known information
+            bind item: item where:
+                (is_food_lemon(item) or has_water(item) or is_food_sugar(item)) and visited(item)
+            achieve close_char(char, item)
+
+        else:
+            # If no lemon, water source, or sugar is found in the visited areas, start exploring
+            foreach o: item:
+                if (is_food_lemon(o) or has_water(o) or is_food_sugar(o)) and not visited(o):
+                    observe(o, "Check the location of the lemon, water source, or sugar")
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(cupboard_229)open_executor(cupboard_229)exp(food_lemon_2028, cupboard_229)walk_executor(food_lemon_2028)obs(food_lemon_2028, Check the location of the lemon, water source, or sugar)walk_executor(cupboard_229)exp(food_sugar_2039, cupboard_229)walk_executor(food_sugar_2039)obs(food_sugar_2039, Check the location of the lemon, water source, or sugar)
+##############################
+From agent.py
+walk_executor(cupboard_229)
+Robot find: Robot is close to the cupboard_229. 
+##############################
+From agent.py
+open_executor(cupboard_229)
+Robot find: Robot is close to the cupboard_229. cupboard_229 is opened. 
+##############################
+From agent.py
+exp(food_lemon_2028, cupboard_229)
+Fail to find food_lemon_2028 around cupboard_229. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(fridge_289)switchoff_executor(fridge_289)open_executor(fridge_289)exp(food_lemon_2028, fridge_289)walk_executor(food_lemon_2028)obs(food_lemon_2028, Check the location of the lemon, water source, or sugar)walk_executor(stove_2065)open_executor(stove_2065)exp(food_sugar_2039, stove_2065)walk_executor(food_sugar_2039)obs(food_sugar_2039, Check the location of the lemon, water source, or sugar)
+##############################
+From agent.py
+walk_executor(fridge_289)
+Robot find: Robot is close to the fridge_289. 
+##############################
+From agent.py
+switchoff_executor(fridge_289)
+Robot find: Robot is close to the fridge_289. fridge_289 is turned off. 
+##############################
+From agent.py
+open_executor(fridge_289)
+Robot find: sauce_2078, food_steak_2008, food_apple_2009, food_bacon_2010, food_banana_2011, food_bread_2012, food_cake_2013, food_carrot_2014, food_cereal_2015, food_cheese_2016, food_chicken_2017, food_dessert_2018, food_donut_2019, food_egg_2020, food_fish_2021, food_food_2022, food_fruit_2023, food_hamburger_2024, food_ice_cream_2025, food_jam_2026, food_kiwi_2027, food_lemon_2028, food_noodles_2029, food_oatmeal_2030, food_orange_2031, food_onion_2032, food_peanut_butter_2033, food_pizza_2034, food_potato_2035, food_rice_2036, food_salt_2037, food_snack_2038, food_sugar_2039, food_turkey_2040, food_vegetable_2041, dry_pasta_2042, milk_2043, Robot is close to the sauce_2078. Robot is close to the fridge_289. Robot is close to the food_steak_2008. Robot is close to the food_apple_2009. Robot is close to the food_bacon_2010. Robot is close to the food_banana_2011. Robot is close to the food_bread_2012. Robot is close to the food_cake_2013. Robot is close to the food_carrot_2014. Robot is close to the food_cereal_2015. Robot is close to the food_cheese_2016. Robot is close to the food_chicken_2017. Robot is close to the food_dessert_2018. Robot is close to the food_donut_2019. Robot is close to the food_egg_2020. Robot is close to the food_fish_2021. Robot is close to the food_food_2022. Robot is close to the food_fruit_2023. Robot is close to the food_hamburger_2024. Robot is close to the food_ice_cream_2025. Robot is close to the food_jam_2026. Robot is close to the food_kiwi_2027. Robot is close to the food_lemon_2028. Robot is close to the food_noodles_2029. Robot is close to the food_oatmeal_2030. Robot is close to the food_orange_2031. Robot is close to the food_onion_2032. Robot is close to the food_peanut_butter_2033. Robot is close to the food_pizza_2034. Robot is close to the food_potato_2035. Robot is close to the food_rice_2036. Robot is close to the food_salt_2037. Robot is close to the food_snack_2038. Robot is close to the food_sugar_2039. Robot is close to the food_turkey_2040. Robot is close to the food_vegetable_2041. Robot is close to the dry_pasta_2042. Robot is close to the milk_2043. fridge_289 is opened. 
+##############################
+From agent.py
+exp(food_lemon_2028, fridge_289)
+Find food_lemon_2028. 
+##############################
+From agent.py-> find a plan in act()
+obs(food_lemon_2028, Check the location of the lemon, water source, or sugar)obs(food_sugar_2039, Check the location of the lemon, water source, or sugar)
+##############################
+From agent.py
+obs(food_lemon_2028, Check the location of the lemon, water source, or sugar)
+Get this information:  food_lemon_2028 is close to fridge_289. food_lemon_2028 is close to character_65. food_lemon_2028 is inside fridge_289. food_lemon_2028 is inside dining_room_201. food_lemon_2028 is CLEAN.
+##############################
+From agent.py
+obs(food_sugar_2039, Check the location of the lemon, water source, or sugar)
+Get this information:  food_sugar_2039 is close to fridge_289. food_sugar_2039 is close to character_65. food_sugar_2039 is inside fridge_289. food_sugar_2039 is inside dining_room_201. food_sugar_2039 is CLEAN.
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: Yes
+The feedback instruction: None
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_book_2066_around_bookshelf_233(book:item):
+    goal: not unknown(book)
+    body:
+        assert is_book(book)
+        bind bookshelf_instance:item where:
+            is_bookshelf(bookshelf_instance) and id[bookshelf_instance]==233
+        achieve close_char(char,bookshelf_instance)
+        if can_open(bookshelf_instance):
+            achieve_once open(bookshelf_instance)
+            exp(book,bookshelf_instance)
+        else:
+            exp(book,bookshelf_instance)
+    eff:
+        unknown[book]=False
+        close[book,bookshelf_instance]=True
+        close[bookshelf_instance,book]=True
+    
+
+behavior find_plate_1000_around_table_107(plate:item):
+    goal: not unknown(plate)
+    body:
+        assert is_plate(plate)
+        bind table_instance:item where:
+            is_table(table_instance) and id[table_instance]==107
+        achieve close_char(char,table_instance)
+        if can_open(table_instance):
+            achieve_once open(table_instance)
+            exp(plate,table_instance)
+        else:
+            exp(plate,table_instance)
+    eff:
+        unknown[plate]=False
+        close[plate,table_instance]=True
+        close[table_instance,plate]=True
+    
+
+behavior find_iron_2089_around_ironing_board_2074(iron:item):
+    goal: not unknown(iron)
+    body:
+        assert is_iron(iron)
+        bind ironing_board_instance:item where:
+            is_ironing_board(ironing_board_instance) and id[ironing_board_instance]==2074
+        achieve close_char(char,ironing_board_instance)
+        if can_open(ironing_board_instance):
+            achieve_once open(ironing_board_instance)
+            exp(iron,ironing_board_instance)
+        else:
+            exp(iron,ironing_board_instance)
+    eff:
+        unknown[iron]=False
+        close[iron,ironing_board_instance]=True
+        close[ironing_board_instance,iron]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+behavior slice_lemon_and_dissolve_sugar(lemon: item, water: item, sugar: item, knife: item, cutting_board: item, cup: item):
+    body:
+        achieve_once on(lemon, cutting_board) 
+        # Place the lemon on the cutting board
+        achieve_once cut(lemon) 
+        # Slice the lemon
+        achieve_once inside(sugar, cup)
+        # Put sugar in the cup
+        achieve_once has_water(cup)
+        # Dissolve sugar in water by stirring the mixture
+
+behavior __goal__():
+    body:
+        bind lemon: item where:
+            is_food_lemon(lemon)
+        # Select the lemon 
+
+        bind sugar: item where:
+            is_food_sugar(sugar)
+        # Select the sugar
+
+        bind knife: item where:
+            is_knife(knife)
+        # Select a knife for slicing the lemon
+
+        bind cutting_board: item where:
+            is_cutting_board(cutting_board)
+        # Select a cutting board for slicing lemon
+
+        bind cup: item where:
+            is_cup(cup)
+        # Select a cup for sugar and water
+
+        bind faucet: item where:
+            is_faucet(faucet)
+        # Select a faucet for water
+
+        slice_lemon_and_dissolve_sugar(lemon, water, sugar, knife, cutting_board, cup)
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "behavior_definition":
+
+Unknown variable: water; available variables: [].
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_plate_1000_around_table_107(plate:item):
+    goal: not unknown(plate)
+    body:
+        assert is_plate(plate)
+        bind table_instance:item where:
+            is_table(table_instance) and id[table_instance]==107
+        achieve close_char(char,table_instance)
+        if can_open(table_instance):
+            achieve_once open(table_instance)
+            exp(plate,table_instance)
+        else:
+            exp(plate,table_instance)
+    eff:
+        unknown[plate]=False
+        close[plate,table_instance]=True
+        close[table_instance,plate]=True
+    
+
+behavior find_cd_player_2060_around_tvstand_225(cd_player:item):
+    goal: not unknown(cd_player)
+    body:
+        assert is_cd_player(cd_player)
+        bind tvstand_instance:item where:
+            is_tvstand(tvstand_instance) and id[tvstand_instance]==225
+        achieve close_char(char,tvstand_instance)
+        if can_open(tvstand_instance):
+            achieve_once open(tvstand_instance)
+            exp(cd_player,tvstand_instance)
+        else:
+            exp(cd_player,tvstand_instance)
+    eff:
+        unknown[cd_player]=False
+        close[cd_player,tvstand_instance]=True
+        close[tvstand_instance,cd_player]=True
+    
+
+behavior find_bowl_2072_around_stove_2065(bowl:item):
+    goal: not unknown(bowl)
+    body:
+        assert is_bowl(bowl)
+        bind stove_instance:item where:
+            is_stove(stove_instance) and id[stove_instance]==2065
+        achieve close_char(char,stove_instance)
+        if can_open(stove_instance):
+            achieve_once open(stove_instance)
+            exp(bowl,stove_instance)
+        else:
+            exp(bowl,stove_instance)
+    eff:
+        unknown[bowl]=False
+        close[bowl,stove_instance]=True
+        close[stove_instance,bowl]=True
+    
+
+behavior find_soap_2054_around_bathroom_counter_41(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind bathroom_counter_instance:item where:
+            is_bathroom_counter(bathroom_counter_instance) and id[bathroom_counter_instance]==41
+        achieve close_char(char,bathroom_counter_instance)
+        if can_open(bathroom_counter_instance):
+            achieve_once open(bathroom_counter_instance)
+            exp(soap,bathroom_counter_instance)
+        else:
+            exp(soap,bathroom_counter_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,bathroom_counter_instance]=True
+        close[bathroom_counter_instance,soap]=True
+    
+
+#goal_representation
+ 
+behavior slice_lemon_and_dissolve_sugar(lemon: item, water: item, sugar: item, knife: item, cutting_board: item, cup: item):
+    body:
+        achieve_once on(lemon, cutting_board) 
+        # Place the lemon on the cutting board
+        achieve_once cut(lemon) 
+        # Slice the lemon
+        achieve_once inside(sugar, cup)
+        # Put sugar in the cup
+        achieve_once has_water(cup)
+        # Dissolve sugar in water by stirring the mixture
+
+behavior __goal__():
+    body:
+        bind lemon: item where:
+            is_food_lemon(lemon)
+        # Select the lemon 
+
+        bind sugar: item where:
+            is_food_sugar(sugar)
+        # Select the sugar
+
+        bind knife: item where:
+            is_knife(knife)
+        # Select a knife for slicing the lemon
+
+        bind cutting_board: item where:
+            is_cutting_board(cutting_board)
+        # Select a cutting board for slicing lemon
+
+        bind cup: item where:
+            is_cup(cup)
+        # Select a cup for sugar and water
+        
+        bind water: item where:
+            is_faucet(water)
+        # Select a faucet for water
+
+        slice_lemon_and_dissolve_sugar(lemon, water, sugar, knife, cutting_board, cup)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+behavior slice_lemon_and_dissolve_sugar(lemon: item, water: item, sugar: item, knife: item, cutting_board: item, cup: item):
+    body:
+        achieve_once on(lemon, cutting_board) 
+        # Place the lemon on the cutting board
+        achieve_once cut(lemon) 
+        # Slice the lemon
+        achieve_once inside(sugar, cup)
+        # Put sugar in the cup
+        achieve_once has_water(cup)
+        # Dissolve sugar in water by stirring the mixture
+
+behavior __goal__():
+    body:
+        bind lemon: item where:
+            is_food_lemon(lemon)
+        # Select the lemon 
+
+        bind sugar: item where:
+            is_food_sugar(sugar)
+        # Select the sugar
+
+        bind knife: item where:
+            is_knife(knife)
+        # Select a knife for slicing the lemon
+
+        bind cutting_board: item where:
+            is_cutting_board(cutting_board)
+        # Select a cutting board for slicing lemon
+
+        bind cup: item where:
+            is_cup(cup)
+        # Select a cup for sugar and water
+        
+        bind water: item where:
+            is_faucet(water)
+        # Select a faucet for water
+
+        slice_lemon_and_dissolve_sugar(lemon, water, sugar, knife, cutting_board, cup)
+
+##############################
+From agent.py-> find a plan in act()
+grab_executor(food_lemon_2028)walk_executor(cutting_board_2051)put_executor(food_lemon_2028, cutting_board_2051)walk_executor(knife_2050)grab_executor(knife_2050)walk_executor(food_lemon_2028)cut_executor(food_lemon_2028)walk_executor(food_sugar_2039)grab_executor(food_sugar_2039)walk_executor(cup_2063)putin_executor(food_sugar_2039, cup_2063)grab_executor(cup_2063)walk_executor(faucet_232)walk_executor(kitchen_counter_230)put_executor(knife_2050, kitchen_counter_230)switchon_executor(faucet_232)switchoff_executor(faucet_232)
+##############################
+From agent.py
+grab_executor(food_lemon_2028)
+Robot find: Robot is close to the sauce_2078. Robot is close to the fridge_289. Robot is close to the food_steak_2008. Robot is close to the food_apple_2009. Robot is close to the food_bacon_2010. Robot is close to the food_banana_2011. Robot is close to the food_bread_2012. Robot is close to the food_cake_2013. Robot is close to the food_carrot_2014. Robot is close to the food_cereal_2015. Robot is close to the food_cheese_2016. Robot is close to the food_chicken_2017. Robot is close to the food_dessert_2018. Robot is close to the food_donut_2019. Robot is close to the food_egg_2020. Robot is close to the food_fish_2021. Robot is close to the food_food_2022. Robot is close to the food_fruit_2023. Robot is close to the food_hamburger_2024. Robot is close to the food_ice_cream_2025. Robot is close to the food_jam_2026. Robot is close to the food_kiwi_2027. Robot is close to the food_lemon_2028. Robot is close to the food_noodles_2029. Robot is close to the food_oatmeal_2030. Robot is close to the food_orange_2031. Robot is close to the food_onion_2032. Robot is close to the food_peanut_butter_2033. Robot is close to the food_pizza_2034. Robot is close to the food_potato_2035. Robot is close to the food_rice_2036. Robot is close to the food_salt_2037. Robot is close to the food_snack_2038. Robot is close to the food_sugar_2039. Robot is close to the food_turkey_2040. Robot is close to the food_vegetable_2041. Robot is close to the dry_pasta_2042. Robot is close to the milk_2043. Grabbing food_lemon_2028 by right hand. 
+##############################
+From agent.py
+walk_executor(cutting_board_2051)
+Robot find: Robot is close to the food_lemon_2028. Robot is close to the cutting_board_2051. Robot is close to the kitchen_counter_230. 
+##############################
+From agent.py
+put_executor(food_lemon_2028, cutting_board_2051)
+Robot find: Robot is close to the food_lemon_2028. Robot is close to the cutting_board_2051. Robot is close to the kitchen_counter_230. cutting_board_2051 is close food_lemon_2028. food_lemon_2028 is close cutting_board_2051. food_lemon_2028 is on cutting_board_2051. food_lemon_2028 released by right hand. 
+##############################
+From agent.py
+walk_executor(knife_2050)
+Robot find: Robot is close to the kitchen_counter_230. Robot is close to the knife_2050. 
+##############################
+From agent.py
+grab_executor(knife_2050)
+Robot find: Robot is close to the kitchen_counter_230. Robot is close to the knife_2050. Grabbing knife_2050 by right hand. 
+##############################
+From agent.py
+walk_executor(food_lemon_2028)
+Robot find: Robot is close to the knife_2050. Robot is close to the cutting_board_2051. Robot is close to the food_lemon_2028. 
+##############################
+From agent.py
+cut_executor(food_lemon_2028)
+Robot find: Robot is close to the knife_2050. Robot is close to the cutting_board_2051. Robot is close to the food_lemon_2028. 
+##############################
+From agent.py
+walk_executor(food_sugar_2039)
+Robot find: Robot is close to the knife_2050. Robot is close to the fridge_289. Robot is close to the food_sugar_2039. 
+##############################
+From agent.py
+grab_executor(food_sugar_2039)
+Robot find: Robot is close to the knife_2050. Robot is close to the fridge_289. Robot is close to the food_sugar_2039. Grabbing food_sugar_2039 by left hand. 
+##############################
+From agent.py
+walk_executor(cup_2063)
+Robot find: Robot is close to the knife_2050. Robot is close to the food_sugar_2039. Robot is close to the kitchen_counter_230. Robot is close to the cup_2063. 
+##############################
+From agent.py
+putin_executor(food_sugar_2039, cup_2063)
+Robot find: Robot is close to the knife_2050. Robot is close to the food_sugar_2039. Robot is close to the kitchen_counter_230. Robot is close to the cup_2063. cup_2063 is close food_sugar_2039. food_sugar_2039 is close cup_2063. food_sugar_2039 is inside cup_2063. food_sugar_2039 released by left hand. 
+##############################
+From agent.py
+grab_executor(cup_2063)
+Robot find: Robot is close to the knife_2050. Robot is close to the food_sugar_2039. Robot is close to the kitchen_counter_230. Robot is close to the cup_2063. Grabbing cup_2063 by left hand. 
+##############################
+From agent.py
+walk_executor(faucet_232)
+Robot find: Robot is close to the knife_2050. Robot is close to the kitchen_counter_230. Robot is close to the cup_2063. Robot is close to the faucet_232. 
+##############################
+From agent.py
+walk_executor(kitchen_counter_230)
+Robot find: Robot is close to the knife_2050. Robot is close to the kitchen_counter_230. Robot is close to the cup_2063. 
+##############################
+From agent.py
+put_executor(knife_2050, kitchen_counter_230)
+Robot find: Robot is close to the knife_2050. Robot is close to the kitchen_counter_230. Robot is close to the cup_2063. knife_2050 is close kitchen_counter_230. knife_2050 is on kitchen_counter_230. knife_2050 released by right hand. 
+##############################
+From agent.py
+switchon_executor(faucet_232)
+Robot find: Robot is close to the knife_2050. Robot is close to the kitchen_counter_230. Robot is close to the cup_2063. faucet_232 is turned on. 
+##############################
+From agent.py
+switchoff_executor(faucet_232)
+Robot find: Robot is close to the knife_2050. Robot is close to the kitchen_counter_230. Robot is close to the cup_2063. faucet_232 is turned off. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: No
+The feedback instruction: You need to ensure that the sugar is dissolved in the water. Currently, sugar has been placed in the cup, and the faucet was turned on and off, but there is no information confirming that the cup now contains water. You need to fill the cup with water to complete dissolving sugar in water.
+##############################
+From agent.py
+Human Instruction: You need to ensure that the sugar is dissolved in the water. Currently, sugar has been placed in the cup, and the faucet was turned on and off, but there is no information confirming that the cup now contains water. You need to fill the cup with water to complete dissolving sugar in water.
+
+The actions you have taken:
+Action 1: Walk to kitchen_counter_230.
+Action 2: look for food_lemon_2028 around kitchen_counter_230.
+Action 3: Walk to cupboard_229.
+Action 4: Open cupboard_229.
+Action 5: look for food_lemon_2028 around cupboard_229.
+Action 6: Walk to fridge_289.
+Action 7: Switch off fridge_289.
+Action 8: Open fridge_289.
+Action 9: look for food_lemon_2028 around fridge_289.
+Action 10: Invalid parameter input.
+Action 11: Invalid parameter input.
+Action 12: Grab food_lemon_2028.
+Action 13: Walk to cutting_board_2051.
+Action 14: Put food_lemon_2028 on cutting_board_2051.
+Action 15: Walk to knife_2050.
+Action 16: Grab knife_2050.
+Action 17: Walk to food_lemon_2028.
+Action 18: Cut food_lemon_2028.
+Action 19: Walk to food_sugar_2039.
+Action 20: Grab food_sugar_2039.
+Action 21: Walk to cup_2063.
+Action 22: Put food_sugar_2039 into cup_2063.
+Action 23: Grab cup_2063.
+Action 24: Walk to faucet_232.
+Action 25: Walk to kitchen_counter_230.
+Action 26: Put knife_2050 on kitchen_counter_230.
+Action 27: Switch on faucet_232.
+Action 28: Switch off faucet_232.
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_book_2066_around_bookshelf_233(book:item):
+    goal: not unknown(book)
+    body:
+        assert is_book(book)
+        bind bookshelf_instance:item where:
+            is_bookshelf(bookshelf_instance) and id[bookshelf_instance]==233
+        achieve close_char(char,bookshelf_instance)
+        if can_open(bookshelf_instance):
+            achieve_once open(bookshelf_instance)
+            exp(book,bookshelf_instance)
+        else:
+            exp(book,bookshelf_instance)
+    eff:
+        unknown[book]=False
+        close[book,bookshelf_instance]=True
+        close[bookshelf_instance,book]=True
+    
+
+behavior find_bowl_2071_around_coffee_table_2068(bowl:item):
+    goal: not unknown(bowl)
+    body:
+        assert is_bowl(bowl)
+        bind coffee_table_instance:item where:
+            is_coffee_table(coffee_table_instance) and id[coffee_table_instance]==2068
+        achieve close_char(char,coffee_table_instance)
+        if can_open(coffee_table_instance):
+            achieve_once open(coffee_table_instance)
+            exp(bowl,coffee_table_instance)
+        else:
+            exp(bowl,coffee_table_instance)
+    eff:
+        unknown[bowl]=False
+        close[bowl,coffee_table_instance]=True
+        close[coffee_table_instance,bowl]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def has_cup_of_water(cup: item):
+    # Function to check if the cup has water
+    symbol cup_has_water = has_water(cup)
+    return cup_has_water
+
+def ensure_sugar_dissolved(cup: item, faucet: item):
+    # Check if the cup is now filled and sugar can be dissolved
+    body:
+        if not has_cup_of_water(cup):
+            achieve_once has_water(cup)
+        # Fill the cup with water to ensure sugar can dissolve
+
+behavior slice_lemon(lemon: item, cutting_board: item, knife: item):
+    body:
+        achieve_once cut(lemon)
+
+behavior __goal__():
+    body:
+        bind lemon: item where:
+            is_food_lemon(lemon)
+        # Select a lemon to be sliced
+
+        bind cutting_board: item where:
+            is_cutting_board(cutting_board)
+        # Select the cutting board for slicing
+
+        bind knife: item where:
+            is_knife(knife)
+        # Select a knife for slicing
+
+        bind cup: item where:
+            is_cup(cup)
+        # Select a cup to fill with water
+
+        bind faucet: item where:
+            is_faucet(faucet) and not visited(faucet)
+        # Select a faucet to fill the cup from
+
+        slice_lemon(lemon, cutting_board, knife)
+        ensure_sugar_dissolved(cup, faucet)
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Unexpected token Token('COLON', ':') at line 5826, column 9.
+Expected one of: 
+	* LSHIFT
+	* _NEWLINE
+	* MINUS
+	* AND
+	* EQUAL
+	* SLASH
+	* FLOORDIV
+	* AT
+	* OR
+	* PERCENT
+	* __ANON_1
+	* GREATER_EQ
+	* __ANON_0
+	* __ANON_3
+	* MORETHAN
+	* __ANON_6
+	* NOT_EQ
+	* __ANON_2
+	* CIRCUMFLEX
+	* AMPERSAND
+	* STAR
+	* RSHIFT
+	* LESS_EQ
+	* DOUBLE_EQUAL
+	* PLUS
+	* __ANON_7
+	* COMMA
+	* __ANON_4
+	* __ANON_8
+	* IF
+	* SEMICOLON
+	* LESSTHAN
+	* __ANON_5
+	* VBAR
+
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_book_2067_around_bookshelf_233(book:item):
+    goal: not unknown(book)
+    body:
+        assert is_book(book)
+        bind bookshelf_instance:item where:
+            is_bookshelf(bookshelf_instance) and id[bookshelf_instance]==233
+        achieve close_char(char,bookshelf_instance)
+        if can_open(bookshelf_instance):
+            achieve_once open(bookshelf_instance)
+            exp(book,bookshelf_instance)
+        else:
+            exp(book,bookshelf_instance)
+    eff:
+        unknown[book]=False
+        close[book,bookshelf_instance]=True
+        close[bookshelf_instance,book]=True
+    
+
+behavior find_drawing_403_around_ceilinglamp_26(drawing:item):
+    goal: not unknown(drawing)
+    body:
+        assert is_drawing(drawing)
+        bind ceilinglamp_instance:item where:
+            is_ceilinglamp(ceilinglamp_instance) and id[ceilinglamp_instance]==26
+        achieve close_char(char,ceilinglamp_instance)
+        if can_open(ceilinglamp_instance):
+            achieve_once open(ceilinglamp_instance)
+            exp(drawing,ceilinglamp_instance)
+        else:
+            exp(drawing,ceilinglamp_instance)
+    eff:
+        unknown[drawing]=False
+        close[drawing,ceilinglamp_instance]=True
+        close[ceilinglamp_instance,drawing]=True
+    
+
+#goal_representation
+ 
+def has_cup_of_water(cup: item):
+    # Function to check if the cup has water
+    symbol cup_has_water = has_water(cup)
+    return cup_has_water
+
+behavior fill_cup_with_water(cup: item, faucet: item):
+    body:
+        achieve_once has_water(cup)
+        # Fill the cup with water from the faucet
+
+behavior ensure_sugar_dissolved(cup: item):
+    body:
+        # Check if the cup is now filled and sugar can be dissolved
+        if not has_cup_of_water(cup):
+            achieve_once has_water(cup)
+        # Ensure sugar can dissolve
+
+behavior slice_lemon(lemon: item, cutting_board: item, knife: item):
+    body:
+        achieve_once cut(lemon)
+
+behavior __goal__():
+    body:
+        bind lemon: item where:
+            is_food_lemon(lemon)
+        # Select a lemon to be sliced
+
+        bind cutting_board: item where:
+            is_cutting_board(cutting_board)
+        # Select the cutting board for slicing
+
+        bind knife: item where:
+            is_knife(knife)
+        # Select a knife for slicing
+
+        bind cup: item where:
+            is_cup(cup)
+        # Select a cup to fill with water
+
+        bind faucet: item where:
+            is_faucet(faucet)
+        # Select a faucet to fill the cup from
+
+        slice_lemon(lemon, cutting_board, knife)
+        fill_cup_with_water(cup, faucet)
+        ensure_sugar_dissolved(cup)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_book_2066_around_bookshelf_233(book:item):
+    goal: not unknown(book)
+    body:
+        assert is_book(book)
+        bind bookshelf_instance:item where:
+            is_bookshelf(bookshelf_instance) and id[bookshelf_instance]==233
+        achieve close_char(char,bookshelf_instance)
+        if can_open(bookshelf_instance):
+            achieve_once open(bookshelf_instance)
+            exp(book,bookshelf_instance)
+        else:
+            exp(book,bookshelf_instance)
+    eff:
+        unknown[book]=False
+        close[book,bookshelf_instance]=True
+        close[bookshelf_instance,book]=True
+    
+
+behavior find_iron_2089_around_ironing_board_2074(iron:item):
+    goal: not unknown(iron)
+    body:
+        assert is_iron(iron)
+        bind ironing_board_instance:item where:
+            is_ironing_board(ironing_board_instance) and id[ironing_board_instance]==2074
+        achieve close_char(char,ironing_board_instance)
+        if can_open(ironing_board_instance):
+            achieve_once open(ironing_board_instance)
+            exp(iron,ironing_board_instance)
+        else:
+            exp(iron,ironing_board_instance)
+    eff:
+        unknown[iron]=False
+        close[iron,ironing_board_instance]=True
+        close[ironing_board_instance,iron]=True
+    
+
+behavior find_drawing_2003_around_drawing_241(drawing:item):
+    goal: not unknown(drawing)
+    body:
+        assert is_drawing(drawing)
+        bind drawing_instance:item where:
+            is_drawing(drawing_instance) and id[drawing_instance]==241
+        achieve close_char(char,drawing_instance)
+        if can_open(drawing_instance):
+            achieve_once open(drawing_instance)
+            exp(drawing,drawing_instance)
+        else:
+            exp(drawing,drawing_instance)
+    eff:
+        unknown[drawing]=False
+        close[drawing,drawing_instance]=True
+        close[drawing_instance,drawing]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+behavior slice_lemon(lemon:item, cutting_board:item, knife:item):
+    body:
+        achieve_once on(lemon, cutting_board)
+        achieve_once cut(lemon)
+
+behavior dissolve_sugar_in_water(cup:item, faucet:item):
+    body:
+        achieve has_water(cup)
+
+behavior __goal__():
+    body:
+        bind lemon: item where:
+            is_food_lemon(lemon)
+        # Select the lemon
+
+        bind cutting_board: item where:
+            is_cutting_board(cutting_board)
+        # Select the cutting board
+
+        bind knife: item where:
+            is_knife(knife)
+        # Select the knife
+
+        bind cup: item where:
+            is_cup(cup) and id[cup] == 2063
+        # Select cup_2063, where the sugar is already placed
+
+        bind faucet: item where:
+            is_faucet(faucet)
+        # Select the faucet for filling the cup with water
+
+        slice_lemon(lemon, cutting_board, knife)
+        dissolve_sugar_in_water(cup, faucet)
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_book_2067_around_bookshelf_233(book:item):
+    goal: not unknown(book)
+    body:
+        assert is_book(book)
+        bind bookshelf_instance:item where:
+            is_bookshelf(bookshelf_instance) and id[bookshelf_instance]==233
+        achieve close_char(char,bookshelf_instance)
+        if can_open(bookshelf_instance):
+            achieve_once open(bookshelf_instance)
+            exp(book,bookshelf_instance)
+        else:
+            exp(book,bookshelf_instance)
+    eff:
+        unknown[book]=False
+        close[book,bookshelf_instance]=True
+        close[bookshelf_instance,book]=True
+    
+
+behavior find_iron_2089_around_ironing_board_2074(iron:item):
+    goal: not unknown(iron)
+    body:
+        assert is_iron(iron)
+        bind ironing_board_instance:item where:
+            is_ironing_board(ironing_board_instance) and id[ironing_board_instance]==2074
+        achieve close_char(char,ironing_board_instance)
+        if can_open(ironing_board_instance):
+            achieve_once open(ironing_board_instance)
+            exp(iron,ironing_board_instance)
+        else:
+            exp(iron,ironing_board_instance)
+    eff:
+        unknown[iron]=False
+        close[iron,ironing_board_instance]=True
+        close[ironing_board_instance,iron]=True
+    
+
+behavior find_drawing_239_around_drawing_239(drawing:item):
+    goal: not unknown(drawing)
+    body:
+        assert is_drawing(drawing)
+        bind drawing_instance:item where:
+            is_drawing(drawing_instance) and id[drawing_instance]==239
+        achieve close_char(char,drawing_instance)
+        if can_open(drawing_instance):
+            achieve_once open(drawing_instance)
+            exp(drawing,drawing_instance)
+        else:
+            exp(drawing,drawing_instance)
+    eff:
+        unknown[drawing]=False
+        close[drawing,drawing_instance]=True
+        close[drawing_instance,drawing]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def has_water_in_cup(cup:item):
+    # Function to check if there is water in the cup
+    symbol water_present=exists o: item : (is_water(o) and inside(o, cup))
+    return water_present
+
+behavior slice_lemon(lemon:item, cutting_board:item, knife:item):
+    body:
+        achieve_once on(lemon, cutting_board) # Place the lemon on the cutting board
+        achieve_once cut(lemon) # Slice the lemon
+
+behavior fill_cup_and_dissolve_sugar(cup:item, faucet:item):
+    body:
+        achieve_once has_water(cup) # Fill the cup with water to dissolve sugar
+
+behavior __goal__():
+    body:
+        bind food_lemon: item where:
+            is_food_lemon(food_lemon) and id[food_lemon] == 2028
+        # Select the lemon to be sliced
+
+        bind cutting_board: item where:
+            is_cutting_board(cutting_board) and id[cutting_board] == 2051
+        # Select the cutting board for slicing
+
+        bind knife: item where:
+            is_knife(knife) and id[knife] == 2050
+        # Select the knife for slicing
+
+        bind cup: item where:
+            is_cup(cup) and id[cup] == 2063
+        # Select the cup with sugar for dissolving
+
+        bind faucet: item where:
+            is_faucet(faucet) and id[faucet] == 232
+        # Select the faucet for filling the cup with water
+
+        if not has_water_in_cup(cup):
+            # If water is not already in the cup, ensure it is filled
+            fill_cup_and_dissolve_sugar(cup, faucet)
+
+        slice_lemon(food_lemon, cutting_board, knife)
+        # Slice the lemon
+
+#goal_representation_end
+
+##############################
+VH_pipeline: Fail to generate a valid plan
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior slice_lemon(lemon: item, knife: item, cutting_board: item):
+    body:
+        achieve_once on(lemon, cutting_board)
+        # Place the lemon on the cutting board
+        achieve_once cut(lemon)
+        # Slice the lemon
+
+behavior dissolve_sugar_in_water(cup: item, water_source: item):
+    body:
+        if not has_water(cup):
+            achieve_once has_water(cup)
+            # Fill the cup with water
+
+behavior __goal__():
+    body:
+        bind lemon: item where:
+            is_food_lemon(lemon)
+        # Select the lemon to be sliced
+
+        bind knife: item where:
+            is_knife(knife)
+        # Select a knife for slicing the lemon
+
+        bind cutting_board: item where:
+            is_cutting_board(cutting_board)
+        # Select the cutting board to slice the lemon on
+
+        slice_lemon(lemon, knife, cutting_board)
+        # Slice the lemon
+
+        bind cup: item where:
+            is_cup(cup) and id[cup] == 2063
+        # Select the cup where sugar is to be dissolved
+
+        bind water_source: item where:
+            is_faucet(water_source) and id[water_source] == 232
+        # Select the faucet to fill the cup with water
+
+        dissolve_sugar_in_water(cup, water_source)
+        # Dissolve sugar in water in the cup
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_book_2067_around_bookshelf_233(book:item):
+    goal: not unknown(book)
+    body:
+        assert is_book(book)
+        bind bookshelf_instance:item where:
+            is_bookshelf(bookshelf_instance) and id[bookshelf_instance]==233
+        achieve close_char(char,bookshelf_instance)
+        if can_open(bookshelf_instance):
+            achieve_once open(bookshelf_instance)
+            exp(book,bookshelf_instance)
+        else:
+            exp(book,bookshelf_instance)
+    eff:
+        unknown[book]=False
+        close[book,bookshelf_instance]=True
+        close[bookshelf_instance,book]=True
+    
+
+behavior find_iron_2089_around_ironing_board_2074(iron:item):
+    goal: not unknown(iron)
+    body:
+        assert is_iron(iron)
+        bind ironing_board_instance:item where:
+            is_ironing_board(ironing_board_instance) and id[ironing_board_instance]==2074
+        achieve close_char(char,ironing_board_instance)
+        if can_open(ironing_board_instance):
+            achieve_once open(ironing_board_instance)
+            exp(iron,ironing_board_instance)
+        else:
+            exp(iron,ironing_board_instance)
+    eff:
+        unknown[iron]=False
+        close[iron,ironing_board_instance]=True
+        close[ironing_board_instance,iron]=True
+    
+
+behavior find_drawing_174_around_drawing_238(drawing:item):
+    goal: not unknown(drawing)
+    body:
+        assert is_drawing(drawing)
+        bind drawing_instance:item where:
+            is_drawing(drawing_instance) and id[drawing_instance]==238
+        achieve close_char(char,drawing_instance)
+        if can_open(drawing_instance):
+            achieve_once open(drawing_instance)
+            exp(drawing,drawing_instance)
+        else:
+            exp(drawing,drawing_instance)
+    eff:
+        unknown[drawing]=False
+        close[drawing,drawing_instance]=True
+        close[drawing_instance,drawing]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_cup_filled_with_water(cup: item):
+    # Function to check if there is water in the cup
+    symbol has_water_in_cup=exists o: item : (is_cup(o) and has_water(o))
+    return has_water_in_cup
+
+behavior slice_lemon_and_dissolve_sugar(lemon: item, cup: item, knife: item, cutting_board: item):
+    body:
+        achieve_once on(lemon, cutting_board)
+        # Place the lemon on the cutting board
+        achieve_once cut(lemon)
+        # Slice the lemon
+        achieve_once has_water(cup)
+        # Ensure cup is filled with water and sugar is dissolved
+
+behavior __goal__():
+    body:
+        bind lemon: item where:
+            is_food_lemon(lemon)
+        # Select the lemon
+
+        bind cup: item where:
+            is_cup(cup) and id[cup] == 2063
+        # Select the cup
+
+        bind knife: item where:
+            is_knife(knife) and id[knife] == 2050
+        # Select the knife
+
+        bind cutting_board: item where:
+            is_cutting_board(cutting_board) and id[cutting_board] == 2051
+        # Select the cutting board
+
+        if not is_cup_filled_with_water(cup):
+            # If the cup does not have water, attempt to fill it again
+            bind faucet: item where:
+                is_faucet(faucet)
+            achieve_once has_water(cup)
+
+        slice_lemon_and_dissolve_sugar(lemon, cup, knife, cutting_board)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_book_2066_around_bookshelf_233(book:item):
+    goal: not unknown(book)
+    body:
+        assert is_book(book)
+        bind bookshelf_instance:item where:
+            is_bookshelf(bookshelf_instance) and id[bookshelf_instance]==233
+        achieve close_char(char,bookshelf_instance)
+        if can_open(bookshelf_instance):
+            achieve_once open(bookshelf_instance)
+            exp(book,bookshelf_instance)
+        else:
+            exp(book,bookshelf_instance)
+    eff:
+        unknown[book]=False
+        close[book,bookshelf_instance]=True
+        close[bookshelf_instance,book]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior slice_lemon_and_dissolve_sugar(lemon: item, cup: item, cutting_board: item, knife: item, faucet: item):
+    body:
+        achieve_once has_water(cup) # Fill the cup with water to dissolve sugar
+        achieve_once cut(lemon) # Slice the lemon
+
+behavior __goal__():
+    body:
+        bind lemon: item where:
+            is_food_lemon(lemon) and id[lemon] == 2028
+        # Select the lemon to be sliced
+
+        bind cup: item where:
+            is_cup(cup) and id[cup] == 2063
+        # Select the cup_2063 that has sugar 
+
+        bind cutting_board: item where:
+            is_cutting_board(cutting_board) and id[cutting_board] == 2051
+        # Select the cutting board
+
+        bind knife: item where:
+            is_knife(knife) and id[knife] == 2050
+        # Select the knife for slicing lemon
+
+        bind faucet: item where:
+            is_faucet(faucet) and id[faucet] == 232
+        # Select the faucet
+
+        slice_lemon_and_dissolve_sugar(lemon, cup, cutting_board, knife, faucet)
+
+#goal_representation_end
+
+##############################
+VH_pipeline: Fail to generate a valid plan
+##############################
+Task Summary:
+Task Goal:
+Make a cup of lemon water with additional sugar.
+Action History:
+['walk_executor(kitchen_counter_230)', 'walk_executor(cupboard_229)', 'open_executor(cupboard_229)', 'walk_executor(fridge_289)', 'switchoff_executor(fridge_289)', 'open_executor(fridge_289)', 'grab_executor(food_lemon_2028)', 'walk_executor(cutting_board_2051)', 'put_executor(food_lemon_2028, cutting_board_2051)', 'walk_executor(knife_2050)', 'grab_executor(knife_2050)', 'walk_executor(food_lemon_2028)', 'cut_executor(food_lemon_2028)', 'walk_executor(food_sugar_2039)', 'grab_executor(food_sugar_2039)', 'walk_executor(cup_2063)', 'putin_executor(food_sugar_2039, cup_2063)', 'grab_executor(cup_2063)', 'walk_executor(faucet_232)', 'walk_executor(kitchen_counter_230)', 'put_executor(knife_2050, kitchen_counter_230)', 'switchon_executor(faucet_232)', 'switchoff_executor(faucet_232)']
+Time info:
+Time consume: 371 seconds
+Exp_helper query times: 0
+Guidance query times: 0
+library scale: 72
+goal generate times: 9
+goal correct times: 2
+action_num: 23
+
+Task complete rate:
+Keystate: k1 - Requires: 4 steps
+Action Completion Rate: No actions required
+Scene_id: 0
+##############################

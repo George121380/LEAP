@@ -1,0 +1,796 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Find the pizza and hamburger and put them on a plate.', '2. Heat the pizza and hamburger in the microwave.', '3. Put the plate with the pizza and hamburger on a table in the dining room.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_hamburger_2057_around_kitchen_counter_129(food_hamburger:item):
+    goal: not unknown(food_hamburger)
+    body:
+        assert is_food_hamburger(food_hamburger)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==129
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_hamburger,kitchen_counter_instance)
+        else:
+            exp(food_hamburger,kitchen_counter_instance)
+    eff:
+        unknown[food_hamburger]=False
+        close[food_hamburger,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_hamburger]=True
+    
+
+behavior find_plate_2105_around_table_193(plate:item):
+    goal: not unknown(plate)
+    body:
+        assert is_plate(plate)
+        bind table_instance:item where:
+            is_table(table_instance) and id[table_instance]==193
+        achieve close_char(char,table_instance)
+        if can_open(table_instance):
+            achieve_once open(table_instance)
+            exp(plate,table_instance)
+        else:
+            exp(plate,table_instance)
+    eff:
+        unknown[plate]=False
+        close[plate,table_instance]=True
+        close[table_instance,plate]=True
+    
+
+behavior find_food_pizza_2065_around_kitchen_counter_129(food_pizza:item):
+    goal: not unknown(food_pizza)
+    body:
+        assert is_food_pizza(food_pizza)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==129
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_pizza,kitchen_counter_instance)
+        else:
+            exp(food_pizza,kitchen_counter_instance)
+    eff:
+        unknown[food_pizza]=False
+        close[food_pizza,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_pizza]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+
+behavior grab_food(food:item, char:character):
+    body:
+        if not inhand(food):
+            grab(food)
+
+behavior put_on_plate(food:item, plate:item):
+    body:
+        if not on(food, plate):
+            put_on(food, plate)
+
+behavior find_and_place_food_on_plate(food_type: function, char: character, plate: item):
+    body:
+        bind food: item where:
+            food_type(food) and grabbable(food)
+        # Grab the food item
+        grab_food(food, char)
+        # Place the food on the plate
+        put_on_plate(food, plate)
+
+behavior __goal__():
+    body:
+        bind plate: item where:
+            is_plate(plate)
+        # Find pizza and put it on the plate
+        find_and_place_food_on_plate(is_food_pizza, char, plate)
+        # Find hamburger and put it on the plate
+        find_and_place_food_on_plate(is_food_hamburger, char, plate)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_hamburger_2057_around_kitchen_counter_132(food_hamburger:item):
+    goal: not unknown(food_hamburger)
+    body:
+        assert is_food_hamburger(food_hamburger)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==132
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_hamburger,kitchen_counter_instance)
+        else:
+            exp(food_hamburger,kitchen_counter_instance)
+    eff:
+        unknown[food_hamburger]=False
+        close[food_hamburger,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_hamburger]=True
+    
+
+behavior find_plate_2105_around_table_193(plate:item):
+    goal: not unknown(plate)
+    body:
+        assert is_plate(plate)
+        bind table_instance:item where:
+            is_table(table_instance) and id[table_instance]==193
+        achieve close_char(char,table_instance)
+        if can_open(table_instance):
+            achieve_once open(table_instance)
+            exp(plate,table_instance)
+        else:
+            exp(plate,table_instance)
+    eff:
+        unknown[plate]=False
+        close[plate,table_instance]=True
+        close[table_instance,plate]=True
+    
+
+behavior find_food_pizza_2065_around_oven_141(food_pizza:item):
+    goal: not unknown(food_pizza)
+    body:
+        assert is_food_pizza(food_pizza)
+        bind oven_instance:item where:
+            is_oven(oven_instance) and id[oven_instance]==141
+        achieve close_char(char,oven_instance)
+        if can_open(oven_instance):
+            achieve_once open(oven_instance)
+            exp(food_pizza,oven_instance)
+        else:
+            exp(food_pizza,oven_instance)
+    eff:
+        unknown[food_pizza]=False
+        close[food_pizza,oven_instance]=True
+        close[oven_instance,food_pizza]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def has_food_on_plate(plate:item):
+    # Function to check if there is food on a specified plate
+    symbol has_food=exists o: item : (is_food(o) and on(o, plate))
+    return has_food
+
+behavior grab_item(o:item):
+    body:
+        if not inhand(o):
+            grab(o) # Grab the item
+
+behavior put_food_on_plate(food:item, plate:item):
+    body:
+        if not on(food, plate):
+            put_on(food, plate) # Place the food on the plate
+
+behavior __goal__():
+    body:
+        # Find pizza
+        bind pizza: item where:
+            is_food_pizza(pizza) and not visited(pizza)
+        # Check if theres a pizza and grab it
+        observe(pizza, "Check the state of the pizza")
+        if has_a_free_hand(char):
+            grab_item(pizza)
+
+        # Find hamburger
+        bind hamburger: item where:
+            is_food_hamburger(hamburger) and not visited(hamburger)
+        # Check if theres a hamburger and grab it
+        observe(hamburger, "Check the state of the hamburger")
+        if has_a_free_hand(char):
+            grab_item(hamburger)
+
+        # Find a plate
+        bind plate: item where:
+            is_plate(plate) and not visited(plate)
+        observe(plate, "Check the state of the plate")
+        
+        if has_food_on_plate(plate):
+            observe(plate, "Add more food to the existing plate")
+
+        put_food_on_plate(pizza, plate)
+        put_food_on_plate(hamburger, plate)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+ 
+def has_food_on_plate(plate:item):
+    # Function to check if there is food on a specified plate
+    symbol has_food=exists o: item : (is_food(o) and on(o, plate))
+    return has_food
+
+behavior grab_item(o:item):
+    body:
+        if not inhand(o):
+            grab(o) # Grab the item
+
+behavior put_food_on_plate(food:item, plate:item):
+    body:
+        if not on(food, plate):
+            put_on(food, plate) # Place the food on the plate
+
+behavior __goal__():
+    body:
+        # Find pizza
+        bind pizza: item where:
+            is_food_pizza(pizza) and not visited(pizza)
+        # Check if theres a pizza and grab it
+        observe(pizza, "Check the state of the pizza")
+        if has_a_free_hand(char):
+            grab_item(pizza)
+
+        # Find hamburger
+        bind hamburger: item where:
+            is_food_hamburger(hamburger) and not visited(hamburger)
+        # Check if theres a hamburger and grab it
+        observe(hamburger, "Check the state of the hamburger")
+        if has_a_free_hand(char):
+            grab_item(hamburger)
+
+        # Find a plate
+        bind plate: item where:
+            is_plate(plate) and not visited(plate)
+        observe(plate, "Check the state of the plate")
+        
+        if has_food_on_plate(plate):
+            observe(plate, "Add more food to the existing plate")
+
+        put_food_on_plate(pizza, plate)
+        put_food_on_plate(hamburger, plate)
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(oven_141)open_executor(oven_141)exp(food_pizza_2065, oven_141)walk_executor(food_pizza_2065)obs(food_pizza_2065, Check the state of the pizza)grab_executor(food_pizza_2065)walk_executor(kitchen_counter_132)exp(food_hamburger_2057, kitchen_counter_132)walk_executor(food_hamburger_2057)obs(food_hamburger_2057, Check the state of the hamburger)grab_executor(food_hamburger_2057)walk_executor(table_193)exp(plate_2105, table_193)walk_executor(plate_2105)obs(plate_2105, Check the state of the plate)put_executor(food_pizza_2065, plate_2105)put_executor(food_hamburger_2057, plate_2105)
+##############################
+From agent.py
+walk_executor(oven_141)
+Robot find: pot_54, Robot is close to the oven_141. 
+##############################
+From agent.py
+open_executor(oven_141)
+Robot find: food_butter_2018, dough_2021, food_onion_2026, tray_142, Robot is close to the food_butter_2018. Robot is close to the dough_2021. Robot is close to the food_onion_2026. Robot is close to the oven_141. Robot is close to the tray_142. oven_141 is opened. 
+##############################
+From agent.py
+exp(food_pizza_2065, oven_141)
+Fail to find food_pizza_2065 around oven_141. 
+##############################
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Find pizza and hamburger.', '2. Put the pizza and hamburger on a plate.', '3. Heat the plate with pizza and hamburger in the microwave.', '4. Put the plate on a table in the dining room.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_hamburger_2057_around_fridge_140(food_hamburger:item):
+    goal: not unknown(food_hamburger)
+    body:
+        assert is_food_hamburger(food_hamburger)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==140
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_hamburger,fridge_instance)
+        else:
+            exp(food_hamburger,fridge_instance)
+    eff:
+        unknown[food_hamburger]=False
+        close[food_hamburger,fridge_instance]=True
+        close[fridge_instance,food_hamburger]=True
+    
+
+behavior find_food_pizza_2065_around_kitchen_counter_129(food_pizza:item):
+    goal: not unknown(food_pizza)
+    body:
+        assert is_food_pizza(food_pizza)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==129
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_pizza,kitchen_counter_instance)
+        else:
+            exp(food_pizza,kitchen_counter_instance)
+    eff:
+        unknown[food_pizza]=False
+        close[food_pizza,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_pizza]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_oven_open(oven:item):
+    # Function to check if the oven is open
+    return open(oven)
+
+def has_pizza_or_hamburger_near(oven:item):
+    # Function to check if there is pizza or hamburger near the oven
+    symbol nearby_pizza_or_hamburger=exists food: item : (is_food_pizza(food) or is_food_hamburger(food)) and close(food, oven)
+    return nearby_pizza_or_hamburger
+
+behavior find_food_near_oven(oven:item):
+    body:
+        # If the oven is open and there is no pizza or hamburger near it, observe for items
+        if is_oven_open(oven) and not has_pizza_or_hamburger_near(oven):
+            observe(oven, "Look for any food near the oven")
+            
+behavior __goal__():
+    body:
+        bind oven: item where:
+            is_oven(oven) and id[oven]==141
+        # Assume we want to find food near oven_141
+        find_food_near_oven(oven)
+
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+ 
+def is_oven_open(oven:item):
+    # Function to check if the oven is open
+    return open(oven)
+
+def has_pizza_or_hamburger_near(oven:item):
+    # Function to check if there is pizza or hamburger near the oven
+    symbol nearby_pizza_or_hamburger=exists food: item : (is_food_pizza(food) or is_food_hamburger(food)) and close(food, oven)
+    return nearby_pizza_or_hamburger
+
+behavior find_food_near_oven(oven:item):
+    body:
+        # If the oven is open and there is no pizza or hamburger near it, observe for items
+        if is_oven_open(oven) and not has_pizza_or_hamburger_near(oven):
+            observe(oven, "Look for any food near the oven")
+            
+behavior __goal__():
+    body:
+        bind oven: item where:
+            is_oven(oven) and id[oven]==141
+        # Assume we want to find food near oven_141
+        find_food_near_oven(oven)
+
+
+##############################
+From agent.py-> find a plan in act()
+obs(oven_141, Look for any food near the oven)
+##############################
+From agent.py
+obs(oven_141, Look for any food near the oven)
+Get this information:  dough_2021 is inside oven_141. oven_141 is close to kitchen_counter_129. oven_141 is close to wall_2. oven_141 is close to cupboard_131. oven_141 is close to kitchen_counter_132. oven_141 is close to cupboard_130. oven_141 is close to faucet_134. oven_141 is close to food_butter_2018. oven_141 is close to wall_8. oven_141 is close to dough_2021. oven_141 is close to food_onion_2026. oven_141 is close to stovefan_139. oven_141 is close to walllamp_46. oven_141 is close to tray_142. oven_141 is close to floor_16. oven_141 is close to knifeblock_52. oven_141 is close to floor_21. oven_141 is close to pot_54. oven_141 is close to character_219. pot_54 is on oven_141. tray_142 is inside oven_141. oven_141 is inside dining_room_1. food_butter_2018 is inside oven_141. food_onion_2026 is inside oven_141. oven_141 is OPEN. oven_141 is PLUGGED_IN. oven_141 is OFF. oven_141 is CLEAN.
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: No
+The feedback instruction: You need to find a pizza and hamburger. Neither the pizza nor the hamburger was found near oven_141, as they have not been detected in the area observed. Continue searching for these food items in other locations.
+##############################
+From agent.py
+Human Instruction: You need to find a pizza and hamburger. Neither the pizza nor the hamburger was found near oven_141, as they have not been detected in the area observed. Continue searching for these food items in other locations.
+
+The actions you have taken:
+Action 1: Walk to oven_141.
+Action 2: Open oven_141.
+Action 3: look for food_pizza_2065 around oven_141.
+Action 4: Observe around oven_141 with the question of Look for any food near the oven.
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_hamburger_2057_around_kitchen_counter_132(food_hamburger:item):
+    goal: not unknown(food_hamburger)
+    body:
+        assert is_food_hamburger(food_hamburger)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==132
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_hamburger,kitchen_counter_instance)
+        else:
+            exp(food_hamburger,kitchen_counter_instance)
+    eff:
+        unknown[food_hamburger]=False
+        close[food_hamburger,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_hamburger]=True
+    
+
+behavior find_food_pizza_2065_around_kitchen_counter_129(food_pizza:item):
+    goal: not unknown(food_pizza)
+    body:
+        assert is_food_pizza(food_pizza)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==129
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_pizza,kitchen_counter_instance)
+        else:
+            exp(food_pizza,kitchen_counter_instance)
+    eff:
+        unknown[food_pizza]=False
+        close[food_pizza,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_pizza]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior find_item(food_type:item, question:string):
+    body:
+        foreach location: item:
+            if is_food(food_type) and not visited(location):
+                observe(location, "question")
+
+behavior __goal__():
+    body:
+        bind pizza: item where:
+            is_food_pizza(pizza)
+        find_item(pizza, Look for food_pizza in various locations)
+
+        bind hamburger: item where:
+            is_food_hamburger(hamburger)
+        find_item(hamburger, Look for food_hamburger in various locations)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_hamburger_2057_around_kitchen_counter_129(food_hamburger:item):
+    goal: not unknown(food_hamburger)
+    body:
+        assert is_food_hamburger(food_hamburger)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==129
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_hamburger,kitchen_counter_instance)
+        else:
+            exp(food_hamburger,kitchen_counter_instance)
+    eff:
+        unknown[food_hamburger]=False
+        close[food_hamburger,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_hamburger]=True
+    
+
+behavior find_food_pizza_2065_around_fridge_140(food_pizza:item):
+    goal: not unknown(food_pizza)
+    body:
+        assert is_food_pizza(food_pizza)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==140
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_pizza,fridge_instance)
+        else:
+            exp(food_pizza,fridge_instance)
+    eff:
+        unknown[food_pizza]=False
+        close[food_pizza,fridge_instance]=True
+        close[fridge_instance,food_pizza]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior find_food_item(item_type: str):
+    body:
+        foreach item: item:
+            if (item_type == pizza and is_food_pizza(item)) or (item_type == hamburger and is_food_hamburger(item)):
+                if not visited(item):
+                    observe(item, "Check if it is the correct food item")
+
+behavior __goal__():
+    body:
+        find_food_item(pizza)
+        find_food_item(hamburger)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_hamburger_2057_around_kitchen_counter_132(food_hamburger:item):
+    goal: not unknown(food_hamburger)
+    body:
+        assert is_food_hamburger(food_hamburger)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==132
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_hamburger,kitchen_counter_instance)
+        else:
+            exp(food_hamburger,kitchen_counter_instance)
+    eff:
+        unknown[food_hamburger]=False
+        close[food_hamburger,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_hamburger]=True
+    
+
+behavior find_food_pizza_2065_around_kitchen_counter_129(food_pizza:item):
+    goal: not unknown(food_pizza)
+    body:
+        assert is_food_pizza(food_pizza)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==129
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_pizza,kitchen_counter_instance)
+        else:
+            exp(food_pizza,kitchen_counter_instance)
+    eff:
+        unknown[food_pizza]=False
+        close[food_pizza,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_pizza]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def locate_food(food_type: str):
+    # Function to check if a specific food item can be located
+    symbol food_found=exists o: item : ((is_food_0format(food_type))(o) and not visited(o))
+    return food_found
+
+behavior __goal__():
+    body:
+        if exists food_pizza: item : is_food_pizza(food_pizza) and locate_food(pizza):
+            # If the pizza was found based on known information, move to it
+            bind food_pizza: item where:
+                is_food_pizza(food_pizza) and not visited(food_pizza)
+            walk_to(food_pizza)
+
+        if exists food_hamburger: item : is_food_hamburger(food_hamburger) and locate_food(hamburger):
+            # If the hamburger was found based on known information, move to it
+            bind food_hamburger: item where:
+                is_food_hamburger(food_hamburger) and not visited(food_hamburger)
+            walk_to(food_hamburger)
+
+        else:
+            # If not found, observe the area for both pizza and hamburger
+            foreach location: item:
+                if not visited(location):
+                    observe(location, "Check for pizza or hamburger")
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_hamburger_2057_around_kitchen_counter_129(food_hamburger:item):
+    goal: not unknown(food_hamburger)
+    body:
+        assert is_food_hamburger(food_hamburger)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==129
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_hamburger,kitchen_counter_instance)
+        else:
+            exp(food_hamburger,kitchen_counter_instance)
+    eff:
+        unknown[food_hamburger]=False
+        close[food_hamburger,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_hamburger]=True
+    
+
+behavior find_food_pizza_2065_around_kitchen_counter_129(food_pizza:item):
+    goal: not unknown(food_pizza)
+    body:
+        assert is_food_pizza(food_pizza)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==129
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_pizza,kitchen_counter_instance)
+        else:
+            exp(food_pizza,kitchen_counter_instance)
+    eff:
+        unknown[food_pizza]=False
+        close[food_pizza,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_pizza]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior observe_and_find_food():
+    body:
+        foreach location: item:
+            if not visited(location):
+                observe(location, "Look for food_pizza_2065 and food_hamburger")
+
+behavior __goal__():
+    body:
+        observe_and_find_food()
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_hamburger_2057_around_kitchen_counter_129(food_hamburger:item):
+    goal: not unknown(food_hamburger)
+    body:
+        assert is_food_hamburger(food_hamburger)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==129
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_hamburger,kitchen_counter_instance)
+        else:
+            exp(food_hamburger,kitchen_counter_instance)
+    eff:
+        unknown[food_hamburger]=False
+        close[food_hamburger,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_hamburger]=True
+    
+
+behavior find_food_pizza_2065_around_kitchen_counter_129(food_pizza:item):
+    goal: not unknown(food_pizza)
+    body:
+        assert is_food_pizza(food_pizza)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==129
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_pizza,kitchen_counter_instance)
+        else:
+            exp(food_pizza,kitchen_counter_instance)
+    eff:
+        unknown[food_pizza]=False
+        close[food_pizza,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_pizza]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior find_food(food:item):
+    body:
+        if not exists f: item : (is_food(f) and close_char(char, f)):
+            observe(food, "Look for any food in the vicinity")
+        
+behavior __goal__():
+    body:
+        bind pizza: item where:
+            is_food_pizza(pizza)
+        bind hamburger: item where:
+            is_food_hamburger(hamburger)
+            
+        if not exists f: item : ((is_food_pizza(f) or is_food_hamburger(f)) and visited(f)):
+            find_food(pizza)
+            find_food(hamburger)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_hamburger_2057_around_kitchen_counter_129(food_hamburger:item):
+    goal: not unknown(food_hamburger)
+    body:
+        assert is_food_hamburger(food_hamburger)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==129
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_hamburger,kitchen_counter_instance)
+        else:
+            exp(food_hamburger,kitchen_counter_instance)
+    eff:
+        unknown[food_hamburger]=False
+        close[food_hamburger,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_hamburger]=True
+    
+
+behavior find_food_pizza_2065_around_kitchen_counter_129(food_pizza:item):
+    goal: not unknown(food_pizza)
+    body:
+        assert is_food_pizza(food_pizza)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==129
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_pizza,kitchen_counter_instance)
+        else:
+            exp(food_pizza,kitchen_counter_instance)
+    eff:
+        unknown[food_pizza]=False
+        close[food_pizza,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_pizza]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def has_pizza_or_hamburger_nearby():
+    # Function to check if pizza or hamburger has already been found elsewhere
+    symbol has_food=exists f: item : ((is_food_pizza(f) or is_food_hamburger(f)) and not close_char(char, oven_141))
+    return has_food
+
+behavior walk_and_check_pizza(burger:item):
+    body:
+        if not visited(burger):
+            observe(burger, "Look for pizza or hamburger")
+            # Observe to check for presence of pizza or hamburger in the location being visited
+
+behavior __goal__():
+    body:
+        if not has_pizza_or_hamburger_nearby():
+            # If pizza or hamburger was not found elsewhere, continue searching
+            foreach loc: item:
+                if is_kitchen_counter(loc) and not visited(loc):
+                    walk_to(loc)
+                    walk_and_check_pizza(loc)
+
+        # No need to else, the goal is to keep searching the kitchen counter locations until the food is found
+
+#goal_representation_end
+
+##############################
+VH_pipeline: Fail to generate a valid plan
+##############################
+Error record: Error during problem transformation
+##############################
+Task Summary:
+Task Goal:
+Syntax Error
+Action History:
+['walk_executor(oven_141)', 'open_executor(oven_141)']
+Time info:
+Time consume: 95 seconds
+Exp_helper query times: 0
+Guidance query times: 0
+library scale: 0
+goal generate times: 9
+goal correct times: 0
+action_num: 2
+
+Task complete rate:
+Keystate: k1 - Requires: 19 steps
+Keystate: k2 - Requires: 0 steps
+Action Completion Rate: No actions required
+Scene_id: 2
+##############################

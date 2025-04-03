@@ -1,0 +1,233 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Find the book and put it on the table in the home office.', '2. Turn on the light in the home office.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_book_2137_around_bookshelf_124(book:item):
+    goal: not unknown(book)
+    body:
+        assert is_book(book)
+        bind bookshelf_instance:item where:
+            is_bookshelf(bookshelf_instance) and id[bookshelf_instance]==124
+        achieve close_char(char,bookshelf_instance)
+        if can_open(bookshelf_instance):
+            achieve_once open(bookshelf_instance)
+            exp(book,bookshelf_instance)
+        else:
+            exp(book,bookshelf_instance)
+    eff:
+        unknown[book]=False
+        close[book,bookshelf_instance]=True
+        close[bookshelf_instance,book]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior locate_book_and_place_on_table(book: item, table: item):
+    body:
+        if not inhand(book):
+            grab(book)
+        if not on(book, table):
+            put_on(book, table)
+
+behavior __goal__():
+    body:
+        bind home_office: item where:
+            is_home_office(home_office)
+        # Select the home office
+
+        bind table: item where:
+            is_table(table) and inside(table, home_office)
+        # Select a table inside the home office
+
+        bind book: item where:
+            is_book(book)
+        # Select the book from items
+
+        walk_to(book)
+        # Approach the book
+        
+        locate_book_and_place_on_table(book, table)
+        # Locate the book and put it on the table inside the home office
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+ 
+behavior locate_book_and_place_on_table(book: item, table: item):
+    body:
+        if not inhand(book):
+            grab(book)
+        if not on(book, table):
+            put_on(book, table)
+
+behavior __goal__():
+    body:
+        bind home_office: item where:
+            is_home_office(home_office)
+        # Select the home office
+
+        bind table: item where:
+            is_table(table) and inside(table, home_office)
+        # Select a table inside the home office
+
+        bind book: item where:
+            is_book(book)
+        # Select the book from items
+
+        walk_to(book)
+        # Approach the book
+        
+        locate_book_and_place_on_table(book, table)
+        # Locate the book and put it on the table inside the home office
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(bookshelf_124)open_executor(bookshelf_124)exp(book_2136, bookshelf_124)walk_executor(book_2136)grab_executor(book_2136)walk_executor(table_270)put_executor(book_2136, table_270)
+##############################
+From agent.py
+walk_executor(bookshelf_124)
+Robot find: book_2136, envelope_2055, book_2137, drawing_110, drawing_111, Robot is close to the bookshelf_124. 
+##############################
+From agent.py
+open_executor(bookshelf_124)
+Robot find: Robot is close to the bookshelf_124. bookshelf_124 is opened. 
+##############################
+From agent.py
+exp(book_2136, bookshelf_124)
+Find book_2136. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(book_2136)grab_executor(book_2136)walk_executor(table_270)put_executor(book_2136, table_270)
+##############################
+From agent.py
+walk_executor(book_2136)
+Robot find: Robot is close to the bookshelf_124. Robot is close to the book_2136. 
+##############################
+From agent.py
+grab_executor(book_2136)
+Robot find: Robot is close to the bookshelf_124. Robot is close to the book_2136. Grabbing book_2136 by right hand. 
+##############################
+From agent.py
+walk_executor(table_270)
+Robot find: shoes_2033, shampoo_2019, pillow_286, pencil_2014, phone_2017, pillow_287, drawing_288, brush_2002, Robot is close to the book_2136. Robot is close to the couch_269. Robot is close to the table_270. 
+##############################
+From agent.py
+put_executor(book_2136, table_270)
+Robot find: Robot is close to the book_2136. Robot is close to the couch_269. Robot is close to the table_270. book_2136 is on table_270. table_270 is close book_2136. book_2136 is close table_270. book_2136 released by right hand. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: Yes
+The feedback instruction: None
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_remote_control_2124_around_home_office_241(remote_control:item):
+    goal: not unknown(remote_control)
+    body:
+        assert is_remote_control(remote_control)
+        bind home_office_instance:item where:
+            is_home_office(home_office_instance) and id[home_office_instance]==241
+        achieve close_char(char,home_office_instance)
+        if can_open(home_office_instance):
+            achieve_once open(home_office_instance)
+            exp(remote_control,home_office_instance)
+        else:
+            exp(remote_control,home_office_instance)
+    eff:
+        unknown[remote_control]=False
+        close[remote_control,home_office_instance]=True
+        close[home_office_instance,remote_control]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_in_home_office(obj:item):
+    # Function to check if an item is in the home office
+    symbol in_home_office=exists home_office: item : (is_home_office(home_office) and inside(obj, home_office))
+    return in_home_office
+
+behavior ensure_light_is_on(light:item):
+    body:
+        if not is_on(light):
+            if is_off(light) and has_switch(light):
+                switch_on(light) # Turn on the light if its off and has a switch
+
+behavior __goal__():
+    body:
+        bind light: item where:
+            is_light(light) and is_in_home_office(light)
+        # Select the home office light
+
+        ensure_light_is_on(light)
+        # Ensure the light in the home office is on
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+def is_in_home_office(obj:item):
+    # Function to check if an item is in the home office
+    symbol in_home_office=exists home_office: item : (is_home_office(home_office) and inside(obj, home_office))
+    return in_home_office
+
+behavior ensure_light_is_on(light:item):
+    body:
+        if not is_on(light):
+            if is_off(light) and has_switch(light):
+                switch_on(light) # Turn on the light if its off and has a switch
+
+behavior __goal__():
+    body:
+        bind light: item where:
+            is_light(light) and is_in_home_office(light)
+        # Select the home office light
+
+        ensure_light_is_on(light)
+        # Ensure the light in the home office is on
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(light_283)switchon_executor(light_283)
+##############################
+From agent.py
+walk_executor(light_283)
+Robot find: mat_284, Robot is close to the light_283. 
+##############################
+From agent.py
+switchon_executor(light_283)
+Robot find: Robot is close to the light_283. light_283 is turned on. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: Yes
+The feedback instruction: None
+##############################
+Task Summary:
+Task Goal:
+Find the book and put it on the table in home office. Then turn on the light in the home office.
+Action History:
+['walk_executor(bookshelf_124)', 'open_executor(bookshelf_124)', 'walk_executor(book_2136)', 'grab_executor(book_2136)', 'walk_executor(table_270)', 'put_executor(book_2136, table_270)', 'walk_executor(light_283)', 'switchon_executor(light_283)']
+Time info:
+Time consume: 57 seconds
+Exp_helper query times: 0
+Guidance query times: 0
+library scale: 5
+goal generate times: 2
+goal correct times: 0
+action_num: 8
+
+Task complete rate:
+1
+Scene_id: 1
+##############################

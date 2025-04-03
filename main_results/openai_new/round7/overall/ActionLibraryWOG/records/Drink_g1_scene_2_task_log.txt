@@ -1,0 +1,704 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['Get a cup of water.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_sugar_2070_around_cupboard_131(food_sugar:item):
+    goal: not unknown(food_sugar)
+    body:
+        assert is_food_sugar(food_sugar)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==131
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(food_sugar,cupboard_instance)
+        else:
+            exp(food_sugar,cupboard_instance)
+    eff:
+        unknown[food_sugar]=False
+        close[food_sugar,cupboard_instance]=True
+        close[cupboard_instance,food_sugar]=True
+    
+
+behavior find_cup_2089_around_sink_133(cup:item):
+    goal: not unknown(cup)
+    body:
+        assert is_cup(cup)
+        bind sink_instance:item where:
+            is_sink(sink_instance) and id[sink_instance]==133
+        achieve close_char(char,sink_instance)
+        if can_open(sink_instance):
+            achieve_once open(sink_instance)
+            exp(cup,sink_instance)
+        else:
+            exp(cup,sink_instance)
+    eff:
+        unknown[cup]=False
+        close[cup,sink_instance]=True
+        close[sink_instance,cup]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def has_water_left(item:item):
+    # Function to check if there is water left in the item
+    symbol has_water=exists cap: item : (has_water(cap) and close_char(cap, char))
+    return has_water
+
+behavior __goal__():
+    body:
+        bind cup: item where:
+            is_cup(cup)
+        # Select a cup
+        
+        if not has_water_left(cup):
+            # If theres no water in the cup, approach the faucet to fill it with water
+            bind faucet: item where:
+                is_faucet(faucet)
+                
+            achieve_once close_char(char, faucet)
+            # Approach the faucet to fill the cup with water
+            
+            achieve has_water(cup)
+            # Ensure the cup is filled with water
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "function_definition":
+
+Error during applying close_char[observation, state](x: character, y: item).
+  Arguments: V::cap, O::char
+Argument #0 type does not match: expect character, got item.
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_food_sugar_2070_around_cupboard_131(food_sugar:item):
+    goal: not unknown(food_sugar)
+    body:
+        assert is_food_sugar(food_sugar)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==131
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(food_sugar,cupboard_instance)
+        else:
+            exp(food_sugar,cupboard_instance)
+    eff:
+        unknown[food_sugar]=False
+        close[food_sugar,cupboard_instance]=True
+        close[cupboard_instance,food_sugar]=True
+    
+
+behavior find_cup_2088_around_sink_133(cup:item):
+    goal: not unknown(cup)
+    body:
+        assert is_cup(cup)
+        bind sink_instance:item where:
+            is_sink(sink_instance) and id[sink_instance]==133
+        achieve close_char(char,sink_instance)
+        if can_open(sink_instance):
+            achieve_once open(sink_instance)
+            exp(cup,sink_instance)
+        else:
+            exp(cup,sink_instance)
+    eff:
+        unknown[cup]=False
+        close[cup,sink_instance]=True
+        close[sink_instance,cup]=True
+    
+
+#goal_representation
+ 
+def has_water_left(item:item):
+    # Function to check if there is water left in the item
+    symbol has_water=exists cap: item : (has_water(cap) and close(cap, item))
+    return has_water
+
+behavior __goal__():
+    body:
+        bind cup: item where:
+            is_cup(cup)
+        # Select a cup
+        
+        if not has_water_left(cup):
+            # If theres no water in the cup, approach the faucet to fill it with water
+            bind faucet: item where:
+                is_faucet(faucet)
+                
+            achieve_once close_char(char, faucet)
+            # Approach the faucet to fill the cup with water
+            
+            achieve has_water(cup)
+            # Ensure the cup is filled with water
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+ 
+def has_water_left(item:item):
+    # Function to check if there is water left in the item
+    symbol has_water=exists cap: item : (has_water(cap) and close(cap, item))
+    return has_water
+
+behavior __goal__():
+    body:
+        bind cup: item where:
+            is_cup(cup)
+        # Select a cup
+        
+        if not has_water_left(cup):
+            # If theres no water in the cup, approach the faucet to fill it with water
+            bind faucet: item where:
+                is_faucet(faucet)
+                
+            achieve_once close_char(char, faucet)
+            # Approach the faucet to fill the cup with water
+            
+            achieve has_water(cup)
+            # Ensure the cup is filled with water
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(faucet_134)walk_executor(sink_133)exp(cup_2087, sink_133)walk_executor(cup_2087)grab_executor(cup_2087)walk_executor(faucet_134)switchoff_executor(faucet_134)
+##############################
+From agent.py
+walk_executor(faucet_134)
+Robot find: pot_54, Robot is close to the kitchen_counter_132. Robot is close to the faucet_134. 
+##############################
+From agent.py
+walk_executor(sink_133)
+Robot find: after_shave_2029, cleaning_solution_2098, juice_2034, Robot is close to the kitchen_counter_132. Robot is close to the sink_133. 
+##############################
+From agent.py
+exp(cup_2087, sink_133)
+Fail to find cup_2087 around sink_133. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(faucet_134)walk_executor(cupboard_131)open_executor(cupboard_131)exp(cup_2087, cupboard_131)walk_executor(cup_2087)grab_executor(cup_2087)walk_executor(faucet_134)switchoff_executor(faucet_134)
+##############################
+From agent.py
+walk_executor(faucet_134)
+Robot find: Robot is close to the kitchen_counter_132. Robot is close to the faucet_134. 
+##############################
+From agent.py
+walk_executor(cupboard_131)
+Robot find: Robot is close to the cupboard_131. 
+##############################
+From agent.py
+open_executor(cupboard_131)
+Robot find: Robot is close to the cupboard_131. cupboard_131 is opened. 
+##############################
+From agent.py
+exp(cup_2087, cupboard_131)
+Fail to find cup_2087 around cupboard_131. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(faucet_134)walk_executor(cupboard_130)exp(cup_2087, cupboard_130)walk_executor(cup_2087)grab_executor(cup_2087)walk_executor(faucet_134)switchoff_executor(faucet_134)
+##############################
+From agent.py
+walk_executor(faucet_134)
+Robot find: Robot is close to the kitchen_counter_132. Robot is close to the faucet_134. 
+##############################
+From agent.py
+walk_executor(cupboard_130)
+Robot find: blender_2032, tea_bag_2017, Robot is close to the blender_2032. Robot is close to the tea_bag_2017. Robot is close to the cupboard_130. 
+##############################
+From agent.py
+exp(cup_2087, cupboard_130)
+Fail to find cup_2087 around cupboard_130. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(faucet_134)walk_executor(kitchen_counter_129)exp(cup_2087, kitchen_counter_129)walk_executor(cup_2087)grab_executor(cup_2087)walk_executor(faucet_134)switchoff_executor(faucet_134)
+##############################
+From agent.py
+walk_executor(faucet_134)
+Robot find: Robot is close to the kitchen_counter_132. Robot is close to the faucet_134. 
+##############################
+From agent.py
+walk_executor(kitchen_counter_129)
+Robot find: fryingpan_2107, oil_2102, pot_2093, Robot is close to the kitchen_counter_129. 
+##############################
+From agent.py
+exp(cup_2087, kitchen_counter_129)
+Fail to find cup_2087 around kitchen_counter_129. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(faucet_134)walk_executor(dishwasher_143)open_executor(dishwasher_143)exp(cup_2087, dishwasher_143)walk_executor(cup_2087)grab_executor(cup_2087)walk_executor(faucet_134)switchoff_executor(faucet_134)
+##############################
+From agent.py
+walk_executor(faucet_134)
+Robot find: Robot is close to the kitchen_counter_132. Robot is close to the faucet_134. 
+##############################
+From agent.py
+walk_executor(dishwasher_143)
+Robot find: Robot is close to the dishwasher_143. 
+##############################
+From agent.py
+open_executor(dishwasher_143)
+Robot find: knife_2036, Robot is close to the knife_2036. Robot is close to the dishwasher_143. dishwasher_143 is opened. 
+##############################
+From agent.py
+exp(cup_2087, dishwasher_143)
+Fail to find cup_2087 around dishwasher_143. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(faucet_134)walk_executor(fridge_140)switchoff_executor(fridge_140)open_executor(fridge_140)exp(cup_2087, fridge_140)walk_executor(cup_2087)grab_executor(cup_2087)walk_executor(faucet_134)switchoff_executor(faucet_134)
+##############################
+From agent.py
+walk_executor(faucet_134)
+Robot find: Robot is close to the kitchen_counter_132. Robot is close to the faucet_134. 
+##############################
+From agent.py
+walk_executor(fridge_140)
+Robot find: chair_138, milk_2074, dry_pasta_2073, Robot is close to the fridge_140. 
+##############################
+From agent.py
+switchoff_executor(fridge_140)
+Robot find: Robot is close to the fridge_140. fridge_140 is turned off. 
+##############################
+From agent.py
+open_executor(fridge_140)
+Robot find: food_cereal_2048, food_cheese_2049, food_chicken_2050, food_dessert_2051, food_donut_2052, food_egg_2053, food_fish_2054, food_food_2055, food_fruit_2056, food_hamburger_2057, food_ice_cream_2058, food_jam_2059, food_kiwi_2060, food_lemon_2061, food_noodles_2062, food_oatmeal_2063, food_peanut_butter_2064, food_pizza_2065, food_potato_2066, food_rice_2067, food_salt_2068, food_snack_2069, food_sugar_2070, food_turkey_2071, food_vegetable_2072, sauce_2101, food_steak_2042, food_apple_2043, food_bacon_2044, food_banana_2045, food_cake_2046, food_carrot_2047, Robot is close to the food_cereal_2048. Robot is close to the food_cheese_2049. Robot is close to the food_chicken_2050. Robot is close to the food_dessert_2051. Robot is close to the food_donut_2052. Robot is close to the food_egg_2053. Robot is close to the food_fish_2054. Robot is close to the food_food_2055. Robot is close to the food_fruit_2056. Robot is close to the food_hamburger_2057. Robot is close to the food_ice_cream_2058. Robot is close to the food_jam_2059. Robot is close to the fridge_140. Robot is close to the food_kiwi_2060. Robot is close to the food_lemon_2061. Robot is close to the food_noodles_2062. Robot is close to the food_oatmeal_2063. Robot is close to the food_peanut_butter_2064. Robot is close to the food_pizza_2065. Robot is close to the food_potato_2066. Robot is close to the food_rice_2067. Robot is close to the food_salt_2068. Robot is close to the food_snack_2069. Robot is close to the food_sugar_2070. Robot is close to the food_turkey_2071. Robot is close to the food_vegetable_2072. Robot is close to the sauce_2101. Robot is close to the food_steak_2042. Robot is close to the food_apple_2043. Robot is close to the food_bacon_2044. Robot is close to the food_banana_2045. Robot is close to the food_cake_2046. Robot is close to the food_carrot_2047. fridge_140 is opened. 
+##############################
+From agent.py -> query_LLM_human
+Record from func query_LLM_human in agent.py
+Question: Can you help me to find cup_2087 ?
+Answer: Robot, please proceed to dining_room_1. Once there, look for table_123. You will find cup_2087 on top of table_123.
+Re-decompose: None
+
+##############################
+From agent.py
+Human Instruction: Robot, please proceed to dining_room_1. Once there, look for table_123. You will find cup_2087 on top of table_123.
+
+The actions you have taken:
+Action 1: Walk to faucet_134.
+Action 2: Walk to sink_133.
+Action 3: look for cup_2087 around sink_133.
+Action 4: Walk to faucet_134.
+Action 5: Walk to cupboard_131.
+Action 6: Open cupboard_131.
+Action 7: look for cup_2087 around cupboard_131.
+Action 8: Walk to faucet_134.
+Action 9: Walk to cupboard_130.
+Action 10: look for cup_2087 around cupboard_130.
+Action 11: Walk to faucet_134.
+Action 12: Walk to kitchen_counter_129.
+Action 13: look for cup_2087 around kitchen_counter_129.
+Action 14: Walk to faucet_134.
+Action 15: Walk to dishwasher_143.
+Action 16: Open dishwasher_143.
+Action 17: look for cup_2087 around dishwasher_143.
+Action 18: Walk to faucet_134.
+Action 19: Walk to fridge_140.
+Action 20: Switch off fridge_140.
+Action 21: Open fridge_140.
+
+##############################
+From agent.py
+exp(cup_2087, fridge_140)
+Fail to find cup_2087 around fridge_140. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(faucet_134)walk_executor(table_123)exp(cup_2087, table_123)walk_executor(cup_2087)grab_executor(cup_2087)walk_executor(faucet_134)switchoff_executor(faucet_134)
+##############################
+From agent.py
+walk_executor(faucet_134)
+Robot find: Robot is close to the kitchen_counter_132. Robot is close to the faucet_134. 
+##############################
+From agent.py
+walk_executor(table_123)
+Robot find: mat_114, homework_2011, shoes_2001, mouse_2003, cup_2088, laptop_2015, fork_2103, cup_2087, bowl_2095, drawing_118, Robot is close to the mat_114. Robot is close to the table_123. 
+##############################
+From agent.py
+exp(cup_2087, table_123)
+Find cup_2087. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(faucet_134)walk_executor(cup_2087)grab_executor(cup_2087)walk_executor(faucet_134)switchoff_executor(faucet_134)
+##############################
+From agent.py
+walk_executor(faucet_134)
+Robot find: Robot is close to the kitchen_counter_132. Robot is close to the faucet_134. 
+##############################
+From agent.py
+walk_executor(cup_2087)
+Robot find: Robot is close to the table_123. Robot is close to the cup_2087. 
+##############################
+From agent.py
+grab_executor(cup_2087)
+Robot find: Robot is close to the table_123. Robot is close to the cup_2087. Grabbing cup_2087 by right hand. 
+##############################
+From agent.py
+walk_executor(faucet_134)
+Robot find: Robot is close to the cup_2087. Robot is close to the kitchen_counter_132. Robot is close to the faucet_134. 
+##############################
+From agent.py
+switchoff_executor(faucet_134)
+Robot find: Robot is close to the cup_2087. Robot is close to the kitchen_counter_132. Robot is close to the faucet_134. faucet_134 is turned off. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: No
+The feedback instruction: You need to fill the cup with water. Although you have found and grabbed cup_2087, neither the action to fill it with water nor the action to switch on the faucet to facilitate filling is recorded.
+##############################
+From agent.py
+Human Instruction: You need to fill the cup with water. Although you have found and grabbed cup_2087, neither the action to fill it with water nor the action to switch on the faucet to facilitate filling is recorded.
+
+The actions you have taken:
+Action 1: Walk to faucet_134.
+Action 2: Walk to sink_133.
+Action 3: look for cup_2087 around sink_133.
+Action 4: Walk to faucet_134.
+Action 5: Walk to cupboard_131.
+Action 6: Open cupboard_131.
+Action 7: look for cup_2087 around cupboard_131.
+Action 8: Walk to faucet_134.
+Action 9: Walk to cupboard_130.
+Action 10: look for cup_2087 around cupboard_130.
+Action 11: Walk to faucet_134.
+Action 12: Walk to kitchen_counter_129.
+Action 13: look for cup_2087 around kitchen_counter_129.
+Action 14: Walk to faucet_134.
+Action 15: Walk to dishwasher_143.
+Action 16: Open dishwasher_143.
+Action 17: look for cup_2087 around dishwasher_143.
+Action 18: Walk to faucet_134.
+Action 19: Walk to fridge_140.
+Action 20: Switch off fridge_140.
+Action 21: Open fridge_140.
+Action 22: look for cup_2087 around fridge_140.
+Action 23: Walk to faucet_134.
+Action 24: Walk to table_123.
+Action 25: look for cup_2087 around table_123.
+Action 26: Walk to faucet_134.
+Action 27: Walk to cup_2087.
+Action 28: Grab cup_2087.
+Action 29: Walk to faucet_134.
+Action 30: Switch off faucet_134.
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_butter_2018_around_oven_141(food_butter:item):
+    goal: not unknown(food_butter)
+    body:
+        assert is_food_butter(food_butter)
+        bind oven_instance:item where:
+            is_oven(oven_instance) and id[oven_instance]==141
+        achieve close_char(char,oven_instance)
+        if can_open(oven_instance):
+            achieve_once open(oven_instance)
+            exp(food_butter,oven_instance)
+        else:
+            exp(food_butter,oven_instance)
+    eff:
+        unknown[food_butter]=False
+        close[food_butter,oven_instance]=True
+        close[oven_instance,food_butter]=True
+    
+
+behavior find_cup_2089_around_kitchen_counter_128(cup:item):
+    goal: not unknown(cup)
+    body:
+        assert is_cup(cup)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==128
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(cup,kitchen_counter_instance)
+        else:
+            exp(cup,kitchen_counter_instance)
+    eff:
+        unknown[cup]=False
+        close[cup,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,cup]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior fill_cup_with_water(cup:item, faucet:item):
+    body:
+        achieve close_char(char, faucet)
+        # Ensure you are close to the faucet
+        achieve_once has_water(cup)
+        # Fill the cup with water
+
+behavior turn_on_faucet(faucet:item):
+    body:
+        achieve is_on(faucet)
+        # Turn on the faucet to facilitate filling
+
+behavior __goal__():
+    body:
+        bind cup: item where:
+            is_cup(cup) and id[cup] == 2087
+        # Select the cup with ID 2087
+        
+        bind faucet: item where:
+            is_faucet(faucet) and id[faucet] == 134
+        # Select the faucet with ID 134
+        
+        turn_on_faucet(faucet)
+        fill_cup_with_water(cup, faucet)
+
+#goal_representation_end
+
+##############################
+Error is:
+'NoneType' object is not iterable
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_cup_2088_around_table_127(cup:item):
+    goal: not unknown(cup)
+    body:
+        assert is_cup(cup)
+        bind table_instance:item where:
+            is_table(table_instance) and id[table_instance]==127
+        achieve close_char(char,table_instance)
+        if can_open(table_instance):
+            achieve_once open(table_instance)
+            exp(cup,table_instance)
+        else:
+            exp(cup,table_instance)
+    eff:
+        unknown[cup]=False
+        close[cup,table_instance]=True
+        close[table_instance,cup]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior __goal__():
+    body:
+        bind cup: item where:
+            is_cup(cup) and id[cup] == 2087
+        # Select the cup with ID 2087
+
+        bind faucet: item where:
+            is_faucet(faucet) and id[faucet] == 134
+        # Select the faucet with ID 134
+
+        achieve_once has_water(cup)
+        # Fill the cup with water using the faucet
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+behavior __goal__():
+    body:
+        bind cup: item where:
+            is_cup(cup) and id[cup] == 2087
+        # Select the cup with ID 2087
+
+        bind faucet: item where:
+            is_faucet(faucet) and id[faucet] == 134
+        # Select the faucet with ID 134
+
+        achieve_once has_water(cup)
+        # Fill the cup with water using the faucet
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(faucet_308)switchoff_executor(faucet_308)
+##############################
+From agent.py
+walk_executor(faucet_308)
+Robot find: drawing_296, towel_rack_298, Robot is close to the cup_2087. Robot is close to the bathroom_counter_306. Robot is close to the faucet_308. 
+##############################
+From agent.py
+switchoff_executor(faucet_308)
+Robot find: Robot is close to the cup_2087. Robot is close to the bathroom_counter_306. Robot is close to the faucet_308. faucet_308 is turned off. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: No
+The feedback instruction: You need to fill cup_2087 with water from faucet_134 to complete the task.
+##############################
+From agent.py
+Human Instruction: You need to fill cup_2087 with water from faucet_134 to complete the task.
+
+The actions you have taken:
+Action 1: Walk to faucet_134.
+Action 2: Walk to sink_133.
+Action 3: look for cup_2087 around sink_133.
+Action 4: Walk to faucet_134.
+Action 5: Walk to cupboard_131.
+Action 6: Open cupboard_131.
+Action 7: look for cup_2087 around cupboard_131.
+Action 8: Walk to faucet_134.
+Action 9: Walk to cupboard_130.
+Action 10: look for cup_2087 around cupboard_130.
+Action 11: Walk to faucet_134.
+Action 12: Walk to kitchen_counter_129.
+Action 13: look for cup_2087 around kitchen_counter_129.
+Action 14: Walk to faucet_134.
+Action 15: Walk to dishwasher_143.
+Action 16: Open dishwasher_143.
+Action 17: look for cup_2087 around dishwasher_143.
+Action 18: Walk to faucet_134.
+Action 19: Walk to fridge_140.
+Action 20: Switch off fridge_140.
+Action 21: Open fridge_140.
+Action 22: look for cup_2087 around fridge_140.
+Action 23: Walk to faucet_134.
+Action 24: Walk to table_123.
+Action 25: look for cup_2087 around table_123.
+Action 26: Walk to faucet_134.
+Action 27: Walk to cup_2087.
+Action 28: Grab cup_2087.
+Action 29: Walk to faucet_134.
+Action 30: Switch off faucet_134.
+Action 31: Walk to faucet_308.
+Action 32: Switch off faucet_308.
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_butter_2018_around_oven_141(food_butter:item):
+    goal: not unknown(food_butter)
+    body:
+        assert is_food_butter(food_butter)
+        bind oven_instance:item where:
+            is_oven(oven_instance) and id[oven_instance]==141
+        achieve close_char(char,oven_instance)
+        if can_open(oven_instance):
+            achieve_once open(oven_instance)
+            exp(food_butter,oven_instance)
+        else:
+            exp(food_butter,oven_instance)
+    eff:
+        unknown[food_butter]=False
+        close[food_butter,oven_instance]=True
+        close[oven_instance,food_butter]=True
+    
+
+behavior find_cup_2089_around_tablelamp_358(cup:item):
+    goal: not unknown(cup)
+    body:
+        assert is_cup(cup)
+        bind tablelamp_instance:item where:
+            is_tablelamp(tablelamp_instance) and id[tablelamp_instance]==358
+        achieve close_char(char,tablelamp_instance)
+        if can_open(tablelamp_instance):
+            achieve_once open(tablelamp_instance)
+            exp(cup,tablelamp_instance)
+        else:
+            exp(cup,tablelamp_instance)
+    eff:
+        unknown[cup]=False
+        close[cup,tablelamp_instance]=True
+        close[tablelamp_instance,cup]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior fill_cup_with_water(cup:item, faucet:item):
+    body:
+        achieve_once has_water(cup)
+        # Fill the specified cup with water from the faucet
+
+behavior turn_off_faucet(faucet:item):
+    body:
+        achieve_once is_off(faucet)
+        # Ensure the faucet is turned off
+
+behavior __goal__():
+    body:
+        bind cup: item where:
+            is_cup(cup) and id[cup] == 2087
+        # Select the cup with ID 2087
+
+        bind faucet: item where:
+            is_faucet(faucet) and id[faucet] == 134
+        # Select the faucet with ID 134
+
+        fill_cup_with_water(cup, faucet) # Fill the cup with water using the specified faucet
+        turn_off_faucet(faucet) # Ensure the faucet is turned off
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+behavior fill_cup_with_water(cup:item, faucet:item):
+    body:
+        achieve_once has_water(cup)
+        # Fill the specified cup with water from the faucet
+
+behavior turn_off_faucet(faucet:item):
+    body:
+        achieve_once is_off(faucet)
+        # Ensure the faucet is turned off
+
+behavior __goal__():
+    body:
+        bind cup: item where:
+            is_cup(cup) and id[cup] == 2087
+        # Select the cup with ID 2087
+
+        bind faucet: item where:
+            is_faucet(faucet) and id[faucet] == 134
+        # Select the faucet with ID 134
+
+        fill_cup_with_water(cup, faucet) # Fill the cup with water using the specified faucet
+        turn_off_faucet(faucet) # Ensure the faucet is turned off
+
+##############################
+From agent.py-> find a plan in act()
+switchon_executor(faucet_308)switchoff_executor(faucet_308)
+##############################
+From agent.py
+switchon_executor(faucet_308)
+Robot find: Robot is close to the cup_2087. Robot is close to the bathroom_counter_306. Robot is close to the faucet_308. faucet_308 is turned on. 
+##############################
+From agent.py
+switchoff_executor(faucet_308)
+Robot find: Robot is close to the cup_2087. Robot is close to the bathroom_counter_306. Robot is close to the faucet_308. faucet_308 is turned off. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: No
+The feedback instruction: You need to fill cup_2087 with water from faucet_134.
+##############################
+Task Summary:
+Task Goal:
+Get a cup of water.
+Action History:
+['walk_executor(faucet_134)', 'walk_executor(sink_133)', 'walk_executor(faucet_134)', 'walk_executor(cupboard_131)', 'open_executor(cupboard_131)', 'walk_executor(faucet_134)', 'walk_executor(cupboard_130)', 'walk_executor(faucet_134)', 'walk_executor(kitchen_counter_129)', 'walk_executor(faucet_134)', 'walk_executor(dishwasher_143)', 'open_executor(dishwasher_143)', 'walk_executor(faucet_134)', 'walk_executor(fridge_140)', 'switchoff_executor(fridge_140)', 'open_executor(fridge_140)', 'walk_executor(faucet_134)', 'walk_executor(table_123)', 'walk_executor(faucet_134)', 'walk_executor(cup_2087)', 'grab_executor(cup_2087)', 'walk_executor(faucet_134)', 'switchoff_executor(faucet_134)', 'walk_executor(faucet_308)', 'switchoff_executor(faucet_308)', 'switchon_executor(faucet_308)', 'switchoff_executor(faucet_308)']
+Time info:
+Time consume: 142 seconds
+Exp_helper query times: 1
+Guidance query times: 0
+library scale: 50
+goal generate times: 4
+goal correct times: 1
+action_num: 27
+
+Task complete rate:
+1
+Scene_id: 2
+##############################

@@ -14,6 +14,8 @@ import json
 import pandas as pd
 import matplotlib.pyplot as plt
 from collections import defaultdict
+import numpy as np
+from scipy import stats
 
 # Extend sys.path if needed
 sys.path.append('cdl_dataset/scripts')
@@ -53,6 +55,9 @@ def parse_info(log_text):
     parsed_data['Guidance query times'] = int(
         re.search(r"Guidance query times: (\d+)", log_text).group(1)
     )
+    parsed_data['Goal generate times'] = int(re.search(r"goal generate times: ([\d']+)", log_text).group(1)) + int(re.search(r"goal correct times: ([\d']+)", log_text).group(1))
+    # parsed_data['Goal generate times'] = int(re.search(r"goal generate times: ([\d']+)", log_text).group(1))
+
     parsed_data['library scale'] = re.search(
         r"library scale: ([\d']+)", log_text
     ).group(1)
@@ -84,8 +89,8 @@ def parse_completion_rates(csv_file_path):
             continue
         
         # If not "Syntax Error", parse the log to get detailed info
-        if row['Content'] != 'Syntax Error':
-            info = parse_info(row['Info'])
+        # if row['Content'] != 'Syntax Error':
+        info = parse_info(row['Info'])
         guidance_nums.append(info['Guidance query times'])
 
         completion_rate = row['Success Rate']
@@ -103,6 +108,7 @@ def parse_completion_rates(csv_file_path):
                 'action_completion_rate': True,
                 'success': True,
                 'guidance_num': info['Guidance query times'],
+                'goal_generate_times': info['Goal generate times'],
                 'Scene_id': scene_id,
             }
             result_list.append(result_dict)
@@ -140,6 +146,7 @@ def parse_completion_rates(csv_file_path):
             'action_completion_rate': action_completion_rate,
             'success': False,
             'guidance_num': info['Guidance query times'],
+            'goal_generate_times': info['Goal generate times'],
             'Scene_id': scene_id,
         }
         result_list.append(result_dict)
@@ -187,6 +194,7 @@ def calculation(result_list):
                  [{"task": <task_path>, "suc_rate": <float>}].
     """
     difficulty_dict = get_difficulty_dict()
+    
     success_rate_list = []
     sum_success_rate = 0
 
@@ -248,7 +256,7 @@ def calculation(result_list):
                         + entry['action_completion_rate'] * action_weight
                     ) / (keystate_weight + action_weight)
 
-        success_rate_list.append({"task": task_path, "suc_rate": round(task_success_rate, 3)})
+        success_rate_list.append({"task": task_path, "suc_rate": round(task_success_rate, 3), "Scene_id": scene_id})
         sum_success_rate += task_success_rate
 
     avg_success_rate = sum_success_rate / len(success_rate_list) if success_rate_list else 0
@@ -463,13 +471,41 @@ def print_success_rates_descending(success_rate_list):
     # Print each task in descending order of success rate
     for i, item in enumerate(sorted_rates, start=1):
         print(f"{i:<5} {item['task']:<{max_task_length}} {item['suc_rate']:>12.3f}")
+        with open('success_rates.txt', 'a') as f:
+            f.write(f"{i:<5} {item['task']:<{max_task_length}} {item['suc_rate']:>12.3f}\n")
 
 def print_compare_table(data):
     methods = sorted(data.keys())
     tasks = sorted({task for method_dict in data.values() for task in method_dict})
 
-    header = ["Task"] + methods
+    # Create a new dictionary to store averaged data
+    averaged_data = {}
+    
+    # Process each method
+    for method in methods:
+        averaged_data[method] = {}
+        # Get all tasks for this method
+        method_tasks = data[method].keys()
+        
+        # For each task, check if it exists in other scenes
+        for task in method_tasks:
+            # Remove scene number from task name if it exists
+            base_task = task.split('_scene_')[0] if '_scene_' in task else task
+            
+            # Find all instances of this task across scenes
+            task_rates = []
+            for t in method_tasks:
+                if t.split('_scene_')[0] == base_task:
+                    task_rates.append(data[method][t])
+            
+            # Calculate average if we found multiple instances
+            if len(task_rates) > 1:
+                avg_rate = sum(task_rates) / len(task_rates)
+                averaged_data[method][base_task] = avg_rate
+            else:
+                averaged_data[method][task] = data[method][task]
 
+    header = ["Task"] + methods
     rows = []
     rows.append(header)
 
@@ -477,7 +513,7 @@ def print_compare_table(data):
     for task in tasks:
         row = [task]
         for m in methods:
-            val = data[m].get(task, "")
+            val = averaged_data[m].get(task, "")
             if isinstance(val, float):
                 val = f"{val:.3f}"
             row.append(str(val))
@@ -510,7 +546,7 @@ def print_compare_table(data):
     # Calculate the average success rate for each method and add it to the last row
     avg_row = ["Avg."]
     for m in methods:
-        rates = data[m].values()
+        rates = averaged_data[m].values()
         if rates:  # Handle empty case to prevent errors
             avg_rate = sum(rates) / len(rates)
         else:
@@ -539,95 +575,151 @@ if __name__ == '__main__':
 
     # Scene_0
 
-    # methods_experiments.append(find_csv_files(
-    #     'main_results/openai_new/round6/scene_0/20250209_021532_LLMWOG'
-    # ))
+    methods_experiments.append(find_csv_files(
+        'main_results/openai_new/round7/scene_0/20250211_162728_LLMWOG'
+    ))
 
-    # methods_experiments.append(find_csv_files(
-    #     'main_results/openai_new/round6/scene_0/20250209_171439_LLMWG'
-    # ))
 
-    # methods_experiments.append(find_csv_files(
-    #     'main_results/openai_new/round6/scene_0/20250209_021552_LLMPlusPWOG'
-    # ))
+    methods_experiments.append(find_csv_files(
+      'main_results/openai_new/round7/scene_0/20250314_141004_LLMWG'
+    ))
 
-    # methods_experiments.append(find_csv_files(
-    #     'main_results/openai_new/round6/scene_0/20250210_005803_LLMPlusPWG'
-    # ))
+    methods_experiments.append(find_csv_files(
+        'main_results/openai_new/round7/scene_0/20250209_021552_LLMPlusPWOG'
+    ))
 
-    # methods_experiments.append(find_csv_files(
-    #     'main_results/openai_new/round6/scene_0/20250209_065056_CAPWOG'
-    # ))
+    methods_experiments.append(find_csv_files(
+        'main_results/openai_new/round7/scene_0/20250210_005803_LLMPlusPWG'
+    ))
 
-    # methods_experiments.append(find_csv_files(
-    #     'main_results/openai_new/round6/scene_0/20250210_005839_CAPWG'
-    # ))
+    methods_experiments.append(find_csv_files(
+        'main_results/openai_new/round7/scene_0/20250209_065056_CAPWOG'
+    ))
 
-    # methods_experiments.append(find_csv_files(
-    #     'main_results/openai_new/round6/scene_0/20250209_030853_OursWOG'
-    # ))
+    methods_experiments.append(find_csv_files(
+        'main_results/openai_new/round7/scene_0/20250210_005839_CAPWG'
+    ))
 
-    # methods_experiments.append(find_csv_files(
-    #     'main_results/openai_new/round6/scene_0/20250209_171511_OursWG'
-    # ))
+    methods_experiments.append(find_csv_files(
+        'main_results/openai_new/round7/scene_0/20250211_104046_WOLibrary'
+    ))
 
 
     # Scene_1
 
     methods_experiments.append(find_csv_files(
-        'main_results/openai_new/round6/scene_1/20250209_083202_LLMWOG1'
+        'main_results/openai_new/round7/scene_1/20250211_191433_LLMWOG1'
     ))
 
     methods_experiments.append(find_csv_files(
-        'main_results/openai_new/round6/scene_1/20250209_165553_LLMWG1'
+        'main_results/openai_new/round7/scene_1/20250211_191421_LLMWG1'
     ))
 
     methods_experiments.append(find_csv_files(
-        'main_results/openai_new/round6/scene_1/20250210_154842_LLMPlusPWOG1'
+        'main_results/openai_new/round7/scene_1/20250213_094201_LLMPlusPWG1'
     ))
 
     methods_experiments.append(find_csv_files(
-        'main_results/openai_new/round6/scene_1/20250210_084239_CAPWOG1'
+        'main_results/openai_new/round7/scene_1/20250210_154842_LLMPlusPWOG1'
     ))
 
     methods_experiments.append(find_csv_files(
-        'main_results/openai_new/round6/scene_1/20250210_154927_CAPWG1'
+        'main_results/openai_new/round7/scene_1/20250210_084239_CAPWOG1'
     ))
 
-    # Scene_2
+    methods_experiments.append(find_csv_files(
+        'main_results/openai_new/round7/scene_1/20250210_154927_CAPWG1'
+    ))
+
+    methods_experiments.append(find_csv_files(
+        'main_results/openai_new/round7/scene_1/20250212_025302_WOLibrary1'
+    ))
+
+    # # Scene_2
     
     methods_experiments.append(find_csv_files(
-        'main_results/openai_new/round6/scene_2/20250210_071206_LLMWOG2'
+        'main_results/openai_new/round7/scene_2/20250211_191609_LLMWOG2'
     ))
 
     methods_experiments.append(find_csv_files(
-        'main_results/openai_new/round6/scene_2/20250209_165744_LLMWG2'
+        'main_results/openai_new/round7/scene_2/20250211_191553_LLMWG2'
     ))
 
     methods_experiments.append(find_csv_files(
-        'main_results/openai_new/round6/scene_2/20250210_110634_LLMPlusPWOG2'
+        'main_results/openai_new/round7/scene_2/20250210_110634_LLMPlusPWOG2'
     ))
 
     methods_experiments.append(find_csv_files(
-        'main_results/openai_new/round6/scene_2/20250210_002715_LLMPlusPWG2'
+        'main_results/openai_new/round7/scene_2/20250211_021801_LLMPlusPWG2'
     ))
 
     methods_experiments.append(find_csv_files(
-        'main_results/openai_new/round6/scene_2/20250211_022135_CAPWOG2'
+        'main_results/openai_new/round7/scene_2/20250211_022135_CAPWOG2'
     ))
 
     methods_experiments.append(find_csv_files(
-        'main_results/openai_new/round6/scene_2/20250211_022106_CAPWG2'
+        'main_results/openai_new/round7/scene_2/20250211_022106_CAPWG2'
     ))
 
+    methods_experiments.append(find_csv_files(
+        'main_results/openai_new/round7/scene_2/20250212_025402_WOLibrary2'
+    ))
 
-    window_size = 10  # Example window size for moving average
+    #overall
+    methods_experiments.append(find_csv_files(
+        'main_results/openai_new/round7/overall/OursWG'
+    ))
+
+    methods_experiments.append(find_csv_files(
+        'main_results/openai_new/round7/overall/OursWOG'
+    ))
+
+    methods_experiments.append(find_csv_files(
+        'main_results/openai_new/round7/overall/20250314_151127_PvP'
+    ))
+
+    methods_experiments.append(find_csv_files(
+        "main_results/openai_new/round7/overall/20250315_151531_PvPWOG"
+    ))
+
+    methods_experiments.append(find_csv_files(
+        'main_results/openai_new/round7/overall/20250212_110306_WORefinement'
+    ))
+
+    methods_experiments.append(find_csv_files(
+        'main_results/openai_new/round7/overall/Action_library'
+    ))
+
+    methods_experiments.append(find_csv_files(
+        'main_results/openai_new/round7/overall/ActionLibraryWOG'
+    ))
+
+    methods_experiments.append(find_csv_files(
+        'main_results/openai_new/round7/overall/WOSplit'
+    ))
+
+    window_size = 70  # Example window size for moving average
 
     compare_data = {}
 
+    with open('mapping.json', 'r') as file:
+        mapping = json.load(file)
+    with open('Category_abl.json', 'r') as file:
+        category = json.load(file)
+    with open('experiments/virtualhome/VH_scripts/shuffled_task_scene_pairs.json', 'r') as file:
+        experiment_oder = json.load(file)
     # Process each experiment
+
+    goal_generate_times = []
+
+    OursWOG_moving_average = []
+    PVPWOG_moving_average = []
+    Ours_action_library_moving_average = []
+
+
     for experiment in methods_experiments:
         # Skip if no CSV file was found
+
         if experiment is None:
             continue
 
@@ -635,17 +727,47 @@ if __name__ == '__main__':
         exp_name = exp_name.split('_')[-1]
         result_list, guidance_nums = parse_completion_rates(csv_file_path)
 
+        prefix = '/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/'
+
+        # filter1
+        # ------------------------------
+        # result_list_limit = []
+        # for result in result_list:
+        #     if prefix+result['task_path'] in mapping['middle'].values():
+        #         result_list_limit.append(result)
+        # result_list = result_list_limit
+        # ------------------------------
+
+        
+
+        # filter2
+        # ------------------------------
+        # result_list_limit = []
+        # for result in result_list:
+        #     if result['task_path'] in category['complex']: # cooking, cleaning, laundry, arrangement
+        #         result_list_limit.append(result)
+        # result_list = result_list_limit
+        # ------------------------------
+
+        for result in result_list:
+            goal_generate_times.append(result['goal_generate_times'])
+
         # Calculate average success rate and gather all success rates
         avg_success_rate, success_rate_dict = calculation(result_list)
 
         success_dict_without_inner_list = {}
         for task in success_rate_dict:
+
             success_dict_without_inner_list[task['task'].replace('cdl_dataset/dataset/','')] = task['suc_rate']
 
         compare_data[exp_name] = success_dict_without_inner_list
 
         print(f"\nExperiment: {exp_name}")
         print(f"Average Success Rate: {avg_success_rate:.3f}")
+
+        with open('success_rates.txt', 'a') as f:
+            f.write(f"\nExperiment: {exp_name}")
+            f.write(f"Average Success Rate: {avg_success_rate:.3f}")
 
         print_success_rates_descending(success_rate_dict)
 
@@ -659,6 +781,13 @@ if __name__ == '__main__':
         # Calculate and plot the moving average of the success rate
         success_rate_values = [data['suc_rate'] for data in success_rate_dict]
         success_moving_averages = calculate_moving_average(success_rate_values, window_size)
+        if exp_name == 'OursWOG':
+            OursWOG_moving_average = success_moving_averages
+        if exp_name == 'PvPWOG':
+            PVPWOG_moving_average = success_moving_averages
+        if exp_name == 'ActionLibraryWOG':
+            Ours_action_library_moving_average = success_moving_averages
+
         plot_output_path = f'main_results/{exp_name}_success_rate_moving_average_plot.png'
         plot_moving_average(
             success_moving_averages, 
@@ -680,3 +809,254 @@ if __name__ == '__main__':
         print(f"\nPlots for {exp_name} have been saved.")
 
     print_compare_table(compare_data)
+
+    # goal_generate_times.sort()  # 排序
+    # n = len(goal_generate_times)
+    # remove_count = int(n * 0.3)  # 计算去掉20%的元素数量
+
+    # remaining_nums = goal_generate_times[:-remove_count]
+    # total_sum = sum(remaining_nums)
+    # print(total_sum)
+    print(f"Goal generate times: {sum(goal_generate_times)}")
+
+
+    diff_oder = []
+    Ours_WOLibrary = []
+    LLM_plus_PWOG = []
+    Cap_WOG = []
+    for task in experiment_oder:
+        task_path = task[0]
+        scene_id = task[1]
+        if scene_id == 0:
+            diff_oder.append(compare_data['LLMWOG'][task_path])
+            # Ours_WOLibrary.append(compare_data['WOLibrary'][task_path])
+            LLM_plus_PWOG.append(compare_data['LLMPlusPWOG'][task_path])
+            Cap_WOG.append(compare_data['CAPWOG'][task_path])
+        if scene_id == 1:
+            diff_oder.append(compare_data['LLMWOG1'][task_path])
+            # Ours_WOLibrary.append(compare_data['WOLibrary1'][task_path])
+            LLM_plus_PWOG.append(compare_data['LLMPlusPWOG1'][task_path])
+            Cap_WOG.append(compare_data['CAPWOG1'][task_path])
+
+        if scene_id == 2:
+            diff_oder.append(compare_data['LLMWOG2'][task_path])
+            # Ours_WOLibrary.append(compare_data['WOLibrary2'][task_path])
+            LLM_plus_PWOG.append(compare_data['LLMPlusPWOG2'][task_path])
+            Cap_WOG.append(compare_data['CAPWOG2'][task_path])
+
+
+
+    plot_output_path = f'main_results/Reference_difficulty.png'
+
+
+    LLM_moving_sr = calculate_moving_average(diff_oder, window_size)
+    Ours_WOLibrary_moving_sr = calculate_moving_average(Ours_WOLibrary, window_size)
+    LLM_plus_PWOG_moving_sr = calculate_moving_average(LLM_plus_PWOG, window_size)
+    Cap_WOG_moving_sr = calculate_moving_average(Cap_WOG, window_size)
+    
+    
+    # colors = ['#ff6f61', '#6b8e23', '#4682b4', '#d4a017']
+    # x = range(len(LLM_moving_sr))
+    # plt.plot(x, LLM_moving_sr, linewidth=3, label="LLM", color=colors[0])
+    # plt.plot(x, LLM_plus_PWOG_moving_sr, linewidth=3, label="LLM+P", color=colors[1])
+    # plt.plot(x, Cap_WOG_moving_sr, linewidth=3, label="CAP", color=colors[2])
+    # plt.plot(x, OursWOG_moving_average, linewidth=3, label="Ours", color=colors[3])
+    # plt.grid(axis='y', color='gray', linestyle='--', linewidth=0.5)
+    # plt.tick_params(axis='x', labelsize=14)
+    # plt.tick_params(axis='y', labelsize=14)
+
+    # plt.xlabel("Tasks", fontsize=18)
+    # plt.ylabel("Success Rate", fontsize=18)
+    # plt.title("Moving Average Success Rate (window = 70)", fontsize=18)
+    # plt.legend(fontsize=18)
+
+    # plt.show()
+    # PVPWOG_moving_average add 0 to len(OursWOG_moving_average)
+
+    # Set style
+    plt.style.use('seaborn-v0_8-whitegrid')
+    
+    # Define a more vibrant and professional color palette
+    colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#f1c40f']  # Blue, Orange, Green, Red, Purple, Yellow
+    
+    # Create figure with better aspect ratio
+    plt.figure(figsize=(15, 8))
+    
+    # Plot lines with improved styling
+    line_styles = ['-', '--', '-.', '-', '--', '-']  # Last line solid
+    markers = ['o', 's', '^', 'D', 'v', 'o']  # Last marker circle
+    marker_sizes = [5, 5, 5, 5, 5, 7]  # Increased last marker size
+    line_widths = [2.0, 2.0, 2.0, 2.0, 2.0, 3.0]  # Increased last line width
+    
+    x = range(len(LLM_moving_sr))
+    
+    # Function to plot data and regression line
+    def plot_with_regression(x, y, color, label, line_style, marker, marker_size, line_width, markevery):
+        # Plot original data
+        plt.plot(x, y, linewidth=line_width, label=label, 
+                 color=color, linestyle=line_style, 
+                 marker=marker, markersize=marker_size, 
+                 markevery=markevery)
+        
+        # Calculate and plot regression line
+        slope, intercept, r_value, p_value, std_err = stats.linregress(x, y)
+        regression_line = slope * np.array(x) + intercept
+        plt.plot(x, regression_line, color=color, linestyle='--', linewidth=line_width*0.6, alpha=0.5)
+        
+        # Add slope value at the right end of the regression line
+        end_x = x[-1]
+        end_y = slope * end_x + intercept
+        
+        # Convert slope to custom format (multiply by 1e4 to get rid of e-04)
+        slope_formatted = slope * 1e4
+        plt.text(end_x + 1, end_y, f'k = {slope_formatted:.1f}', 
+                color=color, fontsize=20, fontweight='bold',
+                bbox=dict(facecolor='white', alpha=0.7, edgecolor='none'),
+                horizontalalignment='left', verticalalignment='center')
+        
+        return label
+    
+    # Plot each line with regression
+    labels = []
+    labels.append(plot_with_regression(x, LLM_moving_sr, colors[0], "LLM", 
+                                     line_styles[0], markers[0], marker_sizes[0], 
+                                     line_widths[0], 5))
+    labels.append(plot_with_regression(x, LLM_plus_PWOG_moving_sr, colors[1], "LLM+P", 
+                                     line_styles[1], markers[1], marker_sizes[1], 
+                                     line_widths[1], 5))
+    labels.append(plot_with_regression(x, Cap_WOG_moving_sr, colors[2], "CAP", 
+                                     line_styles[2], markers[2], marker_sizes[2], 
+                                     line_widths[2], 5))
+    labels.append(plot_with_regression(x, PVPWOG_moving_average, colors[3], "Voyager", 
+                                     line_styles[3], markers[3], marker_sizes[3], 
+                                     line_widths[3], 5))
+    labels.append(plot_with_regression(x, Ours_action_library_moving_average, colors[4], "Ours (ActSeq)", 
+                                     line_styles[4], markers[4], marker_sizes[4], 
+                                     line_widths[4], 5))
+    labels.append(plot_with_regression(x, OursWOG_moving_average, colors[5], "Ours (Full)", 
+                                     line_styles[5], markers[5], marker_sizes[5], 
+                                     line_widths[5], 5))
+
+    # Customize grid
+    plt.grid(True, linestyle='--', alpha=0.3)
+    
+    # Customize axes
+    plt.gca().spines['top'].set_visible(False)
+    plt.gca().spines['right'].set_visible(False)
+    plt.gca().spines['left'].set_linewidth(0.5)
+    plt.gca().spines['bottom'].set_linewidth(0.5)
+    
+    # Customize ticks
+    plt.tick_params(axis='x', labelsize=20, pad=5)
+    plt.tick_params(axis='y', labelsize=20, pad=5)
+    
+    # Set axis labels with better formatting and position
+    plt.xlabel("Number of Tasks", fontsize=24, fontweight='bold', labelpad=10)
+    plt.ylabel("Success Rate (%)", fontsize=24, fontweight='bold', labelpad=0)
+    
+    # Set title with better formatting and position
+    plt.title(f"Moving Average Success Rate (window = {window_size})", 
+              fontsize=28, fontweight='bold', pad=0, y=1.0)
+    
+    # Customize legend with correct order
+    legend_labels = ["LLM", "LLM+P", "CAP", "Voyager", "Ours (ActSeq)", "Ours (Full)"]
+    legend = plt.legend(handles=plt.gca().get_legend_handles_labels()[0], 
+                       labels=legend_labels,
+                       fontsize=20, loc='lower left', 
+                       bbox_to_anchor=(0.02, 0.02),
+                       frameon=True, fancybox=True, shadow=True,
+                       ncol=2)
+    legend.get_frame().set_alpha(0.9)
+    
+    # Add minor grid lines
+    plt.grid(True, which='minor', linestyle=':', alpha=0.2)
+    plt.minorticks_on()
+    
+    # Adjust layout to prevent label cutoff
+    plt.tight_layout()
+    
+    # Show plot
+    plt.show()
+
+def estimate_token_count(text):
+    """
+    Estimate the number of tokens in a given text string.
+    This is a rough estimation based on character count and language.
+    
+    Args:
+        text (str): The input text to estimate tokens for.
+        
+    Returns:
+        int: Estimated number of tokens.
+    """
+    if not text:
+        return 0
+        
+    # Count Chinese characters (including punctuation)
+    chinese_chars = len([char for char in text if '\u4e00' <= char <= '\u9fff'])
+    
+    # Count other characters (excluding whitespace)
+    other_chars = len([char for char in text if not char.isspace() and not '\u4e00' <= char <= '\u9fff'])
+    
+    # Estimate tokens:
+    # - Chinese characters: ~1.5 tokens per character
+    # - Other characters: ~0.25 tokens per character (4 chars per token)
+    estimated_tokens = int(chinese_chars * 1.5 + other_chars * 0.25)
+    
+    return max(1, estimated_tokens)  # Ensure at least 1 token
+
+def calculate_string_length(text):
+    """
+    Calculate the length of a string, properly handling both Chinese and other characters.
+    
+    Args:
+        text (str): The input text to calculate length for.
+        
+    Returns:
+        int: The length of the string.
+    """
+    if not text:
+        return 0
+        
+    # Count Chinese characters (including punctuation)
+    chinese_chars = len([char for char in text if '\u4e00' <= char <= '\u9fff'])
+    
+    # Count other characters (excluding whitespace)
+    other_chars = len([char for char in text if not char.isspace() and not '\u4e00' <= char <= '\u9fff'])
+    
+    # Total length is the sum of both types of characters
+    total_length = chinese_chars + other_chars
+    
+    return total_length
+
+def calculate_library_data_average_length(library_data):
+    """
+    Calculate the average length of source_sub_task and cdl in library data.
+    
+    Args:
+        library_data (list): List of dictionaries containing library data.
+        
+    Returns:
+        tuple: (avg_subtask_length, avg_cdl_length, total_tasks)
+    """
+    if not library_data:
+        return 0, 0, 0
+        
+    total_subtask_length = 0
+    total_cdl_length = 0
+    total_tasks = len(library_data)
+    
+    for task in library_data:
+        # Calculate length of source_sub_task
+        if 'source_sub_task' in task:
+            total_subtask_length += calculate_string_length(task['source_sub_task'])
+            
+        # Calculate length of cdl
+        if 'cdl' in task:
+            total_cdl_length += calculate_string_length(task['cdl'])
+    
+    # Calculate averages
+    avg_subtask_length = total_subtask_length / total_tasks if total_tasks > 0 else 0
+    avg_cdl_length = total_cdl_length / total_tasks if total_tasks > 0 else 0
+    
+    return avg_subtask_length, avg_cdl_length, total_tasks

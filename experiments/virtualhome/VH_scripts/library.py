@@ -136,7 +136,13 @@ class behavior_library_simple:
                     embeded_behaviors += f"{record['actions']}"
                 return embeded_behaviors
             elif self.extract_method == 'rag':
-                self.get_similarity_score(sub_task_description)
+                for record in self.get_similarity_score(sub_task_description, k):
+                    count += 1
+                    embeded_behaviors += f"\n# Case {count}:\n"
+                    embeded_behaviors += f"When the sub-task is: {record['source_sub_task']}\n"
+                    embeded_behaviors += f"A successful representation:\n"
+                    embeded_behaviors += f"{record['cdl']}"
+                return embeded_behaviors
         
         else:
             return ""

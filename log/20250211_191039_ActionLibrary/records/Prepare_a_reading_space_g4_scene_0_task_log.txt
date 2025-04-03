@@ -1,0 +1,933 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Locate the specific book and place it on the coffee table in the home office.', '2. Prepare a cup of hot milk and place it on the coffee table in the home office.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_book_2066_around_bookshelf_233(book:item):
+    goal: not unknown(book)
+    body:
+        assert is_book(book)
+        bind bookshelf_instance:item where:
+            is_bookshelf(bookshelf_instance) and id[bookshelf_instance]==233
+        achieve close_char(char,bookshelf_instance)
+        if can_open(bookshelf_instance):
+            achieve_once open(bookshelf_instance)
+            exp(book,bookshelf_instance)
+        else:
+            exp(book,bookshelf_instance)
+    eff:
+        unknown[book]=False
+        close[book,bookshelf_instance]=True
+        close[bookshelf_instance,book]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def in_home_office(table: item):
+    # Function to check if a table is in the home office
+    symbol in_home_office = exists room: item : (is_home_office(room) and inside(table, room))
+    return in_home_office
+
+behavior find_book_and_place_on_table(book: item, table: item):
+    body:
+        achieve_once on(book, table)
+        # Place the book on the table
+
+behavior __goal__():
+    body:
+        # Identify the book and the coffee table
+        bind book: item where:
+            is_book(book)
+        bind coffee_table: item where:
+            is_coffee_table(coffee_table) and inside(coffee_table, home_office)
+
+        if not visited(book):
+            # Check if the book is not visited yet
+            observe(book, "Check if its the correct book to place on the table")
+
+            # Check if the coffee table is in the home office
+            if not in_home_office(coffee_table):
+                observe(coffee_table, "Verify the location of the coffee table")
+
+        find_book_and_place_on_table(book, coffee_table)
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "behavior_definition":
+
+Unknown variable: home_office; available variables: [Variable<coffee_table: item>].
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_book_2067_around_bookshelf_233(book:item):
+    goal: not unknown(book)
+    body:
+        assert is_book(book)
+        bind bookshelf_instance:item where:
+            is_bookshelf(bookshelf_instance) and id[bookshelf_instance]==233
+        achieve close_char(char,bookshelf_instance)
+        if can_open(bookshelf_instance):
+            achieve_once open(bookshelf_instance)
+            exp(book,bookshelf_instance)
+        else:
+            exp(book,bookshelf_instance)
+    eff:
+        unknown[book]=False
+        close[book,bookshelf_instance]=True
+        close[bookshelf_instance,book]=True
+    
+
+#goal_representation
+ 
+def in_home_office(table: item, home_office: item):
+    # Function to check if a table is in the home office
+    symbol table_in_home_office = is_home_office(home_office) and inside(table, home_office)
+    return table_in_home_office
+
+behavior find_book_and_place_on_table(book: item, table: item):
+    body:
+        achieve_once on(book, table)
+        # Place the book on the table
+
+behavior __goal__():
+    body:
+        # Identify the book and the coffee table
+        bind book: item where:
+            is_book(book)
+        bind home_office: item where:
+            is_home_office(home_office)
+        bind coffee_table: item where:
+            is_coffee_table(coffee_table) and inside(coffee_table, home_office)
+
+        if not visited(book):
+            # Check if the book is not visited yet
+            observe(book, "Check if its the correct book to place on the table")
+
+            # Check if the coffee table is in the home office
+            if not in_home_office(coffee_table, home_office):
+                observe(coffee_table, "Verify the location of the coffee table")
+
+        find_book_and_place_on_table(book, coffee_table)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+ 
+def in_home_office(table: item, home_office: item):
+    # Function to check if a table is in the home office
+    symbol table_in_home_office = is_home_office(home_office) and inside(table, home_office)
+    return table_in_home_office
+
+behavior find_book_and_place_on_table(book: item, table: item):
+    body:
+        achieve_once on(book, table)
+        # Place the book on the table
+
+behavior __goal__():
+    body:
+        # Identify the book and the coffee table
+        bind book: item where:
+            is_book(book)
+        bind home_office: item where:
+            is_home_office(home_office)
+        bind coffee_table: item where:
+            is_coffee_table(coffee_table) and inside(coffee_table, home_office)
+
+        if not visited(book):
+            # Check if the book is not visited yet
+            observe(book, "Check if its the correct book to place on the table")
+
+            # Check if the coffee table is in the home office
+            if not in_home_office(coffee_table, home_office):
+                observe(coffee_table, "Verify the location of the coffee table")
+
+        find_book_and_place_on_table(book, coffee_table)
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(bookshelf_233)open_executor(bookshelf_233)exp(book_2066, bookshelf_233)walk_executor(book_2066)open_executor(book_2066)obs(book_2066, Check if its the correct book to place on the table)grab_executor(book_2066)walk_executor(coffee_table_2068)put_executor(book_2066, coffee_table_2068)
+##############################
+From agent.py
+walk_executor(bookshelf_233)
+Robot find: Robot is close to the bookshelf_233. 
+##############################
+From agent.py
+open_executor(bookshelf_233)
+Robot find: Robot is close to the bookshelf_233. bookshelf_233 is opened. 
+##############################
+From agent.py
+exp(book_2066, bookshelf_233)
+Fail to find book_2066 around bookshelf_233. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(bookshelf_354)open_executor(bookshelf_354)exp(book_2066, bookshelf_354)walk_executor(book_2066)open_executor(book_2066)obs(book_2066, Check if its the correct book to place on the table)grab_executor(book_2066)walk_executor(coffee_table_2068)put_executor(book_2066, coffee_table_2068)
+##############################
+From agent.py
+walk_executor(bookshelf_354)
+Robot find: drawing_402, drawing_403, drawing_404, book_2066, book_2067, Robot is close to the bookshelf_354. 
+##############################
+From agent.py
+open_executor(bookshelf_354)
+Robot find: Robot is close to the bookshelf_354. Robot is close to the photoframe_430. bookshelf_354 is opened. 
+##############################
+From agent.py
+exp(book_2066, bookshelf_354)
+Find book_2066. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(book_2066)open_executor(book_2066)obs(book_2066, Check if its the correct book to place on the table)grab_executor(book_2066)walk_executor(coffee_table_2068)put_executor(book_2066, coffee_table_2068)
+##############################
+From agent.py
+walk_executor(book_2066)
+Robot find: Robot is close to the bookshelf_354. Robot is close to the book_2066. 
+##############################
+From agent.py
+open_executor(book_2066)
+Robot find: Robot is close to the bookshelf_354. Robot is close to the book_2066. book_2066 is opened. 
+##############################
+From agent.py
+obs(book_2066, Check if its the correct book to place on the table)
+Get this information:  book_2066 is close to bookshelf_354. book_2066 is close to character_65. book_2066 is on bookshelf_354. book_2066 is inside home_office_319. book_2066 is OPEN.
+##############################
+From agent.py
+grab_executor(book_2066)
+Robot find: Robot is close to the bookshelf_354. Robot is close to the book_2066. Grabbing book_2066 by right hand. 
+##############################
+From agent.py
+walk_executor(coffee_table_2068)
+Robot find: Robot is close to the book_2066. Robot is close to the coffee_table_2068. 
+##############################
+From agent.py
+put_executor(book_2066, coffee_table_2068)
+Robot find: Robot is close to the book_2066. Robot is close to the coffee_table_2068. coffee_table_2068 is close book_2066. book_2066 is close coffee_table_2068. book_2066 is on coffee_table_2068. book_2066 released by right hand. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: Yes
+The feedback instruction: None
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_cup_2063_around_home_office_319(cup:item):
+    goal: not unknown(cup)
+    body:
+        assert is_cup(cup)
+        bind home_office_instance:item where:
+            is_home_office(home_office_instance) and id[home_office_instance]==319
+        achieve close_char(char,home_office_instance)
+        if can_open(home_office_instance):
+            achieve_once open(home_office_instance)
+            exp(cup,home_office_instance)
+        else:
+            exp(cup,home_office_instance)
+    eff:
+        unknown[cup]=False
+        close[cup,home_office_instance]=True
+        close[home_office_instance,cup]=True
+    
+
+behavior find_milk_2043_around_fridge_289(milk:item):
+    goal: not unknown(milk)
+    body:
+        assert is_milk(milk)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(milk,fridge_instance)
+        else:
+            exp(milk,fridge_instance)
+    eff:
+        unknown[milk]=False
+        close[milk,fridge_instance]=True
+        close[fridge_instance,milk]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+behavior prepare_hot_milk_on_table(coffee_table:item, cup:item, milk:item):
+    body:
+        achieve_once inside(milk, cup) # Pour milk into the cup
+        achieve_once is_on(coffee_table) # Confirming that the coffee table is on
+
+behavior heat_milk_cup(cup:item):
+    body:
+        achieve_once is_hot(cup) # Ensure the milk in the cup is heated
+
+behavior place_on_table(item:item, table:item):
+    body:
+        achieve_once on(item, table) # Place an item on the table
+
+behavior __goal__():
+    body:
+        bind coffee_table: item where:
+            is_coffee_table(coffee_table)
+
+        bind cup: item where:
+            is_cup(cup)
+
+        bind milk: item where:
+            is_milk(milk)
+
+        prepare_hot_milk_on_table(coffee_table, cup, milk)
+        heat_milk_cup(cup) # Heat the milk in the cup
+        place_on_table(cup, coffee_table) # Place the cup of hot milk on the coffee table
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "behavior_definition":
+
+'Function is_hot not found. Note that recursive function calls are not supported in the current version.'
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_cup_2063_around_home_office_319(cup:item):
+    goal: not unknown(cup)
+    body:
+        assert is_cup(cup)
+        bind home_office_instance:item where:
+            is_home_office(home_office_instance) and id[home_office_instance]==319
+        achieve close_char(char,home_office_instance)
+        if can_open(home_office_instance):
+            achieve_once open(home_office_instance)
+            exp(cup,home_office_instance)
+        else:
+            exp(cup,home_office_instance)
+    eff:
+        unknown[cup]=False
+        close[cup,home_office_instance]=True
+        close[home_office_instance,cup]=True
+    
+
+behavior find_milk_2043_around_fridge_289(milk:item):
+    goal: not unknown(milk)
+    body:
+        assert is_milk(milk)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(milk,fridge_instance)
+        else:
+            exp(milk,fridge_instance)
+    eff:
+        unknown[milk]=False
+        close[milk,fridge_instance]=True
+        close[fridge_instance,milk]=True
+    
+
+#goal_representation
+
+behavior prepare_hot_milk_on_table(coffee_table:item, cup:item, milk:item):
+    body:
+        achieve_once inside(milk, cup) # Pour milk into the cup
+
+behavior heat_milk_cup(cup:item):
+    body:
+        achieve_once is_on(cup) # Heat the milk in the cup
+
+behavior place_on_table(item:item, table:item):
+    body:
+        achieve_once on(item, table) # Place an item on the table
+
+behavior __goal__():
+    body:
+        bind coffee_table: item where:
+            is_coffee_table(coffee_table)
+
+        bind cup: item where:
+            is_cup(cup)
+
+        bind milk: item where:
+            is_milk(milk)
+
+        prepare_hot_milk_on_table(coffee_table, cup, milk)
+        heat_milk_cup(cup) # Heat the milk in the cup
+        place_on_table(cup, coffee_table) # Place the cup of hot milk on the coffee table
+
+#goal_representation_end
+
+##############################
+Error is:
+'NoneType' object is not iterable
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_cup_2064_around_home_office_319(cup:item):
+    goal: not unknown(cup)
+    body:
+        assert is_cup(cup)
+        bind home_office_instance:item where:
+            is_home_office(home_office_instance) and id[home_office_instance]==319
+        achieve close_char(char,home_office_instance)
+        if can_open(home_office_instance):
+            achieve_once open(home_office_instance)
+            exp(cup,home_office_instance)
+        else:
+            exp(cup,home_office_instance)
+    eff:
+        unknown[cup]=False
+        close[cup,home_office_instance]=True
+        close[home_office_instance,cup]=True
+    
+
+behavior find_milk_2043_around_fridge_289(milk:item):
+    goal: not unknown(milk)
+    body:
+        assert is_milk(milk)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(milk,fridge_instance)
+        else:
+            exp(milk,fridge_instance)
+    eff:
+        unknown[milk]=False
+        close[milk,fridge_instance]=True
+        close[fridge_instance,milk]=True
+    
+
+behavior find_pencil_2001_around_home_office_319(pencil:item):
+    goal: not unknown(pencil)
+    body:
+        assert is_pencil(pencil)
+        bind home_office_instance:item where:
+            is_home_office(home_office_instance) and id[home_office_instance]==319
+        achieve close_char(char,home_office_instance)
+        if can_open(home_office_instance):
+            achieve_once open(home_office_instance)
+            exp(pencil,home_office_instance)
+        else:
+            exp(pencil,home_office_instance)
+    eff:
+        unknown[pencil]=False
+        close[pencil,home_office_instance]=True
+        close[home_office_instance,pencil]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior prepare_hot_milk(cup:item, milk:item, stove:item):
+    body:
+        achieve_once inside(milk, cup)
+        # Pour the milk into the cup
+        achieve_once is_on(stove)
+        # Turn on the stove
+        achieve_once on(cup, stove)
+        # Place the cup with milk on the stove to heat
+
+behavior place_item_on_table(item:item, table:item):
+    body:
+        achieve_once on(item, table)
+        # Place the prepared item on the table
+
+behavior __goal__():
+    body:
+        bind cup: item where:
+            is_cup(cup)
+        # Find a cup to hold the milk
+
+        bind stove: item where:
+            is_stove(stove)
+        # Locate the stove for heating the milk
+
+        bind table: item where:
+            is_coffee_table(table) and inside(table, home_office)
+        # Locate the coffee table in the home office
+
+        bind milk: item where:
+            is_milk(milk)
+        # Identify the milk that will be used
+
+        prepare_hot_milk(cup, milk, stove)
+        # Prepare the milk and heat it on the stove
+
+        place_item_on_table(cup, table)
+        # Place the cup of hot milk on the coffee table in the home office
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "behavior_definition":
+
+Unknown variable: home_office; available variables: [Variable<table: item>].
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_cup_2064_around_home_office_319(cup:item):
+    goal: not unknown(cup)
+    body:
+        assert is_cup(cup)
+        bind home_office_instance:item where:
+            is_home_office(home_office_instance) and id[home_office_instance]==319
+        achieve close_char(char,home_office_instance)
+        if can_open(home_office_instance):
+            achieve_once open(home_office_instance)
+            exp(cup,home_office_instance)
+        else:
+            exp(cup,home_office_instance)
+    eff:
+        unknown[cup]=False
+        close[cup,home_office_instance]=True
+        close[home_office_instance,cup]=True
+    
+
+behavior find_milk_2043_around_fridge_289(milk:item):
+    goal: not unknown(milk)
+    body:
+        assert is_milk(milk)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(milk,fridge_instance)
+        else:
+            exp(milk,fridge_instance)
+    eff:
+        unknown[milk]=False
+        close[milk,fridge_instance]=True
+        close[fridge_instance,milk]=True
+    
+
+behavior find_pencil_2001_around_home_office_319(pencil:item):
+    goal: not unknown(pencil)
+    body:
+        assert is_pencil(pencil)
+        bind home_office_instance:item where:
+            is_home_office(home_office_instance) and id[home_office_instance]==319
+        achieve close_char(char,home_office_instance)
+        if can_open(home_office_instance):
+            achieve_once open(home_office_instance)
+            exp(pencil,home_office_instance)
+        else:
+            exp(pencil,home_office_instance)
+    eff:
+        unknown[pencil]=False
+        close[pencil,home_office_instance]=True
+        close[home_office_instance,pencil]=True
+    
+
+#goal_representation
+
+behavior prepare_hot_milk(cup:item, milk:item, stove:item):
+    body:
+        achieve_once inside(milk, cup)
+        # Pour the milk into the cup
+        achieve_once is_on(stove)
+        # Turn on the stove
+        achieve_once on(cup, stove)
+        # Place the cup with milk on the stove to heat
+
+behavior place_item_on_table(item:item, table:item):
+    body:
+        achieve_once on(item, table)
+        # Place the prepared item on the table
+
+behavior __goal__():
+    body:
+        bind cup: item where:
+            is_cup(cup)
+        # Find a cup to hold the milk
+
+        bind stove: item where:
+            is_stove(stove)
+        # Locate the stove for heating the milk
+
+        bind table: item where:
+            is_coffee_table(table) and inside(table, home_office)
+        # Locate the coffee table in the home office
+
+        bind milk: item where:
+            is_milk(milk)
+        # Identify the milk that will be used
+
+        bind home_office: item where:
+            is_home_office(home_office)
+        # Define the home office location
+
+        prepare_hot_milk(cup, milk, stove)
+        # Prepare the milk and heat it on the stove
+
+        place_item_on_table(cup, table)
+        # Place the cup of hot milk on the coffee table in the home office
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "behavior_definition":
+
+Unknown variable: home_office; available variables: [Variable<table: item>].
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_cup_2063_around_home_office_319(cup:item):
+    goal: not unknown(cup)
+    body:
+        assert is_cup(cup)
+        bind home_office_instance:item where:
+            is_home_office(home_office_instance) and id[home_office_instance]==319
+        achieve close_char(char,home_office_instance)
+        if can_open(home_office_instance):
+            achieve_once open(home_office_instance)
+            exp(cup,home_office_instance)
+        else:
+            exp(cup,home_office_instance)
+    eff:
+        unknown[cup]=False
+        close[cup,home_office_instance]=True
+        close[home_office_instance,cup]=True
+    
+
+behavior find_milk_2043_around_fridge_289(milk:item):
+    goal: not unknown(milk)
+    body:
+        assert is_milk(milk)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(milk,fridge_instance)
+        else:
+            exp(milk,fridge_instance)
+    eff:
+        unknown[milk]=False
+        close[milk,fridge_instance]=True
+        close[fridge_instance,milk]=True
+    
+
+behavior find_pencil_2001_around_desk_104(pencil:item):
+    goal: not unknown(pencil)
+    body:
+        assert is_pencil(pencil)
+        bind desk_instance:item where:
+            is_desk(desk_instance) and id[desk_instance]==104
+        achieve close_char(char,desk_instance)
+        if can_open(desk_instance):
+            achieve_once open(desk_instance)
+            exp(pencil,desk_instance)
+        else:
+            exp(pencil,desk_instance)
+    eff:
+        unknown[pencil]=False
+        close[pencil,desk_instance]=True
+        close[desk_instance,pencil]=True
+    
+
+#goal_representation
+ 
+behavior prepare_hot_milk(cup:item, milk:item, stove:item):
+    body:
+        achieve_once inside(milk, cup)
+        # Pour the milk into the cup
+        achieve_once is_on(stove)
+        # Turn on the stove
+        achieve_once on(cup, stove)
+        # Place the cup with milk on the stove to heat
+
+behavior place_item_on_table(item:item, table:item):
+    body:
+        achieve_once on(item, table)
+        # Place the prepared item on the table
+
+behavior __goal__():
+    body:
+        bind cup: item where:
+            is_cup(cup)
+        # Find a cup to hold the milk
+
+        bind stove: item where:
+            is_stove(stove)
+        # Locate the stove for heating the milk
+
+        bind table: item where:
+            is_coffee_table(table)
+        # Locate the coffee table
+
+        bind milk: item where:
+            is_milk(milk)
+        # Identify the milk that will be used
+
+        bind home_office: item where:
+            is_home_office(home_office)
+        # Define the home office location
+
+        prepare_hot_milk(cup, milk, stove)
+        # Prepare the milk and heat it on the stove
+
+        place_item_on_table(cup, table)
+        # Place the cup of hot milk on the coffee table in the home office
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+behavior prepare_hot_milk(cup:item, milk:item, stove:item):
+    body:
+        achieve_once inside(milk, cup)
+        # Pour the milk into the cup
+        achieve_once is_on(stove)
+        # Turn on the stove
+        achieve_once on(cup, stove)
+        # Place the cup with milk on the stove to heat
+
+behavior place_item_on_table(item:item, table:item):
+    body:
+        achieve_once on(item, table)
+        # Place the prepared item on the table
+
+behavior __goal__():
+    body:
+        bind cup: item where:
+            is_cup(cup)
+        # Find a cup to hold the milk
+
+        bind stove: item where:
+            is_stove(stove)
+        # Locate the stove for heating the milk
+
+        bind table: item where:
+            is_coffee_table(table)
+        # Locate the coffee table
+
+        bind milk: item where:
+            is_milk(milk)
+        # Identify the milk that will be used
+
+        bind home_office: item where:
+            is_home_office(home_office)
+        # Define the home office location
+
+        prepare_hot_milk(cup, milk, stove)
+        # Prepare the milk and heat it on the stove
+
+        place_item_on_table(cup, table)
+        # Place the cup of hot milk on the coffee table in the home office
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(home_office_319)exp(cup_2063, home_office_319)walk_executor(fridge_289)switchoff_executor(fridge_289)open_executor(fridge_289)exp(milk_2043, fridge_289)walk_executor(milk_2043)grab_executor(milk_2043)walk_executor(cup_2063)putin_executor(milk_2043, cup_2063)walk_executor(stove_2065)switchon_executor(stove_2065)walk_executor(cup_2063)grab_executor(cup_2063)walk_executor(stove_2065)put_executor(cup_2063, stove_2065)walk_executor(cup_2063)grab_executor(cup_2063)walk_executor(coffee_table_2068)put_executor(cup_2063, coffee_table_2068)
+##############################
+From agent.py
+walk_executor(home_office_319)
+
+##############################
+From agent.py
+exp(cup_2063, home_office_319)
+Fail to find cup_2063 around home_office_319. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(home_office_319)exp(cup_2063, home_office_319)walk_executor(fridge_289)switchoff_executor(fridge_289)open_executor(fridge_289)exp(milk_2043, fridge_289)walk_executor(milk_2043)grab_executor(milk_2043)walk_executor(cup_2063)putin_executor(milk_2043, cup_2063)walk_executor(stove_2065)switchon_executor(stove_2065)walk_executor(cup_2063)grab_executor(cup_2063)walk_executor(stove_2065)put_executor(cup_2063, stove_2065)walk_executor(cup_2063)grab_executor(cup_2063)walk_executor(coffee_table_2068)put_executor(cup_2063, coffee_table_2068)
+##############################
+From agent.py
+walk_executor(home_office_319)
+
+##############################
+From agent.py
+exp(cup_2063, home_office_319)
+Fail to find cup_2063 around home_office_319. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(home_office_319)exp(cup_2063, home_office_319)walk_executor(fridge_289)switchoff_executor(fridge_289)open_executor(fridge_289)exp(milk_2043, fridge_289)walk_executor(milk_2043)grab_executor(milk_2043)walk_executor(cup_2063)putin_executor(milk_2043, cup_2063)walk_executor(stove_2065)switchon_executor(stove_2065)walk_executor(cup_2063)grab_executor(cup_2063)walk_executor(stove_2065)put_executor(cup_2063, stove_2065)walk_executor(cup_2063)grab_executor(cup_2063)walk_executor(coffee_table_2068)put_executor(cup_2063, coffee_table_2068)
+##############################
+From agent.py
+walk_executor(home_office_319)
+
+##############################
+From agent.py
+exp(cup_2063, home_office_319)
+Fail to find cup_2063 around home_office_319. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(home_office_319)exp(cup_2063, home_office_319)walk_executor(fridge_289)switchoff_executor(fridge_289)open_executor(fridge_289)exp(milk_2043, fridge_289)walk_executor(milk_2043)grab_executor(milk_2043)walk_executor(cup_2063)putin_executor(milk_2043, cup_2063)walk_executor(stove_2065)switchon_executor(stove_2065)walk_executor(cup_2063)grab_executor(cup_2063)walk_executor(stove_2065)put_executor(cup_2063, stove_2065)walk_executor(cup_2063)grab_executor(cup_2063)walk_executor(coffee_table_2068)put_executor(cup_2063, coffee_table_2068)
+##############################
+From agent.py
+walk_executor(home_office_319)
+
+##############################
+From agent.py
+exp(cup_2063, home_office_319)
+Fail to find cup_2063 around home_office_319. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(home_office_319)exp(cup_2063, home_office_319)walk_executor(fridge_289)switchoff_executor(fridge_289)open_executor(fridge_289)exp(milk_2043, fridge_289)walk_executor(milk_2043)grab_executor(milk_2043)walk_executor(cup_2063)putin_executor(milk_2043, cup_2063)walk_executor(stove_2065)switchon_executor(stove_2065)walk_executor(cup_2063)grab_executor(cup_2063)walk_executor(stove_2065)put_executor(cup_2063, stove_2065)walk_executor(cup_2063)grab_executor(cup_2063)walk_executor(coffee_table_2068)put_executor(cup_2063, coffee_table_2068)
+##############################
+From agent.py
+walk_executor(home_office_319)
+
+##############################
+From agent.py -> query_LLM_human
+Record from func query_LLM_human in agent.py
+Question: Can you help me to find cup_2063 ?
+Answer: The target item, cup_2063, is located inside the dining_room_201. You can find it on the kitchen_counter_230. Look for it on the surface of the kitchen counter; it should be closely positioned there.
+Re-decompose: None
+
+##############################
+From agent.py
+Human Instruction: The target item, cup_2063, is located inside the dining_room_201. You can find it on the kitchen_counter_230. Look for it on the surface of the kitchen counter; it should be closely positioned there.
+
+The actions you have taken:
+Action 1: Walk to bookshelf_233.
+Action 2: Open bookshelf_233.
+Action 3: look for book_2066 around bookshelf_233.
+Action 4: Walk to bookshelf_354.
+Action 5: Open bookshelf_354.
+Action 6: look for book_2066 around bookshelf_354.
+Action 7: Walk to book_2066.
+Action 8: Open book_2066.
+Action 9: Observe around book_2066 with the question of Check if its the correct book to place on the table.
+Action 10: Grab book_2066.
+Action 11: Walk to coffee_table_2068.
+Action 12: Put book_2066 on coffee_table_2068.
+Action 13: Walk to home_office_319.
+Action 14: look for cup_2063 around home_office_319.
+Action 15: Walk to home_office_319.
+Action 16: look for cup_2063 around home_office_319.
+Action 17: Walk to home_office_319.
+Action 18: look for cup_2063 around home_office_319.
+Action 19: Walk to home_office_319.
+Action 20: look for cup_2063 around home_office_319.
+Action 21: Walk to home_office_319.
+
+##############################
+From agent.py
+exp(cup_2063, home_office_319)
+Fail to find cup_2063 around home_office_319. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(kitchen_counter_230)exp(cup_2063, kitchen_counter_230)walk_executor(fridge_289)switchoff_executor(fridge_289)open_executor(fridge_289)exp(milk_2043, fridge_289)walk_executor(milk_2043)grab_executor(milk_2043)walk_executor(cup_2063)putin_executor(milk_2043, cup_2063)walk_executor(stove_2065)switchon_executor(stove_2065)walk_executor(cup_2063)grab_executor(cup_2063)walk_executor(stove_2065)put_executor(cup_2063, stove_2065)walk_executor(cup_2063)grab_executor(cup_2063)walk_executor(coffee_table_2068)put_executor(cup_2063, coffee_table_2068)
+##############################
+From agent.py
+walk_executor(kitchen_counter_230)
+Robot find: drawing_238, drawing_239, drawing_240, drawing_241, drawing_242, drawing_243, napkin_2005, oil_2079, cup_2063, knife_2050, cup_2064, pot_2069, fryingpan_2083, Robot is close to the kitchen_counter_230. 
+##############################
+From agent.py
+exp(cup_2063, kitchen_counter_230)
+Find cup_2063. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(fridge_289)switchoff_executor(fridge_289)open_executor(fridge_289)exp(milk_2043, fridge_289)walk_executor(milk_2043)grab_executor(milk_2043)walk_executor(cup_2063)putin_executor(milk_2043, cup_2063)walk_executor(stove_2065)switchon_executor(stove_2065)walk_executor(cup_2063)grab_executor(cup_2063)walk_executor(stove_2065)put_executor(cup_2063, stove_2065)walk_executor(cup_2063)grab_executor(cup_2063)walk_executor(coffee_table_2068)put_executor(cup_2063, coffee_table_2068)
+##############################
+From agent.py
+walk_executor(fridge_289)
+Robot find: Robot is close to the fridge_289. 
+##############################
+From agent.py
+switchoff_executor(fridge_289)
+Robot find: Robot is close to the fridge_289. fridge_289 is turned off. 
+##############################
+From agent.py
+open_executor(fridge_289)
+Robot find: sauce_2078, food_steak_2008, food_apple_2009, food_bacon_2010, food_banana_2011, food_bread_2012, food_cake_2013, food_carrot_2014, food_cereal_2015, food_cheese_2016, food_chicken_2017, food_dessert_2018, food_donut_2019, food_egg_2020, food_fish_2021, food_food_2022, food_fruit_2023, food_hamburger_2024, food_ice_cream_2025, food_jam_2026, food_kiwi_2027, food_lemon_2028, food_noodles_2029, food_oatmeal_2030, food_orange_2031, food_onion_2032, food_peanut_butter_2033, food_pizza_2034, food_potato_2035, food_rice_2036, food_salt_2037, food_snack_2038, food_sugar_2039, food_turkey_2040, food_vegetable_2041, dry_pasta_2042, milk_2043, Robot is close to the sauce_2078. Robot is close to the fridge_289. Robot is close to the food_steak_2008. Robot is close to the food_apple_2009. Robot is close to the food_bacon_2010. Robot is close to the food_banana_2011. Robot is close to the food_bread_2012. Robot is close to the food_cake_2013. Robot is close to the food_carrot_2014. Robot is close to the food_cereal_2015. Robot is close to the food_cheese_2016. Robot is close to the food_chicken_2017. Robot is close to the food_dessert_2018. Robot is close to the food_donut_2019. Robot is close to the food_egg_2020. Robot is close to the food_fish_2021. Robot is close to the food_food_2022. Robot is close to the food_fruit_2023. Robot is close to the food_hamburger_2024. Robot is close to the food_ice_cream_2025. Robot is close to the food_jam_2026. Robot is close to the food_kiwi_2027. Robot is close to the food_lemon_2028. Robot is close to the food_noodles_2029. Robot is close to the food_oatmeal_2030. Robot is close to the food_orange_2031. Robot is close to the food_onion_2032. Robot is close to the food_peanut_butter_2033. Robot is close to the food_pizza_2034. Robot is close to the food_potato_2035. Robot is close to the food_rice_2036. Robot is close to the food_salt_2037. Robot is close to the food_snack_2038. Robot is close to the food_sugar_2039. Robot is close to the food_turkey_2040. Robot is close to the food_vegetable_2041. Robot is close to the dry_pasta_2042. Robot is close to the milk_2043. fridge_289 is opened. 
+##############################
+From agent.py
+exp(milk_2043, fridge_289)
+Find milk_2043. 
+##############################
+From agent.py-> find a plan in act()
+grab_executor(milk_2043)walk_executor(cup_2063)putin_executor(milk_2043, cup_2063)walk_executor(stove_2065)switchon_executor(stove_2065)walk_executor(cup_2063)grab_executor(cup_2063)walk_executor(stove_2065)put_executor(cup_2063, stove_2065)walk_executor(cup_2063)grab_executor(cup_2063)walk_executor(coffee_table_2068)put_executor(cup_2063, coffee_table_2068)
+##############################
+From agent.py
+grab_executor(milk_2043)
+Robot find: Robot is close to the sauce_2078. Robot is close to the fridge_289. Robot is close to the food_steak_2008. Robot is close to the food_apple_2009. Robot is close to the food_bacon_2010. Robot is close to the food_banana_2011. Robot is close to the food_bread_2012. Robot is close to the food_cake_2013. Robot is close to the food_carrot_2014. Robot is close to the food_cereal_2015. Robot is close to the food_cheese_2016. Robot is close to the food_chicken_2017. Robot is close to the food_dessert_2018. Robot is close to the food_donut_2019. Robot is close to the food_egg_2020. Robot is close to the food_fish_2021. Robot is close to the food_food_2022. Robot is close to the food_fruit_2023. Robot is close to the food_hamburger_2024. Robot is close to the food_ice_cream_2025. Robot is close to the food_jam_2026. Robot is close to the food_kiwi_2027. Robot is close to the food_lemon_2028. Robot is close to the food_noodles_2029. Robot is close to the food_oatmeal_2030. Robot is close to the food_orange_2031. Robot is close to the food_onion_2032. Robot is close to the food_peanut_butter_2033. Robot is close to the food_pizza_2034. Robot is close to the food_potato_2035. Robot is close to the food_rice_2036. Robot is close to the food_salt_2037. Robot is close to the food_snack_2038. Robot is close to the food_sugar_2039. Robot is close to the food_turkey_2040. Robot is close to the food_vegetable_2041. Robot is close to the dry_pasta_2042. Robot is close to the milk_2043. Grabbing milk_2043 by right hand. 
+##############################
+From agent.py
+walk_executor(cup_2063)
+Robot find: Robot is close to the milk_2043. Robot is close to the kitchen_counter_230. Robot is close to the cup_2063. 
+##############################
+From agent.py
+putin_executor(milk_2043, cup_2063)
+Robot find: Robot is close to the milk_2043. Robot is close to the kitchen_counter_230. Robot is close to the cup_2063. milk_2043 is inside cup_2063. cup_2063 is close milk_2043. milk_2043 is close cup_2063. milk_2043 released by right hand. 
+##############################
+From agent.py
+walk_executor(stove_2065)
+Robot find: Robot is close to the kitchen_counter_230. Robot is close to the stove_2065. 
+##############################
+From agent.py
+switchon_executor(stove_2065)
+Robot find: Robot is close to the kitchen_counter_230. Robot is close to the stove_2065. stove_2065 is turned on. 
+##############################
+From agent.py
+walk_executor(cup_2063)
+Robot find: Robot is close to the kitchen_counter_230. Robot is close to the cup_2063. 
+##############################
+From agent.py
+grab_executor(cup_2063)
+Robot find: Robot is close to the kitchen_counter_230. Robot is close to the cup_2063. Grabbing cup_2063 by right hand. 
+##############################
+From agent.py
+walk_executor(stove_2065)
+Robot find: Robot is close to the kitchen_counter_230. Robot is close to the cup_2063. Robot is close to the stove_2065. 
+##############################
+From agent.py
+put_executor(cup_2063, stove_2065)
+Robot find: Robot is close to the kitchen_counter_230. Robot is close to the cup_2063. Robot is close to the stove_2065. cup_2063 is close stove_2065. cup_2063 is on stove_2065. stove_2065 is close cup_2063. cup_2063 released by right hand. 
+##############################
+From agent.py
+walk_executor(cup_2063)
+Robot find: Robot is close to the cup_2063. Robot is close to the stove_2065. 
+##############################
+From agent.py
+grab_executor(cup_2063)
+Robot find: Robot is close to the cup_2063. Robot is close to the stove_2065. Grabbing cup_2063 by right hand. 
+##############################
+From agent.py
+walk_executor(coffee_table_2068)
+Robot find: Robot is close to the cup_2063. Robot is close to the coffee_table_2068. 
+##############################
+From agent.py
+put_executor(cup_2063, coffee_table_2068)
+Robot find: Robot is close to the cup_2063. Robot is close to the coffee_table_2068. coffee_table_2068 is close cup_2063. cup_2063 is close coffee_table_2068. cup_2063 is on coffee_table_2068. cup_2063 released by right hand. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: Yes
+The feedback instruction: None
+##############################
+Task Summary:
+Task Goal:
+Find the book and put it on the coffe table in home office. Then prepare a cup of hot milk, put it on the table.
+Action History:
+['walk_executor(bookshelf_233)', 'open_executor(bookshelf_233)', 'walk_executor(bookshelf_354)', 'open_executor(bookshelf_354)', 'walk_executor(book_2066)', 'open_executor(book_2066)', 'grab_executor(book_2066)', 'walk_executor(coffee_table_2068)', 'put_executor(book_2066, coffee_table_2068)', 'walk_executor(home_office_319)', 'walk_executor(home_office_319)', 'walk_executor(home_office_319)', 'walk_executor(home_office_319)', 'walk_executor(home_office_319)', 'walk_executor(kitchen_counter_230)', 'walk_executor(fridge_289)', 'switchoff_executor(fridge_289)', 'open_executor(fridge_289)', 'grab_executor(milk_2043)', 'walk_executor(cup_2063)', 'putin_executor(milk_2043, cup_2063)', 'walk_executor(stove_2065)', 'switchon_executor(stove_2065)', 'walk_executor(cup_2063)', 'grab_executor(cup_2063)', 'walk_executor(stove_2065)', 'put_executor(cup_2063, stove_2065)', 'walk_executor(cup_2063)', 'grab_executor(cup_2063)', 'walk_executor(coffee_table_2068)', 'put_executor(cup_2063, coffee_table_2068)']
+Time info:
+Time consume: 416 seconds
+Exp_helper query times: 1
+Guidance query times: 0
+library scale: 29
+goal generate times: 3
+goal correct times: 3
+action_num: 31
+
+Task complete rate:
+Keystate: k1 - Requires: 4 steps
+Keystate: k2 - Requires: 8 steps
+Keystate: k3 - Requires: 3 steps
+Action Completion Rate: No actions required
+Scene_id: 0
+##############################

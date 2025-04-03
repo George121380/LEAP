@@ -1,0 +1,884 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Find the pizza and hamburger and place them on a plate.', '2. Heat the plate with the pizza and hamburger in the microwave.', '3. Put the plate on the table in the dining room.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_plate_2105_around_kitchen_counter_129(plate:item):
+    goal: not unknown(plate)
+    body:
+        assert is_plate(plate)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==129
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(plate,kitchen_counter_instance)
+        else:
+            exp(plate,kitchen_counter_instance)
+    eff:
+        unknown[plate]=False
+        close[plate,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,plate]=True
+    
+
+behavior find_food_hamburger_2057_around_kitchen_counter_129(food_hamburger:item):
+    goal: not unknown(food_hamburger)
+    body:
+        assert is_food_hamburger(food_hamburger)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==129
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_hamburger,kitchen_counter_instance)
+        else:
+            exp(food_hamburger,kitchen_counter_instance)
+    eff:
+        unknown[food_hamburger]=False
+        close[food_hamburger,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_hamburger]=True
+    
+
+behavior find_food_pizza_2065_around_kitchen_counter_129(food_pizza:item):
+    goal: not unknown(food_pizza)
+    body:
+        assert is_food_pizza(food_pizza)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==129
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_pizza,kitchen_counter_instance)
+        else:
+            exp(food_pizza,kitchen_counter_instance)
+    eff:
+        unknown[food_pizza]=False
+        close[food_pizza,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_pizza]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_plate_or_cuttable_food(x:item):
+    # Check if the item is a plate or if it is a cuttable type of food
+    return is_plate(x) or (is_food(x) and cuttable(x))
+
+def gather_items_on_plate():
+    # Gather items on a plate, including both pizza and hamburgers
+    foreach item: item:
+        if is_plate_or_cuttable_food(item) and not inhand(item):
+            grab(item)
+            put_on(item, plate)
+            # Place the item onto the plate
+            empty_a_hand()
+            # Empty hand for next item
+
+behavior __goal__():
+    body:
+        bind pizza: item where:
+            is_food_pizza(pizza)
+        # Select the pizza item
+        
+        bind hamburger: item where:
+            is_food_hamburger(hamburger)
+        # Select the hamburger item
+        
+        bind plate: item where:
+            is_plate(plate)
+        # Ensure there is a plate to use
+        
+        gather_items_on_plate()
+        # Stage pizza and hamburger onto the plate
+
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_hamburger_2057_around_kitchen_counter_129(food_hamburger:item):
+    goal: not unknown(food_hamburger)
+    body:
+        assert is_food_hamburger(food_hamburger)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==129
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_hamburger,kitchen_counter_instance)
+        else:
+            exp(food_hamburger,kitchen_counter_instance)
+    eff:
+        unknown[food_hamburger]=False
+        close[food_hamburger,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_hamburger]=True
+    
+
+behavior find_food_pizza_2065_around_kitchen_counter_129(food_pizza:item):
+    goal: not unknown(food_pizza)
+    body:
+        assert is_food_pizza(food_pizza)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==129
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_pizza,kitchen_counter_instance)
+        else:
+            exp(food_pizza,kitchen_counter_instance)
+    eff:
+        unknown[food_pizza]=False
+        close[food_pizza,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_pizza]=True
+    
+
+behavior find_plate_2105_around_kitchen_counter_129(plate:item):
+    goal: not unknown(plate)
+    body:
+        assert is_plate(plate)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==129
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(plate,kitchen_counter_instance)
+        else:
+            exp(plate,kitchen_counter_instance)
+    eff:
+        unknown[plate]=False
+        close[plate,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,plate]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+
+def is_food_item(item:item):
+    # Function to check if an item is pizza or hamburger
+    return is_food_pizza(item) or is_food_hamburger(item)
+
+behavior find_food_on_plate(plate:item):
+    body:
+        if not exists f: item : is_food_item(f) and on(f, plate):
+            # No pizza or hamburger found on the plate, observe the plate
+            observe(plate, "Check if pizza and hamburger are on the plate")
+
+behavior grab_food_item(plate:item):
+    body:
+        foreach f: item:
+            if is_food_item(f) and on(f, plate):
+                grab(f)
+                # Grab the pizza or hamburger on the plate
+                empty_a_hand()
+                # Release one item from hand to grab another if needed
+
+behavior __goal__():
+    body:
+        bind plate: item where:
+            is_plate(plate)
+        # Select a plate for the food
+        
+        find_food_on_plate(plate)
+        # Identify pizza and hamburger items on a plate
+        
+        grab_food_item(plate)
+        # Grab pizza and hamburger found on the plate
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_plate_2105_around_kitchen_counter_129(plate:item):
+    goal: not unknown(plate)
+    body:
+        assert is_plate(plate)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==129
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(plate,kitchen_counter_instance)
+        else:
+            exp(plate,kitchen_counter_instance)
+    eff:
+        unknown[plate]=False
+        close[plate,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,plate]=True
+    
+
+behavior find_food_hamburger_2057_around_kitchen_counter_129(food_hamburger:item):
+    goal: not unknown(food_hamburger)
+    body:
+        assert is_food_hamburger(food_hamburger)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==129
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_hamburger,kitchen_counter_instance)
+        else:
+            exp(food_hamburger,kitchen_counter_instance)
+    eff:
+        unknown[food_hamburger]=False
+        close[food_hamburger,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_hamburger]=True
+    
+
+behavior find_food_pizza_2065_around_kitchen_counter_129(food_pizza:item):
+    goal: not unknown(food_pizza)
+    body:
+        assert is_food_pizza(food_pizza)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==129
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_pizza,kitchen_counter_instance)
+        else:
+            exp(food_pizza,kitchen_counter_instance)
+    eff:
+        unknown[food_pizza]=False
+        close[food_pizza,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_pizza]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior find_and_place_on_plate(food:item, plate:item):
+    body:
+        if not inhand(food):
+            grab(food)
+        if not on(food, plate):
+            put_on(food, plate)
+
+behavior __goal__():
+    body:
+        bind pizza: item where:
+            is_food_pizza(pizza)
+        # Select pizza from items
+        
+        bind hamburger: item where:
+            is_food_hamburger(hamburger)
+        # Select hamburger from items
+        
+        bind plate: item where:
+            is_plate(plate)
+        # Select a plate from items
+
+        # Find pizza and place it on a plate
+        find_and_place_on_plate(pizza, plate)
+
+        # Find hamburger and place it on a plate
+        find_and_place_on_plate(hamburger, plate)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+ 
+behavior find_and_place_on_plate(food:item, plate:item):
+    body:
+        if not inhand(food):
+            grab(food)
+        if not on(food, plate):
+            put_on(food, plate)
+
+behavior __goal__():
+    body:
+        bind pizza: item where:
+            is_food_pizza(pizza)
+        # Select pizza from items
+        
+        bind hamburger: item where:
+            is_food_hamburger(hamburger)
+        # Select hamburger from items
+        
+        bind plate: item where:
+            is_plate(plate)
+        # Select a plate from items
+
+        # Find pizza and place it on a plate
+        find_and_place_on_plate(pizza, plate)
+
+        # Find hamburger and place it on a plate
+        find_and_place_on_plate(hamburger, plate)
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(kitchen_counter_129)exp(food_pizza_2065, kitchen_counter_129)walk_executor(food_pizza_2065)grab_executor(food_pizza_2065)walk_executor(kitchen_counter_129)exp(plate_2105, kitchen_counter_129)walk_executor(plate_2105)put_executor(food_pizza_2065, plate_2105)walk_executor(kitchen_counter_129)exp(food_hamburger_2057, kitchen_counter_129)walk_executor(food_hamburger_2057)grab_executor(food_hamburger_2057)walk_executor(plate_2105)put_executor(food_hamburger_2057, plate_2105)
+##############################
+From agent.py
+walk_executor(kitchen_counter_129)
+Robot find: fryingpan_2107, oil_2102, pot_54, pot_2093, Robot is close to the kitchen_counter_129. 
+##############################
+From agent.py
+exp(food_pizza_2065, kitchen_counter_129)
+Fail to find food_pizza_2065 around kitchen_counter_129. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(fridge_140)switchoff_executor(fridge_140)open_executor(fridge_140)exp(food_pizza_2065, fridge_140)walk_executor(food_pizza_2065)grab_executor(food_pizza_2065)walk_executor(cupboard_130)exp(plate_2105, cupboard_130)walk_executor(plate_2105)put_executor(food_pizza_2065, plate_2105)walk_executor(fridge_140)exp(food_hamburger_2057, fridge_140)walk_executor(food_hamburger_2057)grab_executor(food_hamburger_2057)walk_executor(plate_2105)put_executor(food_hamburger_2057, plate_2105)
+##############################
+From agent.py
+walk_executor(fridge_140)
+Robot find: chair_138, milk_2074, dry_pasta_2073, Robot is close to the fridge_140. 
+##############################
+From agent.py
+switchoff_executor(fridge_140)
+Robot find: Robot is close to the fridge_140. fridge_140 is turned off. 
+##############################
+From agent.py
+open_executor(fridge_140)
+Robot find: food_cereal_2048, food_cheese_2049, food_chicken_2050, food_dessert_2051, food_donut_2052, food_egg_2053, food_fish_2054, food_food_2055, food_fruit_2056, food_hamburger_2057, food_ice_cream_2058, food_jam_2059, food_kiwi_2060, food_lemon_2061, food_noodles_2062, food_oatmeal_2063, food_peanut_butter_2064, food_pizza_2065, food_potato_2066, food_rice_2067, food_salt_2068, food_snack_2069, food_sugar_2070, food_turkey_2071, food_vegetable_2072, sauce_2101, food_steak_2042, food_apple_2043, food_bacon_2044, food_banana_2045, food_cake_2046, food_carrot_2047, Robot is close to the food_cereal_2048. Robot is close to the food_cheese_2049. Robot is close to the food_chicken_2050. Robot is close to the food_dessert_2051. Robot is close to the food_donut_2052. Robot is close to the food_egg_2053. Robot is close to the food_fish_2054. Robot is close to the food_food_2055. Robot is close to the food_fruit_2056. Robot is close to the food_hamburger_2057. Robot is close to the food_ice_cream_2058. Robot is close to the food_jam_2059. Robot is close to the fridge_140. Robot is close to the food_kiwi_2060. Robot is close to the food_lemon_2061. Robot is close to the food_noodles_2062. Robot is close to the food_oatmeal_2063. Robot is close to the food_peanut_butter_2064. Robot is close to the food_pizza_2065. Robot is close to the food_potato_2066. Robot is close to the food_rice_2067. Robot is close to the food_salt_2068. Robot is close to the food_snack_2069. Robot is close to the food_sugar_2070. Robot is close to the food_turkey_2071. Robot is close to the food_vegetable_2072. Robot is close to the sauce_2101. Robot is close to the food_steak_2042. Robot is close to the food_apple_2043. Robot is close to the food_bacon_2044. Robot is close to the food_banana_2045. Robot is close to the food_cake_2046. Robot is close to the food_carrot_2047. fridge_140 is opened. 
+##############################
+From agent.py
+exp(food_pizza_2065, fridge_140)
+Find food_pizza_2065. 
+##############################
+From agent.py-> find a plan in act()
+grab_executor(food_pizza_2065)walk_executor(cupboard_130)exp(plate_2105, cupboard_130)walk_executor(plate_2105)put_executor(food_pizza_2065, plate_2105)walk_executor(food_hamburger_2057)grab_executor(food_hamburger_2057)walk_executor(plate_2105)put_executor(food_hamburger_2057, plate_2105)
+##############################
+From agent.py
+grab_executor(food_pizza_2065)
+Robot find: Robot is close to the food_cereal_2048. Robot is close to the food_cheese_2049. Robot is close to the food_chicken_2050. Robot is close to the food_dessert_2051. Robot is close to the food_donut_2052. Robot is close to the food_egg_2053. Robot is close to the food_fish_2054. Robot is close to the food_food_2055. Robot is close to the food_fruit_2056. Robot is close to the food_hamburger_2057. Robot is close to the food_ice_cream_2058. Robot is close to the food_jam_2059. Robot is close to the fridge_140. Robot is close to the food_kiwi_2060. Robot is close to the food_lemon_2061. Robot is close to the food_noodles_2062. Robot is close to the food_oatmeal_2063. Robot is close to the food_peanut_butter_2064. Robot is close to the food_pizza_2065. Robot is close to the food_potato_2066. Robot is close to the food_rice_2067. Robot is close to the food_salt_2068. Robot is close to the food_snack_2069. Robot is close to the food_sugar_2070. Robot is close to the food_turkey_2071. Robot is close to the food_vegetable_2072. Robot is close to the sauce_2101. Robot is close to the food_steak_2042. Robot is close to the food_apple_2043. Robot is close to the food_bacon_2044. Robot is close to the food_banana_2045. Robot is close to the food_cake_2046. Robot is close to the food_carrot_2047. Grabbing food_pizza_2065 by right hand. 
+##############################
+From agent.py
+walk_executor(cupboard_130)
+Robot find: blender_2032, tea_bag_2017, Robot is close to the food_pizza_2065. Robot is close to the blender_2032. Robot is close to the tea_bag_2017. Robot is close to the cupboard_130. 
+##############################
+From agent.py
+exp(plate_2105, cupboard_130)
+Fail to find plate_2105 around cupboard_130. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(cupboard_131)open_executor(cupboard_131)exp(plate_2105, cupboard_131)walk_executor(plate_2105)put_executor(food_pizza_2065, plate_2105)walk_executor(food_hamburger_2057)grab_executor(food_hamburger_2057)walk_executor(plate_2105)put_executor(food_hamburger_2057, plate_2105)
+##############################
+From agent.py
+walk_executor(cupboard_131)
+Robot find: Robot is close to the food_pizza_2065. Robot is close to the cupboard_131. 
+##############################
+From agent.py
+open_executor(cupboard_131)
+Robot find: Robot is close to the food_pizza_2065. Robot is close to the cupboard_131. cupboard_131 is opened. 
+##############################
+From agent.py
+exp(plate_2105, cupboard_131)
+Fail to find plate_2105 around cupboard_131. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(door_286)exp(plate_2105, door_286)walk_executor(plate_2105)put_executor(food_pizza_2065, plate_2105)walk_executor(food_hamburger_2057)grab_executor(food_hamburger_2057)walk_executor(plate_2105)put_executor(food_hamburger_2057, plate_2105)
+##############################
+From agent.py
+walk_executor(door_286)
+Robot find: drawing_296, mat_292, Robot is close to the food_pizza_2065. Robot is close to the door_286. 
+##############################
+From agent.py
+exp(plate_2105, door_286)
+Fail to find plate_2105 around door_286. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(table_123)exp(plate_2105, table_123)walk_executor(plate_2105)put_executor(food_pizza_2065, plate_2105)walk_executor(food_hamburger_2057)grab_executor(food_hamburger_2057)walk_executor(plate_2105)put_executor(food_hamburger_2057, plate_2105)
+##############################
+From agent.py
+walk_executor(table_123)
+Robot find: mat_114, homework_2011, shoes_2001, mouse_2003, cup_2088, laptop_2015, fork_2103, cup_2087, bowl_2095, drawing_118, Robot is close to the food_pizza_2065. Robot is close to the mat_114. Robot is close to the table_123. 
+##############################
+From agent.py
+exp(plate_2105, table_123)
+Fail to find plate_2105 around table_123. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(kitchen_counter_128)exp(plate_2105, kitchen_counter_128)walk_executor(plate_2105)put_executor(food_pizza_2065, plate_2105)walk_executor(food_hamburger_2057)grab_executor(food_hamburger_2057)walk_executor(plate_2105)put_executor(food_hamburger_2057, plate_2105)
+##############################
+From agent.py
+walk_executor(kitchen_counter_128)
+Robot find: food_orange_2008, spectacles_2106, Robot is close to the food_pizza_2065. Robot is close to the kitchen_counter_128. 
+##############################
+From agent.py -> query_LLM_human
+Record from func query_LLM_human in agent.py
+Question: Can you help me to find plate_2105 ?
+Answer: Go to dining_room_1. Once inside, locate table_127. Plate_2105 is on table_127, positioned close to it.
+Re-decompose: None
+
+##############################
+From agent.py
+Human Instruction: Go to dining_room_1. Once inside, locate table_127. Plate_2105 is on table_127, positioned close to it.
+
+The actions you have taken:
+Action 1: Walk to kitchen_counter_129.
+Action 2: look for food_pizza_2065 around kitchen_counter_129.
+Action 3: Walk to fridge_140.
+Action 4: Switch off fridge_140.
+Action 5: Open fridge_140.
+Action 6: look for food_pizza_2065 around fridge_140.
+Action 7: Grab food_pizza_2065.
+Action 8: Walk to cupboard_130.
+Action 9: look for plate_2105 around cupboard_130.
+Action 10: Walk to cupboard_131.
+Action 11: Open cupboard_131.
+Action 12: look for plate_2105 around cupboard_131.
+Action 13: Walk to door_286.
+Action 14: look for plate_2105 around door_286.
+Action 15: Walk to table_123.
+Action 16: look for plate_2105 around table_123.
+Action 17: Walk to kitchen_counter_128.
+
+##############################
+From agent.py
+exp(plate_2105, kitchen_counter_128)
+Fail to find plate_2105 around kitchen_counter_128. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(table_127)exp(plate_2105, table_127)walk_executor(plate_2105)put_executor(food_pizza_2065, plate_2105)walk_executor(food_hamburger_2057)grab_executor(food_hamburger_2057)walk_executor(plate_2105)put_executor(food_hamburger_2057, plate_2105)
+##############################
+From agent.py
+walk_executor(table_127)
+Robot find: mat_115, fork_2104, console_2027, crayon_2030, bowl_2096, bowl_2097, napkin_2014, plate_2105, Robot is close to the food_pizza_2065. Robot is close to the mat_115. Robot is close to the table_127. 
+##############################
+From agent.py
+exp(plate_2105, table_127)
+Find plate_2105. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(plate_2105)put_executor(food_pizza_2065, plate_2105)walk_executor(food_hamburger_2057)grab_executor(food_hamburger_2057)walk_executor(plate_2105)put_executor(food_hamburger_2057, plate_2105)
+##############################
+From agent.py
+walk_executor(plate_2105)
+Robot find: Robot is close to the food_pizza_2065. Robot is close to the table_127. Robot is close to the plate_2105. 
+##############################
+From agent.py
+put_executor(food_pizza_2065, plate_2105)
+Robot find: Robot is close to the food_pizza_2065. Robot is close to the table_127. Robot is close to the plate_2105. plate_2105 is close food_pizza_2065. food_pizza_2065 is close plate_2105. food_pizza_2065 is on plate_2105. food_pizza_2065 released by right hand. 
+##############################
+From agent.py
+walk_executor(food_hamburger_2057)
+Robot find: Robot is close to the food_hamburger_2057. Robot is close to the fridge_140. 
+##############################
+From agent.py
+grab_executor(food_hamburger_2057)
+Robot find: Robot is close to the food_hamburger_2057. Robot is close to the fridge_140. Grabbing food_hamburger_2057 by right hand. 
+##############################
+From agent.py
+walk_executor(plate_2105)
+Robot find: Robot is close to the food_hamburger_2057. Robot is close to the plate_2105. Robot is close to the table_127. 
+##############################
+From agent.py
+put_executor(food_hamburger_2057, plate_2105)
+Robot find: Robot is close to the food_hamburger_2057. Robot is close to the plate_2105. Robot is close to the table_127. plate_2105 is close food_hamburger_2057. food_hamburger_2057 is close plate_2105. food_hamburger_2057 is on plate_2105. food_hamburger_2057 released by right hand. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: Yes
+The feedback instruction: None
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior heat_plate_with_food_in_microwave(microwave:item, plate:item):
+    body:
+        if not inside(plate, microwave):
+            put_inside(plate, microwave)
+            # Put the plate with the pizza and hamburger inside the microwave
+
+        if open(microwave):
+            closes(microwave)
+            # Close the microwave door if its open
+
+        if is_off(microwave):
+            switch_on(microwave)
+            # Switch on the microwave to heat the plate
+
+        # Wait for the heating process (assumed to be successful in Output Requirements)
+        if is_on(microwave):
+            switch_off(microwave)
+            # After heating, switch off the microwave
+
+        if open(microwave):
+            closes(microwave)
+            # Ensure the microwave door is closed at the end
+
+behavior __goal__():
+    body:
+        bind plate: item where:
+            is_plate(plate) and id[plate] == 2105
+        # Select the plate with pizza and hamburger on it
+
+        bind microwave: item where:
+            is_microwave(microwave)
+        # Select a microwave
+
+        heat_plate_with_food_in_microwave(microwave, plate)
+        # Heat the plate with the pizza and hamburger inside the microwave
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+behavior heat_plate_with_food_in_microwave(microwave:item, plate:item):
+    body:
+        if not inside(plate, microwave):
+            put_inside(plate, microwave)
+            # Put the plate with the pizza and hamburger inside the microwave
+
+        if open(microwave):
+            closes(microwave)
+            # Close the microwave door if its open
+
+        if is_off(microwave):
+            switch_on(microwave)
+            # Switch on the microwave to heat the plate
+
+        # Wait for the heating process (assumed to be successful in Output Requirements)
+        if is_on(microwave):
+            switch_off(microwave)
+            # After heating, switch off the microwave
+
+        if open(microwave):
+            closes(microwave)
+            # Ensure the microwave door is closed at the end
+
+behavior __goal__():
+    body:
+        bind plate: item where:
+            is_plate(plate) and id[plate] == 2105
+        # Select the plate with pizza and hamburger on it
+
+        bind microwave: item where:
+            is_microwave(microwave)
+        # Select a microwave
+
+        heat_plate_with_food_in_microwave(microwave, plate)
+        # Heat the plate with the pizza and hamburger inside the microwave
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(microwave_149)open_executor(microwave_149)walk_executor(plate_2105)grab_executor(plate_2105)walk_executor(microwave_149)putin_executor(plate_2105, microwave_149)close_executor(microwave_149)switchon_executor(microwave_149)switchoff_executor(microwave_149)
+##############################
+From agent.py
+walk_executor(microwave_149)
+Robot find: Robot is close to the kitchen_counter_132. Robot is close to the microwave_149. 
+##############################
+From agent.py
+open_executor(microwave_149)
+Robot find: Robot is close to the kitchen_counter_132. Robot is close to the microwave_149. microwave_149 is opened. 
+##############################
+From agent.py
+walk_executor(plate_2105)
+Robot find: Robot is close to the plate_2105. Robot is close to the table_127. 
+##############################
+From agent.py
+grab_executor(plate_2105)
+Robot find: Robot is close to the plate_2105. Robot is close to the table_127. Grabbing plate_2105 by right hand. 
+##############################
+From agent.py
+walk_executor(microwave_149)
+Robot find: Robot is close to the plate_2105. Robot is close to the kitchen_counter_132. Robot is close to the microwave_149. 
+##############################
+From agent.py
+putin_executor(plate_2105, microwave_149)
+Robot find: Robot is close to the plate_2105. Robot is close to the kitchen_counter_132. Robot is close to the microwave_149. plate_2105 is inside microwave_149. microwave_149 is close plate_2105. plate_2105 is close microwave_149. plate_2105 released by right hand. 
+##############################
+From agent.py
+close_executor(microwave_149)
+Robot find: Robot is close to the kitchen_counter_132. Robot is close to the microwave_149. microwave_149 is closed. 
+##############################
+From agent.py
+switchon_executor(microwave_149)
+Robot find: Robot is close to the kitchen_counter_132. Robot is close to the microwave_149. microwave_149 is turned on. 
+##############################
+From agent.py
+switchoff_executor(microwave_149)
+Robot find: Robot is close to the kitchen_counter_132. Robot is close to the microwave_149. microwave_149 is turned off. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: Yes
+The feedback instruction: None
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_knife_2036_around_knifeblock_52(knife:item):
+    goal: not unknown(knife)
+    body:
+        assert is_knife(knife)
+        bind knifeblock_instance:item where:
+            is_knifeblock(knifeblock_instance) and id[knifeblock_instance]==52
+        achieve close_char(char,knifeblock_instance)
+        if can_open(knifeblock_instance):
+            achieve_once open(knifeblock_instance)
+            exp(knife,knifeblock_instance)
+        else:
+            exp(knife,knifeblock_instance)
+    eff:
+        unknown[knife]=False
+        close[knife,knifeblock_instance]=True
+        close[knifeblock_instance,knife]=True
+    
+
+behavior find_chair_374_around_bed_376(chair:item):
+    goal: not unknown(chair)
+    body:
+        assert is_chair(chair)
+        bind bed_instance:item where:
+            is_bed(bed_instance) and id[bed_instance]==376
+        achieve close_char(char,bed_instance)
+        if can_open(bed_instance):
+            achieve_once open(bed_instance)
+            exp(chair,bed_instance)
+        else:
+            exp(chair,bed_instance)
+    eff:
+        unknown[chair]=False
+        close[chair,bed_instance]=True
+        close[bed_instance,chair]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_in_dining_room(table:item):
+    # Function to check if a table is in the dining room
+    symbol in_dining_room=exists room: item : (is_dining_room(room) and inside(table, room))
+    return in_dining_room
+
+behavior place_plate_on_table(plate:item, table:item):
+    body:
+        if not on(plate, table):
+            put_on(plate, table) # Put the plate on the table
+
+behavior __goal__():
+    body:
+        bind table: item where:
+            is_table(table) and is_in_dining_room(table)
+        # Select a table in the dining room
+        
+        bind plate: item where:
+            is_plate(plate) and on(food_pizza_2065, plate) and on(food_hamburger_2057, plate)
+        # Select the plate with food on it
+        
+        place_plate_on_table(plate, table) # Place the plate on the table in the dining room
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_chair_263_around_desk_261(chair:item):
+    goal: not unknown(chair)
+    body:
+        assert is_chair(chair)
+        bind desk_instance:item where:
+            is_desk(desk_instance) and id[desk_instance]==261
+        achieve close_char(char,desk_instance)
+        if can_open(desk_instance):
+            achieve_once open(desk_instance)
+            exp(chair,desk_instance)
+        else:
+            exp(chair,desk_instance)
+    eff:
+        unknown[chair]=False
+        close[chair,desk_instance]=True
+        close[desk_instance,chair]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior put_plate_on_table(plate:item, table:item):
+    body:
+        if not on(plate, table):
+            put_on(plate, table)
+
+behavior __goal__():
+    body:
+        bind table: item where:
+            is_table(table) and id[table] == 127
+        # Locate the table with ID 127
+
+        bind plate: item where:
+            is_plate(plate) and id[plate] == 2105
+        # Locate the plate with ID 2105
+        
+        if exists dining_room: item : (is_dining_room(dining_room) and inside(table, dining_room)):
+            walk_to(dining_room)
+            walk_to(table)
+            put_plate_on_table(plate, table)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_drawing_388_around_bookshelf_136(drawing:item):
+    goal: not unknown(drawing)
+    body:
+        assert is_drawing(drawing)
+        bind bookshelf_instance:item where:
+            is_bookshelf(bookshelf_instance) and id[bookshelf_instance]==136
+        achieve close_char(char,bookshelf_instance)
+        if can_open(bookshelf_instance):
+            achieve_once open(bookshelf_instance)
+            exp(drawing,bookshelf_instance)
+        else:
+            exp(drawing,bookshelf_instance)
+    eff:
+        unknown[drawing]=False
+        close[drawing,bookshelf_instance]=True
+        close[bookshelf_instance,drawing]=True
+    
+
+behavior find_chair_263_around_couch_192(chair:item):
+    goal: not unknown(chair)
+    body:
+        assert is_chair(chair)
+        bind couch_instance:item where:
+            is_couch(couch_instance) and id[couch_instance]==192
+        achieve close_char(char,couch_instance)
+        if can_open(couch_instance):
+            achieve_once open(couch_instance)
+            exp(chair,couch_instance)
+        else:
+            exp(chair,couch_instance)
+    eff:
+        unknown[chair]=False
+        close[chair,couch_instance]=True
+        close[couch_instance,chair]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def in_dining_room(table:item):
+    # Function to check if a table is in the dining room
+    symbol in_dining_room=exists room: item : (is_dining_room(room) and inside(table, room))
+    return in_dining_room
+
+behavior pick_up_plate(plate:item, location:item):
+    body:
+        if not inhand(plate):
+            walk_to(location)
+            grab(plate)
+
+behavior __goal__():
+    body:
+        bind table: item where:
+            is_table(table) and in_dining_room(table)
+        # Select a table in the dining room
+
+        bind plate: item where:
+            is_plate(plate) and close_char(char, plate)
+        # Select the plate that is close to the character
+
+        pick_up_plate(plate, plate)
+
+        walk_to(table)
+        # Move the character closer to the table in the dining room
+
+        put_on(plate, table)
+        # Put the plate with pizza and hamburger on the assigned table in the dining room
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+def in_dining_room(table:item):
+    # Function to check if a table is in the dining room
+    symbol in_dining_room=exists room: item : (is_dining_room(room) and inside(table, room))
+    return in_dining_room
+
+behavior pick_up_plate(plate:item, location:item):
+    body:
+        if not inhand(plate):
+            walk_to(location)
+            grab(plate)
+
+behavior __goal__():
+    body:
+        bind table: item where:
+            is_table(table) and in_dining_room(table)
+        # Select a table in the dining room
+
+        bind plate: item where:
+            is_plate(plate) and close_char(char, plate)
+        # Select the plate that is close to the character
+
+        pick_up_plate(plate, plate)
+
+        walk_to(table)
+        # Move the character closer to the table in the dining room
+
+        put_on(plate, table)
+        # Put the plate with pizza and hamburger on the assigned table in the dining room
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(plate_2105)open_executor(microwave_149)grab_executor(plate_2105)walk_executor(table_123)put_executor(plate_2105, table_123)
+##############################
+From agent.py
+walk_executor(plate_2105)
+Robot find: Robot is close to the microwave_149. 
+##############################
+From agent.py
+open_executor(microwave_149)
+Robot find: Robot is close to the plate_2105. Robot is close to the microwave_149. microwave_149 is opened. 
+##############################
+From agent.py
+grab_executor(plate_2105)
+Robot find: Robot is close to the plate_2105. Robot is close to the microwave_149. Grabbing plate_2105 by right hand. 
+##############################
+From agent.py
+walk_executor(table_123)
+Robot find: Robot is close to the plate_2105. Robot is close to the mat_114. Robot is close to the table_123. 
+##############################
+From agent.py
+put_executor(plate_2105, table_123)
+Robot find: Robot is close to the plate_2105. Robot is close to the mat_114. Robot is close to the table_123. plate_2105 is on table_123. table_123 is close plate_2105. plate_2105 is close table_123. plate_2105 released by right hand. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: Yes
+The feedback instruction: None
+##############################
+Task Summary:
+Task Goal:
+Put pizza and hamburger on a plate. Then hot them in the microwave. Then put them on a table in dinning room.
+Action History:
+['walk_executor(kitchen_counter_129)', 'walk_executor(fridge_140)', 'switchoff_executor(fridge_140)', 'open_executor(fridge_140)', 'grab_executor(food_pizza_2065)', 'walk_executor(cupboard_130)', 'walk_executor(cupboard_131)', 'open_executor(cupboard_131)', 'walk_executor(door_286)', 'walk_executor(table_123)', 'walk_executor(kitchen_counter_128)', 'walk_executor(table_127)', 'walk_executor(plate_2105)', 'put_executor(food_pizza_2065, plate_2105)', 'walk_executor(food_hamburger_2057)', 'grab_executor(food_hamburger_2057)', 'walk_executor(plate_2105)', 'put_executor(food_hamburger_2057, plate_2105)', 'walk_executor(microwave_149)', 'open_executor(microwave_149)', 'walk_executor(plate_2105)', 'grab_executor(plate_2105)', 'walk_executor(microwave_149)', 'putin_executor(plate_2105, microwave_149)', 'close_executor(microwave_149)', 'switchon_executor(microwave_149)', 'switchoff_executor(microwave_149)', 'walk_executor(plate_2105)', 'open_executor(microwave_149)', 'grab_executor(plate_2105)', 'walk_executor(table_123)', 'put_executor(plate_2105, table_123)']
+Time info:
+Time consume: 208 seconds
+Exp_helper query times: 1
+Guidance query times: 0
+library scale: 3
+goal generate times: 7
+goal correct times: 0
+action_num: 32
+
+Task complete rate:
+1
+Scene_id: 2
+##############################

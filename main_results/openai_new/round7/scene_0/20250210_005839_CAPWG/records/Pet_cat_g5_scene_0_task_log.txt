@@ -1,0 +1,2400 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Find the cat and bring it to the sink.', '2. Shower the cat in the sink.', '3. Use a towel to dry the cat.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_cat_2055_around_couch_352(cat:item):
+    goal: not unknown(cat)
+    body:
+        assert is_cat(cat)
+        bind couch_instance:item where:
+            is_couch(couch_instance) and id[couch_instance]==352
+        achieve close_char(char,couch_instance)
+        if can_open(couch_instance):
+            achieve_once open(couch_instance)
+            exp(cat,couch_instance)
+        else:
+            exp(cat,couch_instance)
+    eff:
+        unknown[cat]=False
+        close[cat,couch_instance]=True
+        close[couch_instance,cat]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+
+def find_cat(cat:item):
+    # Function to find the location of the cat
+    symbol found_cat=exists room: item : (inside(cat, room))
+    return found_cat
+
+behavior bring_to_sink(cat:item, sink:item):
+    body:
+        if not close(char, cat):
+            walk_to(cat) # Approach the cat if not already close to it
+        if is_cat(cat) and close_char(char, cat):
+            grab(cat) # Grab the cat
+        if not inside_char(char, sink):
+            walk_to(sink) # Walk to the sink
+        if close(char,sink):
+            put_close(cat, sink) # Place the cat close to the sink
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        # Identify the cat
+        if find_cat(cat):
+            bind sink: item where:
+                is_sink(sink)
+            # Identify the sink
+            bring_to_sink(cat, sink)
+        else:
+            foreach cat: item:
+                if is_cat(cat) and not visited(cat):
+                    observe(cat, "Locate the cat")
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_cat_2055_around_couch_352(cat:item):
+    goal: not unknown(cat)
+    body:
+        assert is_cat(cat)
+        bind couch_instance:item where:
+            is_couch(couch_instance) and id[couch_instance]==352
+        achieve close_char(char,couch_instance)
+        if can_open(couch_instance):
+            achieve_once open(couch_instance)
+            exp(cat,couch_instance)
+        else:
+            exp(cat,couch_instance)
+    eff:
+        unknown[cat]=False
+        close[cat,couch_instance]=True
+        close[couch_instance,cat]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def catch_cat(cat:item):
+    body:
+        if not inhand(cat):
+            grab(cat) # Grab the cat if it is not already in hand
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        # Select the cat
+        
+        bind sink: item where:
+            is_sink(sink)
+        # Select a sink
+
+        if not close_char(char, sink):
+            catch_cat(cat) # Catch the cat
+            walk_to(sink) # Take the cat to the sink
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_cat_2055_around_couch_352(cat:item):
+    goal: not unknown(cat)
+    body:
+        assert is_cat(cat)
+        bind couch_instance:item where:
+            is_couch(couch_instance) and id[couch_instance]==352
+        achieve close_char(char,couch_instance)
+        if can_open(couch_instance):
+            achieve_once open(couch_instance)
+            exp(cat,couch_instance)
+        else:
+            exp(cat,couch_instance)
+    eff:
+        unknown[cat]=False
+        close[cat,couch_instance]=True
+        close[couch_instance,cat]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+
+def is_cat_near_sink(cat: item, sink: item):
+    symbol close_to_sink=exists loc: item : (is_sink(loc) and close(cat, loc))
+    return close_to_sink
+
+behavior bring_cat_to_sink(cat:item, sink:item):
+    body:
+        if not close_char(char, sink):
+            walk_to(sink)
+        if not close(cat, sink):
+            grab(cat)
+            put_close(cat, sink)
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        bind sink: item where:
+            is_sink(sink)
+        if not is_cat_near_sink(cat, sink):
+            bring_cat_to_sink(cat, sink)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+
+def is_cat_near_sink(cat: item, sink: item):
+    symbol close_to_sink=exists loc: item : (is_sink(loc) and close(cat, loc))
+    return close_to_sink
+
+behavior bring_cat_to_sink(cat:item, sink:item):
+    body:
+        if not close_char(char, sink):
+            walk_to(sink)
+        if not close(cat, sink):
+            grab(cat)
+            put_close(cat, sink)
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        bind sink: item where:
+            is_sink(sink)
+        if not is_cat_near_sink(cat, sink):
+            bring_cat_to_sink(cat, sink)
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(sink_42)walk_executor(couch_352)exp(cat_2055, couch_352)walk_executor(cat_2055)grab_executor(cat_2055)walk_executor(sink_42)put_executor(cat_2055, sink_42)
+##############################
+From agent.py
+walk_executor(sink_42)
+Robot find: detergent_2084, cleaning_solution_2073, towel_rack_31, soap_2053, towel_rack_32, towel_rack_34, Robot is close to the bathroom_counter_41. Robot is close to the sink_42. 
+##############################
+From agent.py
+walk_executor(couch_352)
+Robot find: mat_401, remote_control_2052, clothes_jacket_2047, pillow_405, cat_2055, drawing_400, pillow_406, hairbrush_2002, vacuum_cleaner_2070, Robot is close to the couch_352. Robot is close to the mat_401. 
+##############################
+From agent.py
+exp(cat_2055, couch_352)
+Find cat_2055. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(sink_42)walk_executor(cat_2055)grab_executor(cat_2055)walk_executor(sink_42)put_executor(cat_2055, sink_42)
+##############################
+From agent.py
+walk_executor(sink_42)
+Robot find: Robot is close to the bathroom_counter_41. Robot is close to the sink_42. 
+##############################
+From agent.py
+walk_executor(cat_2055)
+Robot find: Robot is close to the couch_352. Robot is close to the cat_2055. 
+##############################
+From agent.py
+grab_executor(cat_2055)
+Robot find: Robot is close to the couch_352. Robot is close to the cat_2055. Grabbing cat_2055 by right hand. 
+##############################
+From agent.py
+walk_executor(sink_42)
+Robot find: Robot is close to the cat_2055. Robot is close to the bathroom_counter_41. Robot is close to the sink_42. 
+##############################
+From agent.py
+put_executor(cat_2055, sink_42)
+Robot find: Robot is close to the cat_2055. Robot is close to the bathroom_counter_41. Robot is close to the sink_42. cat_2055 is on sink_42. sink_42 is close cat_2055. cat_2055 is close sink_42. cat_2055 released by right hand. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: Yes
+The feedback instruction: None
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_towel_2058_around_towel_rack_34(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==34
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(towel,towel_rack_instance)
+        else:
+            exp(towel,towel_rack_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,towel_rack_instance]=True
+        close[towel_rack_instance,towel]=True
+    
+
+behavior find_soap_2053_around_soap_2053(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind soap_instance:item where:
+            is_soap(soap_instance) and id[soap_instance]==2053
+        achieve close_char(char,soap_instance)
+        if can_open(soap_instance):
+            achieve_once open(soap_instance)
+            exp(soap,soap_instance)
+        else:
+            exp(soap,soap_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,soap_instance]=True
+        close[soap_instance,soap]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def has_cat_on_sink(sink:item):
+    # Function to check if a cat is on the specified sink
+    symbol has_cat=exists o: item : (is_cat(o) and on(o, sink))
+    return has_cat
+
+behavior start_shower(sink:item):
+    body:
+        if is_off(sink):
+            switch_on(sink) # Turn on the sink to start the shower
+
+behavior rinse_cat(cat:item, sink:item):
+    body:
+        if not has_water(cat):
+            rinse(cat) # Rinse the cat to get it wet
+
+behavior stop_shower(sink:item):
+    body:
+        if is_on(sink):
+            switch_off(sink) # Turn off the sink after showering
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and id[sink]==42
+        # Select sink with ID 42
+        bind cat: item where:
+            is_cat(cat) and on(cat, sink)
+        start_shower(sink) # Start the water in the sink
+        rinse_cat(cat, sink) # Rinse the cat
+        stop_shower(sink) # Stop the water after rinsing
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+def has_cat_on_sink(sink:item):
+    # Function to check if a cat is on the specified sink
+    symbol has_cat=exists o: item : (is_cat(o) and on(o, sink))
+    return has_cat
+
+behavior start_shower(sink:item):
+    body:
+        if is_off(sink):
+            switch_on(sink) # Turn on the sink to start the shower
+
+behavior rinse_cat(cat:item, sink:item):
+    body:
+        if not has_water(cat):
+            rinse(cat) # Rinse the cat to get it wet
+
+behavior stop_shower(sink:item):
+    body:
+        if is_on(sink):
+            switch_off(sink) # Turn off the sink after showering
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and id[sink]==42
+        # Select sink with ID 42
+        bind cat: item where:
+            is_cat(cat) and on(cat, sink)
+        start_shower(sink) # Start the water in the sink
+        rinse_cat(cat, sink) # Rinse the cat
+        stop_shower(sink) # Stop the water after rinsing
+
+##############################
+From agent.py-> find a plan in act()
+rinse_executor(cat_2055)
+##############################
+From agent.py
+rinse_executor(cat_2055)
+Robot find: Robot is close to the cat_2055. Robot is close to the bathroom_counter_41. Robot is close to the sink_42. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: Yes
+The feedback instruction: None
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_towel_rack_31_around_towel_rack_31(towel_rack:item):
+    goal: not unknown(towel_rack)
+    body:
+        assert is_towel_rack(towel_rack)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==31
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(towel_rack,towel_rack_instance)
+        else:
+            exp(towel_rack,towel_rack_instance)
+    eff:
+        unknown[towel_rack]=False
+        close[towel_rack,towel_rack_instance]=True
+        close[towel_rack_instance,towel_rack]=True
+    
+
+behavior find_towel_2056_around_towel_rack_34(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==34
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(towel,towel_rack_instance)
+        else:
+            exp(towel,towel_rack_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,towel_rack_instance]=True
+        close[towel_rack_instance,towel]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior grab_towel_and_dry_cat(cat: item):
+    body:
+        bind towel: item where:
+            is_towel(towel)
+        # Ensure that a hand is free to grab the towel
+        if not has_a_free_hand(char):
+            empty_a_hand()
+        grab(towel)
+        walk_to(cat)
+        wipe(cat)
+        # Release the towel after drying the cat
+        empty_a_hand()
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and id[sink] == 42
+        bind cat: item where:
+            is_cat(cat) and on(cat, sink)
+        grab_towel_and_dry_cat(cat)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_towel_rack_33_around_shower_38(towel_rack:item):
+    goal: not unknown(towel_rack)
+    body:
+        assert is_towel_rack(towel_rack)
+        bind shower_instance:item where:
+            is_shower(shower_instance) and id[shower_instance]==38
+        achieve close_char(char,shower_instance)
+        if can_open(shower_instance):
+            achieve_once open(shower_instance)
+            exp(towel_rack,shower_instance)
+        else:
+            exp(towel_rack,shower_instance)
+    eff:
+        unknown[towel_rack]=False
+        close[towel_rack,shower_instance]=True
+        close[shower_instance,towel_rack]=True
+    
+
+behavior find_towel_2059_around_towel_rack_34(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==34
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(towel,towel_rack_instance)
+        else:
+            exp(towel,towel_rack_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,towel_rack_instance]=True
+        close[towel_rack_instance,towel]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior find_towel_and_grab(towel:item):
+    body:
+        if not inhand(towel):
+            walk_to(towel)
+            if close_char(char, towel) and is_towel(towel):
+                grab(towel)
+
+behavior dry_cat(cat:item, towel:item):
+    body:
+        if close_char(char, cat):
+            wipe(cat)
+            if dirty(towel):
+                squeeze(towel)
+                wipe(cat)
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat) and on(cat, sink_42)
+        
+        bind towel: item where:
+            is_towel(towel)
+        
+        find_towel_and_grab(towel)
+        dry_cat(cat, towel)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_towel_2057_around_towel_rack_34(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==34
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(towel,towel_rack_instance)
+        else:
+            exp(towel,towel_rack_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,towel_rack_instance]=True
+        close[towel_rack_instance,towel]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior grab_towel():
+    body:
+        bind towel: item where:
+            is_towel(towel) and not inhand(towel)
+        grab(towel)
+        # Grab the towel
+
+behavior dry_cat(towel:item, cat:item):
+    body:
+        if not clean(cat):
+            wipe(cat)
+            # Use the towel to dry the cat
+
+behavior empty_a_hand():
+    body:
+        if exists inhand_item: item : (inhand(inhand_item)):
+            empty_a_hand()
+            # Empty a hand if an item is in hand
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        grab_towel()
+        dry_cat(towel, cat)
+        empty_a_hand()
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_towel_2057_around_towel_rack_34(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==34
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(towel,towel_rack_instance)
+        else:
+            exp(towel,towel_rack_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,towel_rack_instance]=True
+        close[towel_rack_instance,towel]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_drying_complete(cat: item):
+    # Function to check if the cat is already dry
+    symbol drying_complete=not dirty(cat)
+    return drying_complete
+
+behavior dry_cat_with_towel(towel: item, cat: item):
+    body:
+        if not is_drying_complete(cat):
+            if not inhand(towel):
+                grab(towel) # Grab the towel if not already in hand
+            wipe(cat) # Use the towel to wipe the cat
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat) and id[cat] == 2055
+        # Select cat with ID 2055
+        bind towel: item where:
+            is_towel(towel)
+        # Select a towel
+        dry_cat_with_towel(towel, cat)
+        # Ensure the cat is dry using the towel
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_towel_2057_around_towel_rack_34(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==34
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(towel,towel_rack_instance)
+        else:
+            exp(towel,towel_rack_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,towel_rack_instance]=True
+        close[towel_rack_instance,towel]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior dry_cat(towel:item, cat:item):
+    body:
+        if not clean(cat):
+            wipe(cat)
+            # Use the towel to dry the cat
+
+behavior __goal__():
+    body:
+        bind towel: item where:
+            is_towel(towel)
+        # Select a towel
+        
+        bind cat: item where:
+            is_cat(cat)
+        # Select the cat
+        
+        dry_cat(towel, cat)
+        # Dry the cat using the towel
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_towel_2056_around_towel_rack_34(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==34
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(towel,towel_rack_instance)
+        else:
+            exp(towel,towel_rack_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,towel_rack_instance]=True
+        close[towel_rack_instance,towel]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior grab_towel(towel:item):
+    body:
+        if not inhand(towel):
+            grab(towel)
+            # Grab the towel if not already in hand
+
+behavior dry_cat(towel:item, cat:item):
+    body:
+        if not clean(cat):
+            wipe(cat)
+            # Dry the cat using the towel if the cat is not yet clean
+
+behavior __goal__():
+    body:
+        bind towel: item where:
+            is_towel(towel)
+        # Select a towel
+        
+        bind cat: item where:
+            is_cat(cat) and on(cat, sink_42)
+        # Select the cat on the sink
+
+        grab_towel(towel)
+        dry_cat(towel, cat)
+
+#goal_representation_end
+
+##############################
+VH_pipeline: Fail to generate a valid plan
+##############################
+From agent.py -> query_LLM_human
+Record from func query_LLM_human in agent.py
+Question: Can you teach me how to "3. use a towel to dry the cat." ?
+Answer: Hold a towel and wipe the cat.
+Re-decompose: False
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_towel_2057_around_towel_rack_34(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==34
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(towel,towel_rack_instance)
+        else:
+            exp(towel,towel_rack_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,towel_rack_instance]=True
+        close[towel_rack_instance,towel]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def has_a_clean_towel():
+    # Function to check if there is a clean towel available
+    symbol has_clean_towel=exists t: item : (is_towel(t) and clean(t))
+    return has_clean_towel
+
+behavior dry_cat_with_towel(cat:item, towel:item):
+    body:
+        if not clean(cat):
+            wipe(cat) # Wipe the cat to dry it
+        if has_water(cat):
+            wipe(cat) # Ensure the cat is fully dry by wiping again
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat) and has_water(cat) # To ensure we are dealing with a wet cat
+        if not has_a_clean_towel():
+            foreach o: item:
+                if is_towel(o) and not visited(o):
+                    observe(o, "Check if this towel is clean")
+        bind towel: item where:
+            is_towel(towel) and clean(towel) # Bind a towel that is clean
+        dry_cat_with_towel(cat, towel) # Dry the cat with the clean towel
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_towel_2058_around_towel_rack_34(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==34
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(towel,towel_rack_instance)
+        else:
+            exp(towel,towel_rack_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,towel_rack_instance]=True
+        close[towel_rack_instance,towel]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+
+behavior dry_cat_with_towel(cat:item, towel:item):
+    body:
+        if has_a_free_hand(char) and not inhand(towel):
+            grab(towel)
+        if not clean(cat):
+            wipe(cat)
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        bind towel: item where:
+            is_towel(towel)
+        # Dry the cat with the towel
+        dry_cat_with_towel(cat, towel)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+
+behavior dry_cat_with_towel(cat:item, towel:item):
+    body:
+        if has_a_free_hand(char) and not inhand(towel):
+            grab(towel)
+        if not clean(cat):
+            wipe(cat)
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        bind towel: item where:
+            is_towel(towel)
+        # Dry the cat with the towel
+        dry_cat_with_towel(cat, towel)
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(towel_rack_34)exp(towel_2056, towel_rack_34)walk_executor(towel_2056)grab_executor(towel_2056)
+##############################
+From agent.py
+walk_executor(towel_rack_34)
+Robot find: towel_rack_33, towel_2059, Robot is close to the towel_rack_34. 
+##############################
+From agent.py
+exp(towel_2056, towel_rack_34)
+Fail to find towel_2056 around towel_rack_34. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(towel_2059)grab_executor(towel_2059)
+##############################
+From agent.py
+walk_executor(towel_2059)
+Robot find: Robot is close to the towel_rack_34. Robot is close to the towel_2059. 
+##############################
+From agent.py
+grab_executor(towel_2059)
+Robot find: Robot is close to the towel_rack_34. Robot is close to the towel_2059. Grabbing towel_2059 by right hand. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: No
+The feedback instruction: You need to use the towel you have grabbed to wipe and dry the cat.
+##############################
+From agent.py
+Human Instruction: You need to use the towel you have grabbed to wipe and dry the cat.
+
+Human Guidance: Hold a towel and wipe the cat.
+The actions you have taken:
+Action 1: Walk to sink_42.
+Action 2: Walk to couch_352.
+Action 3: look for cat_2055 around couch_352.
+Action 4: Walk to sink_42.
+Action 5: Walk to cat_2055.
+Action 6: Grab cat_2055.
+Action 7: Walk to sink_42.
+Action 8: Put cat_2055 on sink_42.
+Action 9: Rinse cat_2055.
+Action 10: Walk to towel_rack_34.
+Action 11: look for towel_2056 around towel_rack_34.
+Action 12: Walk to towel_2059.
+Action 13: Grab towel_2059.
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_towel_2057_around_towel_rack_31(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==31
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(towel,towel_rack_instance)
+        else:
+            exp(towel,towel_rack_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,towel_rack_instance]=True
+        close[towel_rack_instance,towel]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior dry_cat_with_towel(cat:item, towel:item):
+    body:
+        if not clean(cat):
+            wipe(cat)
+            # Use the towel to wipe and dry the cat
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat) and close_char(char, cat)
+        # Select the cat you want to dry
+
+        bind towel: item where:
+            is_towel(towel) and inhand(towel)
+        # Select the towel you have already grabbed
+        
+        dry_cat_with_towel(cat, towel)
+        # Dry the cat with the towel
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_towel_2057_around_towel_rack_32(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==32
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(towel,towel_rack_instance)
+        else:
+            exp(towel,towel_rack_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,towel_rack_instance]=True
+        close[towel_rack_instance,towel]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior dry_the_cat(cat:item, towel:item):
+    body:
+        if not clean(cat):
+            wipe(cat)
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        bind towel: item where:
+            is_towel(towel)
+        dry_the_cat(cat, towel)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_towel_2059_around_towel_rack_31(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==31
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(towel,towel_rack_instance)
+        else:
+            exp(towel,towel_rack_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,towel_rack_instance]=True
+        close[towel_rack_instance,towel]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior dry_cat_with_towel(cat:item, towel:item):
+    body:
+        if has_water(cat):
+            wipe(cat) # Use the towel to dry the cat
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat) and id[cat] == 2055
+        # Select the cat with ID 2055
+
+        bind towel: item where:
+            is_towel(towel) and id[towel] == 2059
+        # Select the towel with ID 2059
+        
+        dry_cat_with_towel(cat, towel)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_towel_2056_around_towel_rack_31(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==31
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(towel,towel_rack_instance)
+        else:
+            exp(towel,towel_rack_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,towel_rack_instance]=True
+        close[towel_rack_instance,towel]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+
+behavior wipe_cat(cat: item, towel: item):
+    body:
+        if dirty(cat):
+            wipe(cat)
+            # Wipe the cat with the towel to make it clean
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat) and close_char(char, cat)
+        # Get the cat that is close to the character
+        
+        bind towel: item where:
+            is_towel(towel) and inhand(towel)
+        # Get the towel that is already grabbed by the character
+
+        wipe_cat(cat, towel)
+        # Use the towel to dry and clean the cat
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_towel_2058_around_towel_rack_32(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==32
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(towel,towel_rack_instance)
+        else:
+            exp(towel,towel_rack_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,towel_rack_instance]=True
+        close[towel_rack_instance,towel]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior dry_cat_with_towel(cat:item, towel:item):
+    body:
+        if has_water(cat):
+            wipe(cat)
+            # Wipe the cat to dry it using the towel
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat) and close(cat, sink_42)
+        # Select the cat close to sink 42
+        bind towel: item where:
+            is_towel(towel) and inhand(towel)
+        # Select the towel in hand
+        dry_cat_with_towel(cat, towel)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_towel_2059_around_towel_rack_31(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==31
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(towel,towel_rack_instance)
+        else:
+            exp(towel,towel_rack_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,towel_rack_instance]=True
+        close[towel_rack_instance,towel]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior dry_cat_with_towel(cat: item, towel: item):
+    body:
+        if dirty(cat):
+            wipe(cat)
+            # Wipe and dry the cat if its dirty
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        # Select the cat to be dried
+
+        bind towel: item where:
+            is_towel(towel)
+        # Select the towel to use
+
+        dry_cat_with_towel(cat, towel)
+        # Dry the cat using the towel
+
+#goal_representation_end
+
+##############################
+VH_pipeline: Fail to generate a valid plan
+##############################
+From agent.py -> query_LLM_human
+Record from func query_LLM_human in agent.py
+Question: Can you teach me how to "3. use a towel to dry the cat." ?
+Answer: Hold a towel and wipe the cat.
+Re-decompose: False
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_towel_2059_around_towel_rack_31(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==31
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(towel,towel_rack_instance)
+        else:
+            exp(towel,towel_rack_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,towel_rack_instance]=True
+        close[towel_rack_instance,towel]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior wipe_cat(cat:item, towel:item):
+    body:
+        if dirty(cat) and inhand(towel):
+            wipe(cat)
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        # Select the cat
+        bind towel: item where:
+            is_towel(towel)
+        # Select a towel
+        if not inhand(towel):
+            grab(towel)
+        # Ensure the towel is in hand
+        wipe_cat(cat, towel)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+behavior wipe_cat(cat:item, towel:item):
+    body:
+        if dirty(cat) and inhand(towel):
+            wipe(cat)
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        # Select the cat
+        bind towel: item where:
+            is_towel(towel)
+        # Select a towel
+        if not inhand(towel):
+            grab(towel)
+        # Ensure the towel is in hand
+        wipe_cat(cat, towel)
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_towel_2058_around_towel_rack_32(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==32
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(towel,towel_rack_instance)
+        else:
+            exp(towel,towel_rack_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,towel_rack_instance]=True
+        close[towel_rack_instance,towel]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior dry_the_cat(cat:item, towel:item):
+    body:
+        if has_water(cat) and inhand(towel):
+            wipe(cat)
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat) and has_water(cat)
+        bind towel: item where:
+            is_towel(towel) and inhand(towel)
+
+        dry_the_cat(cat, towel)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_towel_2056_around_towel_rack_31(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==31
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(towel,towel_rack_instance)
+        else:
+            exp(towel,towel_rack_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,towel_rack_instance]=True
+        close[towel_rack_instance,towel]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior dry_cat_with_towel(cat:item, towel:item):
+    body:
+        if not clean(cat):
+            wipe(cat) # Use the towel to wipe and dry the cat
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat) and id[cat]==2055
+        # Select the cat with ID 2055
+        bind towel: item where:
+            is_towel(towel) and id[towel]==2059
+        # Select the towel with ID 2059
+        dry_cat_with_towel(cat, towel)
+        # Dry the cat using the towel
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_towel_2057_around_towel_rack_32(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==32
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(towel,towel_rack_instance)
+        else:
+            exp(towel,towel_rack_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,towel_rack_instance]=True
+        close[towel_rack_instance,towel]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior wipe_cat(cat:item, towel:item):
+    body:
+        if not clean(cat):
+            wipe(cat)
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        bind towel: item where:
+            is_towel(towel)
+        wipe_cat(cat, towel)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_napkin_2005_around_towel_rack_32(napkin:item):
+    goal: not unknown(napkin)
+    body:
+        assert is_napkin(napkin)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==32
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(napkin,towel_rack_instance)
+        else:
+            exp(napkin,towel_rack_instance)
+    eff:
+        unknown[napkin]=False
+        close[napkin,towel_rack_instance]=True
+        close[towel_rack_instance,napkin]=True
+    
+
+behavior find_towel_2056_around_towel_rack_31(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==31
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(towel,towel_rack_instance)
+        else:
+            exp(towel,towel_rack_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,towel_rack_instance]=True
+        close[towel_rack_instance,towel]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior dry_cat(cat:item, towel:item):
+    body:
+        if has_water(cat):
+            wipe(cat)
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        bind towel: item where:
+            is_towel(towel)
+        dry_cat(cat, towel)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_towel_2057_around_towel_rack_33(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==33
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(towel,towel_rack_instance)
+        else:
+            exp(towel,towel_rack_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,towel_rack_instance]=True
+        close[towel_rack_instance,towel]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior dry_cat(towel:item, cat:item):
+    body:
+        if not clean(cat):
+            wipe(cat) # Use the towel to dry and clean the cat
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        # Select the cat
+        
+        bind towel: item where:
+            is_towel(towel)
+        # Select the towel
+        
+        dry_cat(towel, cat)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_towel_2057_around_towel_rack_31(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==31
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(towel,towel_rack_instance)
+        else:
+            exp(towel,towel_rack_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,towel_rack_instance]=True
+        close[towel_rack_instance,towel]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior dry_cat(cat:item, towel:item):
+    body:
+        if inhand(towel):
+            wipe(cat)
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat) and close_char(char, cat)
+        # Select the cat that is close to the character
+        bind towel: item where:
+            is_towel(towel) and inhand(towel)
+        # Select the towel in hand
+        dry_cat(cat, towel)
+
+#goal_representation_end
+
+##############################
+VH_pipeline: Fail to generate a valid plan
+##############################
+From agent.py -> query_LLM_human
+Record from func query_LLM_human in agent.py
+Question: Can you teach me how to "3. use a towel to dry the cat." ?
+Answer: Hold a towel and wipe the cat.
+Re-decompose: False
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_towel_2059_around_towel_rack_32(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==32
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(towel,towel_rack_instance)
+        else:
+            exp(towel,towel_rack_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,towel_rack_instance]=True
+        close[towel_rack_instance,towel]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior dry_cat(cat:item, towel:item):
+    body:
+        if has_water(cat):
+            wipe(cat) # Wipe the cat with the towel to dry it
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat) 
+        # Select the cat as an item
+        bind towel: item where:
+            is_towel(towel)
+        # Select the towel as an item
+        dry_cat(cat, towel)
+        # Execute the behavior to dry the cat with the towel
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_towel_2056_around_towel_rack_31(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==31
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(towel,towel_rack_instance)
+        else:
+            exp(towel,towel_rack_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,towel_rack_instance]=True
+        close[towel_rack_instance,towel]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior dry_cat(cat: item, towel: item):
+    body:
+        if has_water(cat):
+            wipe(cat)
+            # Dry the cat using the towel
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        # Select the cat
+        bind towel: item where:
+            is_towel(towel)
+        # Select the towel
+        dry_cat(cat, towel)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_towel_2058_around_towel_rack_32(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==32
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(towel,towel_rack_instance)
+        else:
+            exp(towel,towel_rack_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,towel_rack_instance]=True
+        close[towel_rack_instance,towel]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior dry_cat_with_towel(cat:item, towel:item):
+    body:
+        if not clean(cat):
+            wipe(cat) # Use the towel to wipe and dry the cat
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat) and on(cat, sink_42)
+        # Select the cat located on sink_42
+
+        bind towel: item where:
+            is_towel(towel) and inhand(towel)
+        # Select the towel that is in hand
+
+        dry_cat_with_towel(cat, towel) # Dry the cat using the towel
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_towel_2059_around_towel_rack_31(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==31
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(towel,towel_rack_instance)
+        else:
+            exp(towel,towel_rack_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,towel_rack_instance]=True
+        close[towel_rack_instance,towel]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_cat_on_clean_surface(cat:item, sink:item):
+    # Function to check if the cat is placed on clean surface in the sink
+    return is_cat(cat) and on(cat, sink) and clean(sink)
+
+behavior dry_cat(cat:item, towel:item):
+    body:
+        if dirty(cat):
+            # Ensure cat is not dirty before drying
+            rinse(cat)
+        if inhand(towel):
+            wipe(cat) # Use the towel to dry the cat
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat) and id[cat]==2055
+        # Select the cat with ID 2055
+        bind sink: item where:
+            is_sink(sink) and id[sink]==42
+        # Select the sink with ID 42
+        bind towel: item where:
+            is_towel(towel) and id[towel]==2059
+        # Select the towel with ID 2059
+        if is_cat_on_clean_surface(cat, sink) and inside_char(char, sink):
+            dry_cat(cat, towel)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_towel_2057_around_towel_rack_31(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==31
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(towel,towel_rack_instance)
+        else:
+            exp(towel,towel_rack_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,towel_rack_instance]=True
+        close[towel_rack_instance,towel]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior dry_cat_with_towel(cat: item, towel: item):
+    body:
+        if inhand(towel) and close_char(char, cat):
+            # Ensure the towel is in hand and the character is close to the cat
+            wipe(cat)
+
+behavior prepare_to_wipe_cat(cat: item, towel: item, sink: item):
+    body:
+        if inhand(towel) and close_char(char, sink):
+            # Character should already be close to the cat on the sink
+            dry_cat_with_towel(cat, towel)
+        else:
+            walk_to(sink)
+            # Walk to the sink where the cat is
+            dry_cat_with_towel(cat, towel)
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat) and id[cat] == 2055
+        bind towel: item where:
+            is_towel(towel) and id[towel] == 2059
+        bind sink: item where:
+            is_sink(sink) and id[sink] == 42
+        prepare_to_wipe_cat(cat, towel, sink)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_towel_2056_around_doorjamb_45(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind doorjamb_instance:item where:
+            is_doorjamb(doorjamb_instance) and id[doorjamb_instance]==45
+        achieve close_char(char,doorjamb_instance)
+        if can_open(doorjamb_instance):
+            achieve_once open(doorjamb_instance)
+            exp(towel,doorjamb_instance)
+        else:
+            exp(towel,doorjamb_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,doorjamb_instance]=True
+        close[doorjamb_instance,towel]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior wipe_cat(cat:item, towel:item):
+    body:
+        if dirty(cat):
+            wipe(cat)
+            # Wipe the cat using the towel
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat) and id[cat] == 2055
+        # Select the cat with ID 2055
+
+        bind towel: item where:
+            is_towel(towel) and id[towel] == 2059
+        # Select the towel with ID 2059
+
+        wipe_cat(cat, towel)
+
+#goal_representation_end
+
+##############################
+VH_pipeline: Fail to generate a valid plan
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_towel_2056_around_towel_rack_31(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==31
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(towel,towel_rack_instance)
+        else:
+            exp(towel,towel_rack_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,towel_rack_instance]=True
+        close[towel_rack_instance,towel]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior dry_cat(towel:item, cat:item):
+    body:
+        if dirty(cat):
+            wipe(cat) # Dry the cat using the towel
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat) and close_char(char, cat)
+        bind towel: item where:
+            is_towel(towel) and inhand(towel)
+        dry_cat(towel, cat)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_towel_2056_around_towel_rack_31(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==31
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(towel,towel_rack_instance)
+        else:
+            exp(towel,towel_rack_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,towel_rack_instance]=True
+        close[towel_rack_instance,towel]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior dry_cat(cat:item, towel:item, sink:item):
+    body:
+        if close(cat, towel) and close(cat, sink):
+            wipe(cat)
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat) and inside(cat, sink_42)        
+        bind towel: item where:
+            is_towel(towel) and inhand(towel)
+        bind sink: item where:
+            is_sink(sink) and id[sink] == 42
+        
+        dry_cat(cat, towel, sink)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_towel_2059_around_towel_rack_31(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==31
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(towel,towel_rack_instance)
+        else:
+            exp(towel,towel_rack_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,towel_rack_instance]=True
+        close[towel_rack_instance,towel]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior dry_cat(towel:item, cat:item):
+    body:
+        if not clean(cat):
+            wipe(cat)
+
+behavior __goal__():
+    body:
+        bind towel: item where:
+            is_towel(towel)
+        # Select the towel
+        bind cat: item where:
+            is_cat(cat) and close_char(char, cat)
+        # Select the cat close to the character
+        if inhand(towel):
+            dry_cat(towel, cat)
+        else:
+            grab(towel)
+            dry_cat(towel, cat)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_towel_2058_around_towel_rack_32(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==32
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(towel,towel_rack_instance)
+        else:
+            exp(towel,towel_rack_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,towel_rack_instance]=True
+        close[towel_rack_instance,towel]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior dry_cat(cat:item, towel:item):
+    body:
+        if close_char(char, cat) and inhand(towel):
+            wipe(cat)
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+
+        bind towel: item where:
+            is_towel(towel) and inhand(towel)       
+
+        walk_to(cat)
+        dry_cat(cat, towel)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_towel_2056_around_towel_rack_31(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==31
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(towel,towel_rack_instance)
+        else:
+            exp(towel,towel_rack_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,towel_rack_instance]=True
+        close[towel_rack_instance,towel]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior dry_cat_with_towel(cat:item, towel:item):
+    body:
+        if not clean(cat):
+            wipe(cat) # Use a towel to dry the cat
+
+behavior ensure_towel_in_hand(towel:item):
+    body:
+        if not inhand(towel):
+            grab(towel) # Grab the towel if its not already in hand
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat) and close_char(char, cat)
+        # Ensure the cat is nearby
+        bind towel: item where:
+            is_towel(towel) and close_char(char, towel)
+        # Ensure the towel is nearby
+        ensure_towel_in_hand(towel)
+        dry_cat_with_towel(cat, towel)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_towel_2058_around_towel_rack_32(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==32
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(towel,towel_rack_instance)
+        else:
+            exp(towel,towel_rack_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,towel_rack_instance]=True
+        close[towel_rack_instance,towel]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior dry_cat(cat:item, towel:item):
+    body:
+        if has_water(cat):
+            wipe(cat) # Dry the cat using the towel
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat) and id[cat]==2055
+        # Select cat with ID 2055
+        bind towel: item where:
+            is_towel(towel) and id[towel]==2059
+        # Select towel with ID 2059
+        dry_cat(cat, towel)
+
+#goal_representation_end
+
+##############################
+VH_pipeline: Fail to generate a valid plan
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_towel_2056_around_towel_rack_31(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==31
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(towel,towel_rack_instance)
+        else:
+            exp(towel,towel_rack_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,towel_rack_instance]=True
+        close[towel_rack_instance,towel]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior dry_cat_with_towel(cat:item, towel:item):
+    body:
+        if dirty(cat) and inhand(towel):
+            wipe(cat)
+
+behavior empty_a_hand_and_regrab_towel(cat:item, towel:item):
+    body:
+        if not inhand(towel):
+            empty_a_hand()
+            grab(towel)
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        # Select the cat that needs to be dried
+
+        bind towel: item where:
+            is_towel(towel)
+        # Select the towel that will be used for drying
+
+        if not inhand(towel):
+            empty_a_hand_and_regrab_towel(cat, towel)
+
+        dry_cat_with_towel(cat, towel)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_towel_2059_around_towel_rack_31(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==31
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(towel,towel_rack_instance)
+        else:
+            exp(towel,towel_rack_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,towel_rack_instance]=True
+        close[towel_rack_instance,towel]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior dry_cat(cat:item, towel:item):
+    body:
+        if not clean(cat):
+            wipe(cat) # Dry the cat using the towel
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat) and close(cat, sink_42)
+        # Select the cat that is close to the sink
+        
+        bind towel: item where:
+            is_towel(towel) and inhand(towel)
+        # Select the towel currently in hand
+        
+        dry_cat(cat, towel)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_towel_2057_around_towel_rack_33(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==33
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(towel,towel_rack_instance)
+        else:
+            exp(towel,towel_rack_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,towel_rack_instance]=True
+        close[towel_rack_instance,towel]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior dry_cat(cat:item, towel:item):
+    body:
+        if not clean(cat):
+            wipe(cat) # Use the towel to dry the cat
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        # Select the cat
+        
+        bind towel: item where:
+            is_towel(towel)
+        # Select the towel
+        
+        dry_cat(cat, towel)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_towel_2058_around_towel_rack_33(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==33
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(towel,towel_rack_instance)
+        else:
+            exp(towel,towel_rack_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,towel_rack_instance]=True
+        close[towel_rack_instance,towel]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior dry_cat_with_towel(cat: item, towel: item):
+    body:
+        if dirty(cat):
+            wipe(cat)
+            # Use the towel to dry the cat
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        # Select the cat
+        bind towel: item where:
+            is_towel(towel)
+        # Select the towel
+        dry_cat_with_towel(cat, towel)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_towel_2058_around_towel_rack_31(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==31
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(towel,towel_rack_instance)
+        else:
+            exp(towel,towel_rack_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,towel_rack_instance]=True
+        close[towel_rack_instance,towel]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior grab_towel(towel:item):
+    body:
+        if not inhand(towel):
+            grab(towel)
+
+behavior wipe_cat(cat:item, towel:item):
+    body:
+        if dirty(cat) and inhand(towel):
+            wipe(cat)
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat) and id[cat]==2055
+        # Select the wet cat
+        
+        bind towel: item where:
+            is_towel(towel) and id[towel]==2059
+        # Select the towel
+        
+        grab_towel(towel)
+        wipe_cat(cat, towel)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_towel_2058_around_towel_rack_31(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==31
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(towel,towel_rack_instance)
+        else:
+            exp(towel,towel_rack_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,towel_rack_instance]=True
+        close[towel_rack_instance,towel]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior dry_cat_with_towel(cat:item, towel:item):
+    body:
+        if not clean(cat):
+            wipe(cat)
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat) and on(cat, sink_42) # Assuming cat_2055 is the only cat on the sink
+        # Select the cat on the sink
+        bind towel: item where:
+            is_towel(towel) and inhand(towel) # Assuming towel_2059 is the towel in hand
+        # Select the towel that is in hand
+        dry_cat_with_towel(cat, towel)
+
+#goal_representation_end
+
+##############################
+VH_pipeline: Fail to generate a valid plan
+##############################
+Error record: Error during problem transformation
+##############################
+Task Summary:
+Task Goal:
+Syntax Error
+Action History:
+['walk_executor(sink_42)', 'walk_executor(couch_352)', 'walk_executor(sink_42)', 'walk_executor(cat_2055)', 'grab_executor(cat_2055)', 'walk_executor(sink_42)', 'put_executor(cat_2055, sink_42)', 'rinse_executor(cat_2055)', 'walk_executor(towel_rack_34)', 'walk_executor(towel_2059)', 'grab_executor(towel_2059)']
+Time info:
+Time consume: 515 seconds
+Exp_helper query times: 0
+Guidance query times: 3
+library scale: 0
+goal generate times: 43
+goal correct times: 0
+action_num: 11
+
+Task complete rate:
+Keystate: k1 - Requires: 4 steps
+Keystate: k2 - Requires: 0 steps
+Action Completion Rate: 0.0
+Scene_id: 0
+##############################

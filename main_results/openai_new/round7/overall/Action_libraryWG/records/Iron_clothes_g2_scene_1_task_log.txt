@@ -1,0 +1,1378 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Hand wash the shirt.', '2. Iron the shirt.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_soap_2126_around_sink_120(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind sink_instance:item where:
+            is_sink(sink_instance) and id[sink_instance]==120
+        achieve close_char(char,sink_instance)
+        if can_open(sink_instance):
+            achieve_once open(sink_instance)
+            exp(soap,sink_instance)
+        else:
+            exp(soap,sink_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,sink_instance]=True
+        close[sink_instance,soap]=True
+    
+
+behavior find_detergent_2155_around_washing_machine_2079(detergent:item):
+    goal: not unknown(detergent)
+    body:
+        assert is_detergent(detergent)
+        bind washing_machine_instance:item where:
+            is_washing_machine(washing_machine_instance) and id[washing_machine_instance]==2079
+        achieve close_char(char,washing_machine_instance)
+        if can_open(washing_machine_instance):
+            achieve_once open(washing_machine_instance)
+            exp(detergent,washing_machine_instance)
+        else:
+            exp(detergent,washing_machine_instance)
+    eff:
+        unknown[detergent]=False
+        close[detergent,washing_machine_instance]=True
+        close[washing_machine_instance,detergent]=True
+    
+
+behavior find_towel_2128_around_sink_120(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind sink_instance:item where:
+            is_sink(sink_instance) and id[sink_instance]==120
+        achieve close_char(char,sink_instance)
+        if can_open(sink_instance):
+            achieve_once open(sink_instance)
+            exp(towel,sink_instance)
+        else:
+            exp(towel,sink_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,sink_instance]=True
+        close[sink_instance,towel]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior wash_shirt(shirt:item):
+    body:
+        achieve_once clean(shirt)
+
+behavior __goal__():
+    body:
+        bind shirt: item where:
+            is_clothes_shirt(shirt) and dirty(shirt)
+        wash_shirt(shirt)
+
+#goal_representation_end
+
+##############################
+Error is:
+'NoneType' object is not iterable
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_soap_2125_around_sink_120(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind sink_instance:item where:
+            is_sink(sink_instance) and id[sink_instance]==120
+        achieve close_char(char,sink_instance)
+        if can_open(sink_instance):
+            achieve_once open(sink_instance)
+            exp(soap,sink_instance)
+        else:
+            exp(soap,sink_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,sink_instance]=True
+        close[sink_instance,soap]=True
+    
+
+behavior find_detergent_2011_around_washing_machine_2079(detergent:item):
+    goal: not unknown(detergent)
+    body:
+        assert is_detergent(detergent)
+        bind washing_machine_instance:item where:
+            is_washing_machine(washing_machine_instance) and id[washing_machine_instance]==2079
+        achieve close_char(char,washing_machine_instance)
+        if can_open(washing_machine_instance):
+            achieve_once open(washing_machine_instance)
+            exp(detergent,washing_machine_instance)
+        else:
+            exp(detergent,washing_machine_instance)
+    eff:
+        unknown[detergent]=False
+        close[detergent,washing_machine_instance]=True
+        close[washing_machine_instance,detergent]=True
+    
+
+behavior find_clothes_shirt_2158_around_dresser_274(clothes_shirt:item):
+    goal: not unknown(clothes_shirt)
+    body:
+        assert is_clothes_shirt(clothes_shirt)
+        bind dresser_instance:item where:
+            is_dresser(dresser_instance) and id[dresser_instance]==274
+        achieve close_char(char,dresser_instance)
+        if can_open(dresser_instance):
+            achieve_once open(dresser_instance)
+            exp(clothes_shirt,dresser_instance)
+        else:
+            exp(clothes_shirt,dresser_instance)
+    eff:
+        unknown[clothes_shirt]=False
+        close[clothes_shirt,dresser_instance]=True
+        close[dresser_instance,clothes_shirt]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+def has_shirt_in_sink(sink:item):
+    # Function to check if there is a shirt in the specified sink
+    symbol shirt_in_sink= exists o: item : (is_clothes_shirt(o) and inside(o, sink))
+    return shirt_in_sink
+
+behavior __goal__():
+    body:
+        if exists sink: item : (is_sink(sink) and has_shirt_in_sink(sink)):
+            # If there is already a sink with a shirt, the agent should approach it
+            bind sink: item where:
+                is_sink(sink) and has_shirt_in_sink(sink)
+            achieve close_char(char, sink)
+            foreach shirt: item:
+                # Wash all shirts found in the sink
+                if is_clothes_shirt(shirt) and inside(shirt, sink):
+                    wash(shirt)
+        else:
+            # If no sink with a shirt is found, inspect each unvisited sink to find one
+            foreach sink: item:
+                if is_sink(sink) and not visited(sink):
+                    observe(sink, "Check if there is a shirt in the sink")
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+def has_shirt_in_sink(sink:item):
+    # Function to check if there is a shirt in the specified sink
+    symbol shirt_in_sink= exists o: item : (is_clothes_shirt(o) and inside(o, sink))
+    return shirt_in_sink
+
+behavior __goal__():
+    body:
+        if exists sink: item : (is_sink(sink) and has_shirt_in_sink(sink)):
+            # If there is already a sink with a shirt, the agent should approach it
+            bind sink: item where:
+                is_sink(sink) and has_shirt_in_sink(sink)
+            achieve close_char(char, sink)
+            foreach shirt: item:
+                # Wash all shirts found in the sink
+                if is_clothes_shirt(shirt) and inside(shirt, sink):
+                    wash(shirt)
+        else:
+            # If no sink with a shirt is found, inspect each unvisited sink to find one
+            foreach sink: item:
+                if is_sink(sink) and not visited(sink):
+                    observe(sink, "Check if there is a shirt in the sink")
+##############################
+From agent.py-> find a plan in act()
+walk_executor(sink_19)obs(sink_19, Check if there is a shirt in the sink)walk_executor(sink_120)obs(sink_120, Check if there is a shirt in the sink)
+##############################
+From agent.py
+walk_executor(sink_19)
+Robot find: after_shave_2063, soap_2125, detergent_2155, mat_32, phone_2029, cleaning_solution_2143, drawing_33, Robot is close to the bathroom_counter_18. Robot is close to the sink_19. 
+##############################
+From agent.py
+obs(sink_19, Check if there is a shirt in the sink)
+Get this information:  soap_2125 is on sink_19. detergent_2155 is on sink_19. sink_19 is inside bathroom_1. sink_19 is inside bathroom_counter_18. sink_19 is close to mat_32. sink_19 is close to wall_3. sink_19 is close to wall_4. sink_19 is close to floor_10. sink_19 is close to detergent_2155. sink_19 is close to floor_11. sink_19 is close to soap_2125. sink_19 is close to floor_14. sink_19 is close to after_shave_2063. sink_19 is close to bathroom_cabinet_17. sink_19 is close to bathroom_counter_18. sink_19 is close to faucet_20. sink_19 is close to cleaning_solution_2143. sink_19 is close to character_240. cleaning_solution_2143 is on sink_19. after_shave_2063 is inside sink_19. sink_19 is facing drawing_33. sink_19 is DIRTY.
+##############################
+From agent.py
+walk_executor(sink_120)
+Robot find: fork_2150, bowl_2142, food_salt_2041, soap_2126, pot_78, soap_2010, pot_2138, bowl_2140, bowl_2141, fork_2151, plate_2152, ice_2024, Robot is close to the sink_120. Robot is close to the kitchen_counter_119. 
+##############################
+From agent.py
+obs(sink_120, Check if there is a shirt in the sink)
+Get this information:  soap_2010 is inside sink_120. soap_2126 is on sink_120. sink_120 is inside dining_room_41. sink_120 is inside kitchen_counter_119. ice_2024 is inside sink_120. sink_120 is close to wall_64. sink_120 is close to wall_67. sink_120 is close to ice_2024. sink_120 is close to walllamp_140. sink_120 is close to knifeblock_76. sink_120 is close to soap_2126. sink_120 is close to floor_45. sink_120 is close to pot_78. sink_120 is close to floor_46. sink_120 is close to cupboard_117. sink_120 is close to kitchen_counter_119. sink_120 is close to faucet_121. sink_120 is close to soap_2010. sink_120 is close to kitchen_counter_123. sink_120 is close to basket_for_clothes_2078. sink_120 is close to washing_machine_2079. sink_120 is close to character_240. sink_120 is DIRTY.
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: No
+The feedback instruction: You need to continue inspecting sinks for a shirt, as no shirt has been found in either of the sinks you have checked so far. Keep observing any unvisited sinks to determine if there is a shirt that needs to be hand washed.
+##############################
+From agent.py
+Human Instruction: You need to continue inspecting sinks for a shirt, as no shirt has been found in either of the sinks you have checked so far. Keep observing any unvisited sinks to determine if there is a shirt that needs to be hand washed.
+
+The actions you have taken:
+Action 1: Walk to sink_19.
+Action 2: Observe around sink_19 with the question of Check if there is a shirt in the sink.
+Action 3: Walk to sink_120.
+Action 4: Observe around sink_120 with the question of Check if there is a shirt in the sink.
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_clothes_shirt_2158_around_basket_for_clothes_2078(clothes_shirt:item):
+    goal: not unknown(clothes_shirt)
+    body:
+        assert is_clothes_shirt(clothes_shirt)
+        bind basket_for_clothes_instance:item where:
+            is_basket_for_clothes(basket_for_clothes_instance) and id[basket_for_clothes_instance]==2078
+        achieve close_char(char,basket_for_clothes_instance)
+        if can_open(basket_for_clothes_instance):
+            achieve_once open(basket_for_clothes_instance)
+            exp(clothes_shirt,basket_for_clothes_instance)
+        else:
+            exp(clothes_shirt,basket_for_clothes_instance)
+    eff:
+        unknown[clothes_shirt]=False
+        close[clothes_shirt,basket_for_clothes_instance]=True
+        close[basket_for_clothes_instance,clothes_shirt]=True
+    
+
+behavior find_detergent_2155_around_detergent_2155(detergent:item):
+    goal: not unknown(detergent)
+    body:
+        assert is_detergent(detergent)
+        bind detergent_instance:item where:
+            is_detergent(detergent_instance) and id[detergent_instance]==2155
+        achieve close_char(char,detergent_instance)
+        if can_open(detergent_instance):
+            achieve_once open(detergent_instance)
+            exp(detergent,detergent_instance)
+        else:
+            exp(detergent,detergent_instance)
+    eff:
+        unknown[detergent]=False
+        close[detergent,detergent_instance]=True
+        close[detergent_instance,detergent]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def has_shirt_in_sink(sink:item):
+    # Function to check if there is a shirt in the specified sink
+    symbol has_shirt=exists o: item : (is_clothes_shirt(o) and inside(o, sink))
+    return has_shirt
+
+behavior __goal__():
+    body:
+        if exists sink: item : (is_sink(sink) and has_shirt_in_sink(sink)):
+            # If we have already found the sink with a shirt, we can directly approach it
+            bind sink: item where:
+                is_sink(sink) and has_shirt_in_sink(sink)
+            achieve close_char(char, sink)
+
+        else:
+            # Check all sinks in the scene that have not been visited
+            foreach sink: item:
+                if is_sink(sink) and not visited(sink):
+                    observe(sink,"Check if there is a shirt in the sink")
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_clothes_shirt_2158_around_basket_for_clothes_2078(clothes_shirt:item):
+    goal: not unknown(clothes_shirt)
+    body:
+        assert is_clothes_shirt(clothes_shirt)
+        bind basket_for_clothes_instance:item where:
+            is_basket_for_clothes(basket_for_clothes_instance) and id[basket_for_clothes_instance]==2078
+        achieve close_char(char,basket_for_clothes_instance)
+        if can_open(basket_for_clothes_instance):
+            achieve_once open(basket_for_clothes_instance)
+            exp(clothes_shirt,basket_for_clothes_instance)
+        else:
+            exp(clothes_shirt,basket_for_clothes_instance)
+    eff:
+        unknown[clothes_shirt]=False
+        close[clothes_shirt,basket_for_clothes_instance]=True
+        close[basket_for_clothes_instance,clothes_shirt]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def shirt_in_sink(sink:item):
+    # Function to check if there is a shirt in the specified sink
+    symbol shirt_present= exists shirt: item : (is_clothes_shirt(shirt) and inside(shirt, sink))
+    return shirt_present
+
+behavior __goal__():
+    body:
+        if exists sink: item : (is_sink(sink) and shirt_in_sink(sink)):
+            # If a sink with a shirt has already been found, approach the sink
+            bind sink: item where:
+                is_sink(sink) and shirt_in_sink(sink)
+            achieve close_char(char, sink)
+
+        else:
+            # Check all sinks that havent been visited yet
+            foreach sink: item:
+                if is_sink(sink) and not visited(sink):
+                    observe(sink, "Check if there is a shirt in the sink")
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_clothes_shirt_2158_around_basket_for_clothes_2078(clothes_shirt:item):
+    goal: not unknown(clothes_shirt)
+    body:
+        assert is_clothes_shirt(clothes_shirt)
+        bind basket_for_clothes_instance:item where:
+            is_basket_for_clothes(basket_for_clothes_instance) and id[basket_for_clothes_instance]==2078
+        achieve close_char(char,basket_for_clothes_instance)
+        if can_open(basket_for_clothes_instance):
+            achieve_once open(basket_for_clothes_instance)
+            exp(clothes_shirt,basket_for_clothes_instance)
+        else:
+            exp(clothes_shirt,basket_for_clothes_instance)
+    eff:
+        unknown[clothes_shirt]=False
+        close[clothes_shirt,basket_for_clothes_instance]=True
+        close[basket_for_clothes_instance,clothes_shirt]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def has_shirt_in_sink(sink:item):
+    # Function to check if there is a shirt in the specified sink
+    symbol has_shirt= exists o: item : (is_clothes_shirt(o) and inside(o, sink))
+    return has_shirt
+
+behavior __goal__():
+    body:
+        if exists sink: item : (is_sink(sink) and has_shirt_in_sink(sink)):
+            # If a sink with a shirt is found based on available information,
+            # move close to the sink to begin the washing process
+            bind sink: item where:
+                is_sink(sink) and has_shirt_in_sink(sink)
+            achieve close_char(char, sink)
+        else:
+            # Check all sinks that havent been visited for a shirt
+            foreach sink: item:
+                if is_sink(sink) and not visited(sink):
+                    observe(sink,"Check if there is a shirt in the sink")
+
+#goal_representation_end
+
+##############################
+VH_pipeline: Fail to generate a valid plan
+##############################
+From agent.py -> query_LLM_human
+Record from func query_LLM_human in agent.py
+Question: Can you teach me how to "1. hand wash the shirt." ?
+Answer: Put the shirt in a sink and hand wash it.
+Re-decompose: False
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_clothes_shirt_2158_around_basket_for_clothes_2078(clothes_shirt:item):
+    goal: not unknown(clothes_shirt)
+    body:
+        assert is_clothes_shirt(clothes_shirt)
+        bind basket_for_clothes_instance:item where:
+            is_basket_for_clothes(basket_for_clothes_instance) and id[basket_for_clothes_instance]==2078
+        achieve close_char(char,basket_for_clothes_instance)
+        if can_open(basket_for_clothes_instance):
+            achieve_once open(basket_for_clothes_instance)
+            exp(clothes_shirt,basket_for_clothes_instance)
+        else:
+            exp(clothes_shirt,basket_for_clothes_instance)
+    eff:
+        unknown[clothes_shirt]=False
+        close[clothes_shirt,basket_for_clothes_instance]=True
+        close[basket_for_clothes_instance,clothes_shirt]=True
+    
+
+behavior find_detergent_2011_around_detergent_2155(detergent:item):
+    goal: not unknown(detergent)
+    body:
+        assert is_detergent(detergent)
+        bind detergent_instance:item where:
+            is_detergent(detergent_instance) and id[detergent_instance]==2155
+        achieve close_char(char,detergent_instance)
+        if can_open(detergent_instance):
+            achieve_once open(detergent_instance)
+            exp(detergent,detergent_instance)
+        else:
+            exp(detergent,detergent_instance)
+    eff:
+        unknown[detergent]=False
+        close[detergent,detergent_instance]=True
+        close[detergent_instance,detergent]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+behavior handwash_shirt(shirt:item, sink:item):
+    body:
+        if has_water(sink):
+            # Check if the sink already has water
+            achieve_once inside(shirt, sink)
+            achieve clean(shirt)
+        else:
+            # If the sink doesnt have water, proceed to fill it with water
+            achieve_once has_water(sink)
+            achieve_once inside(shirt, sink)
+            achieve clean(shirt)
+
+def shirt_in_sink(sink: item):
+    # Define a function to check if there is a shirt in the specified sink
+    symbol has_shirt=exists o: item : (is_clothes_shirt(o) and inside(o, sink))
+    return has_shirt
+
+behavior __goal__():
+    body:
+        if exists sink: item : (is_sink(sink) and shirt_in_sink(sink)):
+            # Select the sink with a shirt inside if one has been found
+            bind sink: item where:
+                is_sink(sink) and shirt_in_sink(sink)
+            
+            bind shirt: item where:
+                is_clothes_shirt(shirt) and inside(shirt, sink)
+            # Retrieve the shirt that has been found in the sink
+            handwash_shirt(shirt, sink)
+            
+        else:
+            # If no shirt was found, continue inspecting for unvisited sinks until one contains a shirt
+            foreach sink: item:
+                if is_sink(sink) and not visited(sink):
+                    observe(sink, "Check if there is a shirt in the sink")
+                    # Observe each unvisited sink to determine if it contains a shirt
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_clothes_shirt_2158_around_basket_for_clothes_2078(clothes_shirt:item):
+    goal: not unknown(clothes_shirt)
+    body:
+        assert is_clothes_shirt(clothes_shirt)
+        bind basket_for_clothes_instance:item where:
+            is_basket_for_clothes(basket_for_clothes_instance) and id[basket_for_clothes_instance]==2078
+        achieve close_char(char,basket_for_clothes_instance)
+        if can_open(basket_for_clothes_instance):
+            achieve_once open(basket_for_clothes_instance)
+            exp(clothes_shirt,basket_for_clothes_instance)
+        else:
+            exp(clothes_shirt,basket_for_clothes_instance)
+    eff:
+        unknown[clothes_shirt]=False
+        close[clothes_shirt,basket_for_clothes_instance]=True
+        close[basket_for_clothes_instance,clothes_shirt]=True
+    
+
+behavior find_detergent_2155_around_detergent_2155(detergent:item):
+    goal: not unknown(detergent)
+    body:
+        assert is_detergent(detergent)
+        bind detergent_instance:item where:
+            is_detergent(detergent_instance) and id[detergent_instance]==2155
+        achieve close_char(char,detergent_instance)
+        if can_open(detergent_instance):
+            achieve_once open(detergent_instance)
+            exp(detergent,detergent_instance)
+        else:
+            exp(detergent,detergent_instance)
+    eff:
+        unknown[detergent]=False
+        close[detergent,detergent_instance]=True
+        close[detergent_instance,detergent]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior inspect_sink_for_shirt(sink: item):
+    body:
+        observe(sink, "Check if there is a shirt in the sink")
+        # Inspect the sink to see if there is a shirt that needs to be hand washed
+
+behavior __goal__():
+    body:
+        foreach sink: item:
+            if is_sink(sink) and not visited(sink):
+                # Check all unvisited sinks
+                inspect_sink_for_shirt(sink)
+                # Inspect each sink to determine if there is a shirt that needs washing
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_detergent_2011_around_detergent_2155(detergent:item):
+    goal: not unknown(detergent)
+    body:
+        assert is_detergent(detergent)
+        bind detergent_instance:item where:
+            is_detergent(detergent_instance) and id[detergent_instance]==2155
+        achieve close_char(char,detergent_instance)
+        if can_open(detergent_instance):
+            achieve_once open(detergent_instance)
+            exp(detergent,detergent_instance)
+        else:
+            exp(detergent,detergent_instance)
+    eff:
+        unknown[detergent]=False
+        close[detergent,detergent_instance]=True
+        close[detergent_instance,detergent]=True
+    
+
+behavior find_clothes_shirt_2158_around_washing_machine_2079(clothes_shirt:item):
+    goal: not unknown(clothes_shirt)
+    body:
+        assert is_clothes_shirt(clothes_shirt)
+        bind washing_machine_instance:item where:
+            is_washing_machine(washing_machine_instance) and id[washing_machine_instance]==2079
+        achieve close_char(char,washing_machine_instance)
+        if can_open(washing_machine_instance):
+            achieve_once open(washing_machine_instance)
+            exp(clothes_shirt,washing_machine_instance)
+        else:
+            exp(clothes_shirt,washing_machine_instance)
+    eff:
+        unknown[clothes_shirt]=False
+        close[clothes_shirt,washing_machine_instance]=True
+        close[washing_machine_instance,clothes_shirt]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def has_shirt_in_sink(sink:item):
+    # Function to check if there is a shirt in a specified sink
+    symbol has_shirt= exists o: item : (is_clothes_shirt(o) and inside(o, sink))
+    return has_shirt
+
+behavior __goal__():
+    body:
+        if exists sink: item : (is_sink(sink) and has_shirt_in_sink(sink)):
+            # If we have already found the sink with a shirt, we can directly approach it
+            bind sink: item where:
+                is_sink(sink) and has_shirt_in_sink(sink)
+            achieve close_char(char, sink)
+
+        else:
+            # Check all sinks in the scene that have not been visited
+            foreach sink: item:
+                if is_sink(sink) and not visited(sink):
+                    observe(sink, "Check if there is a shirt in the sink")
+
+#goal_representation_end
+
+##############################
+VH_pipeline: Fail to generate a valid plan
+##############################
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Put the shirt in a sink and hand wash it.', '2. Iron the shirt after washing.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_clothes_shirt_2158_around_basket_for_clothes_2078(clothes_shirt:item):
+    goal: not unknown(clothes_shirt)
+    body:
+        assert is_clothes_shirt(clothes_shirt)
+        bind basket_for_clothes_instance:item where:
+            is_basket_for_clothes(basket_for_clothes_instance) and id[basket_for_clothes_instance]==2078
+        achieve close_char(char,basket_for_clothes_instance)
+        if can_open(basket_for_clothes_instance):
+            achieve_once open(basket_for_clothes_instance)
+            exp(clothes_shirt,basket_for_clothes_instance)
+        else:
+            exp(clothes_shirt,basket_for_clothes_instance)
+    eff:
+        unknown[clothes_shirt]=False
+        close[clothes_shirt,basket_for_clothes_instance]=True
+        close[basket_for_clothes_instance,clothes_shirt]=True
+    
+
+behavior find_detergent_2155_around_detergent_2155(detergent:item):
+    goal: not unknown(detergent)
+    body:
+        assert is_detergent(detergent)
+        bind detergent_instance:item where:
+            is_detergent(detergent_instance) and id[detergent_instance]==2155
+        achieve close_char(char,detergent_instance)
+        if can_open(detergent_instance):
+            achieve_once open(detergent_instance)
+            exp(detergent,detergent_instance)
+        else:
+            exp(detergent,detergent_instance)
+    eff:
+        unknown[detergent]=False
+        close[detergent,detergent_instance]=True
+        close[detergent_instance,detergent]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def has_shirt_in_sink(sink:item):
+    # Function to check if there is a shirt in the specified sink
+    symbol has_shirt= exists o: item : (is_clothes_shirt(o) and inside(o, sink))
+    return has_shirt
+
+behavior __goal__():
+    body:
+        if exists sink: item : (is_sink(sink) and has_shirt_in_sink(sink)):
+            # Check if there is a sink with a shirt based on the available information
+            bind sink: item where:
+                is_sink(sink) and has_shirt_in_sink(sink)
+            # Select a sink that has a shirt in it
+            achieve clean(sink) # Ensure the shirt is cleaned in the sink
+
+        else:
+            # If no sink with a shirt is found, initiate exploration to locate one
+            foreach sink: item:
+                if is_sink(sink) and not visited(sink):
+                    # Check all unvisited sinks
+                    observe(sink,"Check if there is a shirt in the sink")
+                    # Observe whether each sink has a shirt
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_clothes_shirt_2158_around_basket_for_clothes_2078(clothes_shirt:item):
+    goal: not unknown(clothes_shirt)
+    body:
+        assert is_clothes_shirt(clothes_shirt)
+        bind basket_for_clothes_instance:item where:
+            is_basket_for_clothes(basket_for_clothes_instance) and id[basket_for_clothes_instance]==2078
+        achieve close_char(char,basket_for_clothes_instance)
+        if can_open(basket_for_clothes_instance):
+            achieve_once open(basket_for_clothes_instance)
+            exp(clothes_shirt,basket_for_clothes_instance)
+        else:
+            exp(clothes_shirt,basket_for_clothes_instance)
+    eff:
+        unknown[clothes_shirt]=False
+        close[clothes_shirt,basket_for_clothes_instance]=True
+        close[basket_for_clothes_instance,clothes_shirt]=True
+    
+
+behavior find_detergent_2011_around_detergent_2155(detergent:item):
+    goal: not unknown(detergent)
+    body:
+        assert is_detergent(detergent)
+        bind detergent_instance:item where:
+            is_detergent(detergent_instance) and id[detergent_instance]==2155
+        achieve close_char(char,detergent_instance)
+        if can_open(detergent_instance):
+            achieve_once open(detergent_instance)
+            exp(detergent,detergent_instance)
+        else:
+            exp(detergent,detergent_instance)
+    eff:
+        unknown[detergent]=False
+        close[detergent,detergent_instance]=True
+        close[detergent_instance,detergent]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior observe_sinks():
+    body:
+        foreach sink: item:
+            if is_sink(sink) and not visited(sink):
+                observe(sink, "Check if there is a shirt in the sink")
+
+behavior wash_shirt(shirt:item, sink:item):
+    body:
+        achieve_once inside(shirt, sink)
+        wash(shirt)
+
+behavior __goal__():
+    body:
+        if not exists sink: item: (is_sink(sink) and visited(sink) and exists shirt: item: (is_clothes_shirt(shirt) and inside(shirt, sink))):
+            # If no shirt is found in the known sinks, observe other sinks
+            observe_sinks()
+        
+        # Define a sink that has been observed and contains a shirt
+        bind sink: item where:
+            is_sink(sink) and visited(sink) and exists shirt: item: (is_clothes_shirt(shirt) and inside(shirt, sink))
+
+        # Bind to a shirt thats inside the already visited sink
+        bind shirt: item where:
+            is_clothes_shirt(shirt) and inside(shirt, sink)
+
+        # Wash the shirt found in the sink
+        wash_shirt(shirt, sink)
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Unexpected token Token('VARNAME', 'sink') at line 5282, column 23.
+Expected one of: 
+	* COLON
+
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_detergent_2155_around_detergent_2155(detergent:item):
+    goal: not unknown(detergent)
+    body:
+        assert is_detergent(detergent)
+        bind detergent_instance:item where:
+            is_detergent(detergent_instance) and id[detergent_instance]==2155
+        achieve close_char(char,detergent_instance)
+        if can_open(detergent_instance):
+            achieve_once open(detergent_instance)
+            exp(detergent,detergent_instance)
+        else:
+            exp(detergent,detergent_instance)
+    eff:
+        unknown[detergent]=False
+        close[detergent,detergent_instance]=True
+        close[detergent_instance,detergent]=True
+    
+
+behavior find_clothes_shirt_2158_around_washing_machine_2079(clothes_shirt:item):
+    goal: not unknown(clothes_shirt)
+    body:
+        assert is_clothes_shirt(clothes_shirt)
+        bind washing_machine_instance:item where:
+            is_washing_machine(washing_machine_instance) and id[washing_machine_instance]==2079
+        achieve close_char(char,washing_machine_instance)
+        if can_open(washing_machine_instance):
+            achieve_once open(washing_machine_instance)
+            exp(clothes_shirt,washing_machine_instance)
+        else:
+            exp(clothes_shirt,washing_machine_instance)
+    eff:
+        unknown[clothes_shirt]=False
+        close[clothes_shirt,washing_machine_instance]=True
+        close[washing_machine_instance,clothes_shirt]=True
+    
+
+#goal_representation
+ 
+behavior observe_sinks():
+    body:
+        foreach sink: item:
+            if is_sink(sink) and not visited(sink):
+                observe(sink, "Check if there is a shirt in the sink")
+
+behavior wash_shirt(shirt:item, sink:item):
+    body:
+        achieve_once inside(shirt, sink)
+        wash(shirt)
+
+behavior __goal__():
+    body:
+        if not exists s: item: (is_sink(s) and visited(s) and exists shirt: item: (is_clothes_shirt(shirt) and inside(shirt, s))):
+            # If no shirt is found in the known sinks, observe other sinks
+            observe_sinks()
+        
+        # Define a sink that has been observed and contains a shirt
+        bind sink: item where:
+            is_sink(sink) and visited(sink) and exists shirt: item: (is_clothes_shirt(shirt) and inside(shirt, sink))
+
+        # Bind to a shirt thats inside the already visited sink
+        bind shirt: item where:
+            is_clothes_shirt(shirt) and inside(shirt, sink)
+
+        # Wash the shirt found in the sink
+        wash_shirt(shirt, sink)
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Unexpected token Token('VARNAME', 's') at line 5282, column 23.
+Expected one of: 
+	* COLON
+
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_clothes_shirt_2158_around_basket_for_clothes_2078(clothes_shirt:item):
+    goal: not unknown(clothes_shirt)
+    body:
+        assert is_clothes_shirt(clothes_shirt)
+        bind basket_for_clothes_instance:item where:
+            is_basket_for_clothes(basket_for_clothes_instance) and id[basket_for_clothes_instance]==2078
+        achieve close_char(char,basket_for_clothes_instance)
+        if can_open(basket_for_clothes_instance):
+            achieve_once open(basket_for_clothes_instance)
+            exp(clothes_shirt,basket_for_clothes_instance)
+        else:
+            exp(clothes_shirt,basket_for_clothes_instance)
+    eff:
+        unknown[clothes_shirt]=False
+        close[clothes_shirt,basket_for_clothes_instance]=True
+        close[basket_for_clothes_instance,clothes_shirt]=True
+    
+
+behavior find_detergent_2011_around_detergent_2155(detergent:item):
+    goal: not unknown(detergent)
+    body:
+        assert is_detergent(detergent)
+        bind detergent_instance:item where:
+            is_detergent(detergent_instance) and id[detergent_instance]==2155
+        achieve close_char(char,detergent_instance)
+        if can_open(detergent_instance):
+            achieve_once open(detergent_instance)
+            exp(detergent,detergent_instance)
+        else:
+            exp(detergent,detergent_instance)
+    eff:
+        unknown[detergent]=False
+        close[detergent,detergent_instance]=True
+        close[detergent_instance,detergent]=True
+    
+
+#goal_representation
+ 
+behavior observe_sinks():
+    body:
+        foreach sink: item:
+            if is_sink(sink) and not visited(sink):
+                observe(sink, "Check if there is a shirt in the sink")
+
+behavior wash_shirt(shirt:item, sink:item):
+    body:
+        achieve_once inside(shirt, sink)
+        wash(shirt)
+
+behavior __goal__():
+    body:
+        if not exists sink: item: (is_sink(sink) and visited(sink) and exists shirt: item: (is_clothes_shirt(shirt) and inside(shirt, sink))):
+            # If no shirt is found in the known sinks, observe other sinks
+            observe_sinks()
+        
+        # Define a sink that has been observed and contains a shirt
+        bind sink: item where:
+            is_sink(sink) and visited(sink) and exists shirt: item: (is_clothes_shirt(shirt) and inside(shirt, sink))
+
+        # Bind to a shirt thats inside the already visited sink
+        bind shirt: item where:
+            is_clothes_shirt(shirt) and inside(shirt, sink)
+
+        # Wash the shirt found in the sink
+        wash_shirt(shirt, sink)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_clothes_shirt_2158_around_basket_for_clothes_2078(clothes_shirt:item):
+    goal: not unknown(clothes_shirt)
+    body:
+        assert is_clothes_shirt(clothes_shirt)
+        bind basket_for_clothes_instance:item where:
+            is_basket_for_clothes(basket_for_clothes_instance) and id[basket_for_clothes_instance]==2078
+        achieve close_char(char,basket_for_clothes_instance)
+        if can_open(basket_for_clothes_instance):
+            achieve_once open(basket_for_clothes_instance)
+            exp(clothes_shirt,basket_for_clothes_instance)
+        else:
+            exp(clothes_shirt,basket_for_clothes_instance)
+    eff:
+        unknown[clothes_shirt]=False
+        close[clothes_shirt,basket_for_clothes_instance]=True
+        close[basket_for_clothes_instance,clothes_shirt]=True
+    
+
+behavior find_detergent_2155_around_detergent_2155(detergent:item):
+    goal: not unknown(detergent)
+    body:
+        assert is_detergent(detergent)
+        bind detergent_instance:item where:
+            is_detergent(detergent_instance) and id[detergent_instance]==2155
+        achieve close_char(char,detergent_instance)
+        if can_open(detergent_instance):
+            achieve_once open(detergent_instance)
+            exp(detergent,detergent_instance)
+        else:
+            exp(detergent,detergent_instance)
+    eff:
+        unknown[detergent]=False
+        close[detergent,detergent_instance]=True
+        close[detergent_instance,detergent]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def has_clothes_in_sink(sink:item):
+    # Function to check if there are clothes in a specified sink
+    symbol has_clothes= exists o: item : (is_clothes_shirt(o) and inside(o, sink))
+    return has_clothes
+
+behavior __goal__():
+    body:
+        if exists sink: item : (is_sink(sink) and has_clothes_in_sink(sink)):
+            # If we have already found the sink with the shirt, approach it directly
+            bind sink: item where:
+                is_sink(sink) and has_clothes_in_sink(sink)
+            achieve close_char(char, sink)
+
+        else:
+            # Check all sinks in the scene that have not been visited for a shirt
+            foreach sink: item:
+                if is_sink(sink) and not visited(sink):
+                    observe(sink, "Check if there is a shirt in the sink")
+
+#goal_representation_end
+
+##############################
+VH_pipeline: Fail to generate a valid plan
+##############################
+From agent.py->reset_goal
+Fail to generate the goal representation
+##############################
+From agent.py -> query_LLM_human
+Record from func query_LLM_human in agent.py
+Question: Can you teach me how to "1. put the shirt in a sink and hand wash it." ?
+Answer: Put the shirt in a sink and hand wash it.
+Re-decompose: False
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_detergent_2011_around_detergent_2155(detergent:item):
+    goal: not unknown(detergent)
+    body:
+        assert is_detergent(detergent)
+        bind detergent_instance:item where:
+            is_detergent(detergent_instance) and id[detergent_instance]==2155
+        achieve close_char(char,detergent_instance)
+        if can_open(detergent_instance):
+            achieve_once open(detergent_instance)
+            exp(detergent,detergent_instance)
+        else:
+            exp(detergent,detergent_instance)
+    eff:
+        unknown[detergent]=False
+        close[detergent,detergent_instance]=True
+        close[detergent_instance,detergent]=True
+    
+
+behavior find_clothes_shirt_2158_around_basket_for_clothes_2078(clothes_shirt:item):
+    goal: not unknown(clothes_shirt)
+    body:
+        assert is_clothes_shirt(clothes_shirt)
+        bind basket_for_clothes_instance:item where:
+            is_basket_for_clothes(basket_for_clothes_instance) and id[basket_for_clothes_instance]==2078
+        achieve close_char(char,basket_for_clothes_instance)
+        if can_open(basket_for_clothes_instance):
+            achieve_once open(basket_for_clothes_instance)
+            exp(clothes_shirt,basket_for_clothes_instance)
+        else:
+            exp(clothes_shirt,basket_for_clothes_instance)
+    eff:
+        unknown[clothes_shirt]=False
+        close[clothes_shirt,basket_for_clothes_instance]=True
+        close[basket_for_clothes_instance,clothes_shirt]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_clothes_shirt_in_sink(sink:item):
+    # Function to check if there is a shirt in the specified sink
+    symbol has_shirt= exists o: item : (is_clothes_shirt(o) and inside(o, sink))
+    return has_shirt
+
+behavior __goal__():
+    body:
+        if exists sink: item : (is_sink(sink) and is_clothes_shirt_in_sink(sink)):
+            # If a sink with a shirt already exists, move the character close to that sink for washing
+            bind sink: item where:
+                is_sink(sink) and is_clothes_shirt_in_sink(sink)
+            achieve close_char(char, sink)
+            achieve has_water(sink)
+            foreach o: item:
+                if is_clothes_shirt(o) and inside(o, sink):
+                    wash(o)
+        else:
+            # If no sink with a shirt is known, check all unvisited sinks
+            foreach sink: item:
+                if is_sink(sink) and not visited(sink):
+                    observe(sink, "Check if there is a shirt in the sink")
+                    # After confirming the presence, proceed to wash
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_clothes_shirt_2158_around_basket_for_clothes_2078(clothes_shirt:item):
+    goal: not unknown(clothes_shirt)
+    body:
+        assert is_clothes_shirt(clothes_shirt)
+        bind basket_for_clothes_instance:item where:
+            is_basket_for_clothes(basket_for_clothes_instance) and id[basket_for_clothes_instance]==2078
+        achieve close_char(char,basket_for_clothes_instance)
+        if can_open(basket_for_clothes_instance):
+            achieve_once open(basket_for_clothes_instance)
+            exp(clothes_shirt,basket_for_clothes_instance)
+        else:
+            exp(clothes_shirt,basket_for_clothes_instance)
+    eff:
+        unknown[clothes_shirt]=False
+        close[clothes_shirt,basket_for_clothes_instance]=True
+        close[basket_for_clothes_instance,clothes_shirt]=True
+    
+
+behavior find_detergent_2155_around_detergent_2155(detergent:item):
+    goal: not unknown(detergent)
+    body:
+        assert is_detergent(detergent)
+        bind detergent_instance:item where:
+            is_detergent(detergent_instance) and id[detergent_instance]==2155
+        achieve close_char(char,detergent_instance)
+        if can_open(detergent_instance):
+            achieve_once open(detergent_instance)
+            exp(detergent,detergent_instance)
+        else:
+            exp(detergent,detergent_instance)
+    eff:
+        unknown[detergent]=False
+        close[detergent,detergent_instance]=True
+        close[detergent_instance,detergent]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_shirt_in_sink(sink:item):
+    # Function to check if there is a shirt in the specified sink
+    symbol has_shirt=exists o: item : (is_clothes_shirt(o) and inside(o, sink))
+    return has_shirt
+
+behavior find_shirt_sink():
+    body:
+        if exists sink: item : (is_sink(sink) and is_shirt_in_sink(sink)):
+            # If a sink with a shirt has been found based on known info, approach it
+            bind sink: item where:
+                is_sink(sink) and is_shirt_in_sink(sink)
+            achieve close_char(char, sink)
+        else:
+            # Check all sinks that havent been visited in the scene
+            foreach sink: item:
+                if is_sink(sink) and not visited(sink):
+                    observe(sink,"Check if there is a shirt in the sink") 
+
+behavior wash_shirt_in_sink(sink:item, shirt:item):
+    body:
+        achieve inside(shirt, sink)
+        # Ensure the shirt is in the sink, then wash it
+        wash(shirt)
+
+behavior __goal__():
+    body:
+        find_shirt_sink()
+        bind sink: item where:
+            is_sink(sink) and is_shirt_in_sink(sink)
+        # If sink with shirt found, bind that sink
+        bind shirt: item where:
+            is_clothes_shirt(shirt) and inside(shirt, sink)
+        # Bind the shirt inside the sink
+        wash_shirt_in_sink(sink, shirt)
+
+#goal_representation_end
+
+##############################
+Error is:
+'NoneType' object is not iterable
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_detergent_2155_around_detergent_2155(detergent:item):
+    goal: not unknown(detergent)
+    body:
+        assert is_detergent(detergent)
+        bind detergent_instance:item where:
+            is_detergent(detergent_instance) and id[detergent_instance]==2155
+        achieve close_char(char,detergent_instance)
+        if can_open(detergent_instance):
+            achieve_once open(detergent_instance)
+            exp(detergent,detergent_instance)
+        else:
+            exp(detergent,detergent_instance)
+    eff:
+        unknown[detergent]=False
+        close[detergent,detergent_instance]=True
+        close[detergent_instance,detergent]=True
+    
+
+behavior find_clothes_shirt_2158_around_basket_for_clothes_2078(clothes_shirt:item):
+    goal: not unknown(clothes_shirt)
+    body:
+        assert is_clothes_shirt(clothes_shirt)
+        bind basket_for_clothes_instance:item where:
+            is_basket_for_clothes(basket_for_clothes_instance) and id[basket_for_clothes_instance]==2078
+        achieve close_char(char,basket_for_clothes_instance)
+        if can_open(basket_for_clothes_instance):
+            achieve_once open(basket_for_clothes_instance)
+            exp(clothes_shirt,basket_for_clothes_instance)
+        else:
+            exp(clothes_shirt,basket_for_clothes_instance)
+    eff:
+        unknown[clothes_shirt]=False
+        close[clothes_shirt,basket_for_clothes_instance]=True
+        close[basket_for_clothes_instance,clothes_shirt]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior check_sink_for_shirt(sink: item):
+    body:
+        observe(sink, "Check if there is a shirt in the sink")
+        # Observe the sink to verify the presence of a shirt
+
+behavior hand_wash_shirt(shirt: item, sink: item):
+    body:
+        achieve_once inside(shirt, sink)
+        # Place the shirt inside the sink
+        wash(shirt)
+        # Wash the shirt by hand
+
+behavior __goal__():
+    body:
+        foreach sink: item:
+            # Search through all available sinks
+            if is_sink(sink) and not visited(sink):
+                # Check each unvisited sink
+                check_sink_for_shirt(sink)
+
+        if exists shirt: item : (is_clothes_shirt(shirt) and inside(shirt, sink)):
+            # If a shirt has been found in a sink, proceed to wash it
+            hand_wash_shirt(shirt, sink)
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "behavior_definition":
+
+Unknown variable: sink; available variables: [Variable<shirt: item>].
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_clothes_shirt_2158_around_basket_for_clothes_2078(clothes_shirt:item):
+    goal: not unknown(clothes_shirt)
+    body:
+        assert is_clothes_shirt(clothes_shirt)
+        bind basket_for_clothes_instance:item where:
+            is_basket_for_clothes(basket_for_clothes_instance) and id[basket_for_clothes_instance]==2078
+        achieve close_char(char,basket_for_clothes_instance)
+        if can_open(basket_for_clothes_instance):
+            achieve_once open(basket_for_clothes_instance)
+            exp(clothes_shirt,basket_for_clothes_instance)
+        else:
+            exp(clothes_shirt,basket_for_clothes_instance)
+    eff:
+        unknown[clothes_shirt]=False
+        close[clothes_shirt,basket_for_clothes_instance]=True
+        close[basket_for_clothes_instance,clothes_shirt]=True
+    
+
+behavior find_detergent_2011_around_detergent_2155(detergent:item):
+    goal: not unknown(detergent)
+    body:
+        assert is_detergent(detergent)
+        bind detergent_instance:item where:
+            is_detergent(detergent_instance) and id[detergent_instance]==2155
+        achieve close_char(char,detergent_instance)
+        if can_open(detergent_instance):
+            achieve_once open(detergent_instance)
+            exp(detergent,detergent_instance)
+        else:
+            exp(detergent,detergent_instance)
+    eff:
+        unknown[detergent]=False
+        close[detergent,detergent_instance]=True
+        close[detergent_instance,detergent]=True
+    
+
+#goal_representation
+ 
+behavior check_sink_for_shirt(sink: item):
+    body:
+        observe(sink, "Check if there is a shirt in the sink")
+        # Observe the sink to verify the presence of a shirt
+
+behavior hand_wash_shirt(shirt: item, sink: item):
+    body:
+        achieve_once inside(shirt, sink)
+        # Place the shirt inside the sink
+        wash(shirt)
+        # Wash the shirt by hand
+
+behavior __goal__():
+    body:
+        foreach sink: item:
+            # Search through all available sinks
+            if is_sink(sink) and not visited(sink):
+                # Check each unvisited sink
+                check_sink_for_shirt(sink)
+
+        if exists shirt: item where (is_clothes_shirt(shirt)):
+            # Find a shirt
+            bind sink: item where (is_sink(sink) and inside(shirt, sink))
+            # Find the sink where the shirt is located
+            hand_wash_shirt(shirt, sink)
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Unexpected token Token('LPAR', '(') at line 5289, column 37.
+Expected one of: 
+	* COLON
+Previous tokens: [Token('WHERE', 'where')]
+
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_clothes_shirt_2158_around_basket_for_clothes_2078(clothes_shirt:item):
+    goal: not unknown(clothes_shirt)
+    body:
+        assert is_clothes_shirt(clothes_shirt)
+        bind basket_for_clothes_instance:item where:
+            is_basket_for_clothes(basket_for_clothes_instance) and id[basket_for_clothes_instance]==2078
+        achieve close_char(char,basket_for_clothes_instance)
+        if can_open(basket_for_clothes_instance):
+            achieve_once open(basket_for_clothes_instance)
+            exp(clothes_shirt,basket_for_clothes_instance)
+        else:
+            exp(clothes_shirt,basket_for_clothes_instance)
+    eff:
+        unknown[clothes_shirt]=False
+        close[clothes_shirt,basket_for_clothes_instance]=True
+        close[basket_for_clothes_instance,clothes_shirt]=True
+    
+
+behavior find_detergent_2155_around_detergent_2155(detergent:item):
+    goal: not unknown(detergent)
+    body:
+        assert is_detergent(detergent)
+        bind detergent_instance:item where:
+            is_detergent(detergent_instance) and id[detergent_instance]==2155
+        achieve close_char(char,detergent_instance)
+        if can_open(detergent_instance):
+            achieve_once open(detergent_instance)
+            exp(detergent,detergent_instance)
+        else:
+            exp(detergent,detergent_instance)
+    eff:
+        unknown[detergent]=False
+        close[detergent,detergent_instance]=True
+        close[detergent_instance,detergent]=True
+    
+
+#goal_representation
+def has_shirt_in_sink(sink:item):
+    # Function to check if there is a shirt in the specified sink
+    symbol has_shirt=exists o: item : (is_clothes_shirt(o) and inside(o, sink))
+    return has_shirt
+
+behavior __goal__():
+    body:
+        foreach sink: item:
+            # Search through all available sinks
+            if is_sink(sink) and not visited(sink):
+                # Check each unvisited sink
+                check_sink_for_shirt(sink)
+
+        if exists shirt: item where (is_clothes_shirt(shirt) and has_shirt_in_sink(sink)):
+            # Find a shirt in a checked sink
+            bind sink: item where (is_sink(sink) and inside(shirt, sink))
+            # Bind the sink where the shirt is located
+            hand_wash_shirt(shirt, sink)
+#goal_representation_end
+
+##############################
+VH_pipeline: Fail to generate a valid plan
+##############################
+Error record: Error during problem transformation
+##############################
+Task Summary:
+Task Goal:
+Syntax Error
+Action History:
+['walk_executor(sink_19)', 'walk_executor(sink_120)']
+Time info:
+Time consume: 312 seconds
+Exp_helper query times: 0
+Guidance query times: 2
+library scale: 28
+goal generate times: 14
+goal correct times: 2
+action_num: 2
+
+Task complete rate:
+Keystate: k1 - Requires: 6 steps
+Keystate: k2 - Requires: 11 steps
+Action Completion Rate: 0.0
+Scene_id: 1
+##############################

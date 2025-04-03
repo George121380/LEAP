@@ -1,0 +1,549 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Find a cup and fill it with milk.', '2. Heat the cup of milk in the microwave.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_milk_2115_around_fridge_126(milk:item):
+    goal: not unknown(milk)
+    body:
+        assert is_milk(milk)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==126
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(milk,fridge_instance)
+        else:
+            exp(milk,fridge_instance)
+    eff:
+        unknown[milk]=False
+        close[milk,fridge_instance]=True
+        close[fridge_instance,milk]=True
+    
+
+behavior find_cup_2133_around_cupboard_118(cup:item):
+    goal: not unknown(cup)
+    body:
+        assert is_cup(cup)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==118
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(cup,cupboard_instance)
+        else:
+            exp(cup,cupboard_instance)
+    eff:
+        unknown[cup]=False
+        close[cup,cupboard_instance]=True
+        close[cupboard_instance,cup]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior fill_cup_with_milk(cup: item, milk: item):
+    body:
+        if not inside(milk, cup):
+            put_inside(milk, cup) # Fill the cup with milk
+
+behavior find_and_grab_cup():
+    body:
+        foreach c: item:
+            if is_cup(c) and not inhand(c):
+                grab(c) # Grab a cup
+                break
+
+behavior find_and_grab_milk():
+    body:
+        foreach m: item:
+            if is_milk(m) and not inhand(m):
+                grab(m) # Grab milk
+                break
+
+behavior __goal__():
+    body:
+        find_and_grab_cup()
+        # Ensure the character has a cup
+        find_and_grab_milk()
+        # Ensure the character has milk
+        bind cup: item where:
+            is_cup(cup) and inhand(cup)
+        bind milk: item where:
+            is_milk(milk) and inhand(milk)
+        # Fill the cup with milk
+        fill_cup_with_milk(cup, milk)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_milk_2115_around_fridge_126(milk:item):
+    goal: not unknown(milk)
+    body:
+        assert is_milk(milk)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==126
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(milk,fridge_instance)
+        else:
+            exp(milk,fridge_instance)
+    eff:
+        unknown[milk]=False
+        close[milk,fridge_instance]=True
+        close[fridge_instance,milk]=True
+    
+
+behavior find_cup_2049_around_cupboard_117(cup:item):
+    goal: not unknown(cup)
+    body:
+        assert is_cup(cup)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==117
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(cup,cupboard_instance)
+        else:
+            exp(cup,cupboard_instance)
+    eff:
+        unknown[cup]=False
+        close[cup,cupboard_instance]=True
+        close[cupboard_instance,cup]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior find_cup(cup:item):
+    body:
+        if not visited(cup):
+            observe(cup,"Check if it is empty")
+            
+behavior pick_up_cup(cup:item):
+    body:
+        if not inhand(cup):
+            grab(cup)
+            
+behavior fill_with_milk(cup:item, milk:item):
+    body:
+        if not inside(milk, cup):
+            put_inside(milk, cup)
+          
+behavior __goal__():
+    body:
+        bind cup: item where:
+            is_cup(cup)
+        
+        find_cup(cup)
+        
+        if has_a_free_hand(char):
+            pick_up_cup(cup)
+        
+        bind milk: item where:
+            is_milk(milk)
+            
+        fill_with_milk(cup, milk)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+ 
+behavior find_cup(cup:item):
+    body:
+        if not visited(cup):
+            observe(cup,"Check if it is empty")
+            
+behavior pick_up_cup(cup:item):
+    body:
+        if not inhand(cup):
+            grab(cup)
+            
+behavior fill_with_milk(cup:item, milk:item):
+    body:
+        if not inside(milk, cup):
+            put_inside(milk, cup)
+          
+behavior __goal__():
+    body:
+        bind cup: item where:
+            is_cup(cup)
+        
+        find_cup(cup)
+        
+        if has_a_free_hand(char):
+            pick_up_cup(cup)
+        
+        bind milk: item where:
+            is_milk(milk)
+            
+        fill_with_milk(cup, milk)
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(cupboard_117)exp(cup_2132, cupboard_117)walk_executor(cup_2132)obs(cup_2132, Check if it is empty)grab_executor(cup_2132)walk_executor(fridge_126)switchoff_executor(fridge_126)open_executor(fridge_126)exp(milk_2115, fridge_126)walk_executor(milk_2115)grab_executor(milk_2115)walk_executor(cup_2132)putin_executor(milk_2115, cup_2132)
+##############################
+From agent.py
+walk_executor(cupboard_117)
+Robot find: coffee_filter_2053, pot_78, Robot is close to the coffee_filter_2053. Robot is close to the cupboard_117. 
+##############################
+From agent.py
+exp(cup_2132, cupboard_117)
+Fail to find cup_2132 around cupboard_117. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(cupboard_118)open_executor(cupboard_118)exp(cup_2132, cupboard_118)walk_executor(cup_2132)obs(cup_2132, Check if it is empty)grab_executor(cup_2132)walk_executor(fridge_126)switchoff_executor(fridge_126)open_executor(fridge_126)exp(milk_2115, fridge_126)walk_executor(milk_2115)grab_executor(milk_2115)walk_executor(cup_2132)putin_executor(milk_2115, cup_2132)
+##############################
+From agent.py
+walk_executor(cupboard_118)
+Robot find: Robot is close to the cupboard_118. 
+##############################
+From agent.py
+open_executor(cupboard_118)
+Robot find: tea_2066, knife_2037, food_peanut_butter_2077, Robot is close to the tea_2066. Robot is close to the knife_2037. Robot is close to the cupboard_118. Robot is close to the food_peanut_butter_2077. cupboard_118 is opened. 
+##############################
+From agent.py
+exp(cup_2132, cupboard_118)
+Fail to find cup_2132 around cupboard_118. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(kitchen_counter_122)exp(cup_2132, kitchen_counter_122)walk_executor(cup_2132)obs(cup_2132, Check if it is empty)grab_executor(cup_2132)walk_executor(fridge_126)switchoff_executor(fridge_126)open_executor(fridge_126)exp(milk_2115, fridge_126)walk_executor(milk_2115)grab_executor(milk_2115)walk_executor(cup_2132)putin_executor(milk_2115, cup_2132)
+##############################
+From agent.py
+walk_executor(kitchen_counter_122)
+Robot find: spectacles_2153, fryingpan_2154, Robot is close to the kitchen_counter_122. 
+##############################
+From agent.py
+exp(cup_2132, kitchen_counter_122)
+Fail to find cup_2132 around kitchen_counter_122. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(kitchen_counter_123)exp(cup_2132, kitchen_counter_123)walk_executor(cup_2132)obs(cup_2132, Check if it is empty)grab_executor(cup_2132)walk_executor(fridge_126)switchoff_executor(fridge_126)open_executor(fridge_126)exp(milk_2115, fridge_126)walk_executor(milk_2115)grab_executor(milk_2115)walk_executor(cup_2132)putin_executor(milk_2115, cup_2132)
+##############################
+From agent.py
+walk_executor(kitchen_counter_123)
+Robot find: tray_2068, oil_2149, knife_2035, food_kiwi_2054, food_orange_2027, Robot is close to the kitchen_counter_123. 
+##############################
+From agent.py
+exp(cup_2132, kitchen_counter_123)
+Fail to find cup_2132 around kitchen_counter_123. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(kitchen_counter_119)exp(cup_2132, kitchen_counter_119)walk_executor(cup_2132)obs(cup_2132, Check if it is empty)grab_executor(cup_2132)walk_executor(fridge_126)switchoff_executor(fridge_126)open_executor(fridge_126)exp(milk_2115, fridge_126)walk_executor(milk_2115)grab_executor(milk_2115)walk_executor(cup_2132)putin_executor(milk_2115, cup_2132)
+##############################
+From agent.py
+walk_executor(kitchen_counter_119)
+Robot find: fork_2150, bowl_2142, food_salt_2041, pot_2138, bowl_2140, bowl_2141, fork_2151, plate_2152, Robot is close to the kitchen_counter_119. 
+##############################
+From agent.py
+exp(cup_2132, kitchen_counter_119)
+Fail to find cup_2132 around kitchen_counter_119. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(stove_2135)open_executor(stove_2135)exp(cup_2132, stove_2135)walk_executor(cup_2132)obs(cup_2132, Check if it is empty)grab_executor(cup_2132)walk_executor(fridge_126)switchoff_executor(fridge_126)open_executor(fridge_126)exp(milk_2115, fridge_126)walk_executor(milk_2115)grab_executor(milk_2115)walk_executor(cup_2132)putin_executor(milk_2115, cup_2132)
+##############################
+From agent.py
+walk_executor(stove_2135)
+Robot find: Robot is close to the kitchen_counter_119. Robot is close to the stove_2135. 
+##############################
+From agent.py
+open_executor(stove_2135)
+Robot find: Robot is close to the kitchen_counter_119. Robot is close to the stove_2135. stove_2135 is opened. 
+##############################
+From agent.py -> query_LLM_human
+Record from func query_LLM_human in agent.py
+Question: Can you help me to find cup_2132 ?
+Answer: Go to the dining_room_41 and look for table_114. Cup_2132 is on table_114.
+Re-decompose: None
+
+##############################
+From agent.py
+Human Instruction: Go to the dining_room_41 and look for table_114. Cup_2132 is on table_114.
+
+The actions you have taken:
+Action 1: Walk to cupboard_117.
+Action 2: look for cup_2132 around cupboard_117.
+Action 3: Walk to cupboard_118.
+Action 4: Open cupboard_118.
+Action 5: look for cup_2132 around cupboard_118.
+Action 6: Walk to kitchen_counter_122.
+Action 7: look for cup_2132 around kitchen_counter_122.
+Action 8: Walk to kitchen_counter_123.
+Action 9: look for cup_2132 around kitchen_counter_123.
+Action 10: Walk to kitchen_counter_119.
+Action 11: look for cup_2132 around kitchen_counter_119.
+Action 12: Walk to stove_2135.
+Action 13: Open stove_2135.
+
+##############################
+From agent.py
+exp(cup_2132, stove_2135)
+Fail to find cup_2132 around stove_2135. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(table_114)exp(cup_2132, table_114)walk_executor(cup_2132)obs(cup_2132, Check if it is empty)grab_executor(cup_2132)walk_executor(fridge_126)switchoff_executor(fridge_126)open_executor(fridge_126)exp(milk_2115, fridge_126)walk_executor(milk_2115)grab_executor(milk_2115)walk_executor(cup_2132)putin_executor(milk_2115, cup_2132)
+##############################
+From agent.py
+walk_executor(table_114)
+Robot find: mat_102, cup_2049, pillow_103, pillow_104, pillow_105, pillow_106, lighter_2004, lighter_2039, box_2038, clothes_hat_2117, milk_2115, cup_2134, check_2058, drawing_110, drawing_111, clothes_gloves_2118, cup_2132, food_bread_2084, dry_pasta_2114, knife_2122, cup_2133, table_cloth_2005, food_food_2021, Robot is close to the table_114. Robot is close to the mat_102. 
+##############################
+From agent.py
+exp(cup_2132, table_114)
+Find cup_2132. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(cup_2132)obs(cup_2132, Check if it is empty)grab_executor(cup_2132)walk_executor(milk_2115)grab_executor(milk_2115)walk_executor(cup_2132)putin_executor(milk_2115, cup_2132)
+##############################
+From agent.py
+walk_executor(cup_2132)
+Robot find: Robot is close to the table_114. Robot is close to the cup_2132. 
+##############################
+From agent.py
+obs(cup_2132, Check if it is empty)
+Get this information:  cup_2132 is inside dining_room_41. cup_2132 is close to table_114. cup_2132 is close to character_240. cup_2132 is on table_114.
+##############################
+From agent.py
+grab_executor(cup_2132)
+Robot find: Robot is close to the table_114. Robot is close to the cup_2132. Grabbing cup_2132 by right hand. 
+##############################
+From agent.py
+walk_executor(milk_2115)
+Robot find: Robot is close to the table_114. Robot is close to the cup_2132. Robot is close to the milk_2115. 
+##############################
+From agent.py
+grab_executor(milk_2115)
+Robot find: Robot is close to the table_114. Robot is close to the cup_2132. Robot is close to the milk_2115. Grabbing milk_2115 by left hand. 
+##############################
+From agent.py
+walk_executor(cup_2132)
+Robot find: Robot is close to the cup_2132. Robot is close to the milk_2115. 
+##############################
+From agent.py
+putin_executor(milk_2115, cup_2132)
+Robot find: Robot is close to the cup_2132. Robot is close to the milk_2115. milk_2115 is close cup_2132. cup_2132 is close milk_2115. milk_2115 is inside cup_2132. milk_2115 released by left hand. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: Yes
+The feedback instruction: None
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_blow_dryer_2057_around_bathroom_cabinet_17(blow_dryer:item):
+    goal: not unknown(blow_dryer)
+    body:
+        assert is_blow_dryer(blow_dryer)
+        bind bathroom_cabinet_instance:item where:
+            is_bathroom_cabinet(bathroom_cabinet_instance) and id[bathroom_cabinet_instance]==17
+        achieve close_char(char,bathroom_cabinet_instance)
+        if can_open(bathroom_cabinet_instance):
+            achieve_once open(bathroom_cabinet_instance)
+            exp(blow_dryer,bathroom_cabinet_instance)
+        else:
+            exp(blow_dryer,bathroom_cabinet_instance)
+    eff:
+        unknown[blow_dryer]=False
+        close[blow_dryer,bathroom_cabinet_instance]=True
+        close[bathroom_cabinet_instance,blow_dryer]=True
+    
+
+behavior find_dvd_player_2130_around_tvstand_116(dvd_player:item):
+    goal: not unknown(dvd_player)
+    body:
+        assert is_dvd_player(dvd_player)
+        bind tvstand_instance:item where:
+            is_tvstand(tvstand_instance) and id[tvstand_instance]==116
+        achieve close_char(char,tvstand_instance)
+        if can_open(tvstand_instance):
+            achieve_once open(tvstand_instance)
+            exp(dvd_player,tvstand_instance)
+        else:
+            exp(dvd_player,tvstand_instance)
+    eff:
+        unknown[dvd_player]=False
+        close[dvd_player,tvstand_instance]=True
+        close[tvstand_instance,dvd_player]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def plugged_microwave(microwave:item):
+    # Function to check if the microwave is plugged in
+    symbol plugged_in=plugged(microwave)
+    return plugged_in
+
+behavior prepare_microwave(microwave:item):
+    body:
+        if unplugged(microwave) and has_plug(microwave):
+            plugin(microwave)
+            # Plug in the microwave if it is not already plugged
+        if closed(microwave):
+            opens(microwave)
+            # Open the microwave door if its closed
+
+behavior heat_milk(microwave:item, cup:item):
+    body:
+        if not inside(cup, microwave):
+            put_inside(cup, microwave) # Place the cup inside the microwave
+        if unplugged(microwave):
+            plugin(microwave)
+        if is_off(microwave):
+            switch_on(microwave) # Turn on the microwave to heat the milk
+        observe(microwave, "Wait until the heating is completed") # Observe the microwave until heating is done
+        if is_on(microwave):
+            switch_off(microwave) # Turn off the microwave after heating is completed
+
+behavior reset_microwave(microwave:item):
+    body:
+        if is_on(microwave):
+            switch_off(microwave)
+        if open(microwave):
+            closes(microwave)
+            # Close the microwave after use
+
+behavior __goal__():
+    body:
+        bind cup: item where:
+            is_cup(cup) and id[cup]==2132
+        # Bind cup_2132 (desired cup)
+        
+        bind microwave: item where:
+            is_microwave(microwave)
+        # Bind a microwave to fulfill heating task
+        
+        prepare_microwave(microwave)
+        heat_milk(microwave, cup)
+        reset_microwave(microwave)
+
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+def plugged_microwave(microwave:item):
+    # Function to check if the microwave is plugged in
+    symbol plugged_in=plugged(microwave)
+    return plugged_in
+
+behavior prepare_microwave(microwave:item):
+    body:
+        if unplugged(microwave) and has_plug(microwave):
+            plugin(microwave)
+            # Plug in the microwave if it is not already plugged
+        if closed(microwave):
+            opens(microwave)
+            # Open the microwave door if its closed
+
+behavior heat_milk(microwave:item, cup:item):
+    body:
+        if not inside(cup, microwave):
+            put_inside(cup, microwave) # Place the cup inside the microwave
+        if unplugged(microwave):
+            plugin(microwave)
+        if is_off(microwave):
+            switch_on(microwave) # Turn on the microwave to heat the milk
+        observe(microwave, "Wait until the heating is completed") # Observe the microwave until heating is done
+        if is_on(microwave):
+            switch_off(microwave) # Turn off the microwave after heating is completed
+
+behavior reset_microwave(microwave:item):
+    body:
+        if is_on(microwave):
+            switch_off(microwave)
+        if open(microwave):
+            closes(microwave)
+            # Close the microwave after use
+
+behavior __goal__():
+    body:
+        bind cup: item where:
+            is_cup(cup) and id[cup]==2132
+        # Bind cup_2132 (desired cup)
+        
+        bind microwave: item where:
+            is_microwave(microwave)
+        # Bind a microwave to fulfill heating task
+        
+        prepare_microwave(microwave)
+        heat_milk(microwave, cup)
+        reset_microwave(microwave)
+
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(microwave_135)open_executor(microwave_135)putin_executor(cup_2132, microwave_135)close_executor(microwave_135)switchon_executor(microwave_135)switchoff_executor(microwave_135)open_executor(microwave_135)obs(microwave_135, Wait until the heating is completed)close_executor(microwave_135)
+##############################
+From agent.py
+walk_executor(microwave_135)
+Robot find: Robot is close to the cup_2132. Robot is close to the kitchen_counter_122. Robot is close to the microwave_135. 
+##############################
+From agent.py
+open_executor(microwave_135)
+Robot find: pot_2040, Robot is close to the cup_2132. Robot is close to the pot_2040. Robot is close to the kitchen_counter_122. Robot is close to the microwave_135. microwave_135 is opened. 
+##############################
+From agent.py
+putin_executor(cup_2132, microwave_135)
+Robot find: Robot is close to the cup_2132. Robot is close to the pot_2040. Robot is close to the kitchen_counter_122. Robot is close to the microwave_135. cup_2132 is inside microwave_135. microwave_135 is close cup_2132. cup_2132 is close microwave_135. cup_2132 released by right hand. 
+##############################
+From agent.py
+close_executor(microwave_135)
+Robot find: Robot is close to the kitchen_counter_122. Robot is close to the microwave_135. microwave_135 is closed. 
+##############################
+From agent.py
+switchon_executor(microwave_135)
+Robot find: Robot is close to the kitchen_counter_122. Robot is close to the microwave_135. microwave_135 is turned on. 
+##############################
+From agent.py
+switchoff_executor(microwave_135)
+Robot find: Robot is close to the kitchen_counter_122. Robot is close to the microwave_135. microwave_135 is turned off. 
+##############################
+From agent.py
+open_executor(microwave_135)
+Robot find: Robot is close to the cup_2132. Robot is close to the pot_2040. Robot is close to the kitchen_counter_122. Robot is close to the microwave_135. microwave_135 is opened. 
+##############################
+From agent.py
+obs(microwave_135, Wait until the heating is completed)
+Get this information:  cup_2132 is inside microwave_135. microwave_135 is close to wall_64. microwave_135 is close to dishwasher_129. microwave_135 is close to coffe_maker_130. microwave_135 is close to toaster_132. microwave_135 is close to wall_68. microwave_135 is close to walllamp_139. microwave_135 is close to floor_51. microwave_135 is close to cupboard_118. microwave_135 is close to pot_2040. microwave_135 is close to kitchen_counter_122. microwave_135 is close to ceiling_60. microwave_135 is close to character_240. microwave_135 is close to cup_2132. pot_2040 is inside microwave_135. microwave_135 is on kitchen_counter_122. microwave_135 is inside dining_room_41. microwave_135 is OFF. microwave_135 is PLUGGED_IN. microwave_135 is DIRTY. microwave_135 is OPEN.
+##############################
+From agent.py
+close_executor(microwave_135)
+Robot find: Robot is close to the kitchen_counter_122. Robot is close to the microwave_135. microwave_135 is closed. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: Yes
+The feedback instruction: None
+##############################
+Task Summary:
+Task Goal:
+Get a cup of milk and heat it by microwave.
+Action History:
+['walk_executor(cupboard_117)', 'walk_executor(cupboard_118)', 'open_executor(cupboard_118)', 'walk_executor(kitchen_counter_122)', 'walk_executor(kitchen_counter_123)', 'walk_executor(kitchen_counter_119)', 'walk_executor(stove_2135)', 'open_executor(stove_2135)', 'walk_executor(table_114)', 'walk_executor(cup_2132)', 'grab_executor(cup_2132)', 'walk_executor(milk_2115)', 'grab_executor(milk_2115)', 'walk_executor(cup_2132)', 'putin_executor(milk_2115, cup_2132)', 'walk_executor(microwave_135)', 'open_executor(microwave_135)', 'putin_executor(cup_2132, microwave_135)', 'close_executor(microwave_135)', 'switchon_executor(microwave_135)', 'switchoff_executor(microwave_135)', 'open_executor(microwave_135)', 'close_executor(microwave_135)']
+Time info:
+Time consume: 124 seconds
+Exp_helper query times: 1
+Guidance query times: 0
+library scale: 0
+goal generate times: 3
+goal correct times: 0
+action_num: 23
+
+Task complete rate:
+Keystate: k1 - Requires: 1 steps
+Action Completion Rate: No actions required
+Scene_id: 1
+##############################

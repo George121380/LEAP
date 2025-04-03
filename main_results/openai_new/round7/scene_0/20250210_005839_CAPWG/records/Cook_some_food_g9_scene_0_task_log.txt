@@ -1,0 +1,1996 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Wash and peel the potatoes.', '2. Cut the potatoes into fries.', '3. Fry the potato slices until golden brown.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_tray_296_around_sink_231(tray:item):
+    goal: not unknown(tray)
+    body:
+        assert is_tray(tray)
+        bind sink_instance:item where:
+            is_sink(sink_instance) and id[sink_instance]==231
+        achieve close_char(char,sink_instance)
+        if can_open(sink_instance):
+            achieve_once open(sink_instance)
+            exp(tray,sink_instance)
+        else:
+            exp(tray,sink_instance)
+    eff:
+        unknown[tray]=False
+        close[tray,sink_instance]=True
+        close[sink_instance,tray]=True
+    
+
+behavior find_knife_2050_around_kitchen_counter_230(knife:item):
+    goal: not unknown(knife)
+    body:
+        assert is_knife(knife)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==230
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(knife,kitchen_counter_instance)
+        else:
+            exp(knife,kitchen_counter_instance)
+    eff:
+        unknown[knife]=False
+        close[knife,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,knife]=True
+    
+
+behavior find_food_potato_2035_around_fridge_289(food_potato:item):
+    goal: not unknown(food_potato)
+    body:
+        assert is_food_potato(food_potato)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_potato,fridge_instance)
+        else:
+            exp(food_potato,fridge_instance)
+    eff:
+        unknown[food_potato]=False
+        close[food_potato,fridge_instance]=True
+        close[fridge_instance,food_potato]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def has_water_source(faucet: item):
+    # Check if the faucet has water
+    symbol has_water_source = has_water(faucet)
+    return has_water_source
+
+behavior prepare_to_wash(potato: item, faucet: item):
+    body:
+        if not clean(potato):
+            walk_to(faucet)
+            wash(potato)
+
+behavior peel_potato(potato: item, knife: item):
+    body:
+        if not cut(potato):
+            if inhand(knife):
+                cuts(potato)
+
+behavior __goal__():
+    body:
+        bind potato: item where:
+            is_food_potato(potato)
+        # Select a potato
+        
+        bind faucet: item where:
+            is_faucet(faucet) and has_water_source(faucet)
+        # Select a faucet with a water source
+        
+        bind knife: item where:
+            is_knife(knife)
+        # Select a knife
+        
+        prepare_to_wash(potato, faucet)
+        grab(knife)
+        peel_potato(potato, knife)
+        empty_a_hand()
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_potato_2035_around_fridge_289(food_potato:item):
+    goal: not unknown(food_potato)
+    body:
+        assert is_food_potato(food_potato)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_potato,fridge_instance)
+        else:
+            exp(food_potato,fridge_instance)
+    eff:
+        unknown[food_potato]=False
+        close[food_potato,fridge_instance]=True
+        close[fridge_instance,food_potato]=True
+    
+
+behavior find_towel_2057_around_shower_38(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind shower_instance:item where:
+            is_shower(shower_instance) and id[shower_instance]==38
+        achieve close_char(char,shower_instance)
+        if can_open(shower_instance):
+            achieve_once open(shower_instance)
+            exp(towel,shower_instance)
+        else:
+            exp(towel,shower_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,shower_instance]=True
+        close[shower_instance,towel]=True
+    
+
+behavior find_knife_2050_around_kitchen_counter_230(knife:item):
+    goal: not unknown(knife)
+    body:
+        assert is_knife(knife)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==230
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(knife,kitchen_counter_instance)
+        else:
+            exp(knife,kitchen_counter_instance)
+    eff:
+        unknown[knife]=False
+        close[knife,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,knife]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior get_potatoes(cleaner: item):
+    body:
+        if not dirty(cleaner):
+            wipe(cleaner)
+        foreach p: item:
+            if is_food_potato(p) and not inhand(p):
+                grab(p)
+                wash(p)
+                peel(p)
+
+behavior wash(item: item):
+    body:
+        if dirty(item):
+            rinse(item)
+            wipe(item)
+
+behavior peel(item: item):
+    body:
+        if not cut(item):
+            cuts(item)
+
+behavior __goal__():
+    body:
+        symbol is_washing_done = exists p: item : (is_food_potato(p) and clean(p))
+        symbol has_potato_inhand = exists p: item : (is_food_potato(p) and inhand(p))
+        
+        bind cleaner: item where:
+            is_item(cleaner) and clean(cleaner)
+        if not is_washing_done:
+            get_potatoes(cleaner)
+
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_potato_2035_around_fridge_289(food_potato:item):
+    goal: not unknown(food_potato)
+    body:
+        assert is_food_potato(food_potato)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_potato,fridge_instance)
+        else:
+            exp(food_potato,fridge_instance)
+    eff:
+        unknown[food_potato]=False
+        close[food_potato,fridge_instance]=True
+        close[fridge_instance,food_potato]=True
+    
+
+behavior find_knife_2050_around_kitchen_counter_230(knife:item):
+    goal: not unknown(knife)
+    body:
+        assert is_knife(knife)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==230
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(knife,kitchen_counter_instance)
+        else:
+            exp(knife,kitchen_counter_instance)
+    eff:
+        unknown[knife]=False
+        close[knife,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,knife]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+
+def is_potato_clean(potato:item):
+    # Function to check if the potato is clean
+    symbol clean_potato=not exists dirt: item : (dirty(potato))
+    return clean_potato
+
+def is_potato_peeled(potato:item):
+    # Placeholder function, assuming potato is peeled if not dirty
+    # Note: Actual implementation may vary based on available properties
+    symbol peeled_potato=not exists dirt: item : (dirty(potato))
+    return peeled_potato
+
+behavior wash_potato(potato:item):
+    body:
+        if not is_potato_clean(potato):
+            wash(potato)
+
+behavior peel_potato(potato:item):
+    body:
+        if not is_potato_peeled(potato):
+            observe(potato, "Check if it has already been peeled")
+            # Assuming observation is needed to decide peeling status
+            # Execute peeling action here if actual implementation permits
+
+behavior __goal__():
+    body:
+        bind potato: item where:
+            is_food_potato(potato)
+        # Assume a potato is selected from the available items
+        wash_potato(potato)
+        peel_potato(potato)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_knife_2050_around_kitchen_counter_230(knife:item):
+    goal: not unknown(knife)
+    body:
+        assert is_knife(knife)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==230
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(knife,kitchen_counter_instance)
+        else:
+            exp(knife,kitchen_counter_instance)
+    eff:
+        unknown[knife]=False
+        close[knife,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,knife]=True
+    
+
+behavior find_food_potato_2035_around_fridge_289(food_potato:item):
+    goal: not unknown(food_potato)
+    body:
+        assert is_food_potato(food_potato)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==289
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_potato,fridge_instance)
+        else:
+            exp(food_potato,fridge_instance)
+    eff:
+        unknown[food_potato]=False
+        close[food_potato,fridge_instance]=True
+        close[fridge_instance,food_potato]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior wash_potatoes(potato:item):
+    body:
+        if dirty(potato):
+            wash(potato)
+
+behavior peel_potatoes(potato:item, knife:item):
+    body:
+        if not clean(potato) or not cut(potato):
+            cuts(potato)
+            # Assuming that cuts behavior would simulate peeling if the potato state changes
+
+behavior __goal__():
+    body:
+        bind potato: item where:
+            is_food_potato(potato)
+        # Selecting a potato for washing and peeling
+        
+        bind knife: item where:
+            is_knife(knife)
+        # Selecting a knife for peeling
+
+        wash_potatoes(potato)
+        # Wash the potato first
+
+        peel_potatoes(potato, knife)
+        # Peel the potato using the knife
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+ 
+behavior wash_potatoes(potato:item):
+    body:
+        if dirty(potato):
+            wash(potato)
+
+behavior peel_potatoes(potato:item, knife:item):
+    body:
+        if not clean(potato) or not cut(potato):
+            cuts(potato)
+            # Assuming that cuts behavior would simulate peeling if the potato state changes
+
+behavior __goal__():
+    body:
+        bind potato: item where:
+            is_food_potato(potato)
+        # Selecting a potato for washing and peeling
+        
+        bind knife: item where:
+            is_knife(knife)
+        # Selecting a knife for peeling
+
+        wash_potatoes(potato)
+        # Wash the potato first
+
+        peel_potatoes(potato, knife)
+        # Peel the potato using the knife
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(fridge_289)switchoff_executor(fridge_289)open_executor(fridge_289)exp(food_potato_2035, fridge_289)walk_executor(food_potato_2035)grab_executor(food_potato_2035)walk_executor(cutting_board_2051)put_executor(food_potato_2035, cutting_board_2051)walk_executor(kitchen_counter_230)exp(knife_2050, kitchen_counter_230)walk_executor(knife_2050)grab_executor(knife_2050)walk_executor(food_potato_2035)cut_executor(food_potato_2035)
+##############################
+From agent.py
+walk_executor(fridge_289)
+Robot find: drawing_240, drawing_239, Robot is close to the fridge_289. 
+##############################
+From agent.py
+switchoff_executor(fridge_289)
+Robot find: Robot is close to the fridge_289. fridge_289 is turned off. 
+##############################
+From agent.py
+open_executor(fridge_289)
+Robot find: sauce_2078, food_steak_2008, food_apple_2009, food_bacon_2010, food_banana_2011, food_bread_2012, food_cake_2013, food_carrot_2014, food_cereal_2015, food_cheese_2016, food_chicken_2017, food_dessert_2018, food_donut_2019, food_egg_2020, food_fish_2021, food_food_2022, food_fruit_2023, food_hamburger_2024, food_ice_cream_2025, food_jam_2026, food_kiwi_2027, food_lemon_2028, food_noodles_2029, food_oatmeal_2030, food_orange_2031, food_onion_2032, food_peanut_butter_2033, food_pizza_2034, food_potato_2035, food_rice_2036, food_salt_2037, food_snack_2038, food_sugar_2039, food_turkey_2040, food_vegetable_2041, dry_pasta_2042, milk_2043, Robot is close to the sauce_2078. Robot is close to the fridge_289. Robot is close to the food_steak_2008. Robot is close to the food_apple_2009. Robot is close to the food_bacon_2010. Robot is close to the food_banana_2011. Robot is close to the food_bread_2012. Robot is close to the food_cake_2013. Robot is close to the food_carrot_2014. Robot is close to the food_cereal_2015. Robot is close to the food_cheese_2016. Robot is close to the food_chicken_2017. Robot is close to the food_dessert_2018. Robot is close to the food_donut_2019. Robot is close to the food_egg_2020. Robot is close to the food_fish_2021. Robot is close to the food_food_2022. Robot is close to the food_fruit_2023. Robot is close to the food_hamburger_2024. Robot is close to the food_ice_cream_2025. Robot is close to the food_jam_2026. Robot is close to the food_kiwi_2027. Robot is close to the food_lemon_2028. Robot is close to the food_noodles_2029. Robot is close to the food_oatmeal_2030. Robot is close to the food_orange_2031. Robot is close to the food_onion_2032. Robot is close to the food_peanut_butter_2033. Robot is close to the food_pizza_2034. Robot is close to the food_potato_2035. Robot is close to the food_rice_2036. Robot is close to the food_salt_2037. Robot is close to the food_snack_2038. Robot is close to the food_sugar_2039. Robot is close to the food_turkey_2040. Robot is close to the food_vegetable_2041. Robot is close to the dry_pasta_2042. Robot is close to the milk_2043. fridge_289 is opened. 
+##############################
+From agent.py
+exp(food_potato_2035, fridge_289)
+Find food_potato_2035. 
+##############################
+From agent.py-> find a plan in act()
+grab_executor(food_potato_2035)walk_executor(cutting_board_2051)put_executor(food_potato_2035, cutting_board_2051)walk_executor(kitchen_counter_230)exp(knife_2050, kitchen_counter_230)walk_executor(knife_2050)grab_executor(knife_2050)walk_executor(food_potato_2035)cut_executor(food_potato_2035)
+##############################
+From agent.py
+grab_executor(food_potato_2035)
+Robot find: Robot is close to the sauce_2078. Robot is close to the fridge_289. Robot is close to the food_steak_2008. Robot is close to the food_apple_2009. Robot is close to the food_bacon_2010. Robot is close to the food_banana_2011. Robot is close to the food_bread_2012. Robot is close to the food_cake_2013. Robot is close to the food_carrot_2014. Robot is close to the food_cereal_2015. Robot is close to the food_cheese_2016. Robot is close to the food_chicken_2017. Robot is close to the food_dessert_2018. Robot is close to the food_donut_2019. Robot is close to the food_egg_2020. Robot is close to the food_fish_2021. Robot is close to the food_food_2022. Robot is close to the food_fruit_2023. Robot is close to the food_hamburger_2024. Robot is close to the food_ice_cream_2025. Robot is close to the food_jam_2026. Robot is close to the food_kiwi_2027. Robot is close to the food_lemon_2028. Robot is close to the food_noodles_2029. Robot is close to the food_oatmeal_2030. Robot is close to the food_orange_2031. Robot is close to the food_onion_2032. Robot is close to the food_peanut_butter_2033. Robot is close to the food_pizza_2034. Robot is close to the food_potato_2035. Robot is close to the food_rice_2036. Robot is close to the food_salt_2037. Robot is close to the food_snack_2038. Robot is close to the food_sugar_2039. Robot is close to the food_turkey_2040. Robot is close to the food_vegetable_2041. Robot is close to the dry_pasta_2042. Robot is close to the milk_2043. Grabbing food_potato_2035 by right hand. 
+##############################
+From agent.py
+walk_executor(cutting_board_2051)
+Robot find: drawing_238, drawing_241, drawing_242, drawing_243, napkin_2005, oil_2079, cup_2063, knife_2050, cup_2064, pot_2069, fryingpan_2083, Robot is close to the food_potato_2035. Robot is close to the cutting_board_2051. Robot is close to the kitchen_counter_230. 
+##############################
+From agent.py
+put_executor(food_potato_2035, cutting_board_2051)
+Robot find: Robot is close to the food_potato_2035. Robot is close to the cutting_board_2051. Robot is close to the kitchen_counter_230. cutting_board_2051 is close food_potato_2035. food_potato_2035 is close cutting_board_2051. food_potato_2035 is on cutting_board_2051. food_potato_2035 released by right hand. 
+##############################
+From agent.py
+walk_executor(kitchen_counter_230)
+Robot find: Robot is close to the kitchen_counter_230. 
+##############################
+From agent.py
+exp(knife_2050, kitchen_counter_230)
+Find knife_2050. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(knife_2050)grab_executor(knife_2050)walk_executor(food_potato_2035)cut_executor(food_potato_2035)
+##############################
+From agent.py
+walk_executor(knife_2050)
+Robot find: Robot is close to the kitchen_counter_230. Robot is close to the knife_2050. 
+##############################
+From agent.py
+grab_executor(knife_2050)
+Robot find: Robot is close to the kitchen_counter_230. Robot is close to the knife_2050. Grabbing knife_2050 by right hand. 
+##############################
+From agent.py
+walk_executor(food_potato_2035)
+Robot find: Robot is close to the knife_2050. Robot is close to the cutting_board_2051. Robot is close to the food_potato_2035. 
+##############################
+From agent.py
+cut_executor(food_potato_2035)
+Robot find: Robot is close to the knife_2050. Robot is close to the cutting_board_2051. Robot is close to the food_potato_2035. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: No
+The feedback instruction: You need to wash the potatoes as part of this sub-task. After washing, you need to ensure the potatoes are peeled. Cutting does not necessarily complete the peeling requirement unless specified as peeling.
+##############################
+From agent.py
+Human Instruction: You need to wash the potatoes as part of this sub-task. After washing, you need to ensure the potatoes are peeled. Cutting does not necessarily complete the peeling requirement unless specified as peeling.
+
+The actions you have taken:
+Action 1: Walk to fridge_289.
+Action 2: Switch off fridge_289.
+Action 3: Open fridge_289.
+Action 4: look for food_potato_2035 around fridge_289.
+Action 5: Grab food_potato_2035.
+Action 6: Walk to cutting_board_2051.
+Action 7: Put food_potato_2035 on cutting_board_2051.
+Action 8: Walk to kitchen_counter_230.
+Action 9: look for knife_2050 around kitchen_counter_230.
+Action 10: Walk to knife_2050.
+Action 11: Grab knife_2050.
+Action 12: Walk to food_potato_2035.
+Action 13: Cut food_potato_2035.
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_cleaning_solution_2073_around_sink_231(cleaning_solution:item):
+    goal: not unknown(cleaning_solution)
+    body:
+        assert is_cleaning_solution(cleaning_solution)
+        bind sink_instance:item where:
+            is_sink(sink_instance) and id[sink_instance]==231
+        achieve close_char(char,sink_instance)
+        if can_open(sink_instance):
+            achieve_once open(sink_instance)
+            exp(cleaning_solution,sink_instance)
+        else:
+            exp(cleaning_solution,sink_instance)
+    eff:
+        unknown[cleaning_solution]=False
+        close[cleaning_solution,sink_instance]=True
+        close[sink_instance,cleaning_solution]=True
+    
+
+behavior find_tray_296_around_sink_231(tray:item):
+    goal: not unknown(tray)
+    body:
+        assert is_tray(tray)
+        bind sink_instance:item where:
+            is_sink(sink_instance) and id[sink_instance]==231
+        achieve close_char(char,sink_instance)
+        if can_open(sink_instance):
+            achieve_once open(sink_instance)
+            exp(tray,sink_instance)
+        else:
+            exp(tray,sink_instance)
+    eff:
+        unknown[tray]=False
+        close[tray,sink_instance]=True
+        close[sink_instance,tray]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior wash_potatoes(potato:item):
+    body:
+        if dirty(potato):
+            wash(potato)
+
+behavior peel_potatoes(potato:item, knife:item):
+    body:
+        if not cut(potato):
+            cuts(potato)
+
+behavior __goal__():
+    body:
+        bind potato: item where:
+            is_food_potato(potato)
+        bind knife: item where:
+            is_knife(knife)
+        wash_potatoes(potato)
+        peel_potatoes(potato, knife)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior wash_potatoes(potatoes: item):
+    body:
+        if dirty(potatoes):
+            wash(potatoes)
+            # Clean the potatoes by washing them
+
+behavior peel_potatoes(potatoes: item, knife: item):
+    body:
+        if not clean(potatoes):
+            wash_potatoes(potatoes)
+        # Ensure potatoes are clean before peeling
+        cuts(potatoes)
+        # Peel the potatoes by cutting
+
+behavior __goal__():
+    body:
+        bind potatoes: item where:
+            is_food_potato(potatoes)
+        # Select the potatoes
+        
+        bind knife: item where:
+            is_knife(knife)
+        # Select a knife
+
+        wash_potatoes(potatoes)
+        peel_potatoes(potatoes, knife)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+behavior wash_potatoes(potatoes: item):
+    body:
+        if dirty(potatoes):
+            wash(potatoes)
+            # Clean the potatoes by washing them
+
+behavior peel_potatoes(potatoes: item, knife: item):
+    body:
+        if not clean(potatoes):
+            wash_potatoes(potatoes)
+        # Ensure potatoes are clean before peeling
+        cuts(potatoes)
+        # Peel the potatoes by cutting
+
+behavior __goal__():
+    body:
+        bind potatoes: item where:
+            is_food_potato(potatoes)
+        # Select the potatoes
+        
+        bind knife: item where:
+            is_knife(knife)
+        # Select a knife
+
+        wash_potatoes(potatoes)
+        peel_potatoes(potatoes, knife)
+
+##############################
+From agent.py-> find a plan in act()
+cut_executor(food_potato_2035)
+##############################
+From agent.py
+cut_executor(food_potato_2035)
+Robot find: Robot is close to the knife_2050. Robot is close to the cutting_board_2051. Robot is close to the food_potato_2035. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: No
+The feedback instruction: You need to wash and peel the potatoes. The actions taken only include cutting the potatoes without washing or peeling them.
+##############################
+From agent.py
+Human Instruction: You need to wash and peel the potatoes. The actions taken only include cutting the potatoes without washing or peeling them.
+
+The actions you have taken:
+Action 1: Walk to fridge_289.
+Action 2: Switch off fridge_289.
+Action 3: Open fridge_289.
+Action 4: look for food_potato_2035 around fridge_289.
+Action 5: Grab food_potato_2035.
+Action 6: Walk to cutting_board_2051.
+Action 7: Put food_potato_2035 on cutting_board_2051.
+Action 8: Walk to kitchen_counter_230.
+Action 9: look for knife_2050 around kitchen_counter_230.
+Action 10: Walk to knife_2050.
+Action 11: Grab knife_2050.
+Action 12: Walk to food_potato_2035.
+Action 13: Cut food_potato_2035.
+Action 14: Cut food_potato_2035.
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_clothes_scarf_2048_around_closetdrawer_377(clothes_scarf:item):
+    goal: not unknown(clothes_scarf)
+    body:
+        assert is_clothes_scarf(clothes_scarf)
+        bind closetdrawer_instance:item where:
+            is_closetdrawer(closetdrawer_instance) and id[closetdrawer_instance]==377
+        achieve close_char(char,closetdrawer_instance)
+        if can_open(closetdrawer_instance):
+            achieve_once open(closetdrawer_instance)
+            exp(clothes_scarf,closetdrawer_instance)
+        else:
+            exp(clothes_scarf,closetdrawer_instance)
+    eff:
+        unknown[clothes_scarf]=False
+        close[clothes_scarf,closetdrawer_instance]=True
+        close[closetdrawer_instance,clothes_scarf]=True
+    
+
+behavior find_cleaning_solution_2073_around_sink_231(cleaning_solution:item):
+    goal: not unknown(cleaning_solution)
+    body:
+        assert is_cleaning_solution(cleaning_solution)
+        bind sink_instance:item where:
+            is_sink(sink_instance) and id[sink_instance]==231
+        achieve close_char(char,sink_instance)
+        if can_open(sink_instance):
+            achieve_once open(sink_instance)
+            exp(cleaning_solution,sink_instance)
+        else:
+            exp(cleaning_solution,sink_instance)
+    eff:
+        unknown[cleaning_solution]=False
+        close[cleaning_solution,sink_instance]=True
+        close[sink_instance,cleaning_solution]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior wash_potatoes(potatoes:item):
+    body:
+        if not clean(potatoes):
+            wash(potatoes)
+
+behavior peel_potatoes(potatoes:item, knife:item):
+    body:
+        if not inhand(knife):
+            grab(knife)
+        observe(potatoes, "Check if they have been peeled")
+        if not cut(potatoes):  # Assumes cut indicates peeling done
+            cuts(potatoes)
+
+behavior __goal__():
+    body:
+        bind potatoes: item where:
+            is_food_potato(potatoes)
+        bind knife: item where:
+            is_knife(knife) and close_char(char, knife)
+        wash_potatoes(potatoes)
+        peel_potatoes(potatoes, knife)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+behavior wash_potatoes(potatoes:item):
+    body:
+        if not clean(potatoes):
+            wash(potatoes)
+
+behavior peel_potatoes(potatoes:item, knife:item):
+    body:
+        if not inhand(knife):
+            grab(knife)
+        observe(potatoes, "Check if they have been peeled")
+        if not cut(potatoes):  # Assumes cut indicates peeling done
+            cuts(potatoes)
+
+behavior __goal__():
+    body:
+        bind potatoes: item where:
+            is_food_potato(potatoes)
+        bind knife: item where:
+            is_knife(knife) and close_char(char, knife)
+        wash_potatoes(potatoes)
+        peel_potatoes(potatoes, knife)
+
+##############################
+From agent.py-> find a plan in act()
+obs(food_potato_2035, Check if they have been peeled)
+##############################
+From agent.py
+obs(food_potato_2035, Check if they have been peeled)
+Get this information:  food_potato_2035 is inside dining_room_201. food_potato_2035 is close to cutting_board_2051. food_potato_2035 is close to character_65. food_potato_2035 is on cutting_board_2051. food_potato_2035 is CLEAN.
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: No
+The feedback instruction: You need to wash the potatoes and ensure they are peeled. The actions taken only include cutting the potatoes without addressing the washing or confirming they are peeled.
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_clothes_pants_2085_around_closetdrawer_377(clothes_pants:item):
+    goal: not unknown(clothes_pants)
+    body:
+        assert is_clothes_pants(clothes_pants)
+        bind closetdrawer_instance:item where:
+            is_closetdrawer(closetdrawer_instance) and id[closetdrawer_instance]==377
+        achieve close_char(char,closetdrawer_instance)
+        if can_open(closetdrawer_instance):
+            achieve_once open(closetdrawer_instance)
+            exp(clothes_pants,closetdrawer_instance)
+        else:
+            exp(clothes_pants,closetdrawer_instance)
+    eff:
+        unknown[clothes_pants]=False
+        close[clothes_pants,closetdrawer_instance]=True
+        close[closetdrawer_instance,clothes_pants]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior grab_knife(knife: item):
+    body:
+        if not inhand(knife):
+            grab(knife)
+
+behavior cut_potatoes(potato:item, knife:item):
+    body:
+        grab_knife(knife)
+        cuts(potato)
+
+behavior __goal__():
+    body:
+        bind knife: item where:
+            is_knife(knife)
+        bind potato: item where:
+            is_food_potato(potato)
+        cut_potatoes(potato, knife)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+behavior grab_knife(knife: item):
+    body:
+        if not inhand(knife):
+            grab(knife)
+
+behavior cut_potatoes(potato:item, knife:item):
+    body:
+        grab_knife(knife)
+        cuts(potato)
+
+behavior __goal__():
+    body:
+        bind knife: item where:
+            is_knife(knife)
+        bind potato: item where:
+            is_food_potato(potato)
+        cut_potatoes(potato, knife)
+
+##############################
+From agent.py-> find a plan in act()
+cut_executor(food_potato_2035)
+##############################
+From agent.py
+cut_executor(food_potato_2035)
+Robot find: Robot is close to the knife_2050. Robot is close to the cutting_board_2051. Robot is close to the food_potato_2035. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: No
+The feedback instruction: You need to wash and peel the potatoes before cutting them into fries. Ensure these actions are performed before proceeding to frying.
+##############################
+From agent.py
+Human Instruction: You need to wash and peel the potatoes before cutting them into fries. Ensure these actions are performed before proceeding to frying.
+
+The actions you have taken:
+Action 1: Walk to fridge_289.
+Action 2: Switch off fridge_289.
+Action 3: Open fridge_289.
+Action 4: look for food_potato_2035 around fridge_289.
+Action 5: Grab food_potato_2035.
+Action 6: Walk to cutting_board_2051.
+Action 7: Put food_potato_2035 on cutting_board_2051.
+Action 8: Walk to kitchen_counter_230.
+Action 9: look for knife_2050 around kitchen_counter_230.
+Action 10: Walk to knife_2050.
+Action 11: Grab knife_2050.
+Action 12: Walk to food_potato_2035.
+Action 13: Cut food_potato_2035.
+Action 14: Cut food_potato_2035.
+Action 15: Observe around food_potato_2035 with the question of Check if they have been peeled.
+Action 16: Cut food_potato_2035.
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def has_been_cut(fries:item):
+    # Function to check if the fries have been cut
+    symbol cut_status=exists piece: item : (cut(piece) and on(piece, fries))
+    return cut_status
+
+behavior cut_potatoes(fries:item):
+    body:
+        if not has_been_cut(fries):
+            cuts(fries)
+
+behavior __goal__():
+    body:
+        bind potatoes: item where:
+            is_food_potato(potatoes)
+        # Select potatoes that need to be cut into fries
+        cut_potatoes(potatoes)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+def has_been_cut(fries:item):
+    # Function to check if the fries have been cut
+    symbol cut_status=exists piece: item : (cut(piece) and on(piece, fries))
+    return cut_status
+
+behavior cut_potatoes(fries:item):
+    body:
+        if not has_been_cut(fries):
+            cuts(fries)
+
+behavior __goal__():
+    body:
+        bind potatoes: item where:
+            is_food_potato(potatoes)
+        # Select potatoes that need to be cut into fries
+        cut_potatoes(potatoes)
+
+##############################
+From agent.py-> find a plan in act()
+cut_executor(food_potato_2035)
+##############################
+From agent.py
+cut_executor(food_potato_2035)
+Robot find: Robot is close to the knife_2050. Robot is close to the cutting_board_2051. Robot is close to the food_potato_2035. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: No
+The feedback instruction: The robot needs to wash and peel the potatoes before cutting them into fries. Ensure these actions are performed before proceeding.
+##############################
+From agent.py
+Human Instruction: The robot needs to wash and peel the potatoes before cutting them into fries. Ensure these actions are performed before proceeding.
+
+The actions you have taken:
+Action 1: Walk to fridge_289.
+Action 2: Switch off fridge_289.
+Action 3: Open fridge_289.
+Action 4: look for food_potato_2035 around fridge_289.
+Action 5: Grab food_potato_2035.
+Action 6: Walk to cutting_board_2051.
+Action 7: Put food_potato_2035 on cutting_board_2051.
+Action 8: Walk to kitchen_counter_230.
+Action 9: look for knife_2050 around kitchen_counter_230.
+Action 10: Walk to knife_2050.
+Action 11: Grab knife_2050.
+Action 12: Walk to food_potato_2035.
+Action 13: Cut food_potato_2035.
+Action 14: Cut food_potato_2035.
+Action 15: Observe around food_potato_2035 with the question of Check if they have been peeled.
+Action 16: Cut food_potato_2035.
+Action 17: Cut food_potato_2035.
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_cleaning_solution_2073_around_sink_231(cleaning_solution:item):
+    goal: not unknown(cleaning_solution)
+    body:
+        assert is_cleaning_solution(cleaning_solution)
+        bind sink_instance:item where:
+            is_sink(sink_instance) and id[sink_instance]==231
+        achieve close_char(char,sink_instance)
+        if can_open(sink_instance):
+            achieve_once open(sink_instance)
+            exp(cleaning_solution,sink_instance)
+        else:
+            exp(cleaning_solution,sink_instance)
+    eff:
+        unknown[cleaning_solution]=False
+        close[cleaning_solution,sink_instance]=True
+        close[sink_instance,cleaning_solution]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_potato_properly_prepared(potato:item):
+    # Check if the potato is cleaned and has been peeled
+    return clean(potato)
+
+behavior cut_into_fries(potato:item, knife:item):
+    body:
+        if not cut(potato):
+            grab(knife)
+            cuts(potato)
+            cuts(potato)
+            cuts(potato)
+            empty_a_hand() # Release the knife after cutting
+
+behavior __goal__():
+    body:
+        bind potato: item where:
+            is_food_potato(potato) and is_potato_properly_prepared(potato)
+        bind knife: item where:
+            is_knife(knife)
+
+        cut_into_fries(potato, knife)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_cleaning_solution_2073_around_sink_231(cleaning_solution:item):
+    goal: not unknown(cleaning_solution)
+    body:
+        assert is_cleaning_solution(cleaning_solution)
+        bind sink_instance:item where:
+            is_sink(sink_instance) and id[sink_instance]==231
+        achieve close_char(char,sink_instance)
+        if can_open(sink_instance):
+            achieve_once open(sink_instance)
+            exp(cleaning_solution,sink_instance)
+        else:
+            exp(cleaning_solution,sink_instance)
+    eff:
+        unknown[cleaning_solution]=False
+        close[cleaning_solution,sink_instance]=True
+        close[sink_instance,cleaning_solution]=True
+    
+
+behavior find_detergent_2084_around_washing_machine_2007(detergent:item):
+    goal: not unknown(detergent)
+    body:
+        assert is_detergent(detergent)
+        bind washing_machine_instance:item where:
+            is_washing_machine(washing_machine_instance) and id[washing_machine_instance]==2007
+        achieve close_char(char,washing_machine_instance)
+        if can_open(washing_machine_instance):
+            achieve_once open(washing_machine_instance)
+            exp(detergent,washing_machine_instance)
+        else:
+            exp(detergent,washing_machine_instance)
+    eff:
+        unknown[detergent]=False
+        close[detergent,washing_machine_instance]=True
+        close[washing_machine_instance,detergent]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def peel_check(potato:item):
+    # Function to check if the potatoes are peeled
+    return not dirty(potato)
+
+behavior cut_into_fries(potato:item, board:item, knife:item):
+    body:
+        if not cut(potato):
+            if not on(potato, board):
+                put_on(potato, board) # Place the potato on the cutting board
+            if not inhand(knife):
+                grab(knife) # Grab the knife
+            cuts(potato) # Cut the potato into fries
+
+behavior __goal__():
+    body:
+        bind potato: item where:
+            is_food_potato(potato) and id[potato] == 2035
+        # Select the potato with specific ID
+        bind cutting_board: item where:
+            is_cutting_board(cutting_board) and id[cutting_board] == 2051
+        # Select the cutting board with specific ID
+        bind knife: item where:
+            is_knife(knife) and id[knife] == 2050
+        # Select the knife with specific ID
+        walk_to(potato)
+        # Approach the potato location
+        if not peel_check(potato):
+            wash(potato)
+        cut_into_fries(potato, cutting_board, knife)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+def peel_check(potato:item):
+    # Function to check if the potatoes are peeled
+    return not dirty(potato)
+
+behavior cut_into_fries(potato:item, board:item, knife:item):
+    body:
+        if not cut(potato):
+            if not on(potato, board):
+                put_on(potato, board) # Place the potato on the cutting board
+            if not inhand(knife):
+                grab(knife) # Grab the knife
+            cuts(potato) # Cut the potato into fries
+
+behavior __goal__():
+    body:
+        bind potato: item where:
+            is_food_potato(potato) and id[potato] == 2035
+        # Select the potato with specific ID
+        bind cutting_board: item where:
+            is_cutting_board(cutting_board) and id[cutting_board] == 2051
+        # Select the cutting board with specific ID
+        bind knife: item where:
+            is_knife(knife) and id[knife] == 2050
+        # Select the knife with specific ID
+        walk_to(potato)
+        # Approach the potato location
+        if not peel_check(potato):
+            wash(potato)
+        cut_into_fries(potato, cutting_board, knife)
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(food_potato_2035)
+##############################
+From agent.py
+walk_executor(food_potato_2035)
+Robot find: Robot is close to the knife_2050. Robot is close to the cutting_board_2051. Robot is close to the food_potato_2035. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: No
+The feedback instruction: The robot needs to wash and peel the potatoes before cutting them into fries. Ensure these actions are performed before proceeding with the task.
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_tray_296_around_oven_295(tray:item):
+    goal: not unknown(tray)
+    body:
+        assert is_tray(tray)
+        bind oven_instance:item where:
+            is_oven(oven_instance) and id[oven_instance]==295
+        achieve close_char(char,oven_instance)
+        if can_open(oven_instance):
+            achieve_once open(oven_instance)
+            exp(tray,oven_instance)
+        else:
+            exp(tray,oven_instance)
+    eff:
+        unknown[tray]=False
+        close[tray,oven_instance]=True
+        close[oven_instance,tray]=True
+    
+
+behavior find_coffee_filter_2000_around_coffe_maker_290(coffee_filter:item):
+    goal: not unknown(coffee_filter)
+    body:
+        assert is_coffee_filter(coffee_filter)
+        bind coffe_maker_instance:item where:
+            is_coffe_maker(coffe_maker_instance) and id[coffe_maker_instance]==290
+        achieve close_char(char,coffe_maker_instance)
+        if can_open(coffe_maker_instance):
+            achieve_once open(coffe_maker_instance)
+            exp(coffee_filter,coffe_maker_instance)
+        else:
+            exp(coffee_filter,coffe_maker_instance)
+    eff:
+        unknown[coffee_filter]=False
+        close[coffee_filter,coffe_maker_instance]=True
+        close[coffe_maker_instance,coffee_filter]=True
+    
+
+behavior find_bowl_2071_around_sink_231(bowl:item):
+    goal: not unknown(bowl)
+    body:
+        assert is_bowl(bowl)
+        bind sink_instance:item where:
+            is_sink(sink_instance) and id[sink_instance]==231
+        achieve close_char(char,sink_instance)
+        if can_open(sink_instance):
+            achieve_once open(sink_instance)
+            exp(bowl,sink_instance)
+        else:
+            exp(bowl,sink_instance)
+    eff:
+        unknown[bowl]=False
+        close[bowl,sink_instance]=True
+        close[sink_instance,bowl]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def exists_frying_pan():
+    # Check if theres a frying pan
+    symbol has_frying_pan = exists fp: item : is_fryingpan(fp)
+    return has_frying_pan
+
+def has_oil():
+    # Check if theres oil in the scene
+    symbol has_oil_item = exists oil: item : is_oil(oil)
+    return has_oil_item
+
+behavior prepare_oil(oil:item, fryingpan:item):
+    body:
+        if not inside(oil, fryingpan):
+            put_on(oil, fryingpan)
+      
+behavior fry_potato_slices(fryingpan:item):
+    body:
+        if not cut(food_potato_2035):
+            cuts(food_potato_2035)
+        if not exists oil: item : (inside(oil, fryingpan)):
+            if has_oil():
+                bind oil: item where:
+                    is_oil(oil)
+                prepare_oil(oil, fryingpan)
+        if cut(food_potato_2035) and exists oil: item : (inside(oil, fryingpan)):
+            put_on(food_potato_2035, fryingpan)
+
+behavior __goal__():
+    body:
+        if not exists_frying_pan():
+            observe(kitchen_counter_230, "Look for a frying pan")
+        if exists_frying_pan():
+            bind fryingpan: item where:
+                is_fryingpan(fryingpan)
+            fry_potato_slices(fryingpan)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_cd_2075_around_cupboard_229(cd:item):
+    goal: not unknown(cd)
+    body:
+        assert is_cd(cd)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==229
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(cd,cupboard_instance)
+        else:
+            exp(cd,cupboard_instance)
+    eff:
+        unknown[cd]=False
+        close[cd,cupboard_instance]=True
+        close[cupboard_instance,cd]=True
+    
+
+behavior find_coffee_filter_2000_around_coffe_maker_290(coffee_filter:item):
+    goal: not unknown(coffee_filter)
+    body:
+        assert is_coffee_filter(coffee_filter)
+        bind coffe_maker_instance:item where:
+            is_coffe_maker(coffe_maker_instance) and id[coffe_maker_instance]==290
+        achieve close_char(char,coffe_maker_instance)
+        if can_open(coffe_maker_instance):
+            achieve_once open(coffe_maker_instance)
+            exp(coffee_filter,coffe_maker_instance)
+        else:
+            exp(coffee_filter,coffe_maker_instance)
+    eff:
+        unknown[coffee_filter]=False
+        close[coffee_filter,coffe_maker_instance]=True
+        close[coffe_maker_instance,coffee_filter]=True
+    
+
+behavior find_pencil_2001_around_desk_357(pencil:item):
+    goal: not unknown(pencil)
+    body:
+        assert is_pencil(pencil)
+        bind desk_instance:item where:
+            is_desk(desk_instance) and id[desk_instance]==357
+        achieve close_char(char,desk_instance)
+        if can_open(desk_instance):
+            achieve_once open(desk_instance)
+            exp(pencil,desk_instance)
+        else:
+            exp(pencil,desk_instance)
+    eff:
+        unknown[pencil]=False
+        close[pencil,desk_instance]=True
+        close[desk_instance,pencil]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def has_frying_pan_or_oil_on_stove(stove:item):
+    # Check if there is a frying pan or oil on the stove
+    symbol has_items_on_stove=exists o: item : ((is_fryingpan(o) or is_oil(o)) and on(o, stove))
+    return has_items_on_stove
+
+behavior prepare_to_fry(o:item, stove:item):
+    body:
+        if not on(o, stove):
+            put_on(o, stove)
+            # Ensure the item is placed on the stove
+
+behavior fry_until_golden_brown(o:item, pan:item):
+    body:
+        if not cut(o):
+            cuts(o) # Cut the item before frying, if not already done
+        if not is_on(pan):
+            switch_on(pan) # Turn on the frying pan
+        if not inside(o, pan):
+            put_inside(o, pan) # Place the item inside the frying pan
+        # You can assume the automatic handling of frying once placed inside
+
+behavior __goal__():
+    body:
+        bind stove: item where:
+            is_stove(stove)
+        # Select a stove to set up the frying location
+
+        if not has_frying_pan_or_oil_on_stove(stove):
+            bind pan: item where:
+                is_fryingpan(pan)
+            prepare_to_fry(pan, stove) # Prepare the frying pan on the stove
+
+            bind oil: item where:
+                is_oil(oil)
+            prepare_to_fry(oil, stove) # Prepare the oil on the stove
+
+        bind potato: item where:
+            is_food_potato(potato) and cut(potato)
+        bind pan: item where:
+            is_fryingpan(pan) and on(pan, stove)
+        fry_until_golden_brown(potato, pan) # Fry the potato until golden brown
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_cd_2075_around_filing_cabinet_399(cd:item):
+    goal: not unknown(cd)
+    body:
+        assert is_cd(cd)
+        bind filing_cabinet_instance:item where:
+            is_filing_cabinet(filing_cabinet_instance) and id[filing_cabinet_instance]==399
+        achieve close_char(char,filing_cabinet_instance)
+        if can_open(filing_cabinet_instance):
+            achieve_once open(filing_cabinet_instance)
+            exp(cd,filing_cabinet_instance)
+        else:
+            exp(cd,filing_cabinet_instance)
+    eff:
+        unknown[cd]=False
+        close[cd,filing_cabinet_instance]=True
+        close[filing_cabinet_instance,cd]=True
+    
+
+behavior find_pencil_2001_around_desk_357(pencil:item):
+    goal: not unknown(pencil)
+    body:
+        assert is_pencil(pencil)
+        bind desk_instance:item where:
+            is_desk(desk_instance) and id[desk_instance]==357
+        achieve close_char(char,desk_instance)
+        if can_open(desk_instance):
+            achieve_once open(desk_instance)
+            exp(pencil,desk_instance)
+        else:
+            exp(pencil,desk_instance)
+    eff:
+        unknown[pencil]=False
+        close[pencil,desk_instance]=True
+        close[desk_instance,pencil]=True
+    
+
+behavior find_coffee_filter_2000_around_coffe_maker_290(coffee_filter:item):
+    goal: not unknown(coffee_filter)
+    body:
+        assert is_coffee_filter(coffee_filter)
+        bind coffe_maker_instance:item where:
+            is_coffe_maker(coffe_maker_instance) and id[coffe_maker_instance]==290
+        achieve close_char(char,coffe_maker_instance)
+        if can_open(coffe_maker_instance):
+            achieve_once open(coffe_maker_instance)
+            exp(coffee_filter,coffe_maker_instance)
+        else:
+            exp(coffee_filter,coffe_maker_instance)
+    eff:
+        unknown[coffee_filter]=False
+        close[coffee_filter,coffe_maker_instance]=True
+        close[coffe_maker_instance,coffee_filter]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_induction_on():
+    # Check if there is any induction with an on state
+    symbol on_induction=exists induction: item : (is_on(induction) and is_stove(induction))
+    return on_induction
+
+behavior grab_pan_close_to_stove(pan:item, stove: item):
+    body:
+        if not close(pan, stove):
+            grab(pan)
+            put_close(pan, stove)
+            empty_a_hand()
+
+behavior place_potatoes_in_pan_and_fry(pan:item, stove: item, potato:item):
+    body:
+        if not inside(potato, pan):
+            grab(potato)
+            put_inside(potato, pan)
+            empty_a_hand()
+        if is_off(stove):
+            switch_on(stove)
+        watch(pan)
+
+behavior __goal__():
+    body:
+        bind potato: item where:
+            is_food_potato(potato) and cut(potato)
+        # Select the potato that was already cut
+
+        bind stove: item where:
+            is_stove(stove)
+        # Select a stove
+
+        bind pan: item where:
+            is_fryingpan(pan)
+        # Select a frying pan
+
+        if not is_induction_on():
+            grab_pan_close_to_stove(pan, stove)
+            place_potatoes_in_pan_and_fry(pan, stove, potato)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_cd_2075_around_ironing_board_2074(cd:item):
+    goal: not unknown(cd)
+    body:
+        assert is_cd(cd)
+        bind ironing_board_instance:item where:
+            is_ironing_board(ironing_board_instance) and id[ironing_board_instance]==2074
+        achieve close_char(char,ironing_board_instance)
+        if can_open(ironing_board_instance):
+            achieve_once open(ironing_board_instance)
+            exp(cd,ironing_board_instance)
+        else:
+            exp(cd,ironing_board_instance)
+    eff:
+        unknown[cd]=False
+        close[cd,ironing_board_instance]=True
+        close[ironing_board_instance,cd]=True
+    
+
+behavior find_cleaning_solution_2073_around_bathroom_counter_41(cleaning_solution:item):
+    goal: not unknown(cleaning_solution)
+    body:
+        assert is_cleaning_solution(cleaning_solution)
+        bind bathroom_counter_instance:item where:
+            is_bathroom_counter(bathroom_counter_instance) and id[bathroom_counter_instance]==41
+        achieve close_char(char,bathroom_counter_instance)
+        if can_open(bathroom_counter_instance):
+            achieve_once open(bathroom_counter_instance)
+            exp(cleaning_solution,bathroom_counter_instance)
+        else:
+            exp(cleaning_solution,bathroom_counter_instance)
+    eff:
+        unknown[cleaning_solution]=False
+        close[cleaning_solution,bathroom_counter_instance]=True
+        close[bathroom_counter_instance,cleaning_solution]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_potato_sliced_ready_for_frying(potato: item):
+    # Check if the potato item is properly cut and clean, indicating readiness for frying
+    return cut(potato) and clean(potato)
+
+behavior fry_potatoes(potato: item, fryingpan: item, stove: item):
+    body:
+        if not inside(potato, fryingpan):
+            put_inside(potato, fryingpan) # Place the potato slices in the frying pan
+        if is_off(stove):
+            switch_on(stove) # Turn on the stove to start frying
+
+behavior __goal__():
+    body:
+        bind potato: item where:
+            is_food_potato(potato) and is_potato_sliced_ready_for_frying(potato)
+        # Choose the potato that is sliced and clean
+        
+        bind fryingpan: item where:
+            is_fryingpan(fryingpan)
+        # Choose a frying pan
+
+        bind stove: item where:
+            is_stove(stove)
+        # Choose a stove
+
+        fry_potatoes(potato, fryingpan, stove)
+        # Fry the prepared potato slices until golden brown
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+def is_potato_sliced_ready_for_frying(potato: item):
+    # Check if the potato item is properly cut and clean, indicating readiness for frying
+    return cut(potato) and clean(potato)
+
+behavior fry_potatoes(potato: item, fryingpan: item, stove: item):
+    body:
+        if not inside(potato, fryingpan):
+            put_inside(potato, fryingpan) # Place the potato slices in the frying pan
+        if is_off(stove):
+            switch_on(stove) # Turn on the stove to start frying
+
+behavior __goal__():
+    body:
+        bind potato: item where:
+            is_food_potato(potato) and is_potato_sliced_ready_for_frying(potato)
+        # Choose the potato that is sliced and clean
+        
+        bind fryingpan: item where:
+            is_fryingpan(fryingpan)
+        # Choose a frying pan
+
+        bind stove: item where:
+            is_stove(stove)
+        # Choose a stove
+
+        fry_potatoes(potato, fryingpan, stove)
+        # Fry the prepared potato slices until golden brown
+
+##############################
+From agent.py-> find a plan in act()
+grab_executor(food_potato_2035)walk_executor(fryingpan_2083)putin_executor(food_potato_2035, fryingpan_2083)walk_executor(stove_2065)switchon_executor(stove_2065)
+##############################
+From agent.py
+grab_executor(food_potato_2035)
+Robot find: Robot is close to the knife_2050. Robot is close to the cutting_board_2051. Robot is close to the food_potato_2035. Grabbing food_potato_2035 by left hand. 
+##############################
+From agent.py
+walk_executor(fryingpan_2083)
+Robot find: Robot is close to the knife_2050. Robot is close to the food_potato_2035. Robot is close to the fryingpan_2083. Robot is close to the kitchen_counter_230. 
+##############################
+From agent.py
+putin_executor(food_potato_2035, fryingpan_2083)
+Robot find: Robot is close to the knife_2050. Robot is close to the food_potato_2035. Robot is close to the fryingpan_2083. Robot is close to the kitchen_counter_230. food_potato_2035 is inside fryingpan_2083. fryingpan_2083 is close food_potato_2035. food_potato_2035 is close fryingpan_2083. food_potato_2035 released by left hand. 
+##############################
+From agent.py
+walk_executor(stove_2065)
+Robot find: Robot is close to the knife_2050. Robot is close to the kitchen_counter_230. Robot is close to the stove_2065. 
+##############################
+From agent.py
+switchon_executor(stove_2065)
+Robot find: Robot is close to the knife_2050. Robot is close to the kitchen_counter_230. Robot is close to the stove_2065. stove_2065 is turned on. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: No
+The feedback instruction: The robot needs to wash and peel the potatoes before cutting them into slices. This step was not completed as instructed. Additionally, ensure that the potato slices are fried until golden brown, which has not been confirmed as achieved.
+##############################
+From agent.py
+Human Instruction: The robot needs to wash and peel the potatoes before cutting them into slices. This step was not completed as instructed. Additionally, ensure that the potato slices are fried until golden brown, which has not been confirmed as achieved.
+
+The actions you have taken:
+Action 1: Walk to fridge_289.
+Action 2: Switch off fridge_289.
+Action 3: Open fridge_289.
+Action 4: look for food_potato_2035 around fridge_289.
+Action 5: Grab food_potato_2035.
+Action 6: Walk to cutting_board_2051.
+Action 7: Put food_potato_2035 on cutting_board_2051.
+Action 8: Walk to kitchen_counter_230.
+Action 9: look for knife_2050 around kitchen_counter_230.
+Action 10: Walk to knife_2050.
+Action 11: Grab knife_2050.
+Action 12: Walk to food_potato_2035.
+Action 13: Cut food_potato_2035.
+Action 14: Cut food_potato_2035.
+Action 15: Observe around food_potato_2035 with the question of Check if they have been peeled.
+Action 16: Cut food_potato_2035.
+Action 17: Cut food_potato_2035.
+Action 18: Walk to food_potato_2035.
+Action 19: Grab food_potato_2035.
+Action 20: Walk to fryingpan_2083.
+Action 21: Put food_potato_2035 into fryingpan_2083.
+Action 22: Walk to stove_2065.
+Action 23: Switch on stove_2065.
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_coffee_filter_2000_around_coffe_maker_290(coffee_filter:item):
+    goal: not unknown(coffee_filter)
+    body:
+        assert is_coffee_filter(coffee_filter)
+        bind coffe_maker_instance:item where:
+            is_coffe_maker(coffe_maker_instance) and id[coffe_maker_instance]==290
+        achieve close_char(char,coffe_maker_instance)
+        if can_open(coffe_maker_instance):
+            achieve_once open(coffe_maker_instance)
+            exp(coffee_filter,coffe_maker_instance)
+        else:
+            exp(coffee_filter,coffe_maker_instance)
+    eff:
+        unknown[coffee_filter]=False
+        close[coffee_filter,coffe_maker_instance]=True
+        close[coffe_maker_instance,coffee_filter]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_fries(fries:item):
+    symbol is_fries=exists o: item : (is_food_potato(o) and cut(o))
+    return is_fries
+
+def is_frying_pan(fryingpan:item):
+    symbol is_pan=exists o: item : (is_fryingpan(o) and inside(o, kitchen))
+    return is_pan
+
+def has_oil_in_pan(fryingpan:item):
+    symbol has_oil=exists o: item : (on(o, fryingpan) and is_oil(o))
+    return has_oil
+
+behavior fry_until_golden(fries:item, fryingpan:item, stove:item):
+    body:
+        if not inside(fries, fryingpan):
+            put_inside(fries, fryingpan)
+        if not is_on(stove):
+            switch_on(stove)
+        # Assume frying process takes place here Ensure fries are golden brown
+        observe(fryingpan, "Check if fries are golden brown") # Observe to confirm fries are golden brown
+
+behavior __goal__():
+    body:
+        bind fries: item where:
+            is_fries(fries) and on(fries, kitchen_counter_230)
+        bind fryingpan: item where:
+            is_fryingpan(fryingpan) and is_frying_pan(fryingpan)
+        bind stove: item where:
+            is_stove(stove)
+        if not has_oil_in_pan(fryingpan):
+            observe(fryingpan, "Check if there is oil in the pan")
+        fry_until_golden(fries, fryingpan, stove)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_cd_2075_around_desk_357(cd:item):
+    goal: not unknown(cd)
+    body:
+        assert is_cd(cd)
+        bind desk_instance:item where:
+            is_desk(desk_instance) and id[desk_instance]==357
+        achieve close_char(char,desk_instance)
+        if can_open(desk_instance):
+            achieve_once open(desk_instance)
+            exp(cd,desk_instance)
+        else:
+            exp(cd,desk_instance)
+    eff:
+        unknown[cd]=False
+        close[cd,desk_instance]=True
+        close[desk_instance,cd]=True
+    
+
+behavior find_tray_296_around_oven_295(tray:item):
+    goal: not unknown(tray)
+    body:
+        assert is_tray(tray)
+        bind oven_instance:item where:
+            is_oven(oven_instance) and id[oven_instance]==295
+        achieve close_char(char,oven_instance)
+        if can_open(oven_instance):
+            achieve_once open(oven_instance)
+            exp(tray,oven_instance)
+        else:
+            exp(tray,oven_instance)
+    eff:
+        unknown[tray]=False
+        close[tray,oven_instance]=True
+        close[oven_instance,tray]=True
+    
+
+behavior find_coffee_filter_2000_around_coffe_maker_290(coffee_filter:item):
+    goal: not unknown(coffee_filter)
+    body:
+        assert is_coffee_filter(coffee_filter)
+        bind coffe_maker_instance:item where:
+            is_coffe_maker(coffe_maker_instance) and id[coffe_maker_instance]==290
+        achieve close_char(char,coffe_maker_instance)
+        if can_open(coffe_maker_instance):
+            achieve_once open(coffe_maker_instance)
+            exp(coffee_filter,coffe_maker_instance)
+        else:
+            exp(coffee_filter,coffe_maker_instance)
+    eff:
+        unknown[coffee_filter]=False
+        close[coffee_filter,coffe_maker_instance]=True
+        close[coffe_maker_instance,coffee_filter]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_fried_golden_brown(fries: item):
+    # Check if the potato slices (fries) are fried until they are golden brown
+    symbol golden_brown=not exists f: item: (is_food_potato(f) and not fried_until_golden_brown(f))
+    return golden_brown
+
+behavior fry_potato_slices(fryingpan: item, stove: item, potato_slices: item):
+    body:
+        if not is_fried_golden_brown(potato_slices):
+            switch_on(stove)
+            # Turn on the stove
+            watch(potato_slices)
+            # Watch the potato slices
+            while not is_fried_golden_brown(potato_slices):
+                watch(potato_slices)  # Continue watching until they are golden brown
+
+behavior __goal__():
+    body:
+        bind fryingpan: item where:
+            is_fryingpan(fryingpan)
+        bind stove: item where:
+            is_stove(stove)
+        bind potato_slices: item where:
+            is_food_potato(potato_slices) and inside(potato_slices, fryingpan)
+        fry_potato_slices(fryingpan, stove, potato_slices)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_cd_2075_around_desk_357(cd:item):
+    goal: not unknown(cd)
+    body:
+        assert is_cd(cd)
+        bind desk_instance:item where:
+            is_desk(desk_instance) and id[desk_instance]==357
+        achieve close_char(char,desk_instance)
+        if can_open(desk_instance):
+            achieve_once open(desk_instance)
+            exp(cd,desk_instance)
+        else:
+            exp(cd,desk_instance)
+    eff:
+        unknown[cd]=False
+        close[cd,desk_instance]=True
+        close[desk_instance,cd]=True
+    
+
+behavior find_coffee_filter_2000_around_coffe_maker_290(coffee_filter:item):
+    goal: not unknown(coffee_filter)
+    body:
+        assert is_coffee_filter(coffee_filter)
+        bind coffe_maker_instance:item where:
+            is_coffe_maker(coffe_maker_instance) and id[coffe_maker_instance]==290
+        achieve close_char(char,coffe_maker_instance)
+        if can_open(coffe_maker_instance):
+            achieve_once open(coffe_maker_instance)
+            exp(coffee_filter,coffe_maker_instance)
+        else:
+            exp(coffee_filter,coffe_maker_instance)
+    eff:
+        unknown[coffee_filter]=False
+        close[coffee_filter,coffe_maker_instance]=True
+        close[coffe_maker_instance,coffee_filter]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior fry_potato_slices(potato:item, fryingpan:item, stove:item):
+    body:
+        if not cut(potato):
+            cuts(potato)
+        if not inside(potato, fryingpan):
+            put_inside(potato, fryingpan)
+        if is_off(stove):
+            switch_on(stove)
+        observe(potato, "Ensure the potato slices are fried until golden brown")
+
+behavior __goal__():
+    body:
+        bind potato: item where:
+            is_food_potato(potato)
+        # Select the potato
+        bind fryingpan: item where:
+            is_fryingpan(fryingpan)
+        # Select the frying pan
+        bind stove: item where:
+            is_stove(stove)
+        # Select the stove
+        fry_potato_slices(potato, fryingpan, stove)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+behavior fry_potato_slices(potato:item, fryingpan:item, stove:item):
+    body:
+        if not cut(potato):
+            cuts(potato)
+        if not inside(potato, fryingpan):
+            put_inside(potato, fryingpan)
+        if is_off(stove):
+            switch_on(stove)
+        observe(potato, "Ensure the potato slices are fried until golden brown")
+
+behavior __goal__():
+    body:
+        bind potato: item where:
+            is_food_potato(potato)
+        # Select the potato
+        bind fryingpan: item where:
+            is_fryingpan(fryingpan)
+        # Select the frying pan
+        bind stove: item where:
+            is_stove(stove)
+        # Select the stove
+        fry_potato_slices(potato, fryingpan, stove)
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(food_potato_2035)obs(food_potato_2035, Ensure the potato slices are fried until golden brown)
+##############################
+From agent.py
+walk_executor(food_potato_2035)
+Robot find: Robot is close to the knife_2050. Robot is close to the fryingpan_2083. Robot is close to the food_potato_2035. 
+##############################
+From agent.py
+obs(food_potato_2035, Ensure the potato slices are fried until golden brown)
+Get this information:  food_potato_2035 is inside dining_room_201. food_potato_2035 is inside fryingpan_2083. food_potato_2035 is close to fryingpan_2083. food_potato_2035 is close to character_65. food_potato_2035 is CLEAN.
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: No
+The feedback instruction: The robot needs to fry the potato slices until they are golden brown. This has not been confirmed as achieved in the current actions. Additionally, ensure that the potato slices are washed and peeled before frying, as this step was not completed as instructed.
+##############################
+From agent.py
+Human Instruction: The robot needs to fry the potato slices until they are golden brown. This has not been confirmed as achieved in the current actions. Additionally, ensure that the potato slices are washed and peeled before frying, as this step was not completed as instructed.
+
+The actions you have taken:
+Action 1: Walk to fridge_289.
+Action 2: Switch off fridge_289.
+Action 3: Open fridge_289.
+Action 4: look for food_potato_2035 around fridge_289.
+Action 5: Grab food_potato_2035.
+Action 6: Walk to cutting_board_2051.
+Action 7: Put food_potato_2035 on cutting_board_2051.
+Action 8: Walk to kitchen_counter_230.
+Action 9: look for knife_2050 around kitchen_counter_230.
+Action 10: Walk to knife_2050.
+Action 11: Grab knife_2050.
+Action 12: Walk to food_potato_2035.
+Action 13: Cut food_potato_2035.
+Action 14: Cut food_potato_2035.
+Action 15: Observe around food_potato_2035 with the question of Check if they have been peeled.
+Action 16: Cut food_potato_2035.
+Action 17: Cut food_potato_2035.
+Action 18: Walk to food_potato_2035.
+Action 19: Grab food_potato_2035.
+Action 20: Walk to fryingpan_2083.
+Action 21: Put food_potato_2035 into fryingpan_2083.
+Action 22: Walk to stove_2065.
+Action 23: Switch on stove_2065.
+Action 24: Walk to food_potato_2035.
+Action 25: Observe around food_potato_2035 with the question of Ensure the potato slices are fried until golden brown.
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_cd_2075_around_desk_357(cd:item):
+    goal: not unknown(cd)
+    body:
+        assert is_cd(cd)
+        bind desk_instance:item where:
+            is_desk(desk_instance) and id[desk_instance]==357
+        achieve close_char(char,desk_instance)
+        if can_open(desk_instance):
+            achieve_once open(desk_instance)
+            exp(cd,desk_instance)
+        else:
+            exp(cd,desk_instance)
+    eff:
+        unknown[cd]=False
+        close[cd,desk_instance]=True
+        close[desk_instance,cd]=True
+    
+
+behavior find_pencil_2001_around_desk_357(pencil:item):
+    goal: not unknown(pencil)
+    body:
+        assert is_pencil(pencil)
+        bind desk_instance:item where:
+            is_desk(desk_instance) and id[desk_instance]==357
+        achieve close_char(char,desk_instance)
+        if can_open(desk_instance):
+            achieve_once open(desk_instance)
+            exp(pencil,desk_instance)
+        else:
+            exp(pencil,desk_instance)
+    eff:
+        unknown[pencil]=False
+        close[pencil,desk_instance]=True
+        close[desk_instance,pencil]=True
+    
+
+behavior find_coffee_filter_2000_around_coffe_maker_290(coffee_filter:item):
+    goal: not unknown(coffee_filter)
+    body:
+        assert is_coffee_filter(coffee_filter)
+        bind coffe_maker_instance:item where:
+            is_coffe_maker(coffe_maker_instance) and id[coffe_maker_instance]==290
+        achieve close_char(char,coffe_maker_instance)
+        if can_open(coffe_maker_instance):
+            achieve_once open(coffe_maker_instance)
+            exp(coffee_filter,coffe_maker_instance)
+        else:
+            exp(coffee_filter,coffe_maker_instance)
+    eff:
+        unknown[coffee_filter]=False
+        close[coffee_filter,coffe_maker_instance]=True
+        close[coffe_maker_instance,coffee_filter]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior fry_potato_slices(food:item, stove:item, fryingpan:item):
+    body:
+        if not is_on(stove):
+            switch_on(stove)
+        if not inside(food, fryingpan):
+            put_on(food, fryingpan)
+        observe(food, "Ensure the potato slices are fried until golden brown")
+
+behavior __goal__():
+    body:
+        bind stove: item where:
+            is_stove(stove)
+        bind fryingpan: item where:
+            is_fryingpan(fryingpan)
+        bind potato_slices: item where:
+            is_food_potato(potato_slices) and cut(potato_slices)
+        fry_potato_slices(potato_slices, stove, fryingpan)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+behavior fry_potato_slices(food:item, stove:item, fryingpan:item):
+    body:
+        if not is_on(stove):
+            switch_on(stove)
+        if not inside(food, fryingpan):
+            put_on(food, fryingpan)
+        observe(food, "Ensure the potato slices are fried until golden brown")
+
+behavior __goal__():
+    body:
+        bind stove: item where:
+            is_stove(stove)
+        bind fryingpan: item where:
+            is_fryingpan(fryingpan)
+        bind potato_slices: item where:
+            is_food_potato(potato_slices) and cut(potato_slices)
+        fry_potato_slices(potato_slices, stove, fryingpan)
+
+##############################
+From agent.py-> find a plan in act()
+obs(food_potato_2035, Ensure the potato slices are fried until golden brown)
+##############################
+From agent.py
+obs(food_potato_2035, Ensure the potato slices are fried until golden brown)
+Get this information:  food_potato_2035 is inside dining_room_201. food_potato_2035 is inside fryingpan_2083. food_potato_2035 is close to fryingpan_2083. food_potato_2035 is close to character_65. food_potato_2035 is CLEAN.
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: No
+The feedback instruction: The potato slices were placed in the frying pan and the stove was turned on, but it has not been confirmed that the potato slices were fried until golden brown. Additionally, the instruction indicated that the potato slices should be washed and peeled before frying, and these steps were not completed.
+##############################
+Task Summary:
+Task Goal:
+Make some French fries.
+Action History:
+['walk_executor(fridge_289)', 'switchoff_executor(fridge_289)', 'open_executor(fridge_289)', 'grab_executor(food_potato_2035)', 'walk_executor(cutting_board_2051)', 'put_executor(food_potato_2035, cutting_board_2051)', 'walk_executor(kitchen_counter_230)', 'walk_executor(knife_2050)', 'grab_executor(knife_2050)', 'walk_executor(food_potato_2035)', 'cut_executor(food_potato_2035)', 'cut_executor(food_potato_2035)', 'cut_executor(food_potato_2035)', 'cut_executor(food_potato_2035)', 'walk_executor(food_potato_2035)', 'grab_executor(food_potato_2035)', 'walk_executor(fryingpan_2083)', 'putin_executor(food_potato_2035, fryingpan_2083)', 'walk_executor(stove_2065)', 'switchon_executor(stove_2065)', 'walk_executor(food_potato_2035)']
+Time info:
+Time consume: 278 seconds
+Exp_helper query times: 0
+Guidance query times: 0
+library scale: 0
+goal generate times: 19
+goal correct times: 0
+action_num: 21
+
+Task complete rate:
+Keystate: k1 - Requires: 7 steps
+Action Completion Rate: No actions required
+Scene_id: 0
+##############################

@@ -147,8 +147,10 @@ def VH_pipeline(state_file:str,execute_file:str,current_subgoal:str,add_info:str
             if len(plan)>0:
                 if plan[0] is not None:
                     if len(plan[0])>0:
+                        print("Goal representation: ", goal_int)
                         return plan,goal_int,exploration_content,generate_time,correct_time
         
     print("VH_pipeline: Fail to generate a valid plan")
     logger.info("VH_pipeline: Fail to generate a valid plan")
+    print("Goal representation: ", goal_int)
     return None,None,None,generate_time,correct_time

@@ -1,0 +1,523 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['Boil some rice by pot.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_rice_2036_around_cupboard_229(food_rice:item):
+    goal: not unknown(food_rice)
+    body:
+        assert is_food_rice(food_rice)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==229
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(food_rice,cupboard_instance)
+        else:
+            exp(food_rice,cupboard_instance)
+    eff:
+        unknown[food_rice]=False
+        close[food_rice,cupboard_instance]=True
+        close[cupboard_instance,food_rice]=True
+    
+
+behavior find_pot_2069_around_cupboard_229(pot:item):
+    goal: not unknown(pot)
+    body:
+        assert is_pot(pot)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==229
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(pot,cupboard_instance)
+        else:
+            exp(pot,cupboard_instance)
+    eff:
+        unknown[pot]=False
+        close[pot,cupboard_instance]=True
+        close[cupboard_instance,pot]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior fill_pot_with_water(pot:item, faucet:item):
+    body:
+        achieve open(faucet)
+        # Open the faucet to start filling with water
+        achieve has_water(pot)
+        # Fill the pot with water
+        achieve closed(faucet)
+        # Close the faucet after filling the pot
+
+behavior heat_pot_on_stove(pot:item, stove:item):
+    body:
+        achieve_once on(pot, stove)
+        # Place pot on the stove
+        achieve is_on(stove)
+        # Turn on the stove to heat the pot
+
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot)
+        bind stove: item where:
+            is_stove(stove)
+        bind faucet: item where:
+            is_faucet(faucet)
+        fill_pot_with_water(pot, faucet)
+        heat_pot_on_stove(pot, stove)
+
+
+#goal_representation_end
+
+##############################
+Error is:
+'NoneType' object is not iterable
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_rice_2036_around_cupboard_229(food_rice:item):
+    goal: not unknown(food_rice)
+    body:
+        assert is_food_rice(food_rice)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==229
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(food_rice,cupboard_instance)
+        else:
+            exp(food_rice,cupboard_instance)
+    eff:
+        unknown[food_rice]=False
+        close[food_rice,cupboard_instance]=True
+        close[cupboard_instance,food_rice]=True
+    
+
+behavior find_pot_2069_around_cupboard_229(pot:item):
+    goal: not unknown(pot)
+    body:
+        assert is_pot(pot)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==229
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(pot,cupboard_instance)
+        else:
+            exp(pot,cupboard_instance)
+    eff:
+        unknown[pot]=False
+        close[pot,cupboard_instance]=True
+        close[cupboard_instance,pot]=True
+    
+
+behavior find_food_cereal_2015_around_cupboard_229(food_cereal:item):
+    goal: not unknown(food_cereal)
+    body:
+        assert is_food_cereal(food_cereal)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==229
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(food_cereal,cupboard_instance)
+        else:
+            exp(food_cereal,cupboard_instance)
+    eff:
+        unknown[food_cereal]=False
+        close[food_cereal,cupboard_instance]=True
+        close[cupboard_instance,food_cereal]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def has_water_and_rice_in_pot(pot:item):
+    # Function to check if the pot has both water and rice
+    symbol has_water_rice= exists o: item : (is_food_rice(o) and inside(o, pot)) and has_water(pot)
+    return has_water_rice
+
+def is_on_stove(pot:item):
+    # Function to check if the pot is on the stove
+    symbol on_stove= exists stove: item : (is_stove(stove) and on(pot, stove))
+    return on_stove
+
+behavior fill_with_water(pot:item, faucet:item):
+    body:
+        achieve has_water(pot)
+         Fill the pot with water
+
+behavior add_rice_to_pot(rice:item, pot:item):
+    body:
+        achieve_once inside(rice, pot)
+         Add rice to the pot
+
+behavior put_pot_on_stove(pot:item, stove:item):
+    body:
+        achieve_once on(pot, stove)
+         Place the pot on the stove
+
+behavior start_stove(stove:item):
+    body:
+        achieve is_on(stove)
+         Turn on the stove
+
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot)
+         Select a pot
+
+        bind stove: item where:
+            is_stove(stove)
+         Select a stove
+
+        bind faucet: item where:
+            is_faucet(faucet) and visited(faucet)
+         Choose a faucet that has been visited
+
+        bind rice: item where:
+            is_food_rice(rice)
+         Select rice
+
+        if not has_water_and_rice_in_pot(pot):
+            fill_with_water(pot, faucet)
+            add_rice_to_pot(rice, pot)
+        
+        if not is_on_stove(pot):
+            put_pot_on_stove(pot, stove)
+
+        start_stove(stove)
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Unexpected token Token('_INDENT', '         ') at line 5698, column 31.
+Expected one of: 
+	* FALSE
+	* PREAMBLE
+	* RETURN
+	* SYMBOL
+	* MINUS
+	* NOT
+	* FLOAT_NUMBER
+	* FOREACH
+	* STRING
+	* ELLIPSIS
+	* PACHIEVE_HOLD
+	* ASSERT_HOLD
+	* ACHIEVE_HOLD
+	* IF
+	* FINDALL
+	* COLON
+	* PROMOTABLE
+	* LSQB
+	* PASS
+	* ALTERNATIVE
+	* PACHIEVE
+	* _LLSQB
+	* LPAR
+	* TRUE
+	* UNORDERED
+	* EXISTS
+	* DEC_NUMBER
+	* ASSERT
+	* IMAG_NUMBER
+	* PLUS
+	* DO
+	* BIND
+	* SEQUENTIAL
+	* WHILE
+	* NONE
+	* BIN_NUMBER
+	* ASSERT_ONCE
+	* UNTRACK
+	* VARNAME
+	* ACHIEVE_ONCE
+	* LONG_STRING
+	* TILDE
+	* OCT_NUMBER
+	* PACHIEVE_ONCE
+	* HEX_NUMBER
+	* LET
+	* FORALL
+	* _DEDENT
+	* STAR
+	* FINDONE
+	* ACHIEVE
+	* COMMIT
+	* CRITICAL
+
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_food_rice_2036_around_cupboard_229(food_rice:item):
+    goal: not unknown(food_rice)
+    body:
+        assert is_food_rice(food_rice)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==229
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(food_rice,cupboard_instance)
+        else:
+            exp(food_rice,cupboard_instance)
+    eff:
+        unknown[food_rice]=False
+        close[food_rice,cupboard_instance]=True
+        close[cupboard_instance,food_rice]=True
+    
+
+behavior find_pot_2069_around_cupboard_229(pot:item):
+    goal: not unknown(pot)
+    body:
+        assert is_pot(pot)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==229
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(pot,cupboard_instance)
+        else:
+            exp(pot,cupboard_instance)
+    eff:
+        unknown[pot]=False
+        close[pot,cupboard_instance]=True
+        close[cupboard_instance,pot]=True
+    
+
+behavior find_food_cereal_2015_around_cupboard_229(food_cereal:item):
+    goal: not unknown(food_cereal)
+    body:
+        assert is_food_cereal(food_cereal)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==229
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(food_cereal,cupboard_instance)
+        else:
+            exp(food_cereal,cupboard_instance)
+    eff:
+        unknown[food_cereal]=False
+        close[food_cereal,cupboard_instance]=True
+        close[cupboard_instance,food_cereal]=True
+    
+
+behavior find_iron_2089_around_ironing_board_2074(iron:item):
+    goal: not unknown(iron)
+    body:
+        assert is_iron(iron)
+        bind ironing_board_instance:item where:
+            is_ironing_board(ironing_board_instance) and id[ironing_board_instance]==2074
+        achieve close_char(char,ironing_board_instance)
+        if can_open(ironing_board_instance):
+            achieve_once open(ironing_board_instance)
+            exp(iron,ironing_board_instance)
+        else:
+            exp(iron,ironing_board_instance)
+    eff:
+        unknown[iron]=False
+        close[iron,ironing_board_instance]=True
+        close[ironing_board_instance,iron]=True
+    
+
+#goal_representation
+ 
+def has_water_and_rice_in_pot(pot:item):
+    # Function to check if the pot has both water and rice
+    symbol has_water_rice= exists o: item : (is_food_rice(o) and inside(o, pot)) and has_water(pot)
+    return has_water_rice
+
+def is_on_stove(pot:item):
+    # Function to check if the pot is on the stove
+    symbol on_stove= exists stove: item : (is_stove(stove) and on(pot, stove))
+    return on_stove
+
+behavior fill_with_water(pot:item, faucet:item):
+    body:
+        achieve has_water(pot)
+        # Fill the pot with water
+
+behavior add_rice_to_pot(rice:item, pot:item):
+    body:
+        achieve_once inside(rice, pot)
+        # Add rice to the pot
+
+behavior put_pot_on_stove(pot:item, stove:item):
+    body:
+        achieve_once on(pot, stove)
+        # Place the pot on the stove
+
+behavior start_stove(stove:item):
+    body:
+        achieve is_on(stove)
+        # Turn on the stove
+
+behavior __goal__():
+    body:
+        bind pot: item where:
+            is_pot(pot)
+        # Select a pot
+
+        bind stove: item where:
+            is_stove(stove)
+        # Select a stove
+
+        bind faucet: item where:
+            is_faucet(faucet) and visited(faucet)
+        # Choose a faucet that has been visited
+
+        bind rice: item where:
+            is_food_rice(rice)
+        # Select rice
+
+        if not has_water_and_rice_in_pot(pot):
+            fill_with_water(pot, faucet)
+            add_rice_to_pot(rice, pot)
+        
+        if not is_on_stove(pot):
+            put_pot_on_stove(pot, stove)
+
+        start_stove(stove)
+
+#goal_representation_end
+
+##############################
+Error is:
+'NoneType' object is not iterable
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_rice_2036_around_cupboard_229(food_rice:item):
+    goal: not unknown(food_rice)
+    body:
+        assert is_food_rice(food_rice)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==229
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(food_rice,cupboard_instance)
+        else:
+            exp(food_rice,cupboard_instance)
+    eff:
+        unknown[food_rice]=False
+        close[food_rice,cupboard_instance]=True
+        close[cupboard_instance,food_rice]=True
+    
+
+behavior find_pot_2069_around_cupboard_229(pot:item):
+    goal: not unknown(pot)
+    body:
+        assert is_pot(pot)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==229
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(pot,cupboard_instance)
+        else:
+            exp(pot,cupboard_instance)
+    eff:
+        unknown[pot]=False
+        close[pot,cupboard_instance]=True
+        close[cupboard_instance,pot]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_filled_with_water(pot:item):
+    # Function to check if the pot has water
+    symbol has_waterpot= exists o: item : (has_water(pot))
+    return has_waterpot
+
+behavior fill_pot_with_water(pot:item, faucet:item):
+    body:
+        achieve has_water(pot)
+
+behavior place_on_stove(pot:item, stove:item):
+    body:
+        achieve_once on(pot, stove)
+
+behavior start_boiling(stove:item, pot:item):
+    body:
+        achieve is_on(stove)
+        achieve has_water(pot)
+
+behavior check_boiling(pot:item):
+    body:
+        observe(pot, "Check if the water is boiling")
+
+behavior __goal__():
+    body:
+        # Step 1: Get a pot
+        bind pot: item where:
+            is_pot(pot)
+
+        # Step 2: Find a faucet to fill the pot
+        bind faucet: item where:
+            is_faucet(faucet)
+
+        # Step 3: Find a stove to place the pot
+        bind stove: item where:
+            is_stove(stove)
+
+        if not is_filled_with_water(pot):
+            fill_pot_with_water(pot, faucet)
+
+        place_on_stove(pot, stove)
+        
+        start_boiling(stove, pot)
+        
+        check_boiling(pot)
+
+#goal_representation_end
+
+##############################
+Error is:
+tuple.index(x): x not in tuple
+##############################
+VH_pipeline: Fail to generate a valid plan
+##############################
+From agent.py->reset_goal
+Fail to generate the goal representation
+##############################
+Error record: tuple.index(x): x not in tuple
+##############################
+Task Summary:
+Task Goal:
+Syntax Error
+Action History:
+[]
+Time info:
+Time consume: 61 seconds
+Exp_helper query times: 0
+Guidance query times: 0
+library scale: 25
+goal generate times: 3
+goal correct times: 0
+action_num: 0
+
+Task complete rate:
+Keystate: k1 - Requires: 16 steps
+Action Completion Rate: No actions required
+Scene_id: 0
+##############################

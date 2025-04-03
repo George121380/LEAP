@@ -1,0 +1,997 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Find the spectacles and put them on the coffee table in the home office.', '2. Find the book and put it on the coffee table in the home office.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_spectacles_2153_around_bookshelf_196(spectacles:item):
+    goal: not unknown(spectacles)
+    body:
+        assert is_spectacles(spectacles)
+        bind bookshelf_instance:item where:
+            is_bookshelf(bookshelf_instance) and id[bookshelf_instance]==196
+        achieve close_char(char,bookshelf_instance)
+        if can_open(bookshelf_instance):
+            achieve_once open(bookshelf_instance)
+            exp(spectacles,bookshelf_instance)
+        else:
+            exp(spectacles,bookshelf_instance)
+    eff:
+        unknown[spectacles]=False
+        close[spectacles,bookshelf_instance]=True
+        close[bookshelf_instance,spectacles]=True
+    
+
+behavior find_table_cloth_2005_around_table_199(table_cloth:item):
+    goal: not unknown(table_cloth)
+    body:
+        assert is_table_cloth(table_cloth)
+        bind table_instance:item where:
+            is_table(table_instance) and id[table_instance]==199
+        achieve close_char(char,table_instance)
+        if can_open(table_instance):
+            achieve_once open(table_instance)
+            exp(table_cloth,table_instance)
+        else:
+            exp(table_cloth,table_instance)
+    eff:
+        unknown[table_cloth]=False
+        close[table_cloth,table_instance]=True
+        close[table_instance,table_cloth]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_coffee_table_in_home_office(table:item):
+    # Function to check if the table is a coffee table in the home office
+    symbol is_coffee_table=exists room: item : (is_home_office(room) and inside(table, room) and is_table(table))
+    return is_coffee_table
+
+behavior place_on_table(spectacles:item, table:item):
+    body:
+        achieve_once on(spectacles, table) # Place the spectacles on the table
+
+behavior __goal__():
+    body:
+        bind spectacles: item where:
+            is_spectacles(spectacles) # Select spectacles to find
+    
+        if exists table: item : (is_coffee_table_in_home_office(table)):
+            # If a coffee table in the home office is known, use it
+            bind table: item where:
+                is_coffee_table_in_home_office(table)
+            achieve close_char(char, table)
+            place_on_table(spectacles, table)
+        
+        else:
+            # Explore the environment to find the coffee table in home office
+            foreach table: item:
+                if is_table(table) and not visited(table):
+                    observe(table, "Check if this is the coffee table in the home office")
+
+#goal_representation_end
+
+##############################
+Error is:
+'NoneType' object is not iterable
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_spectacles_2153_around_bookshelf_196(spectacles:item):
+    goal: not unknown(spectacles)
+    body:
+        assert is_spectacles(spectacles)
+        bind bookshelf_instance:item where:
+            is_bookshelf(bookshelf_instance) and id[bookshelf_instance]==196
+        achieve close_char(char,bookshelf_instance)
+        if can_open(bookshelf_instance):
+            achieve_once open(bookshelf_instance)
+            exp(spectacles,bookshelf_instance)
+        else:
+            exp(spectacles,bookshelf_instance)
+    eff:
+        unknown[spectacles]=False
+        close[spectacles,bookshelf_instance]=True
+        close[bookshelf_instance,spectacles]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior __goal__():
+    body:
+        bind spectacles: item where:
+            is_spectacles(spectacles) 
+        # Bind the spectacles item
+
+        bind coffee_table: item where:
+            is_table(coffee_table) and inside(coffee_table, home_office)
+        # Bind the coffee_table inside the home office
+
+        if exists spectacles_location: item : (inside(spectacles_location, home_office)):
+            # If we know the location of spectacles inside the home_office
+            achieve close_char(char, spectacles)
+            achieve_once inhand(spectacles)
+            achieve_once on(spectacles, coffee_table)
+        else:
+            # If spectacles location is unknown, we must search for it
+            foreach item: item:
+                if is_spectacles(item) and not visited(item):
+                    observe(item, "Identify location of spectacles")
+                    # Observe to find spectacles and confirm their location on the coffee table
+
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "behavior_definition":
+
+Unknown variable: home_office; available variables: [Variable<coffee_table: item>].
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_spectacles_2153_around_bookshelf_196(spectacles:item):
+    goal: not unknown(spectacles)
+    body:
+        assert is_spectacles(spectacles)
+        bind bookshelf_instance:item where:
+            is_bookshelf(bookshelf_instance) and id[bookshelf_instance]==196
+        achieve close_char(char,bookshelf_instance)
+        if can_open(bookshelf_instance):
+            achieve_once open(bookshelf_instance)
+            exp(spectacles,bookshelf_instance)
+        else:
+            exp(spectacles,bookshelf_instance)
+    eff:
+        unknown[spectacles]=False
+        close[spectacles,bookshelf_instance]=True
+        close[bookshelf_instance,spectacles]=True
+    
+
+behavior find_table_cloth_2005_around_table_114(table_cloth:item):
+    goal: not unknown(table_cloth)
+    body:
+        assert is_table_cloth(table_cloth)
+        bind table_instance:item where:
+            is_table(table_instance) and id[table_instance]==114
+        achieve close_char(char,table_instance)
+        if can_open(table_instance):
+            achieve_once open(table_instance)
+            exp(table_cloth,table_instance)
+        else:
+            exp(table_cloth,table_instance)
+    eff:
+        unknown[table_cloth]=False
+        close[table_cloth,table_instance]=True
+        close[table_instance,table_cloth]=True
+    
+
+#goal_representation
+ 
+behavior __goal__():
+    body:
+        bind home_office: item where:
+            is_home_office(home_office)
+        # Bind the home_office
+
+        bind spectacles: item where:
+            is_spectacles(spectacles) 
+        # Bind the spectacles item
+
+        bind coffee_table: item where:
+            is_table(coffee_table) and inside(coffee_table, home_office)
+        # Bind the coffee_table inside the home office
+
+        if exists spectacles_location: item : (inside(spectacles_location, home_office)):
+            # If we know the location of spectacles inside the home_office
+            achieve close_char(char, spectacles)
+            achieve_once inhand(spectacles)
+            achieve_once on(spectacles, coffee_table)
+        else:
+            # If spectacles location is unknown, we must search for it
+            foreach item: item:
+                if is_spectacles(item) and not visited(item):
+                    observe(item, "Identify location of spectacles")
+                    # Observe to find spectacles and confirm their location on the coffee table
+
+#goal_representation_end
+
+##############################
+Error is:
+'NoneType' object is not iterable
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_spectacles_2153_around_bookshelf_196(spectacles:item):
+    goal: not unknown(spectacles)
+    body:
+        assert is_spectacles(spectacles)
+        bind bookshelf_instance:item where:
+            is_bookshelf(bookshelf_instance) and id[bookshelf_instance]==196
+        achieve close_char(char,bookshelf_instance)
+        if can_open(bookshelf_instance):
+            achieve_once open(bookshelf_instance)
+            exp(spectacles,bookshelf_instance)
+        else:
+            exp(spectacles,bookshelf_instance)
+    eff:
+        unknown[spectacles]=False
+        close[spectacles,bookshelf_instance]=True
+        close[bookshelf_instance,spectacles]=True
+    
+
+behavior find_table_cloth_2005_around_table_199(table_cloth:item):
+    goal: not unknown(table_cloth)
+    body:
+        assert is_table_cloth(table_cloth)
+        bind table_instance:item where:
+            is_table(table_instance) and id[table_instance]==199
+        achieve close_char(char,table_instance)
+        if can_open(table_instance):
+            achieve_once open(table_instance)
+            exp(table_cloth,table_instance)
+        else:
+            exp(table_cloth,table_instance)
+    eff:
+        unknown[table_cloth]=False
+        close[table_cloth,table_instance]=True
+        close[table_instance,table_cloth]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior find_spectacles_and_place_on_table(spectacles: item, table: item):
+    body:
+        achieve_once close_char(char, spectacles) # Approach spectacles
+        achieve_once inhand(spectacles) # Temporarily hold spectacles
+        achieve_once on(spectacles, table) # Place spectacles on the table
+
+def is_home_office_table(table: item):
+    # Function to check if a table is in the home office
+    symbol in_home_office = exists room: item : (is_home_office(room) and inside(table, room))
+    return in_home_office
+
+behavior __goal__():
+    body:
+        bind spectacles: item where:
+            is_spectacles(spectacles)
+        # Select the spectacles
+        
+        bind table: item where:
+            is_table(table) and is_home_office_table(table)
+        # Select a table in the home office
+        
+        find_spectacles_and_place_on_table(spectacles, table)
+        # Find the spectacles and place them on the coffee table
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+ 
+behavior find_spectacles_and_place_on_table(spectacles: item, table: item):
+    body:
+        achieve_once close_char(char, spectacles) # Approach spectacles
+        achieve_once inhand(spectacles) # Temporarily hold spectacles
+        achieve_once on(spectacles, table) # Place spectacles on the table
+
+def is_home_office_table(table: item):
+    # Function to check if a table is in the home office
+    symbol in_home_office = exists room: item : (is_home_office(room) and inside(table, room))
+    return in_home_office
+
+behavior __goal__():
+    body:
+        bind spectacles: item where:
+            is_spectacles(spectacles)
+        # Select the spectacles
+        
+        bind table: item where:
+            is_table(table) and is_home_office_table(table)
+        # Select a table in the home office
+        
+        find_spectacles_and_place_on_table(spectacles, table)
+        # Find the spectacles and place them on the coffee table
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(bookshelf_196)open_executor(bookshelf_196)exp(spectacles_2153, bookshelf_196)walk_executor(spectacles_2153)grab_executor(spectacles_2153)walk_executor(table_270)put_executor(spectacles_2153, table_270)
+##############################
+From agent.py
+walk_executor(bookshelf_196)
+Robot find: novel_2060, drawing_202, Robot is close to the bookshelf_196. 
+##############################
+From agent.py
+open_executor(bookshelf_196)
+Robot find: Robot is close to the photoframe_219. Robot is close to the bookshelf_196. bookshelf_196 is opened. 
+##############################
+From agent.py
+exp(spectacles_2153, bookshelf_196)
+Fail to find spectacles_2153 around bookshelf_196. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(couch_269)exp(spectacles_2153, couch_269)walk_executor(spectacles_2153)grab_executor(spectacles_2153)walk_executor(table_270)put_executor(spectacles_2153, table_270)
+##############################
+From agent.py
+walk_executor(couch_269)
+Robot find: shoes_2033, pillow_286, phone_2017, pillow_287, drawing_288, brush_2002, Robot is close to the couch_269. 
+##############################
+From agent.py
+exp(spectacles_2153, couch_269)
+Fail to find spectacles_2153 around couch_269. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(couch_198)exp(spectacles_2153, couch_198)walk_executor(spectacles_2153)grab_executor(spectacles_2153)walk_executor(table_270)put_executor(spectacles_2153, table_270)
+##############################
+From agent.py
+walk_executor(couch_198)
+Robot find: chair_2003, instrument_guitar_2028, rag_2052, mat_203, phone_2016, clothes_jacket_2119, Robot is close to the couch_198. 
+##############################
+From agent.py
+exp(spectacles_2153, couch_198)
+Fail to find spectacles_2153 around couch_198. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(home_office_241)exp(spectacles_2153, home_office_241)walk_executor(spectacles_2153)grab_executor(spectacles_2153)walk_executor(table_270)put_executor(spectacles_2153, table_270)
+##############################
+From agent.py
+walk_executor(home_office_241)
+
+##############################
+From agent.py
+exp(spectacles_2153, home_office_241)
+Fail to find spectacles_2153 around home_office_241. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(table_199)exp(spectacles_2153, table_199)walk_executor(spectacles_2153)grab_executor(spectacles_2153)walk_executor(table_270)put_executor(spectacles_2153, table_270)
+##############################
+From agent.py
+walk_executor(table_199)
+Robot find: wooden_spoon_2000, tea_bag_2023, drawing_201, Robot is close to the table_199. 
+##############################
+From agent.py
+exp(spectacles_2153, table_199)
+Fail to find spectacles_2153 around table_199. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(home_office_241)exp(spectacles_2153, home_office_241)walk_executor(spectacles_2153)grab_executor(spectacles_2153)walk_executor(table_270)put_executor(spectacles_2153, table_270)
+##############################
+From agent.py
+walk_executor(home_office_241)
+
+##############################
+From agent.py -> query_LLM_human
+Record from func query_LLM_human in agent.py
+Question: Can you help me to find spectacles_2153 ?
+Answer: The spectacles_2153 are located on the kitchen_counter_122 inside dining_room_41. Please look for the spectacles on top of the kitchen counter in the dining room.
+Re-decompose: None
+
+##############################
+From agent.py
+Human Instruction: The spectacles_2153 are located on the kitchen_counter_122 inside dining_room_41. Please look for the spectacles on top of the kitchen counter in the dining room.
+
+The actions you have taken:
+Action 1: Walk to bookshelf_196.
+Action 2: Open bookshelf_196.
+Action 3: look for spectacles_2153 around bookshelf_196.
+Action 4: Walk to couch_269.
+Action 5: look for spectacles_2153 around couch_269.
+Action 6: Walk to couch_198.
+Action 7: look for spectacles_2153 around couch_198.
+Action 8: Walk to home_office_241.
+Action 9: look for spectacles_2153 around home_office_241.
+Action 10: Walk to table_199.
+Action 11: look for spectacles_2153 around table_199.
+Action 12: Walk to home_office_241.
+
+##############################
+From agent.py
+exp(spectacles_2153, home_office_241)
+Fail to find spectacles_2153 around home_office_241. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(kitchen_counter_122)exp(spectacles_2153, kitchen_counter_122)walk_executor(spectacles_2153)grab_executor(spectacles_2153)walk_executor(table_270)put_executor(spectacles_2153, table_270)
+##############################
+From agent.py
+walk_executor(kitchen_counter_122)
+Robot find: spectacles_2153, pot_78, fryingpan_2154, Robot is close to the kitchen_counter_122. 
+##############################
+From agent.py
+exp(spectacles_2153, kitchen_counter_122)
+Find spectacles_2153. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(spectacles_2153)grab_executor(spectacles_2153)walk_executor(table_270)put_executor(spectacles_2153, table_270)
+##############################
+From agent.py
+walk_executor(spectacles_2153)
+Robot find: Robot is close to the kitchen_counter_122. Robot is close to the spectacles_2153. 
+##############################
+From agent.py
+grab_executor(spectacles_2153)
+Robot find: Robot is close to the kitchen_counter_122. Robot is close to the spectacles_2153. Grabbing spectacles_2153 by right hand. 
+##############################
+From agent.py
+walk_executor(table_270)
+Robot find: shampoo_2019, pencil_2014, Robot is close to the spectacles_2153. Robot is close to the couch_269. Robot is close to the table_270. 
+##############################
+From agent.py
+put_executor(spectacles_2153, table_270)
+Robot find: Robot is close to the spectacles_2153. Robot is close to the couch_269. Robot is close to the table_270. spectacles_2153 is close table_270. spectacles_2153 is on table_270. table_270 is close spectacles_2153. spectacles_2153 released by right hand. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: No
+The feedback instruction: You need to move the spectacles_2153 from table_270 to the coffee table in the home office.
+##############################
+From agent.py
+Human Instruction: You need to move the spectacles_2153 from table_270 to the coffee table in the home office.
+
+The actions you have taken:
+Action 1: Walk to bookshelf_196.
+Action 2: Open bookshelf_196.
+Action 3: look for spectacles_2153 around bookshelf_196.
+Action 4: Walk to couch_269.
+Action 5: look for spectacles_2153 around couch_269.
+Action 6: Walk to couch_198.
+Action 7: look for spectacles_2153 around couch_198.
+Action 8: Walk to home_office_241.
+Action 9: look for spectacles_2153 around home_office_241.
+Action 10: Walk to table_199.
+Action 11: look for spectacles_2153 around table_199.
+Action 12: Walk to home_office_241.
+Action 13: look for spectacles_2153 around home_office_241.
+Action 14: Walk to kitchen_counter_122.
+Action 15: look for spectacles_2153 around kitchen_counter_122.
+Action 16: Walk to spectacles_2153.
+Action 17: Grab spectacles_2153.
+Action 18: Walk to table_270.
+Action 19: Put spectacles_2153 on table_270.
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_mat_32_around_home_office_241(mat:item):
+    goal: not unknown(mat)
+    body:
+        assert is_mat(mat)
+        bind home_office_instance:item where:
+            is_home_office(home_office_instance) and id[home_office_instance]==241
+        achieve close_char(char,home_office_instance)
+        if can_open(home_office_instance):
+            achieve_once open(home_office_instance)
+            exp(mat,home_office_instance)
+        else:
+            exp(mat,home_office_instance)
+    eff:
+        unknown[mat]=False
+        close[mat,home_office_instance]=True
+        close[home_office_instance,mat]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def in_home_office(table:item):
+    # Function to check if a table is in the home office
+    symbol is_in_home_office = exists room: item : (is_home_office(room) and inside(table, room))
+    return is_in_home_office
+
+behavior __goal__():
+    body:
+        bind spectacles: item where:
+            is_spectacles(spectacles) and id[spectacles] == 2153
+        # Bind spectacles with ID 2153
+
+        bind start_table: item where:
+            is_table(start_table) and id[start_table] == 270
+        # Bind the starting table with ID 270
+
+        bind office_table: item where:
+            is_table(office_table) and in_home_office(office_table)
+        # Select a table that is in the home office
+
+        observe(start_table, "Check if spectacles_2153 are on it")
+        # Inspect if the spectacles are on the specified starting table
+
+        if visited(start_table):
+            achieve_once on(spectacles, office_table)
+            # Place the spectacles on the coffee table in the home office
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+def in_home_office(table:item):
+    # Function to check if a table is in the home office
+    symbol is_in_home_office = exists room: item : (is_home_office(room) and inside(table, room))
+    return is_in_home_office
+
+behavior __goal__():
+    body:
+        bind spectacles: item where:
+            is_spectacles(spectacles) and id[spectacles] == 2153
+        # Bind spectacles with ID 2153
+
+        bind start_table: item where:
+            is_table(start_table) and id[start_table] == 270
+        # Bind the starting table with ID 270
+
+        bind office_table: item where:
+            is_table(office_table) and in_home_office(office_table)
+        # Select a table that is in the home office
+
+        observe(start_table, "Check if spectacles_2153 are on it")
+        # Inspect if the spectacles are on the specified starting table
+
+        if visited(start_table):
+            achieve_once on(spectacles, office_table)
+            # Place the spectacles on the coffee table in the home office
+
+##############################
+From agent.py-> find a plan in act()
+obs(table_270, Check if spectacles_2153 are on it)
+##############################
+From agent.py
+obs(table_270, Check if spectacles_2153 are on it)
+Get this information:  shampoo_2019 is on table_270. pencil_2014 is on table_270. orchid_285 is on table_270. table_270 is inside home_office_241. table_270 is inside couch_269. spectacles_2153 is on table_270. table_270 is close to shampoo_2019. table_270 is close to floor_264. table_270 is close to floor_265. table_270 is close to floor_266. table_270 is close to floor_267. table_270 is close to couch_269. table_270 is close to wall_248. table_270 is close to pillow_286. table_270 is close to orchid_285. table_270 is close to pencil_2014. table_270 is close to pillow_287. table_270 is close to character_240. table_270 is close to spectacles_2153. table_270 is facing drawing_288. table_270 is facing television_281. table_270 is facing computer_276. table_270 is CLEAN.
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: No
+The feedback instruction: You need to move the spectacles from table_270 to the coffee table in the home office. The spectacles were placed on table_270, but the task requires them to be placed on the coffee table in the home office.
+##############################
+From agent.py
+Human Instruction: You need to move the spectacles from table_270 to the coffee table in the home office. The spectacles were placed on table_270, but the task requires them to be placed on the coffee table in the home office.
+
+The actions you have taken:
+Action 1: Walk to bookshelf_196.
+Action 2: Open bookshelf_196.
+Action 3: look for spectacles_2153 around bookshelf_196.
+Action 4: Walk to couch_269.
+Action 5: look for spectacles_2153 around couch_269.
+Action 6: Walk to couch_198.
+Action 7: look for spectacles_2153 around couch_198.
+Action 8: Walk to home_office_241.
+Action 9: look for spectacles_2153 around home_office_241.
+Action 10: Walk to table_199.
+Action 11: look for spectacles_2153 around table_199.
+Action 12: Walk to home_office_241.
+Action 13: look for spectacles_2153 around home_office_241.
+Action 14: Walk to kitchen_counter_122.
+Action 15: look for spectacles_2153 around kitchen_counter_122.
+Action 16: Walk to spectacles_2153.
+Action 17: Grab spectacles_2153.
+Action 18: Walk to table_270.
+Action 19: Put spectacles_2153 on table_270.
+Action 20: Observe around table_270 with the question of Check if spectacles_2153 are on it.
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def are_spectacles_on_table(table:item):
+    # Function to check if there are spectacles on the specified table
+    symbol has_spectacles=exists o: item : (is_spectacles(o) and on(o, table))
+    return has_spectacles
+
+behavior __goal__():
+    body:
+        bind home_office: item where:
+            is_home_office(home_office)
+        # Select home_office to find its coffee table
+
+        if exists table: item : (is_table(table) and surfaces(table) and on(spectacles_2153, table)):
+            # If spectacles are already on a table in home_office, we verify it
+            bind table: item where:
+                is_table(table) and surfaces(table) and on(spectacles_2153, table)
+            achieve close_char(char, table)
+            # Move the character closer to the table with spectacles
+
+        else:
+            # Otherwise, inspect other potential locations until the spectacles are located
+            foreach table: item:
+                if is_table(table) and surfaces(table) and not visited(table):
+                    # Check all unvisited tables
+                    observe(table, "Check if spectacles_2153 are on it")
+                    # Observe whether each table has the spectacles on it
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_laser_pointer_2034_around_home_office_241(laser_pointer:item):
+    goal: not unknown(laser_pointer)
+    body:
+        assert is_laser_pointer(laser_pointer)
+        bind home_office_instance:item where:
+            is_home_office(home_office_instance) and id[home_office_instance]==241
+        achieve close_char(char,home_office_instance)
+        if can_open(home_office_instance):
+            achieve_once open(home_office_instance)
+            exp(laser_pointer,home_office_instance)
+        else:
+            exp(laser_pointer,home_office_instance)
+    eff:
+        unknown[laser_pointer]=False
+        close[laser_pointer,home_office_instance]=True
+        close[home_office_instance,laser_pointer]=True
+    
+
+behavior find_mouse_280_around_mousepad_279(mouse:item):
+    goal: not unknown(mouse)
+    body:
+        assert is_mouse(mouse)
+        bind mousepad_instance:item where:
+            is_mousepad(mousepad_instance) and id[mousepad_instance]==279
+        achieve close_char(char,mousepad_instance)
+        if can_open(mousepad_instance):
+            achieve_once open(mousepad_instance)
+            exp(mouse,mousepad_instance)
+        else:
+            exp(mouse,mousepad_instance)
+    eff:
+        unknown[mouse]=False
+        close[mouse,mousepad_instance]=True
+        close[mousepad_instance,mouse]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_spectacles_on_table(spectacles:item, table:item):
+    # Function to check if spectacles are on a given table
+    symbol on_table = exists o: item : (is_spectacles(o) and on(o, table))
+    return on_table
+
+def in_home_office(table:item):
+    # Function to check if a table is in the home office
+    symbol home_office = exists room: item : (is_home_office(room) and inside(table, room))
+    return home_office
+
+behavior __goal__():
+    body:
+        bind spectacles: item where:
+            is_spectacles(spectacles) and close_char(char, spectacles)
+        # Select the spectacles that are close to the character
+        
+        bind coffee_table: item where:
+            is_table(coffee_table) and in_home_office(coffee_table)
+        # Select the coffee table in the home office
+
+        if not is_spectacles_on_table(spectacles, coffee_table):
+            # If the spectacles are not already on the coffee table in the home office,
+            # move them there
+            achieve_once inhand(spectacles) # Temporarily hold the spectacles
+            achieve_once on(spectacles, coffee_table) # Place the spectacles on the coffee table
+
+        observe(coffee_table, "Check if spectacles are on it")
+        # Verify the spectacles are on the coffee table in the home office
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+def is_spectacles_on_table(spectacles:item, table:item):
+    # Function to check if spectacles are on a given table
+    symbol on_table = exists o: item : (is_spectacles(o) and on(o, table))
+    return on_table
+
+def in_home_office(table:item):
+    # Function to check if a table is in the home office
+    symbol home_office = exists room: item : (is_home_office(room) and inside(table, room))
+    return home_office
+
+behavior __goal__():
+    body:
+        bind spectacles: item where:
+            is_spectacles(spectacles) and close_char(char, spectacles)
+        # Select the spectacles that are close to the character
+        
+        bind coffee_table: item where:
+            is_table(coffee_table) and in_home_office(coffee_table)
+        # Select the coffee table in the home office
+
+        if not is_spectacles_on_table(spectacles, coffee_table):
+            # If the spectacles are not already on the coffee table in the home office,
+            # move them there
+            achieve_once inhand(spectacles) # Temporarily hold the spectacles
+            achieve_once on(spectacles, coffee_table) # Place the spectacles on the coffee table
+
+        observe(coffee_table, "Check if spectacles are on it")
+        # Verify the spectacles are on the coffee table in the home office
+
+##############################
+From agent.py-> find a plan in act()
+obs(table_270, Check if spectacles are on it)
+##############################
+From agent.py
+obs(table_270, Check if spectacles are on it)
+Get this information:  shampoo_2019 is on table_270. pencil_2014 is on table_270. orchid_285 is on table_270. table_270 is inside home_office_241. table_270 is inside couch_269. spectacles_2153 is on table_270. table_270 is close to shampoo_2019. table_270 is close to floor_264. table_270 is close to floor_265. table_270 is close to floor_266. table_270 is close to floor_267. table_270 is close to couch_269. table_270 is close to wall_248. table_270 is close to pillow_286. table_270 is close to orchid_285. table_270 is close to pencil_2014. table_270 is close to pillow_287. table_270 is close to character_240. table_270 is close to spectacles_2153. table_270 is facing drawing_288. table_270 is facing television_281. table_270 is facing computer_276. table_270 is CLEAN.
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: No
+The feedback instruction: You need to move the spectacles from table_270 to the coffee table in the home office. The spectacles are currently placed on table_270, which is not the coffee table in the home office as required.
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_book_2136_around_bookshelf_124(book:item):
+    goal: not unknown(book)
+    body:
+        assert is_book(book)
+        bind bookshelf_instance:item where:
+            is_bookshelf(bookshelf_instance) and id[bookshelf_instance]==124
+        achieve close_char(char,bookshelf_instance)
+        if can_open(bookshelf_instance):
+            achieve_once open(bookshelf_instance)
+            exp(book,bookshelf_instance)
+        else:
+            exp(book,bookshelf_instance)
+    eff:
+        unknown[book]=False
+        close[book,bookshelf_instance]=True
+        close[bookshelf_instance,book]=True
+    
+
+behavior find_chair_271_around_desk_272(chair:item):
+    goal: not unknown(chair)
+    body:
+        assert is_chair(chair)
+        bind desk_instance:item where:
+            is_desk(desk_instance) and id[desk_instance]==272
+        achieve close_char(char,desk_instance)
+        if can_open(desk_instance):
+            achieve_once open(desk_instance)
+            exp(chair,desk_instance)
+        else:
+            exp(chair,desk_instance)
+    eff:
+        unknown[chair]=False
+        close[chair,desk_instance]=True
+        close[desk_instance,chair]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+behavior move_book_to_coffee_table(book:item, table:item):
+    body:
+        achieve_once on(book, table)
+        # Place the book on the coffee table
+
+behavior __goal__():
+    body:
+        bind book: item where:
+            is_book(book)
+        # Select the book
+
+        bind table: item where:
+            is_table(table) and inside(table, home_office_241)
+        # Select the coffee table in the home office
+
+        move_book_to_coffee_table(book, table)
+        # Move the book to the coffee table
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "behavior_definition":
+
+Unknown variable: home_office_241; available variables: [Variable<table: item>].
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_book_2136_around_home_office_241(book:item):
+    goal: not unknown(book)
+    body:
+        assert is_book(book)
+        bind home_office_instance:item where:
+            is_home_office(home_office_instance) and id[home_office_instance]==241
+        achieve close_char(char,home_office_instance)
+        if can_open(home_office_instance):
+            achieve_once open(home_office_instance)
+            exp(book,home_office_instance)
+        else:
+            exp(book,home_office_instance)
+    eff:
+        unknown[book]=False
+        close[book,home_office_instance]=True
+        close[home_office_instance,book]=True
+    
+
+#goal_representation
+ 
+behavior move_book_to_coffee_table(book:item, table:item):
+    body:
+        achieve_once on(book, table)
+        # Place the book on the coffee table
+
+behavior __goal__():
+    body:
+        bind book: item where:
+            is_book(book)
+        # Select the book
+
+        bind table: item where:
+            is_table(table) and inside(table, home_office)
+        # Select the coffee table in the home office
+
+        move_book_to_coffee_table(book, table)
+        # Move the book to the coffee table
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "behavior_definition":
+
+Unknown variable: home_office; available variables: [Variable<table: item>].
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_book_2136_around_bookshelf_275(book:item):
+    goal: not unknown(book)
+    body:
+        assert is_book(book)
+        bind bookshelf_instance:item where:
+            is_bookshelf(bookshelf_instance) and id[bookshelf_instance]==275
+        achieve close_char(char,bookshelf_instance)
+        if can_open(bookshelf_instance):
+            achieve_once open(bookshelf_instance)
+            exp(book,bookshelf_instance)
+        else:
+            exp(book,bookshelf_instance)
+    eff:
+        unknown[book]=False
+        close[book,bookshelf_instance]=True
+        close[bookshelf_instance,book]=True
+    
+
+#goal_representation
+ 
+behavior move_book_to_coffee_table(book:item, table:item, home_office:item):
+    body:
+        achieve_once on(book, table)
+        # Place the book on the coffee table
+
+behavior __goal__():
+    body:
+        bind book: item where:
+            is_book(book)
+        # Select the book
+
+        bind home_office: item where:
+            is_home_office(home_office)
+        # Select the home office
+
+        bind table: item where:
+            is_table(table) and inside(table, home_office)
+        # Select the coffee table in the home office
+
+        move_book_to_coffee_table(book, table, home_office)
+        # Move the book to the coffee table
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+behavior move_book_to_coffee_table(book:item, table:item, home_office:item):
+    body:
+        achieve_once on(book, table)
+        # Place the book on the coffee table
+
+behavior __goal__():
+    body:
+        bind book: item where:
+            is_book(book)
+        # Select the book
+
+        bind home_office: item where:
+            is_home_office(home_office)
+        # Select the home office
+
+        bind table: item where:
+            is_table(table) and inside(table, home_office)
+        # Select the coffee table in the home office
+
+        move_book_to_coffee_table(book, table, home_office)
+        # Move the book to the coffee table
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(bookshelf_275)exp(book_2136, bookshelf_275)walk_executor(book_2136)grab_executor(book_2136)walk_executor(table_270)put_executor(book_2136, table_270)
+##############################
+From agent.py
+walk_executor(bookshelf_275)
+Robot find: pencil_2020, Robot is close to the bookshelf_275. 
+##############################
+From agent.py
+exp(book_2136, bookshelf_275)
+Fail to find book_2136 around bookshelf_275. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(bookshelf_124)open_executor(bookshelf_124)exp(book_2136, bookshelf_124)walk_executor(book_2136)grab_executor(book_2136)walk_executor(table_270)put_executor(book_2136, table_270)
+##############################
+From agent.py
+walk_executor(bookshelf_124)
+Robot find: book_2136, envelope_2055, book_2137, drawing_110, drawing_111, Robot is close to the bookshelf_124. 
+##############################
+From agent.py
+open_executor(bookshelf_124)
+Robot find: Robot is close to the bookshelf_124. bookshelf_124 is opened. 
+##############################
+From agent.py
+exp(book_2136, bookshelf_124)
+Find book_2136. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(book_2136)grab_executor(book_2136)walk_executor(table_270)put_executor(book_2136, table_270)
+##############################
+From agent.py
+walk_executor(book_2136)
+Robot find: Robot is close to the bookshelf_124. Robot is close to the book_2136. 
+##############################
+From agent.py
+grab_executor(book_2136)
+Robot find: Robot is close to the bookshelf_124. Robot is close to the book_2136. Grabbing book_2136 by right hand. 
+##############################
+From agent.py
+walk_executor(table_270)
+Robot find: Robot is close to the book_2136. Robot is close to the couch_269. Robot is close to the table_270. 
+##############################
+From agent.py
+put_executor(book_2136, table_270)
+Robot find: Robot is close to the book_2136. Robot is close to the couch_269. Robot is close to the table_270. book_2136 is on table_270. table_270 is close book_2136. book_2136 is close table_270. book_2136 released by right hand. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: Yes
+The feedback instruction: None
+##############################
+Task Summary:
+Task Goal:
+Find my spectacles and put it on the coffe table in home office. Then find the book and put it on the coffe table in home office.
+Action History:
+['walk_executor(bookshelf_196)', 'open_executor(bookshelf_196)', 'walk_executor(couch_269)', 'walk_executor(couch_198)', 'walk_executor(home_office_241)', 'walk_executor(table_199)', 'walk_executor(home_office_241)', 'walk_executor(kitchen_counter_122)', 'walk_executor(spectacles_2153)', 'grab_executor(spectacles_2153)', 'walk_executor(table_270)', 'put_executor(spectacles_2153, table_270)', 'walk_executor(bookshelf_275)', 'walk_executor(bookshelf_124)', 'open_executor(bookshelf_124)', 'walk_executor(book_2136)', 'grab_executor(book_2136)', 'walk_executor(table_270)', 'put_executor(book_2136, table_270)']
+Time info:
+Time consume: 158 seconds
+Exp_helper query times: 1
+Guidance query times: 0
+library scale: 75
+goal generate times: 7
+goal correct times: 2
+action_num: 19
+
+Task complete rate:
+1
+Scene_id: 1
+##############################

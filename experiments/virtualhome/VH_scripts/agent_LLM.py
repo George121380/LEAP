@@ -81,6 +81,8 @@ class LLM_Agent(BaseAgent):
 
         if self.config.human_guidance=='None': # default asked
             self.query_human_flag=True
+        else:
+            self.query_human_flag=False
 
         self.difficulty=int((1.2*difficulty)//1)
         self.max_trying_times=3*difficulty

@@ -1,0 +1,779 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Place the bowls and plates in the dishwasher and start the washing cycle.', '2. Wash forks by hand.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_plate_1000_around_kitchen_counter_230(plate:item):
+    goal: not unknown(plate)
+    body:
+        assert is_plate(plate)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==230
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(plate,kitchen_counter_instance)
+        else:
+            exp(plate,kitchen_counter_instance)
+    eff:
+        unknown[plate]=False
+        close[plate,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,plate]=True
+    
+
+behavior find_bowl_2071_around_sink_231(bowl:item):
+    goal: not unknown(bowl)
+    body:
+        assert is_bowl(bowl)
+        bind sink_instance:item where:
+            is_sink(sink_instance) and id[sink_instance]==231
+        achieve close_char(char,sink_instance)
+        if can_open(sink_instance):
+            achieve_once open(sink_instance)
+            exp(bowl,sink_instance)
+        else:
+            exp(bowl,sink_instance)
+    eff:
+        unknown[bowl]=False
+        close[bowl,sink_instance]=True
+        close[sink_instance,bowl]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def gather_dishes_and_start_dishwasher(dishwasher:item, sink:item):
+    body:
+        foreach o: item:
+            if (is_bowl(o) or is_plate(o)) and inside(o, sink):
+                if not inside(o, dishwasher):
+                    put_inside(o, dishwasher)
+        if open(dishwasher):
+            closes(dishwasher)
+        if is_off(dishwasher):
+            switch_on(dishwasher)
+
+behavior __goal__():
+    body:
+        bind dishwasher: item where:
+            is_dishwasher(dishwasher)
+        bind sink: item where:
+            is_sink(sink)
+        gather_dishes_and_start_dishwasher(dishwasher, sink)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_plate_1000_around_kitchen_counter_230(plate:item):
+    goal: not unknown(plate)
+    body:
+        assert is_plate(plate)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==230
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(plate,kitchen_counter_instance)
+        else:
+            exp(plate,kitchen_counter_instance)
+    eff:
+        unknown[plate]=False
+        close[plate,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,plate]=True
+    
+
+behavior find_bowl_2071_around_coffee_table_2068(bowl:item):
+    goal: not unknown(bowl)
+    body:
+        assert is_bowl(bowl)
+        bind coffee_table_instance:item where:
+            is_coffee_table(coffee_table_instance) and id[coffee_table_instance]==2068
+        achieve close_char(char,coffee_table_instance)
+        if can_open(coffee_table_instance):
+            achieve_once open(coffee_table_instance)
+            exp(bowl,coffee_table_instance)
+        else:
+            exp(bowl,coffee_table_instance)
+    eff:
+        unknown[bowl]=False
+        close[bowl,coffee_table_instance]=True
+        close[coffee_table_instance,bowl]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior load_dishwasher(dish:item, dishwasher:item):
+    body:
+        if not inside(dish, dishwasher):
+            put_inside(dish, dishwasher)
+            # Place the dish inside the dishwasher
+
+behavior start_dishwasher(dishwasher:item):
+    body:
+        if open(dishwasher):
+            closes(dishwasher) # Close the dishwasher door
+        if is_off(dishwasher):
+            switch_on(dishwasher) # Turn on the dishwasher
+
+behavior __goal__():
+    body:
+        bind dishwasher: item where:
+            is_dishwasher(dishwasher)
+        # Select a dishwasher
+        
+        foreach dish: item:
+        # Load all bowls and plates into the dishwasher
+            if is_bowl(dish) or is_plate(dish):
+                load_dishwasher(dish, dishwasher)
+                
+        start_dishwasher(dishwasher) # Start the washing cycle of the dishwasher
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+ 
+behavior load_dishwasher(dish:item, dishwasher:item):
+    body:
+        if not inside(dish, dishwasher):
+            put_inside(dish, dishwasher)
+            # Place the dish inside the dishwasher
+
+behavior start_dishwasher(dishwasher:item):
+    body:
+        if open(dishwasher):
+            closes(dishwasher) # Close the dishwasher door
+        if is_off(dishwasher):
+            switch_on(dishwasher) # Turn on the dishwasher
+
+behavior __goal__():
+    body:
+        bind dishwasher: item where:
+            is_dishwasher(dishwasher)
+        # Select a dishwasher
+        
+        foreach dish: item:
+        # Load all bowls and plates into the dishwasher
+            if is_bowl(dish) or is_plate(dish):
+                load_dishwasher(dish, dishwasher)
+                
+        start_dishwasher(dishwasher) # Start the washing cycle of the dishwasher
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(coffee_table_2068)exp(bowl_2071, coffee_table_2068)walk_executor(dishwasher_1001)open_executor(dishwasher_1001)walk_executor(bowl_2071)grab_executor(bowl_2071)walk_executor(dishwasher_1001)putin_executor(bowl_2071, dishwasher_1001)walk_executor(coffee_table_2068)exp(bowl_2072, coffee_table_2068)walk_executor(bowl_2072)grab_executor(bowl_2072)walk_executor(dishwasher_1001)putin_executor(bowl_2072, dishwasher_1001)walk_executor(kitchen_counter_230)exp(plate_1000, kitchen_counter_230)walk_executor(plate_1000)grab_executor(plate_1000)walk_executor(dishwasher_1001)putin_executor(plate_1000, dishwasher_1001)close_executor(dishwasher_1001)switchon_executor(dishwasher_1001)
+##############################
+From agent.py
+walk_executor(coffee_table_2068)
+Robot find: Robot is close to the coffee_table_2068. 
+##############################
+From agent.py
+exp(bowl_2071, coffee_table_2068)
+Fail to find bowl_2071 around coffee_table_2068. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(sink_231)exp(bowl_2071, sink_231)walk_executor(dishwasher_1001)open_executor(dishwasher_1001)walk_executor(bowl_2071)grab_executor(bowl_2071)walk_executor(dishwasher_1001)putin_executor(bowl_2071, dishwasher_1001)walk_executor(sink_231)exp(bowl_2072, sink_231)walk_executor(bowl_2072)grab_executor(bowl_2072)walk_executor(dishwasher_1001)putin_executor(bowl_2072, dishwasher_1001)exp(plate_1000, dishwasher_1001)walk_executor(plate_1000)grab_executor(plate_1000)walk_executor(dishwasher_1001)putin_executor(plate_1000, dishwasher_1001)close_executor(dishwasher_1001)switchon_executor(dishwasher_1001)
+##############################
+From agent.py
+walk_executor(sink_231)
+Robot find: drawing_238, drawing_239, drawing_240, drawing_241, drawing_242, drawing_243, soap_2054, napkin_2005, oil_2079, cup_2063, knife_2050, cup_2064, pot_2069, fryingpan_2083, plate_1000, Robot is close to the kitchen_counter_230. Robot is close to the sink_231. 
+##############################
+From agent.py
+exp(bowl_2071, sink_231)
+Fail to find bowl_2071 around sink_231. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(dishwasher_1001)open_executor(dishwasher_1001)exp(bowl_2071, dishwasher_1001)walk_executor(bowl_2071)grab_executor(bowl_2071)walk_executor(dishwasher_1001)putin_executor(bowl_2071, dishwasher_1001)exp(bowl_2072, dishwasher_1001)walk_executor(bowl_2072)grab_executor(bowl_2072)walk_executor(dishwasher_1001)putin_executor(bowl_2072, dishwasher_1001)walk_executor(plate_1000)grab_executor(plate_1000)walk_executor(dishwasher_1001)putin_executor(plate_1000, dishwasher_1001)close_executor(dishwasher_1001)switchon_executor(dishwasher_1001)
+##############################
+From agent.py
+walk_executor(dishwasher_1001)
+Robot find: Robot is close to the dishwasher_1001. 
+##############################
+From agent.py
+open_executor(dishwasher_1001)
+Robot find: Robot is close to the dishwasher_1001. dishwasher_1001 is opened. 
+##############################
+From agent.py
+exp(bowl_2071, dishwasher_1001)
+Fail to find bowl_2071 around dishwasher_1001. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(toilet_37)open_executor(toilet_37)exp(bowl_2071, toilet_37)walk_executor(bowl_2071)grab_executor(bowl_2071)walk_executor(dishwasher_1001)putin_executor(bowl_2071, dishwasher_1001)walk_executor(toilet_37)exp(bowl_2072, toilet_37)walk_executor(bowl_2072)grab_executor(bowl_2072)walk_executor(dishwasher_1001)putin_executor(bowl_2072, dishwasher_1001)walk_executor(plate_1000)grab_executor(plate_1000)walk_executor(dishwasher_1001)putin_executor(plate_1000, dishwasher_1001)close_executor(dishwasher_1001)switchon_executor(dishwasher_1001)
+##############################
+From agent.py
+walk_executor(toilet_37)
+Robot find: toilet_paper_2090, Robot is close to the toilet_37. 
+##############################
+From agent.py
+open_executor(toilet_37)
+Robot find: Robot is close to the toilet_37. toilet_37 is opened. 
+##############################
+From agent.py
+exp(bowl_2071, toilet_37)
+Fail to find bowl_2071 around toilet_37. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(cupboard_229)open_executor(cupboard_229)exp(bowl_2071, cupboard_229)walk_executor(bowl_2071)grab_executor(bowl_2071)walk_executor(dishwasher_1001)putin_executor(bowl_2071, dishwasher_1001)walk_executor(cupboard_229)exp(bowl_2072, cupboard_229)walk_executor(bowl_2072)grab_executor(bowl_2072)walk_executor(dishwasher_1001)putin_executor(bowl_2072, dishwasher_1001)walk_executor(plate_1000)grab_executor(plate_1000)walk_executor(dishwasher_1001)putin_executor(plate_1000, dishwasher_1001)close_executor(dishwasher_1001)switchon_executor(dishwasher_1001)
+##############################
+From agent.py
+walk_executor(cupboard_229)
+Robot find: Robot is close to the cupboard_229. 
+##############################
+From agent.py
+open_executor(cupboard_229)
+Robot find: Robot is close to the cupboard_229. cupboard_229 is opened. 
+##############################
+From agent.py
+exp(bowl_2071, cupboard_229)
+Fail to find bowl_2071 around cupboard_229. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(fridge_289)switchoff_executor(fridge_289)open_executor(fridge_289)exp(bowl_2071, fridge_289)walk_executor(bowl_2071)grab_executor(bowl_2071)walk_executor(dishwasher_1001)putin_executor(bowl_2071, dishwasher_1001)walk_executor(fridge_289)exp(bowl_2072, fridge_289)walk_executor(bowl_2072)grab_executor(bowl_2072)walk_executor(dishwasher_1001)putin_executor(bowl_2072, dishwasher_1001)walk_executor(plate_1000)grab_executor(plate_1000)walk_executor(dishwasher_1001)putin_executor(plate_1000, dishwasher_1001)close_executor(dishwasher_1001)switchon_executor(dishwasher_1001)
+##############################
+From agent.py
+walk_executor(fridge_289)
+Robot find: Robot is close to the fridge_289. 
+##############################
+From agent.py
+switchoff_executor(fridge_289)
+Robot find: Robot is close to the fridge_289. fridge_289 is turned off. 
+##############################
+From agent.py
+open_executor(fridge_289)
+Robot find: sauce_2078, food_steak_2008, food_apple_2009, food_bacon_2010, food_banana_2011, food_bread_2012, food_cake_2013, food_carrot_2014, food_cereal_2015, food_cheese_2016, food_chicken_2017, food_dessert_2018, food_donut_2019, food_egg_2020, food_fish_2021, food_food_2022, food_fruit_2023, food_hamburger_2024, food_ice_cream_2025, food_jam_2026, food_kiwi_2027, food_lemon_2028, food_noodles_2029, food_oatmeal_2030, food_orange_2031, food_onion_2032, food_peanut_butter_2033, food_pizza_2034, food_potato_2035, food_rice_2036, food_salt_2037, food_snack_2038, food_sugar_2039, food_turkey_2040, food_vegetable_2041, dry_pasta_2042, milk_2043, Robot is close to the sauce_2078. Robot is close to the fridge_289. Robot is close to the food_steak_2008. Robot is close to the food_apple_2009. Robot is close to the food_bacon_2010. Robot is close to the food_banana_2011. Robot is close to the food_bread_2012. Robot is close to the food_cake_2013. Robot is close to the food_carrot_2014. Robot is close to the food_cereal_2015. Robot is close to the food_cheese_2016. Robot is close to the food_chicken_2017. Robot is close to the food_dessert_2018. Robot is close to the food_donut_2019. Robot is close to the food_egg_2020. Robot is close to the food_fish_2021. Robot is close to the food_food_2022. Robot is close to the food_fruit_2023. Robot is close to the food_hamburger_2024. Robot is close to the food_ice_cream_2025. Robot is close to the food_jam_2026. Robot is close to the food_kiwi_2027. Robot is close to the food_lemon_2028. Robot is close to the food_noodles_2029. Robot is close to the food_oatmeal_2030. Robot is close to the food_orange_2031. Robot is close to the food_onion_2032. Robot is close to the food_peanut_butter_2033. Robot is close to the food_pizza_2034. Robot is close to the food_potato_2035. Robot is close to the food_rice_2036. Robot is close to the food_salt_2037. Robot is close to the food_snack_2038. Robot is close to the food_sugar_2039. Robot is close to the food_turkey_2040. Robot is close to the food_vegetable_2041. Robot is close to the dry_pasta_2042. Robot is close to the milk_2043. fridge_289 is opened. 
+##############################
+From agent.py -> query_LLM_human
+Record from func query_LLM_human in agent.py
+Question: Can you help me to find bowl_2071 ?
+Answer: Locate the dining room labeled as dining_room_201. Inside this room, find table_226. Bowl_2071 is on this table.
+Re-decompose: None
+
+##############################
+From agent.py
+Human Instruction: Locate the dining room labeled as dining_room_201. Inside this room, find table_226. Bowl_2071 is on this table.
+
+The actions you have taken:
+Action 1: Walk to coffee_table_2068.
+Action 2: look for bowl_2071 around coffee_table_2068.
+Action 3: Walk to sink_231.
+Action 4: look for bowl_2071 around sink_231.
+Action 5: Walk to dishwasher_1001.
+Action 6: Open dishwasher_1001.
+Action 7: look for bowl_2071 around dishwasher_1001.
+Action 8: Walk to toilet_37.
+Action 9: Open toilet_37.
+Action 10: look for bowl_2071 around toilet_37.
+Action 11: Walk to cupboard_229.
+Action 12: Open cupboard_229.
+Action 13: look for bowl_2071 around cupboard_229.
+Action 14: Walk to fridge_289.
+Action 15: Switch off fridge_289.
+Action 16: Open fridge_289.
+
+##############################
+From agent.py
+exp(bowl_2071, fridge_289)
+Fail to find bowl_2071 around fridge_289. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(table_226)exp(bowl_2071, table_226)walk_executor(bowl_2071)grab_executor(bowl_2071)walk_executor(dishwasher_1001)putin_executor(bowl_2071, dishwasher_1001)walk_executor(table_226)exp(bowl_2072, table_226)walk_executor(bowl_2072)grab_executor(bowl_2072)walk_executor(dishwasher_1001)putin_executor(bowl_2072, dishwasher_1001)walk_executor(plate_1000)grab_executor(plate_1000)walk_executor(dishwasher_1001)putin_executor(plate_1000, dishwasher_1001)close_executor(dishwasher_1001)switchon_executor(dishwasher_1001)
+##############################
+From agent.py
+walk_executor(table_226)
+Robot find: bowl_2071, coffee_filter_2000, drawing_2003, bowl_2072, mat_236, fork_2080, fork_2081, mat_237, Robot is close to the table_226. 
+##############################
+From agent.py
+exp(bowl_2071, table_226)
+Find bowl_2071. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(bowl_2071)grab_executor(bowl_2071)walk_executor(dishwasher_1001)putin_executor(bowl_2071, dishwasher_1001)walk_executor(bowl_2072)grab_executor(bowl_2072)walk_executor(dishwasher_1001)putin_executor(bowl_2072, dishwasher_1001)walk_executor(plate_1000)grab_executor(plate_1000)walk_executor(dishwasher_1001)putin_executor(plate_1000, dishwasher_1001)close_executor(dishwasher_1001)switchon_executor(dishwasher_1001)
+##############################
+From agent.py
+walk_executor(bowl_2071)
+Robot find: Robot is close to the table_226. Robot is close to the bowl_2071. 
+##############################
+From agent.py
+grab_executor(bowl_2071)
+Robot find: Robot is close to the table_226. Robot is close to the bowl_2071. Grabbing bowl_2071 by right hand. 
+##############################
+From agent.py
+walk_executor(dishwasher_1001)
+Robot find: Robot is close to the bowl_2071. Robot is close to the dishwasher_1001. 
+##############################
+From agent.py
+putin_executor(bowl_2071, dishwasher_1001)
+Robot find: Robot is close to the bowl_2071. Robot is close to the dishwasher_1001. bowl_2071 is close dishwasher_1001. bowl_2071 is inside dishwasher_1001. dishwasher_1001 is close bowl_2071. bowl_2071 released by right hand. 
+##############################
+From agent.py
+walk_executor(bowl_2072)
+Robot find: Robot is close to the bowl_2072. Robot is close to the table_226. 
+##############################
+From agent.py
+grab_executor(bowl_2072)
+Robot find: Robot is close to the bowl_2072. Robot is close to the table_226. Grabbing bowl_2072 by right hand. 
+##############################
+From agent.py
+walk_executor(dishwasher_1001)
+Robot find: Robot is close to the bowl_2072. Robot is close to the dishwasher_1001. Robot is close to the bowl_2071. 
+##############################
+From agent.py
+putin_executor(bowl_2072, dishwasher_1001)
+Robot find: Robot is close to the bowl_2072. Robot is close to the dishwasher_1001. Robot is close to the bowl_2071. bowl_2072 is close dishwasher_1001. bowl_2072 is inside dishwasher_1001. dishwasher_1001 is close bowl_2072. bowl_2072 released by right hand. 
+##############################
+From agent.py
+walk_executor(plate_1000)
+Robot find: Robot is close to the plate_1000. Robot is close to the sink_231. 
+##############################
+From agent.py
+grab_executor(plate_1000)
+Robot find: Robot is close to the plate_1000. Robot is close to the sink_231. Grabbing plate_1000 by right hand. 
+##############################
+From agent.py
+walk_executor(dishwasher_1001)
+Robot find: Robot is close to the plate_1000. Robot is close to the bowl_2072. Robot is close to the dishwasher_1001. Robot is close to the bowl_2071. 
+##############################
+From agent.py
+putin_executor(plate_1000, dishwasher_1001)
+Robot find: Robot is close to the plate_1000. Robot is close to the bowl_2072. Robot is close to the dishwasher_1001. Robot is close to the bowl_2071. plate_1000 is inside dishwasher_1001. plate_1000 is close dishwasher_1001. dishwasher_1001 is close plate_1000. plate_1000 released by right hand. 
+##############################
+From agent.py
+close_executor(dishwasher_1001)
+Robot find: Robot is close to the dishwasher_1001. dishwasher_1001 is closed. 
+##############################
+From agent.py
+switchon_executor(dishwasher_1001)
+Robot find: Robot is close to the dishwasher_1001. dishwasher_1001 is turned on. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: Yes
+The feedback instruction: None
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_cleaning_solution_2073_around_sink_42(cleaning_solution:item):
+    goal: not unknown(cleaning_solution)
+    body:
+        assert is_cleaning_solution(cleaning_solution)
+        bind sink_instance:item where:
+            is_sink(sink_instance) and id[sink_instance]==42
+        achieve close_char(char,sink_instance)
+        if can_open(sink_instance):
+            achieve_once open(sink_instance)
+            exp(cleaning_solution,sink_instance)
+        else:
+            exp(cleaning_solution,sink_instance)
+    eff:
+        unknown[cleaning_solution]=False
+        close[cleaning_solution,sink_instance]=True
+        close[sink_instance,cleaning_solution]=True
+    
+
+behavior find_soap_2054_around_sink_42(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind sink_instance:item where:
+            is_sink(sink_instance) and id[sink_instance]==42
+        achieve close_char(char,sink_instance)
+        if can_open(sink_instance):
+            achieve_once open(sink_instance)
+            exp(soap,sink_instance)
+        else:
+            exp(soap,sink_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,sink_instance]=True
+        close[sink_instance,soap]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior hand_wash(item:item):
+    body:
+        if dirty(item):
+            wash(item)
+
+behavior __goal__():
+    body:
+        foreach fork: item:
+            if is_fork(fork) and dirty(fork):
+                walk_to(fork)
+                hand_wash(fork)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_fork_in_sink(sink:item):
+    # Function to check if there are forks in a specified sink
+    symbol has_fork=exists o: item : (is_fork(o) and inside(o, sink))
+    return has_fork
+
+behavior wash_fork_by_hand(fork:item):
+    body:
+        if dirty(fork):
+            wash(fork) # Wash the fork if it is dirty
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and id[sink] == 231
+        # Select sink with ID 231, which is in the kitchen
+
+        foreach fork: item:
+            if is_fork(fork) and inside(fork, sink):
+                wash_fork_by_hand(fork)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_hand_washable(item:item):
+    # Check if the item is a fork and needs to be washed by hand
+    return is_fork(item) and dirty(item)
+
+behavior wash_fork_by_hand(fork:item):
+    body:
+        if not clean(fork):
+            wash(fork)
+
+behavior __goal__():
+    body:
+        foreach fork: item:
+            if is_hand_washable(fork):
+                wash_fork_by_hand(fork)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_towel_2057_around_shower_38(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind shower_instance:item where:
+            is_shower(shower_instance) and id[shower_instance]==38
+        achieve close_char(char,shower_instance)
+        if can_open(shower_instance):
+            achieve_once open(shower_instance)
+            exp(towel,shower_instance)
+        else:
+            exp(towel,shower_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,shower_instance]=True
+        close[shower_instance,towel]=True
+    
+
+behavior find_soap_2053_around_sink_42(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind sink_instance:item where:
+            is_sink(sink_instance) and id[sink_instance]==42
+        achieve close_char(char,sink_instance)
+        if can_open(sink_instance):
+            achieve_once open(sink_instance)
+            exp(soap,sink_instance)
+        else:
+            exp(soap,sink_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,sink_instance]=True
+        close[sink_instance,soap]=True
+    
+
+behavior find_detergent_2084_around_cup_2064(detergent:item):
+    goal: not unknown(detergent)
+    body:
+        assert is_detergent(detergent)
+        bind cup_instance:item where:
+            is_cup(cup_instance) and id[cup_instance]==2064
+        achieve close_char(char,cup_instance)
+        if can_open(cup_instance):
+            achieve_once open(cup_instance)
+            exp(detergent,cup_instance)
+        else:
+            exp(detergent,cup_instance)
+    eff:
+        unknown[detergent]=False
+        close[detergent,cup_instance]=True
+        close[cup_instance,detergent]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior approach_fork_and_wash(fork:item, sink:item):
+    body:
+        if not close_char(char, fork):
+            walk_to(fork)
+        grab(fork)
+        walk_to(sink)
+        wash(fork)
+        empty_a_hand()
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and id[sink]==231
+        foreach fork: item:
+            if is_fork(fork) and close_char(char, sink):
+                approach_fork_and_wash(fork, sink)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_towel_2059_around_shower_38(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind shower_instance:item where:
+            is_shower(shower_instance) and id[shower_instance]==38
+        achieve close_char(char,shower_instance)
+        if can_open(shower_instance):
+            achieve_once open(shower_instance)
+            exp(towel,shower_instance)
+        else:
+            exp(towel,shower_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,shower_instance]=True
+        close[shower_instance,towel]=True
+    
+
+behavior find_soap_2054_around_sink_42(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind sink_instance:item where:
+            is_sink(sink_instance) and id[sink_instance]==42
+        achieve close_char(char,sink_instance)
+        if can_open(sink_instance):
+            achieve_once open(sink_instance)
+            exp(soap,sink_instance)
+        else:
+            exp(soap,sink_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,sink_instance]=True
+        close[sink_instance,soap]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_fork_by_hand(fork:item):
+    # Function to check if an item is a fork
+    symbol fork_by_hand=exists o: item : (is_fork(o))
+    return fork_by_hand
+
+behavior wash_fork_by_hand(fork:item):
+    body:
+        if dirty(fork):
+            wash(fork)
+
+behavior __goal__():
+    body:
+        foreach fork: item:
+            if is_fork(fork) and not clean(fork):
+                wash_fork_by_hand(fork)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_towel_2058_around_shower_38(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind shower_instance:item where:
+            is_shower(shower_instance) and id[shower_instance]==38
+        achieve close_char(char,shower_instance)
+        if can_open(shower_instance):
+            achieve_once open(shower_instance)
+            exp(towel,shower_instance)
+        else:
+            exp(towel,shower_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,shower_instance]=True
+        close[shower_instance,towel]=True
+    
+
+behavior find_cleaning_solution_2073_around_bathroom_counter_41(cleaning_solution:item):
+    goal: not unknown(cleaning_solution)
+    body:
+        assert is_cleaning_solution(cleaning_solution)
+        bind bathroom_counter_instance:item where:
+            is_bathroom_counter(bathroom_counter_instance) and id[bathroom_counter_instance]==41
+        achieve close_char(char,bathroom_counter_instance)
+        if can_open(bathroom_counter_instance):
+            achieve_once open(bathroom_counter_instance)
+            exp(cleaning_solution,bathroom_counter_instance)
+        else:
+            exp(cleaning_solution,bathroom_counter_instance)
+    eff:
+        unknown[cleaning_solution]=False
+        close[cleaning_solution,bathroom_counter_instance]=True
+        close[bathroom_counter_instance,cleaning_solution]=True
+    
+
+behavior find_soap_2053_around_sink_42(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind sink_instance:item where:
+            is_sink(sink_instance) and id[sink_instance]==42
+        achieve close_char(char,sink_instance)
+        if can_open(sink_instance):
+            achieve_once open(sink_instance)
+            exp(soap,sink_instance)
+        else:
+            exp(soap,sink_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,sink_instance]=True
+        close[sink_instance,soap]=True
+    
+
+behavior find_detergent_2084_around_sink_42(detergent:item):
+    goal: not unknown(detergent)
+    body:
+        assert is_detergent(detergent)
+        bind sink_instance:item where:
+            is_sink(sink_instance) and id[sink_instance]==42
+        achieve close_char(char,sink_instance)
+        if can_open(sink_instance):
+            achieve_once open(sink_instance)
+            exp(detergent,sink_instance)
+        else:
+            exp(detergent,sink_instance)
+    eff:
+        unknown[detergent]=False
+        close[detergent,sink_instance]=True
+        close[sink_instance,detergent]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior wash_forks_by_hand(fork:item):
+    body:
+        if not clean(fork):
+            wash(fork)
+
+behavior __goal__():
+    body:
+        bind fork: item where:
+            is_fork(fork)
+        wash_forks_by_hand(fork)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+behavior wash_forks_by_hand(fork:item):
+    body:
+        if not clean(fork):
+            wash(fork)
+
+behavior __goal__():
+    body:
+        bind fork: item where:
+            is_fork(fork)
+        wash_forks_by_hand(fork)
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(fork_2080)grab_executor(fork_2080)walk_executor(faucet_43)switchon_executor(faucet_43)wash_executor(fork_2080)switchoff_executor(faucet_43)
+##############################
+From agent.py
+walk_executor(fork_2080)
+Robot find: Robot is close to the fork_2080. Robot is close to the table_226. 
+##############################
+From agent.py
+grab_executor(fork_2080)
+Robot find: Robot is close to the fork_2080. Robot is close to the table_226. Grabbing fork_2080 by right hand. 
+##############################
+From agent.py
+walk_executor(faucet_43)
+Robot find: towel_rack_31, towel_rack_32, towel_rack_34, Robot is close to the fork_2080. Robot is close to the bathroom_counter_41. Robot is close to the faucet_43. 
+##############################
+From agent.py
+switchon_executor(faucet_43)
+Robot find: Robot is close to the fork_2080. Robot is close to the bathroom_counter_41. Robot is close to the faucet_43. faucet_43 is turned on. 
+##############################
+From agent.py
+wash_executor(fork_2080)
+Robot find: Robot is close to the fork_2080. Robot is close to the bathroom_counter_41. Robot is close to the faucet_43. 
+##############################
+From agent.py
+switchoff_executor(faucet_43)
+Robot find: Robot is close to the fork_2080. Robot is close to the bathroom_counter_41. Robot is close to the faucet_43. faucet_43 is turned off. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: Yes
+The feedback instruction: None
+##############################
+Task Summary:
+Task Goal:
+Wash the bowls and plates with dishwasher. And wash forks by hand.
+Action History:
+['walk_executor(coffee_table_2068)', 'walk_executor(sink_231)', 'walk_executor(dishwasher_1001)', 'open_executor(dishwasher_1001)', 'walk_executor(toilet_37)', 'open_executor(toilet_37)', 'walk_executor(cupboard_229)', 'open_executor(cupboard_229)', 'walk_executor(fridge_289)', 'switchoff_executor(fridge_289)', 'open_executor(fridge_289)', 'walk_executor(table_226)', 'walk_executor(bowl_2071)', 'grab_executor(bowl_2071)', 'walk_executor(dishwasher_1001)', 'putin_executor(bowl_2071, dishwasher_1001)', 'walk_executor(bowl_2072)', 'grab_executor(bowl_2072)', 'walk_executor(dishwasher_1001)', 'putin_executor(bowl_2072, dishwasher_1001)', 'walk_executor(plate_1000)', 'grab_executor(plate_1000)', 'walk_executor(dishwasher_1001)', 'putin_executor(plate_1000, dishwasher_1001)', 'close_executor(dishwasher_1001)', 'switchon_executor(dishwasher_1001)', 'walk_executor(fork_2080)', 'grab_executor(fork_2080)', 'walk_executor(faucet_43)', 'switchon_executor(faucet_43)', 'wash_executor(fork_2080)', 'switchoff_executor(faucet_43)']
+Time info:
+Time consume: 171 seconds
+Exp_helper query times: 1
+Guidance query times: 0
+library scale: 12
+goal generate times: 8
+goal correct times: 0
+action_num: 32
+
+Task complete rate:
+1
+Scene_id: 0
+##############################

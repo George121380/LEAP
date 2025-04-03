@@ -1,0 +1,540 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Fry the steak.', '2. Cut the steak.', '3. Put the steak on a plate.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_steak_2042_around_fridge_140(food_steak:item):
+    goal: not unknown(food_steak)
+    body:
+        assert is_food_steak(food_steak)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==140
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_steak,fridge_instance)
+        else:
+            exp(food_steak,fridge_instance)
+    eff:
+        unknown[food_steak]=False
+        close[food_steak,fridge_instance]=True
+        close[fridge_instance,food_steak]=True
+    
+
+behavior find_fryingpan_2107_around_kitchen_counter_132(fryingpan:item):
+    goal: not unknown(fryingpan)
+    body:
+        assert is_fryingpan(fryingpan)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==132
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(fryingpan,kitchen_counter_instance)
+        else:
+            exp(fryingpan,kitchen_counter_instance)
+    eff:
+        unknown[fryingpan]=False
+        close[fryingpan,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,fryingpan]=True
+    
+
+behavior find_clothes_hat_2076_around_basket_for_clothes_2040(clothes_hat:item):
+    goal: not unknown(clothes_hat)
+    body:
+        assert is_clothes_hat(clothes_hat)
+        bind basket_for_clothes_instance:item where:
+            is_basket_for_clothes(basket_for_clothes_instance) and id[basket_for_clothes_instance]==2040
+        achieve close_char(char,basket_for_clothes_instance)
+        if can_open(basket_for_clothes_instance):
+            achieve_once open(basket_for_clothes_instance)
+            exp(clothes_hat,basket_for_clothes_instance)
+        else:
+            exp(clothes_hat,basket_for_clothes_instance)
+    eff:
+        unknown[clothes_hat]=False
+        close[clothes_hat,basket_for_clothes_instance]=True
+        close[basket_for_clothes_instance,clothes_hat]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def has_steak_in_pan(fryingpan: item):
+    symbol has_steak=exists o: item : (is_food_steak(o) and inside(o, fryingpan))
+    return has_steak
+
+behavior fry_steak(fryingpan: item, stove: item):
+    body:
+        achieve_once is_on(stove)
+        # Turn on the stove
+        
+        achieve_once is_on(fryingpan)
+        # Turn on the frying pan
+
+behavior __goal__():
+    body:
+        bind steak: item where:
+            is_food_steak(steak)
+        # Select the steak to be fried
+        
+        bind fryingpan: item where:
+            is_fryingpan(fryingpan)
+        # Select a frying pan
+
+        bind stove: item where:
+            is_stove(stove)
+        # Select a stove
+
+        if has_steak_in_pan(fryingpan):
+            achieve close_char(char, fryingpan)
+        else:
+            bind cutting_board: item where:
+                is_cutting_board(cutting_board)
+            achieve_once on(steak, cutting_board)
+            achieve_once inside(steak, fryingpan)
+            
+        fry_steak(fryingpan, stove)
+
+#goal_representation_end
+
+##############################
+Error is:
+'NoneType' object is not iterable
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_steak_2042_around_fridge_140(food_steak:item):
+    goal: not unknown(food_steak)
+    body:
+        assert is_food_steak(food_steak)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==140
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_steak,fridge_instance)
+        else:
+            exp(food_steak,fridge_instance)
+    eff:
+        unknown[food_steak]=False
+        close[food_steak,fridge_instance]=True
+        close[fridge_instance,food_steak]=True
+    
+
+behavior find_oil_2005_around_cupboard_131(oil:item):
+    goal: not unknown(oil)
+    body:
+        assert is_oil(oil)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==131
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(oil,cupboard_instance)
+        else:
+            exp(oil,cupboard_instance)
+    eff:
+        unknown[oil]=False
+        close[oil,cupboard_instance]=True
+        close[cupboard_instance,oil]=True
+    
+
+behavior find_fryingpan_2107_around_kitchen_counter_132(fryingpan:item):
+    goal: not unknown(fryingpan)
+    body:
+        assert is_fryingpan(fryingpan)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==132
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(fryingpan,kitchen_counter_instance)
+        else:
+            exp(fryingpan,kitchen_counter_instance)
+    eff:
+        unknown[fryingpan]=False
+        close[fryingpan,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,fryingpan]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior prepare_for_frying(o:item, stove:item, oil:item, pan:item):
+    body:
+        achieve_once inside(oil, pan)
+        # Pour oil into the pan
+        achieve_once on(pan, stove)
+        # Place the pan on the stove
+        achieve_once plugged(stove)
+        # Plug in the stove
+        achieve is_on(stove)
+        # Ensure the stove is turned on
+
+behavior fry_steak(o:item, pan:item):
+    body:
+        achieve_once on(o, pan)
+        # Place the steak in the pan
+        # The steak will fry while on the pan
+
+behavior __goal__():
+    body:
+        bind steak: item where:
+            is_food_steak(steak)
+        # Select a steak
+        
+        bind pan: item where:
+            is_fryingpan(pan)
+        # Select a pan
+        
+        bind stove: item where:
+            is_stove(stove)
+        # Select a stove
+        
+        bind oil: item where:
+            is_oil(oil)
+        # Select oil
+        
+        prepare_for_frying(steak, stove, oil, pan)
+        fry_steak(steak, pan)
+
+#goal_representation_end
+
+##############################
+Error is:
+'NoneType' object is not iterable
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_steak_2042_around_fridge_140(food_steak:item):
+    goal: not unknown(food_steak)
+    body:
+        assert is_food_steak(food_steak)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==140
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_steak,fridge_instance)
+        else:
+            exp(food_steak,fridge_instance)
+    eff:
+        unknown[food_steak]=False
+        close[food_steak,fridge_instance]=True
+        close[fridge_instance,food_steak]=True
+    
+
+behavior find_clothes_hat_2076_around_basket_for_clothes_2040(clothes_hat:item):
+    goal: not unknown(clothes_hat)
+    body:
+        assert is_clothes_hat(clothes_hat)
+        bind basket_for_clothes_instance:item where:
+            is_basket_for_clothes(basket_for_clothes_instance) and id[basket_for_clothes_instance]==2040
+        achieve close_char(char,basket_for_clothes_instance)
+        if can_open(basket_for_clothes_instance):
+            achieve_once open(basket_for_clothes_instance)
+            exp(clothes_hat,basket_for_clothes_instance)
+        else:
+            exp(clothes_hat,basket_for_clothes_instance)
+    eff:
+        unknown[clothes_hat]=False
+        close[clothes_hat,basket_for_clothes_instance]=True
+        close[basket_for_clothes_instance,clothes_hat]=True
+    
+
+behavior find_fryingpan_2107_around_cupboard_131(fryingpan:item):
+    goal: not unknown(fryingpan)
+    body:
+        assert is_fryingpan(fryingpan)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==131
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(fryingpan,cupboard_instance)
+        else:
+            exp(fryingpan,cupboard_instance)
+    eff:
+        unknown[fryingpan]=False
+        close[fryingpan,cupboard_instance]=True
+        close[cupboard_instance,fryingpan]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_fried(steak:item):
+    # Check if the steak is fried
+    symbol fried=exists item1: item : (is_food_steak(item1) and is_on(item1))
+    return fried
+
+def near_stove(steak:item):
+    # Check if we are near a stove with a steak
+    symbol near_stove=exists stove: item : (is_stove(stove) and close_char(char, stove))
+    return near_stove
+
+behavior fry_steak(steak:item, stovetop:item):
+    body:
+        achieve inside(steak, stovetop)
+        # Place steak on stove to fry
+
+behavior __goal__():
+    body:
+        bind steak: item where:
+            is_food_steak(steak)
+        bind stove: item where:
+            is_stove(stove)
+        if exists steak: item where (is_fried(steak)):
+            # If steak is already fried
+            achieve is_on(stove)
+        else:
+            # Go to the stove and fry the steak
+            if near_stove(steak):
+                fry_steak(steak, stove)
+            else:
+                move(stove)
+                fry_steak(steak, stove)
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Unexpected token Token('LPAR', '(') at line 5791, column 37.
+Expected one of: 
+	* COLON
+Previous tokens: [Token('WHERE', 'where')]
+
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_food_steak_2042_around_fridge_140(food_steak:item):
+    goal: not unknown(food_steak)
+    body:
+        assert is_food_steak(food_steak)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==140
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_steak,fridge_instance)
+        else:
+            exp(food_steak,fridge_instance)
+    eff:
+        unknown[food_steak]=False
+        close[food_steak,fridge_instance]=True
+        close[fridge_instance,food_steak]=True
+    
+
+behavior find_clothes_hat_2076_around_basket_for_clothes_2040(clothes_hat:item):
+    goal: not unknown(clothes_hat)
+    body:
+        assert is_clothes_hat(clothes_hat)
+        bind basket_for_clothes_instance:item where:
+            is_basket_for_clothes(basket_for_clothes_instance) and id[basket_for_clothes_instance]==2040
+        achieve close_char(char,basket_for_clothes_instance)
+        if can_open(basket_for_clothes_instance):
+            achieve_once open(basket_for_clothes_instance)
+            exp(clothes_hat,basket_for_clothes_instance)
+        else:
+            exp(clothes_hat,basket_for_clothes_instance)
+    eff:
+        unknown[clothes_hat]=False
+        close[clothes_hat,basket_for_clothes_instance]=True
+        close[basket_for_clothes_instance,clothes_hat]=True
+    
+
+behavior find_fryingpan_2107_around_kitchen_counter_132(fryingpan:item):
+    goal: not unknown(fryingpan)
+    body:
+        assert is_fryingpan(fryingpan)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==132
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(fryingpan,kitchen_counter_instance)
+        else:
+            exp(fryingpan,kitchen_counter_instance)
+    eff:
+        unknown[fryingpan]=False
+        close[fryingpan,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,fryingpan]=True
+    
+
+#goal_representation
+ 
+def is_fried(steak:item):
+    # Check if the steak is fried
+    symbol fried=exists item1: item : (is_food_steak(item1) and is_on(item1))
+    return fried
+
+def near_stove():
+    # Check if we are near a stove
+    symbol near_stove=exists stove: item : (is_stove(stove) and close_char(char, stove))
+    return near_stove
+
+behavior fry_steak(steak:item, stovetop:item):
+    body:
+        achieve inside(steak, stovetop)
+        # Place steak on stove to fry
+
+behavior __goal__():
+    body:
+        bind steak: item where:
+            is_food_steak(steak)
+        bind stove: item where:
+            is_stove(stove)
+        if exists steak: item where (is_fried(steak)):
+            # If steak is already fried
+            achieve is_on(stove)
+        else:
+            # Go to the stove and fry the steak
+            if near_stove():
+                fry_steak(steak, stove)
+            else:
+                move(stove)
+                fry_steak(steak, stove)
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Unexpected token Token('LPAR', '(') at line 5791, column 37.
+Expected one of: 
+	* COLON
+Previous tokens: [Token('WHERE', 'where')]
+
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_food_steak_2042_around_fridge_140(food_steak:item):
+    goal: not unknown(food_steak)
+    body:
+        assert is_food_steak(food_steak)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==140
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_steak,fridge_instance)
+        else:
+            exp(food_steak,fridge_instance)
+    eff:
+        unknown[food_steak]=False
+        close[food_steak,fridge_instance]=True
+        close[fridge_instance,food_steak]=True
+    
+
+behavior find_clothes_hat_2076_around_basket_for_clothes_2040(clothes_hat:item):
+    goal: not unknown(clothes_hat)
+    body:
+        assert is_clothes_hat(clothes_hat)
+        bind basket_for_clothes_instance:item where:
+            is_basket_for_clothes(basket_for_clothes_instance) and id[basket_for_clothes_instance]==2040
+        achieve close_char(char,basket_for_clothes_instance)
+        if can_open(basket_for_clothes_instance):
+            achieve_once open(basket_for_clothes_instance)
+            exp(clothes_hat,basket_for_clothes_instance)
+        else:
+            exp(clothes_hat,basket_for_clothes_instance)
+    eff:
+        unknown[clothes_hat]=False
+        close[clothes_hat,basket_for_clothes_instance]=True
+        close[basket_for_clothes_instance,clothes_hat]=True
+    
+
+behavior find_fryingpan_2107_around_kitchen_counter_132(fryingpan:item):
+    goal: not unknown(fryingpan)
+    body:
+        assert is_fryingpan(fryingpan)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==132
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(fryingpan,kitchen_counter_instance)
+        else:
+            exp(fryingpan,kitchen_counter_instance)
+    eff:
+        unknown[fryingpan]=False
+        close[fryingpan,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,fryingpan]=True
+    
+
+#goal_representation
+ 
+def is_fried(steak:item):
+    # Check if the steak is fried
+    symbol fried=exists item1: item : (is_food_steak(item1) and is_on(item1))
+    return fried
+
+def near_stove():
+    # Check if we are near a stove
+    symbol near_stove=exists stove: item : (is_stove(stove) and close_char(char, stove))
+    return near_stove
+
+behavior fry_steak(steak:item, stovetop:item):
+    body:
+        achieve on(steak, stovetop)
+        # Place steak on stove to fry
+
+behavior __goal__():
+    body:
+        bind steak: item where:
+            is_food_steak(steak)
+        bind stove: item where:
+            is_stove(stove)
+        if exists steak: item where (is_fried(steak)):
+            # If steak is already fried
+            achieve is_on(stove)
+        else:
+            # Go to the stove and fry the steak
+            if near_stove():
+                fry_steak(steak, stove)
+            else:
+                move(stove)
+                fry_steak(steak, stove)
+
+#goal_representation_end
+
+##############################
+VH_pipeline: Fail to generate a valid plan
+##############################
+From agent.py->reset_goal
+Fail to generate the goal representation
+##############################
+Error record: Error during problem transformation
+##############################
+Task Summary:
+Task Goal:
+Syntax Error
+Action History:
+[]
+Time info:
+Time consume: 57 seconds
+Exp_helper query times: 0
+Guidance query times: 0
+library scale: 101
+goal generate times: 3
+goal correct times: 2
+action_num: 0
+
+Task complete rate:
+Keystate: k1 - Requires: 16 steps
+Keystate: k2 - Requires: 16 steps
+Action Completion Rate: No actions required
+Scene_id: 2
+##############################

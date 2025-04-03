@@ -1,0 +1,381 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['Find the remote control and turn on the TV.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_remote_control_2124_around_tvstand_116(remote_control:item):
+    goal: not unknown(remote_control)
+    body:
+        assert is_remote_control(remote_control)
+        bind tvstand_instance:item where:
+            is_tvstand(tvstand_instance) and id[tvstand_instance]==116
+        achieve close_char(char,tvstand_instance)
+        if can_open(tvstand_instance):
+            achieve_once open(tvstand_instance)
+            exp(remote_control,tvstand_instance)
+        else:
+            exp(remote_control,tvstand_instance)
+    eff:
+        unknown[remote_control]=False
+        close[remote_control,tvstand_instance]=True
+        close[tvstand_instance,remote_control]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior find_remote(remote_control:item):
+    body:
+        achieve close_char(char, remote_control)
+
+behavior turn_on_tv(tv:item, remote_control:item):
+    body:
+        achieve_once inhand(remote_control)
+        achieve is_on(tv)
+
+behavior __goal__():
+    body:
+        bind remote_control: item where:
+            is_remote_control(remote_control)
+        find_remote(remote_control)
+        
+        bind tv: item where:
+            is_television(tv)
+        turn_on_tv(tv, remote_control)
+
+#goal_representation_end
+
+##############################
+Error is:
+'NoneType' object is not iterable
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_remote_control_2124_around_tvstand_116(remote_control:item):
+    goal: not unknown(remote_control)
+    body:
+        assert is_remote_control(remote_control)
+        bind tvstand_instance:item where:
+            is_tvstand(tvstand_instance) and id[tvstand_instance]==116
+        achieve close_char(char,tvstand_instance)
+        if can_open(tvstand_instance):
+            achieve_once open(tvstand_instance)
+            exp(remote_control,tvstand_instance)
+        else:
+            exp(remote_control,tvstand_instance)
+    eff:
+        unknown[remote_control]=False
+        close[remote_control,tvstand_instance]=True
+        close[tvstand_instance,remote_control]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_remote_control_near():
+    # Function to check if a remote control is close
+    symbol remote_close = exists o: item : (is_remote_control(o) and close_char(char, o))
+    return remote_close
+
+behavior touch_remote_control(remote_control:item):
+    body:
+        achieve_once inhand(remote_control)
+        touch(remote_control)
+
+behavior turn_on_television(tv:item):
+    body:
+        achieve is_on(tv)
+
+behavior __goal__():
+    body:
+        if is_remote_control_near():
+            bind remote_control: item where:
+                is_remote_control(remote_control) and close_char(char, remote_control)
+            touch_remote_control(remote_control)
+        
+        else:
+            foreach remote_control: item:
+                if is_remote_control(remote_control) and not visited(remote_control):
+                    observe(remote_control, "Locate and get close to the remote control")
+                    achieve close_char(char, remote_control)
+                    touch_remote_control(remote_control)
+
+        bind tv: item where:
+            is_television(tv)
+        turn_on_television(tv)
+
+#goal_representation_end
+
+##############################
+Error is:
+'NoneType' object is not iterable
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_remote_control_2124_around_tvstand_116(remote_control:item):
+    goal: not unknown(remote_control)
+    body:
+        assert is_remote_control(remote_control)
+        bind tvstand_instance:item where:
+            is_tvstand(tvstand_instance) and id[tvstand_instance]==116
+        achieve close_char(char,tvstand_instance)
+        if can_open(tvstand_instance):
+            achieve_once open(tvstand_instance)
+            exp(remote_control,tvstand_instance)
+        else:
+            exp(remote_control,tvstand_instance)
+    eff:
+        unknown[remote_control]=False
+        close[remote_control,tvstand_instance]=True
+        close[tvstand_instance,remote_control]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_remote_control_available():
+    # Function to check if there exists a remote control that has been visited
+    symbol available = exists o: item: (is_remote_control(o) and visited(o))
+    return available
+
+behavior turn_on_tv(tv: item, remote_control: item):
+    body:
+        achieve close_char(char, remote_control)
+        # Approach the remote control
+        touch(remote_control)
+        # Touch the remote control to turn on the TV
+        achieve is_on(tv)
+        # TV is on
+
+behavior __goal__():
+    body:
+        bind tv: item where:
+            is_television(tv)
+        # Select a television
+
+        if is_remote_control_available():
+            # If a visited remote control is already known, bind it for use
+            bind remote_control: item where:
+                is_remote_control(remote_control) and visited(remote_control)
+            turn_on_tv(tv, remote_control)
+        else:
+            # If a remote control has not been found, search the environment
+            foreach remote_control: item:
+                if is_remote_control(remote_control) and not visited(remote_control):
+                    observe(remote_control, "Check location of the remote control")
+                    # Inspect to find the remote control
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+ 
+def is_remote_control_available():
+    # Function to check if there exists a remote control that has been visited
+    symbol available = exists o: item: (is_remote_control(o) and visited(o))
+    return available
+
+behavior turn_on_tv(tv: item, remote_control: item):
+    body:
+        achieve close_char(char, remote_control)
+        # Approach the remote control
+        touch(remote_control)
+        # Touch the remote control to turn on the TV
+        achieve is_on(tv)
+        # TV is on
+
+behavior __goal__():
+    body:
+        bind tv: item where:
+            is_television(tv)
+        # Select a television
+
+        if is_remote_control_available():
+            # If a visited remote control is already known, bind it for use
+            bind remote_control: item where:
+                is_remote_control(remote_control) and visited(remote_control)
+            turn_on_tv(tv, remote_control)
+        else:
+            # If a remote control has not been found, search the environment
+            foreach remote_control: item:
+                if is_remote_control(remote_control) and not visited(remote_control):
+                    observe(remote_control, "Check location of the remote control")
+                    # Inspect to find the remote control
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(tvstand_116)exp(remote_control_2124, tvstand_116)walk_executor(remote_control_2124)obs(remote_control_2124, Check location of the remote control)
+##############################
+From agent.py
+walk_executor(tvstand_116)
+Robot find: pillow_107, phone_71, pillow_108, drawing_111, drawing_110, Robot is close to the tvstand_116. 
+##############################
+From agent.py
+exp(remote_control_2124, tvstand_116)
+Fail to find remote_control_2124 around tvstand_116. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(tvstand_273)exp(remote_control_2124, tvstand_273)walk_executor(remote_control_2124)obs(remote_control_2124, Check location of the remote control)
+##############################
+From agent.py
+walk_executor(tvstand_273)
+Robot find: drawing_288, cd_2145, headset_2131, cd_player_2129, remote_control_2124, dvd_player_2130, mat_284, Robot is close to the tvstand_273. 
+##############################
+From agent.py
+exp(remote_control_2124, tvstand_273)
+Find remote_control_2124. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(remote_control_2124)obs(remote_control_2124, Check location of the remote control)
+##############################
+From agent.py
+walk_executor(remote_control_2124)
+Robot find: Robot is close to the tvstand_273. Robot is close to the remote_control_2124. 
+##############################
+From agent.py
+obs(remote_control_2124, Check location of the remote control)
+Get this information:  remote_control_2124 is inside home_office_241. remote_control_2124 is close to tvstand_273. remote_control_2124 is close to character_240. remote_control_2124 is on tvstand_273. remote_control_2124 is OFF.
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: No
+The feedback instruction: The robot needs to touch the remote control to turn on the TV.
+##############################
+From agent.py
+Human Instruction: The robot needs to touch the remote control to turn on the TV.
+
+The actions you have taken:
+Action 1: Walk to tvstand_116.
+Action 2: look for remote_control_2124 around tvstand_116.
+Action 3: Walk to tvstand_273.
+Action 4: look for remote_control_2124 around tvstand_273.
+Action 5: Walk to remote_control_2124.
+Action 6: Observe around remote_control_2124 with the question of Check location of the remote control.
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def has_remote_control_nearby(tvstand:item):
+    # Function to check if the remote control is near the TV stand
+    symbol has_remote_control=exists o: item : (is_remote_control(o) and close(o, tvstand))
+    return has_remote_control
+
+behavior use_remote_control_to_turn_on_tv(remote_control:item, television:item):
+    body:
+        achieve close_char(char, remote_control)
+        # Move the character closer to the remote control
+        touch(remote_control)
+        # The robot touches the remote control to turn on the TV
+
+behavior __goal__():
+    body:
+        bind television: item where:
+            is_television(television)
+        # Select a television
+
+        if exists tvstand: item : (is_tvstand(tvstand) and has_remote_control_nearby(tvstand)):
+            # Check if there is a TV stand with a remote control nearby based on available information
+            bind tvstand: item where:
+                is_tvstand(tvstand) and has_remote_control_nearby(tvstand)
+            # Select a TV stand with a remote control nearby
+            
+            bind remote_control: item where:
+                is_remote_control(remote_control) and close(remote_control, tvstand)
+            # Select the remote control close to the TV stand
+            
+            use_remote_control_to_turn_on_tv(remote_control, television)
+            # Use the remote control to turn on the TV
+        
+        else: 
+           # If no remote control is found near any TV stand, initiate exploration to locate one
+            foreach remote_control: item:
+                if is_remote_control(remote_control) and not visited(remote_control):
+                    observe(remote_control, "Check the location of the remote control")
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+def has_remote_control_nearby(tvstand:item):
+    # Function to check if the remote control is near the TV stand
+    symbol has_remote_control=exists o: item : (is_remote_control(o) and close(o, tvstand))
+    return has_remote_control
+
+behavior use_remote_control_to_turn_on_tv(remote_control:item, television:item):
+    body:
+        achieve close_char(char, remote_control)
+        # Move the character closer to the remote control
+        touch(remote_control)
+        # The robot touches the remote control to turn on the TV
+
+behavior __goal__():
+    body:
+        bind television: item where:
+            is_television(television)
+        # Select a television
+
+        if exists tvstand: item : (is_tvstand(tvstand) and has_remote_control_nearby(tvstand)):
+            # Check if there is a TV stand with a remote control nearby based on available information
+            bind tvstand: item where:
+                is_tvstand(tvstand) and has_remote_control_nearby(tvstand)
+            # Select a TV stand with a remote control nearby
+            
+            bind remote_control: item where:
+                is_remote_control(remote_control) and close(remote_control, tvstand)
+            # Select the remote control close to the TV stand
+            
+            use_remote_control_to_turn_on_tv(remote_control, television)
+            # Use the remote control to turn on the TV
+        
+        else: 
+           # If no remote control is found near any TV stand, initiate exploration to locate one
+            foreach remote_control: item:
+                if is_remote_control(remote_control) and not visited(remote_control):
+                    observe(remote_control, "Check the location of the remote control")
+
+##############################
+From agent.py-> find a plan in act()
+touch_executor(remote_control_2124)
+##############################
+From agent.py
+touch_executor(remote_control_2124)
+Robot find: Robot is close to the tvstand_273. Robot is close to the remote_control_2124. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: Yes
+The feedback instruction: None
+##############################
+Task Summary:
+Task Goal:
+Turn on the TV by touching the remote control.
+Action History:
+['walk_executor(tvstand_116)', 'walk_executor(tvstand_273)', 'walk_executor(remote_control_2124)', 'touch_executor(remote_control_2124)']
+Time info:
+Time consume: 65 seconds
+Exp_helper query times: 0
+Guidance query times: 0
+library scale: 45
+goal generate times: 4
+goal correct times: 0
+action_num: 4
+
+Task complete rate:
+1
+Scene_id: 1
+##############################

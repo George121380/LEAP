@@ -1,0 +1,1097 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Fry the steak.', '2. Cut the steak.', '3. Put the steak on a plate.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_oil_2149_around_cupboard_118(oil:item):
+    goal: not unknown(oil)
+    body:
+        assert is_oil(oil)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==118
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(oil,cupboard_instance)
+        else:
+            exp(oil,cupboard_instance)
+    eff:
+        unknown[oil]=False
+        close[oil,cupboard_instance]=True
+        close[cupboard_instance,oil]=True
+    
+
+behavior find_food_steak_2080_around_fridge_126(food_steak:item):
+    goal: not unknown(food_steak)
+    body:
+        assert is_food_steak(food_steak)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==126
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_steak,fridge_instance)
+        else:
+            exp(food_steak,fridge_instance)
+    eff:
+        unknown[food_steak]=False
+        close[food_steak,fridge_instance]=True
+        close[fridge_instance,food_steak]=True
+    
+
+behavior find_fryingpan_2154_around_stove_2135(fryingpan:item):
+    goal: not unknown(fryingpan)
+    body:
+        assert is_fryingpan(fryingpan)
+        bind stove_instance:item where:
+            is_stove(stove_instance) and id[stove_instance]==2135
+        achieve close_char(char,stove_instance)
+        if can_open(stove_instance):
+            achieve_once open(stove_instance)
+            exp(fryingpan,stove_instance)
+        else:
+            exp(fryingpan,stove_instance)
+    eff:
+        unknown[fryingpan]=False
+        close[fryingpan,stove_instance]=True
+        close[stove_instance,fryingpan]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+
+behavior fry_steak(fryingpan: item, steak: item):
+    body:
+        if not is_on(fryingpan):
+            switch_on(fryingpan)
+        if not inhand(steak):
+            grab(steak)
+        if not is_food_steak(steak):
+            observe(steak, "Verify if the item is a steak")
+        if not inside(steak, fryingpan):
+            put_inside(steak, fryingpan)
+
+behavior __goal__():
+    body:
+        bind fryingpan: item where:
+            is_fryingpan(fryingpan)
+        bind steak: item where:
+            is_food_steak(steak)
+        fry_steak(fryingpan, steak)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_fryingpan_2154_around_stove_2135(fryingpan:item):
+    goal: not unknown(fryingpan)
+    body:
+        assert is_fryingpan(fryingpan)
+        bind stove_instance:item where:
+            is_stove(stove_instance) and id[stove_instance]==2135
+        achieve close_char(char,stove_instance)
+        if can_open(stove_instance):
+            achieve_once open(stove_instance)
+            exp(fryingpan,stove_instance)
+        else:
+            exp(fryingpan,stove_instance)
+    eff:
+        unknown[fryingpan]=False
+        close[fryingpan,stove_instance]=True
+        close[stove_instance,fryingpan]=True
+    
+
+behavior find_food_steak_2080_around_fridge_126(food_steak:item):
+    goal: not unknown(food_steak)
+    body:
+        assert is_food_steak(food_steak)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==126
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_steak,fridge_instance)
+        else:
+            exp(food_steak,fridge_instance)
+    eff:
+        unknown[food_steak]=False
+        close[food_steak,fridge_instance]=True
+        close[fridge_instance,food_steak]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_frying_pan_close_to_stove(pan:item, stove:item):
+    # Function to check if a frying pan is close to the stove
+    symbol pan_close_to_stove=close(pan, stove)
+    return pan_close_to_stove
+
+def is_steak_in_pan(steak:item, pan:item):
+    # Function to check if a steak is in the frying pan
+    symbol steak_in_pan=inside(steak, pan)
+    return steak_in_pan
+
+behavior prepare_frying(pan:item, stove:item):
+    body:
+        if is_off(stove):
+            switch_on(stove) # Turn on the stove
+        if not is_frying_pan_close_to_stove(pan, stove):
+            put_close(pan, stove) # Place the frying pan close to the stove if its not already
+
+behavior place_steak(pan:item, steak:item):
+    body:
+        if not is_steak_in_pan(steak, pan):
+            put_inside(steak, pan)
+            # Place steak into the frying pan if its not already there
+
+behavior fry_steak(steak:item, pan:item):
+    body:
+        prepare_frying(pan, stove) # Prepare the frying setup
+        place_steak(pan, steak) # Place the steak in the pan
+
+behavior __goal__():
+    body:
+        bind steak: item where:
+            is_food_steak(steak)
+        # Select a steak
+        bind pan: item where:
+            is_fryingpan(pan)
+        # Select a frying pan
+        bind stove: item where:
+            is_stove(stove)
+        # Select a stove
+        fry_steak(steak, pan) # Fry the steak
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_fryingpan_2154_around_kitchen_counter_122(fryingpan:item):
+    goal: not unknown(fryingpan)
+    body:
+        assert is_fryingpan(fryingpan)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==122
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(fryingpan,kitchen_counter_instance)
+        else:
+            exp(fryingpan,kitchen_counter_instance)
+    eff:
+        unknown[fryingpan]=False
+        close[fryingpan,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,fryingpan]=True
+    
+
+behavior find_food_steak_2080_around_fridge_126(food_steak:item):
+    goal: not unknown(food_steak)
+    body:
+        assert is_food_steak(food_steak)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==126
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_steak,fridge_instance)
+        else:
+            exp(food_steak,fridge_instance)
+    eff:
+        unknown[food_steak]=False
+        close[food_steak,fridge_instance]=True
+        close[fridge_instance,food_steak]=True
+    
+
+behavior find_table_cloth_2005_around_table_270(table_cloth:item):
+    goal: not unknown(table_cloth)
+    body:
+        assert is_table_cloth(table_cloth)
+        bind table_instance:item where:
+            is_table(table_instance) and id[table_instance]==270
+        achieve close_char(char,table_instance)
+        if can_open(table_instance):
+            achieve_once open(table_instance)
+            exp(table_cloth,table_instance)
+        else:
+            exp(table_cloth,table_instance)
+    eff:
+        unknown[table_cloth]=False
+        close[table_cloth,table_instance]=True
+        close[table_instance,table_cloth]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_frying_pan_on(stove: item):
+    # Function to check if there is a frying pan on the stove
+    symbol has_pan=exists pan: item : (is_fryingpan(pan) and on(pan, stove))
+    return has_pan
+
+def has_steak_in_pan(pan: item):
+    # Function to check if there is a steak in the frying pan
+    symbol steak_in_pan=exists steak: item : (is_food_steak(steak) and inside(steak, pan))
+    return steak_in_pan
+
+behavior fry_steak(pan: item, stove: item):
+    body:
+        if is_off(stove):
+            switch_on(stove)
+            # Turn on the stove if its off
+        if not has_steak_in_pan(pan):
+            empty_a_hand() 
+            # Make sure you have a free hand before grabbing the steak
+            bind steak: item where:
+                is_food_steak(steak)
+            grab(steak)
+            # Grab the steak
+
+behavior __goal__():
+    body:
+        bind stove: item where:
+            is_stove(stove)
+        # Select the stove
+        if exists pan: item : is_fryingpan(pan) and is_frying_pan_on(stove):
+            # If frying pan is on stove, proceed to fry the steak
+            bind pan: item where:
+                is_fryingpan(pan) and on(pan, stove)
+            fry_steak(pan, stove)
+        else:
+            # If no frying pan is detected on the stove, check other pans
+            foreach pan: item:
+                if is_fryingpan(pan) and not visited(pan):
+                    observe(pan, "Check if I can place this pan on the stove")
+                    # Observe to determine if the pan is suitable for the stove
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+ 
+def is_frying_pan_on(stove: item):
+    # Function to check if there is a frying pan on the stove
+    symbol has_pan=exists pan: item : (is_fryingpan(pan) and on(pan, stove))
+    return has_pan
+
+def has_steak_in_pan(pan: item):
+    # Function to check if there is a steak in the frying pan
+    symbol steak_in_pan=exists steak: item : (is_food_steak(steak) and inside(steak, pan))
+    return steak_in_pan
+
+behavior fry_steak(pan: item, stove: item):
+    body:
+        if is_off(stove):
+            switch_on(stove)
+            # Turn on the stove if its off
+        if not has_steak_in_pan(pan):
+            empty_a_hand() 
+            # Make sure you have a free hand before grabbing the steak
+            bind steak: item where:
+                is_food_steak(steak)
+            grab(steak)
+            # Grab the steak
+
+behavior __goal__():
+    body:
+        bind stove: item where:
+            is_stove(stove)
+        # Select the stove
+        if exists pan: item : is_fryingpan(pan) and is_frying_pan_on(stove):
+            # If frying pan is on stove, proceed to fry the steak
+            bind pan: item where:
+                is_fryingpan(pan) and on(pan, stove)
+            fry_steak(pan, stove)
+        else:
+            # If no frying pan is detected on the stove, check other pans
+            foreach pan: item:
+                if is_fryingpan(pan) and not visited(pan):
+                    observe(pan, "Check if I can place this pan on the stove")
+                    # Observe to determine if the pan is suitable for the stove
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(kitchen_counter_122)exp(fryingpan_2154, kitchen_counter_122)walk_executor(fryingpan_2154)obs(fryingpan_2154, Check if I can place this pan on the stove)
+##############################
+From agent.py
+walk_executor(kitchen_counter_122)
+Robot find: spectacles_2153, pot_78, fryingpan_2154, Robot is close to the kitchen_counter_122. 
+##############################
+From agent.py
+exp(fryingpan_2154, kitchen_counter_122)
+Find fryingpan_2154. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(fryingpan_2154)obs(fryingpan_2154, Check if I can place this pan on the stove)
+##############################
+From agent.py
+walk_executor(fryingpan_2154)
+Robot find: Robot is close to the kitchen_counter_122. Robot is close to the fryingpan_2154. 
+##############################
+From agent.py
+obs(fryingpan_2154, Check if I can place this pan on the stove)
+Get this information:  fryingpan_2154 is close to kitchen_counter_122. fryingpan_2154 is close to character_240. fryingpan_2154 is on kitchen_counter_122. fryingpan_2154 is inside dining_room_41. fryingpan_2154 is CLEAN.
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: No
+The feedback instruction: You need to place the frying pan on the stove, ensure the stove is on, and then put the steak in the pan to fry it.
+##############################
+From agent.py
+Human Instruction: You need to place the frying pan on the stove, ensure the stove is on, and then put the steak in the pan to fry it.
+
+The actions you have taken:
+Action 1: Walk to kitchen_counter_122.
+Action 2: look for fryingpan_2154 around kitchen_counter_122.
+Action 3: Walk to fryingpan_2154.
+Action 4: Observe around fryingpan_2154 with the question of Check if I can place this pan on the stove.
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_oil_2013_around_cupboard_118(oil:item):
+    goal: not unknown(oil)
+    body:
+        assert is_oil(oil)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==118
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(oil,cupboard_instance)
+        else:
+            exp(oil,cupboard_instance)
+    eff:
+        unknown[oil]=False
+        close[oil,cupboard_instance]=True
+        close[cupboard_instance,oil]=True
+    
+
+behavior find_food_hamburger_2096_around_kitchen_counter_123(food_hamburger:item):
+    goal: not unknown(food_hamburger)
+    body:
+        assert is_food_hamburger(food_hamburger)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==123
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_hamburger,kitchen_counter_instance)
+        else:
+            exp(food_hamburger,kitchen_counter_instance)
+    eff:
+        unknown[food_hamburger]=False
+        close[food_hamburger,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_hamburger]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+
+def check_frying_pan_on_stove(fryingpan: item, stove: item):
+    # Function to check if the frying pan is on the stove
+    symbol frying_pan_on_stove = on(fryingpan, stove)
+    return frying_pan_on_stove
+
+behavior place_frying_pan_on_stove(fryingpan: item, stove: item):
+    body:
+        if not check_frying_pan_on_stove(fryingpan, stove):
+            put_on(fryingpan, stove)
+            # Place the frying pan on the stove
+
+behavior start_frying_steak(fryingpan: item, steak: item):
+    body:
+        if not is_on(steak):
+            if open(fryingpan):
+                closes(fryingpan)
+            put_on(steak, fryingpan)
+            # Place the steak on the frying pan
+
+behavior __goal__():
+    body:
+        bind stove: item where:
+            is_stove(stove)
+        # Select a stove
+        
+        bind fryingpan: item where:
+            is_fryingpan(fryingpan)
+
+        place_frying_pan_on_stove(fryingpan, stove)
+        
+        bind steak: item where:
+            is_food_steak(steak)
+        # Select a steak
+
+        start_frying_steak(fryingpan, steak)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_steak_2080_around_fridge_126(food_steak:item):
+    goal: not unknown(food_steak)
+    body:
+        assert is_food_steak(food_steak)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==126
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_steak,fridge_instance)
+        else:
+            exp(food_steak,fridge_instance)
+    eff:
+        unknown[food_steak]=False
+        close[food_steak,fridge_instance]=True
+        close[fridge_instance,food_steak]=True
+    
+
+behavior find_oil_2013_around_cupboard_118(oil:item):
+    goal: not unknown(oil)
+    body:
+        assert is_oil(oil)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==118
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(oil,cupboard_instance)
+        else:
+            exp(oil,cupboard_instance)
+    eff:
+        unknown[oil]=False
+        close[oil,cupboard_instance]=True
+        close[cupboard_instance,oil]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_frying_pan(frying_pan:item):
+    # Function to check if the item is a frying pan
+    return is_fryingpan(frying_pan)
+
+behavior find_the_frying_pan(kitchen_counter:item):
+    body:
+        foreach obj: item:
+            if is_frying_pan(obj) and close_char(char, kitchen_counter):
+                walk_to(obj)
+                observe(obj, "Check if I can place this pan on the stove")
+                return True
+        return False
+
+behavior place_frying_pan_on_stove(frying_pan:item, stove:item):
+    body:
+        if not on(frying_pan, stove):
+            if not inhand(frying_pan):
+                grab(frying_pan)
+            put_on(frying_pan, stove)
+
+behavior turn_on_stove(stove:item):
+    body:
+        if is_off(stove):
+            switch_on(stove)
+
+behavior fry_the_steak(frying_pan:item, stove:item, steak:item):
+    body:
+        bind frying_pan: item where:
+            is_frying_pan(frying_pan) and on(frying_pan, stove)
+        bind steak: item where:
+            is_food_steak(steak)
+        if not inhand(steak):
+            grab(steak)
+        if on(steak, stove):
+            place_frying_pan_on_stove(frying_pan, stove)
+        if not is_on(stove):
+            turn_on_stove(stove)
+
+behavior __goal__():
+    body:
+        bind kitchen_counter: item where:
+            is_kitchen_counter(kitchen_counter)
+        bind stove: item where:
+            is_stove(stove)
+        if not find_the_frying_pan(kitchen_counter):
+            return 
+        fry_the_steak(frying_pan, stove, steak)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_steak_2080_around_fridge_126(food_steak:item):
+    goal: not unknown(food_steak)
+    body:
+        assert is_food_steak(food_steak)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==126
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_steak,fridge_instance)
+        else:
+            exp(food_steak,fridge_instance)
+    eff:
+        unknown[food_steak]=False
+        close[food_steak,fridge_instance]=True
+        close[fridge_instance,food_steak]=True
+    
+
+behavior find_oil_2013_around_cupboard_117(oil:item):
+    goal: not unknown(oil)
+    body:
+        assert is_oil(oil)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==117
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(oil,cupboard_instance)
+        else:
+            exp(oil,cupboard_instance)
+    eff:
+        unknown[oil]=False
+        close[oil,cupboard_instance]=True
+        close[cupboard_instance,oil]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+
+def is_fryable_steak(steak:item):
+    # Function to check if an item is a steak
+    return is_food_steak(steak)
+
+behavior place_fryingpan_on_stove(fryingpan:item, stove:item):
+    body:
+        if not on(fryingpan, stove):
+            put_on(fryingpan, stove)
+
+behavior fry_steak(fryingpan:item, steak:item, stove:item):
+    body:
+        if not is_on(stove):
+            switch_on(stove) # Turn on the stove
+        if not inside(steak, fryingpan):
+            put_on(steak, fryingpan) # Place the steak in the frying pan
+
+behavior __goal__():
+    body:
+        bind stove: item where:
+            is_stove(stove) # Select a stove
+        bind fryingpan: item where:
+            is_fryingpan(fryingpan) # Select a frying pan
+        bind steak: item where:
+            is_fryable_steak(steak) # Select a steak
+        place_fryingpan_on_stove(fryingpan, stove)
+        fry_steak(fryingpan, steak, stove)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+
+def is_fryable_steak(steak:item):
+    # Function to check if an item is a steak
+    return is_food_steak(steak)
+
+behavior place_fryingpan_on_stove(fryingpan:item, stove:item):
+    body:
+        if not on(fryingpan, stove):
+            put_on(fryingpan, stove)
+
+behavior fry_steak(fryingpan:item, steak:item, stove:item):
+    body:
+        if not is_on(stove):
+            switch_on(stove) # Turn on the stove
+        if not inside(steak, fryingpan):
+            put_on(steak, fryingpan) # Place the steak in the frying pan
+
+behavior __goal__():
+    body:
+        bind stove: item where:
+            is_stove(stove) # Select a stove
+        bind fryingpan: item where:
+            is_fryingpan(fryingpan) # Select a frying pan
+        bind steak: item where:
+            is_fryable_steak(steak) # Select a steak
+        place_fryingpan_on_stove(fryingpan, stove)
+        fry_steak(fryingpan, steak, stove)
+
+##############################
+From agent.py-> find a plan in act()
+grab_executor(fryingpan_2154)walk_executor(stove_2135)put_executor(fryingpan_2154, stove_2135)switchon_executor(stove_2135)walk_executor(fridge_126)switchoff_executor(fridge_126)open_executor(fridge_126)exp(food_steak_2080, fridge_126)walk_executor(food_steak_2080)grab_executor(food_steak_2080)walk_executor(fryingpan_2154)put_executor(food_steak_2080, fryingpan_2154)
+##############################
+From agent.py
+grab_executor(fryingpan_2154)
+Robot find: Robot is close to the kitchen_counter_122. Robot is close to the fryingpan_2154. Grabbing fryingpan_2154 by right hand. 
+##############################
+From agent.py
+walk_executor(stove_2135)
+Robot find: fork_2150, bowl_2142, food_salt_2041, pot_2138, bowl_2140, bowl_2141, fork_2151, plate_2152, Robot is close to the fryingpan_2154. Robot is close to the kitchen_counter_119. Robot is close to the stove_2135. 
+##############################
+From agent.py
+put_executor(fryingpan_2154, stove_2135)
+Robot find: Robot is close to the fryingpan_2154. Robot is close to the kitchen_counter_119. Robot is close to the stove_2135. stove_2135 is close fryingpan_2154. fryingpan_2154 is close stove_2135. fryingpan_2154 is on stove_2135. fryingpan_2154 released by right hand. 
+##############################
+From agent.py
+switchon_executor(stove_2135)
+Robot find: Robot is close to the fryingpan_2154. Robot is close to the kitchen_counter_119. Robot is close to the stove_2135. stove_2135 is turned on. 
+##############################
+From agent.py
+walk_executor(fridge_126)
+Robot find: food_food_1000, Robot is close to the fridge_126. 
+##############################
+From agent.py
+switchoff_executor(fridge_126)
+Robot find: Robot is close to the fridge_126. fridge_126 is turned off. 
+##############################
+From agent.py
+open_executor(fridge_126)
+Robot find: food_onion_2048, food_food_2046, food_food_2073, food_steak_2080, food_apple_2081, food_bacon_2082, food_banana_2083, food_cake_2085, food_carrot_2086, food_cereal_2087, food_cheese_2088, food_chicken_2089, food_dessert_2090, food_donut_2091, food_egg_2092, food_fish_2093, food_food_2094, food_fruit_2095, food_hamburger_2096, food_ice_cream_2097, food_jam_2098, food_lemon_2100, food_noodles_2101, food_oatmeal_2102, food_orange_2103, food_onion_2104, food_peanut_butter_2105, food_pizza_2106, food_potato_2107, food_rice_2108, food_salt_2109, food_snack_2110, food_sugar_2111, food_turkey_2112, food_vegetable_2113, food_food_2001, sauce_2148, Robot is close to the food_onion_2048. Robot is close to the food_food_2046. Robot is close to the food_food_2073. Robot is close to the food_steak_2080. Robot is close to the food_apple_2081. Robot is close to the food_bacon_2082. Robot is close to the food_banana_2083. Robot is close to the food_cake_2085. Robot is close to the food_carrot_2086. Robot is close to the food_cereal_2087. Robot is close to the food_cheese_2088. Robot is close to the food_chicken_2089. Robot is close to the food_dessert_2090. Robot is close to the food_donut_2091. Robot is close to the food_egg_2092. Robot is close to the food_fish_2093. Robot is close to the food_food_2094. Robot is close to the food_fruit_2095. Robot is close to the food_hamburger_2096. Robot is close to the food_ice_cream_2097. Robot is close to the food_jam_2098. Robot is close to the food_lemon_2100. Robot is close to the food_noodles_2101. Robot is close to the food_oatmeal_2102. Robot is close to the food_orange_2103. Robot is close to the food_onion_2104. Robot is close to the food_peanut_butter_2105. Robot is close to the food_pizza_2106. Robot is close to the food_potato_2107. Robot is close to the food_rice_2108. Robot is close to the food_salt_2109. Robot is close to the food_snack_2110. Robot is close to the food_sugar_2111. Robot is close to the food_turkey_2112. Robot is close to the food_vegetable_2113. Robot is close to the food_food_2001. Robot is close to the sauce_2148. Robot is close to the fridge_126. fridge_126 is opened. 
+##############################
+From agent.py
+exp(food_steak_2080, fridge_126)
+Find food_steak_2080. 
+##############################
+From agent.py-> find a plan in act()
+grab_executor(food_steak_2080)walk_executor(fryingpan_2154)put_executor(food_steak_2080, fryingpan_2154)
+##############################
+From agent.py
+grab_executor(food_steak_2080)
+Robot find: Robot is close to the food_onion_2048. Robot is close to the food_food_2046. Robot is close to the food_food_2073. Robot is close to the food_steak_2080. Robot is close to the food_apple_2081. Robot is close to the food_bacon_2082. Robot is close to the food_banana_2083. Robot is close to the food_cake_2085. Robot is close to the food_carrot_2086. Robot is close to the food_cereal_2087. Robot is close to the food_cheese_2088. Robot is close to the food_chicken_2089. Robot is close to the food_dessert_2090. Robot is close to the food_donut_2091. Robot is close to the food_egg_2092. Robot is close to the food_fish_2093. Robot is close to the food_food_2094. Robot is close to the food_fruit_2095. Robot is close to the food_hamburger_2096. Robot is close to the food_ice_cream_2097. Robot is close to the food_jam_2098. Robot is close to the food_lemon_2100. Robot is close to the food_noodles_2101. Robot is close to the food_oatmeal_2102. Robot is close to the food_orange_2103. Robot is close to the food_onion_2104. Robot is close to the food_peanut_butter_2105. Robot is close to the food_pizza_2106. Robot is close to the food_potato_2107. Robot is close to the food_rice_2108. Robot is close to the food_salt_2109. Robot is close to the food_snack_2110. Robot is close to the food_sugar_2111. Robot is close to the food_turkey_2112. Robot is close to the food_vegetable_2113. Robot is close to the food_food_2001. Robot is close to the sauce_2148. Robot is close to the fridge_126. Grabbing food_steak_2080 by right hand. 
+##############################
+From agent.py
+walk_executor(fryingpan_2154)
+Robot find: Robot is close to the food_steak_2080. Robot is close to the fryingpan_2154. Robot is close to the stove_2135. 
+##############################
+From agent.py
+put_executor(food_steak_2080, fryingpan_2154)
+Robot find: Robot is close to the food_steak_2080. Robot is close to the fryingpan_2154. Robot is close to the stove_2135. food_steak_2080 is close fryingpan_2154. fryingpan_2154 is close food_steak_2080. food_steak_2080 is on fryingpan_2154. food_steak_2080 released by right hand. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: Yes
+The feedback instruction: None
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_knife_2035_around_knifeblock_76(knife:item):
+    goal: not unknown(knife)
+    body:
+        assert is_knife(knife)
+        bind knifeblock_instance:item where:
+            is_knifeblock(knifeblock_instance) and id[knifeblock_instance]==76
+        achieve close_char(char,knifeblock_instance)
+        if can_open(knifeblock_instance):
+            achieve_once open(knifeblock_instance)
+            exp(knife,knifeblock_instance)
+        else:
+            exp(knife,knifeblock_instance)
+    eff:
+        unknown[knife]=False
+        close[knife,knifeblock_instance]=True
+        close[knifeblock_instance,knife]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+
+behavior __goal__():
+    body:
+        bind steak: item where:
+            is_food_steak(steak) and on(steak, fryingpan_2154)
+        # Select the steak that is on the frying pan
+
+        bind knife: item where:
+            is_knife(knife)
+        # Select a knife, assuming it is available
+
+        walk_to(steak)
+        # Move closer to the steak to cut it
+
+        grab(knife)
+        cuts(steak)
+        # Grab the knife and cut the steak
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_knife_2122_around_knifeblock_76(knife:item):
+    goal: not unknown(knife)
+    body:
+        assert is_knife(knife)
+        bind knifeblock_instance:item where:
+            is_knifeblock(knifeblock_instance) and id[knifeblock_instance]==76
+        achieve close_char(char,knifeblock_instance)
+        if can_open(knifeblock_instance):
+            achieve_once open(knifeblock_instance)
+            exp(knife,knifeblock_instance)
+        else:
+            exp(knife,knifeblock_instance)
+    eff:
+        unknown[knife]=False
+        close[knife,knifeblock_instance]=True
+        close[knifeblock_instance,knife]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior grab_knife(knife:item):
+    body:
+        if not inhand(knife) and has_a_free_hand(char):
+            grab(knife) 
+
+behavior cut_steak(steak:item, knife:item):
+    body:
+        if not cut(steak):
+            cuts(steak)
+
+behavior __goal__():
+    body:
+        bind steak: item where:
+            is_food_steak(steak)
+        # Select the steak
+        bind knife: item where:
+            is_knife(knife)
+        # Select a knife
+        grab_knife(knife)
+        # Grab the knife
+        cut_steak(steak, knife)
+        # Cut the steak
+        empty_a_hand()
+        # Release the knife after cutting
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_knife_2035_around_knifeblock_76(knife:item):
+    goal: not unknown(knife)
+    body:
+        assert is_knife(knife)
+        bind knifeblock_instance:item where:
+            is_knifeblock(knifeblock_instance) and id[knifeblock_instance]==76
+        achieve close_char(char,knifeblock_instance)
+        if can_open(knifeblock_instance):
+            achieve_once open(knifeblock_instance)
+            exp(knife,knifeblock_instance)
+        else:
+            exp(knife,knifeblock_instance)
+    eff:
+        unknown[knife]=False
+        close[knife,knifeblock_instance]=True
+        close[knifeblock_instance,knife]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior cut_the_steak(steak:item):
+    body:
+        if not cut(steak):
+            cuts(steak)
+
+behavior __goal__():
+    body:
+        bind steak: item where:
+            is_food_steak(steak) and on(steak, fryingpan_2154)
+        cut_the_steak(steak)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_knife_2122_around_knifeblock_76(knife:item):
+    goal: not unknown(knife)
+    body:
+        assert is_knife(knife)
+        bind knifeblock_instance:item where:
+            is_knifeblock(knifeblock_instance) and id[knifeblock_instance]==76
+        achieve close_char(char,knifeblock_instance)
+        if can_open(knifeblock_instance):
+            achieve_once open(knifeblock_instance)
+            exp(knife,knifeblock_instance)
+        else:
+            exp(knife,knifeblock_instance)
+    eff:
+        unknown[knife]=False
+        close[knife,knifeblock_instance]=True
+        close[knifeblock_instance,knife]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior observe_food_steak():
+    body:
+        bind steak: item where:
+            is_food_steak(steak)
+        if not cut(steak):
+            cuts(steak)
+
+behavior __goal__():
+    body:
+        observe_food_steak()
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+behavior observe_food_steak():
+    body:
+        bind steak: item where:
+            is_food_steak(steak)
+        if not cut(steak):
+            cuts(steak)
+
+behavior __goal__():
+    body:
+        observe_food_steak()
+
+##############################
+From agent.py-> find a plan in act()
+grab_executor(food_steak_2080)walk_executor(cutting_board_2123)put_executor(food_steak_2080, cutting_board_2123)walk_executor(knifeblock_76)exp(knife_2122, knifeblock_76)walk_executor(knife_2122)grab_executor(knife_2122)walk_executor(food_steak_2080)cut_executor(food_steak_2080)
+##############################
+From agent.py
+grab_executor(food_steak_2080)
+Robot find: Robot is close to the food_steak_2080. Robot is close to the fryingpan_2154. Robot is close to the stove_2135. Grabbing food_steak_2080 by right hand. 
+##############################
+From agent.py
+walk_executor(cutting_board_2123)
+Robot find: Robot is close to the food_steak_2080. Robot is close to the cutting_board_2123. Robot is close to the kitchen_counter_119. 
+##############################
+From agent.py
+put_executor(food_steak_2080, cutting_board_2123)
+Robot find: Robot is close to the food_steak_2080. Robot is close to the cutting_board_2123. Robot is close to the kitchen_counter_119. cutting_board_2123 is close food_steak_2080. food_steak_2080 is close cutting_board_2123. food_steak_2080 is on cutting_board_2123. food_steak_2080 released by right hand. 
+##############################
+From agent.py
+walk_executor(knifeblock_76)
+Robot find: Robot is close to the knifeblock_76. 
+##############################
+From agent.py
+exp(knife_2122, knifeblock_76)
+Fail to find knife_2122 around knifeblock_76. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(cupboard_118)open_executor(cupboard_118)exp(knife_2122, cupboard_118)walk_executor(knife_2122)grab_executor(knife_2122)walk_executor(food_steak_2080)cut_executor(food_steak_2080)
+##############################
+From agent.py
+walk_executor(cupboard_118)
+Robot find: Robot is close to the cupboard_118. 
+##############################
+From agent.py
+open_executor(cupboard_118)
+Robot find: tea_2066, knife_2037, food_peanut_butter_2077, Robot is close to the tea_2066. Robot is close to the knife_2037. Robot is close to the cupboard_118. Robot is close to the food_peanut_butter_2077. cupboard_118 is opened. 
+##############################
+From agent.py
+exp(knife_2122, cupboard_118)
+Fail to find knife_2122 around cupboard_118. 
+##############################
+From agent.py-> find a plan in act()
+grab_executor(knife_2037)walk_executor(food_steak_2080)cut_executor(food_steak_2080)
+##############################
+From agent.py
+grab_executor(knife_2037)
+Robot find: Robot is close to the tea_2066. Robot is close to the knife_2037. Robot is close to the cupboard_118. Robot is close to the food_peanut_butter_2077. Grabbing knife_2037 by right hand. 
+##############################
+From agent.py
+walk_executor(food_steak_2080)
+Robot find: Robot is close to the knife_2037. Robot is close to the food_steak_2080. Robot is close to the cutting_board_2123. 
+##############################
+From agent.py
+cut_executor(food_steak_2080)
+Robot find: Robot is close to the knife_2037. Robot is close to the food_steak_2080. Robot is close to the cutting_board_2123. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: Yes
+The feedback instruction: None
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_knife_2122_around_dishwasher_129(knife:item):
+    goal: not unknown(knife)
+    body:
+        assert is_knife(knife)
+        bind dishwasher_instance:item where:
+            is_dishwasher(dishwasher_instance) and id[dishwasher_instance]==129
+        achieve close_char(char,dishwasher_instance)
+        if can_open(dishwasher_instance):
+            achieve_once open(dishwasher_instance)
+            exp(knife,dishwasher_instance)
+        else:
+            exp(knife,dishwasher_instance)
+    eff:
+        unknown[knife]=False
+        close[knife,dishwasher_instance]=True
+        close[dishwasher_instance,knife]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior put_steak_on_plate(steak: item, plate: item):
+    body:
+        if not on(steak, plate):
+            put_on(steak, plate) # Place the steak on the plate
+
+behavior __goal__():
+    body:
+        bind steak: item where:
+            is_food_steak(steak) and cut(steak)
+        # Select the steak that has been cut
+        
+        bind plate: item where:
+            is_plate(plate)
+        # Select a plate
+        
+        put_steak_on_plate(steak, plate)
+        # Execute the action of putting the steak on the plate
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_bread_2084_around_cupboard_117(food_bread:item):
+    goal: not unknown(food_bread)
+    body:
+        assert is_food_bread(food_bread)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==117
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(food_bread,cupboard_instance)
+        else:
+            exp(food_bread,cupboard_instance)
+    eff:
+        unknown[food_bread]=False
+        close[food_bread,cupboard_instance]=True
+        close[cupboard_instance,food_bread]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior put_steak_on_plate(steak:item, plate:item):
+    body:
+        if not on(steak, plate):
+            put_on(steak, plate)
+
+behavior __goal__():
+    body:
+        bind steak: item where:
+            is_food_steak(steak)
+        # Select the steak item
+        bind plate: item where:
+            is_plate(plate)
+        # Select a plate
+        put_steak_on_plate(steak, plate)
+        # Put the steak on the plate
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+behavior put_steak_on_plate(steak:item, plate:item):
+    body:
+        if not on(steak, plate):
+            put_on(steak, plate)
+
+behavior __goal__():
+    body:
+        bind steak: item where:
+            is_food_steak(steak)
+        # Select the steak item
+        bind plate: item where:
+            is_plate(plate)
+        # Select a plate
+        put_steak_on_plate(steak, plate)
+        # Put the steak on the plate
+
+##############################
+From agent.py-> find a plan in act()
+grab_executor(food_steak_2080)walk_executor(plate_2152)put_executor(food_steak_2080, plate_2152)
+##############################
+From agent.py
+grab_executor(food_steak_2080)
+Robot find: Robot is close to the knife_2037. Robot is close to the food_steak_2080. Robot is close to the cutting_board_2123. Grabbing food_steak_2080 by left hand. 
+##############################
+From agent.py
+walk_executor(plate_2152)
+Robot find: Robot is close to the knife_2037. Robot is close to the food_steak_2080. Robot is close to the plate_2152. Robot is close to the kitchen_counter_119. 
+##############################
+From agent.py
+put_executor(food_steak_2080, plate_2152)
+Robot find: Robot is close to the knife_2037. Robot is close to the food_steak_2080. Robot is close to the plate_2152. Robot is close to the kitchen_counter_119. food_steak_2080 is close plate_2152. plate_2152 is close food_steak_2080. food_steak_2080 is on plate_2152. food_steak_2080 released by left hand. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: Yes
+The feedback instruction: None
+##############################
+Task Summary:
+Task Goal:
+Fried a steak. Then cut it and put it on a plate.
+Action History:
+['walk_executor(kitchen_counter_122)', 'walk_executor(fryingpan_2154)', 'grab_executor(fryingpan_2154)', 'walk_executor(stove_2135)', 'put_executor(fryingpan_2154, stove_2135)', 'switchon_executor(stove_2135)', 'walk_executor(fridge_126)', 'switchoff_executor(fridge_126)', 'open_executor(fridge_126)', 'grab_executor(food_steak_2080)', 'walk_executor(fryingpan_2154)', 'put_executor(food_steak_2080, fryingpan_2154)', 'grab_executor(food_steak_2080)', 'walk_executor(cutting_board_2123)', 'put_executor(food_steak_2080, cutting_board_2123)', 'walk_executor(knifeblock_76)', 'walk_executor(cupboard_118)', 'open_executor(cupboard_118)', 'grab_executor(knife_2037)', 'walk_executor(food_steak_2080)', 'cut_executor(food_steak_2080)', 'grab_executor(food_steak_2080)', 'walk_executor(plate_2152)', 'put_executor(food_steak_2080, plate_2152)']
+Time info:
+Time consume: 233 seconds
+Exp_helper query times: 0
+Guidance query times: 0
+library scale: 0
+goal generate times: 12
+goal correct times: 0
+action_num: 24
+
+Task complete rate:
+Keystate: k1 - Requires: 8 steps
+Keystate: k2 - Requires: 8 steps
+Action Completion Rate: No actions required
+Scene_id: 1
+##############################

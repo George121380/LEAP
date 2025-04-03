@@ -174,7 +174,7 @@ class ActionLibrary:
     refine: bool = True
     loop_feedback: bool = False
     library: bool = True
-    extract_method: str = "whole" # Method to embed the library, options: "whole", "rag"
+    extract_method: str = "rag" # Method to embed the library, options: "whole", "rag"
     record_method: str = "actions" # Method to record the library, options: 'behavior', 'actions'
     human_guidance: str = "LLM" # Guidance type, options: "LLM", "Manual", "None"
     scene_id: int = 0

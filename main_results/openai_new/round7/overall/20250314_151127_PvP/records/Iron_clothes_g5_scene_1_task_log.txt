@@ -1,0 +1,1145 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Identify the shirt and the skirt that need ironing.', '2. Iron the shirt and the skirt.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_iron_2161_around_ironing_board_2144(iron:item):
+    goal: not unknown(iron)
+    body:
+        assert is_iron(iron)
+        bind ironing_board_instance:item where:
+            is_ironing_board(ironing_board_instance) and id[ironing_board_instance]==2144
+        achieve close_char(char,ironing_board_instance)
+        if can_open(ironing_board_instance):
+            achieve_once open(ironing_board_instance)
+            exp(iron,ironing_board_instance)
+        else:
+            exp(iron,ironing_board_instance)
+    eff:
+        unknown[iron]=False
+        close[iron,ironing_board_instance]=True
+        close[ironing_board_instance,iron]=True
+    
+
+behavior find_clothes_shirt_2158_around_basket_for_clothes_2078(clothes_shirt:item):
+    goal: not unknown(clothes_shirt)
+    body:
+        assert is_clothes_shirt(clothes_shirt)
+        bind basket_for_clothes_instance:item where:
+            is_basket_for_clothes(basket_for_clothes_instance) and id[basket_for_clothes_instance]==2078
+        achieve close_char(char,basket_for_clothes_instance)
+        if can_open(basket_for_clothes_instance):
+            achieve_once open(basket_for_clothes_instance)
+            exp(clothes_shirt,basket_for_clothes_instance)
+        else:
+            exp(clothes_shirt,basket_for_clothes_instance)
+    eff:
+        unknown[clothes_shirt]=False
+        close[clothes_shirt,basket_for_clothes_instance]=True
+        close[basket_for_clothes_instance,clothes_shirt]=True
+    
+
+behavior find_clothes_skirt_2160_around_basket_for_clothes_2078(clothes_skirt:item):
+    goal: not unknown(clothes_skirt)
+    body:
+        assert is_clothes_skirt(clothes_skirt)
+        bind basket_for_clothes_instance:item where:
+            is_basket_for_clothes(basket_for_clothes_instance) and id[basket_for_clothes_instance]==2078
+        achieve close_char(char,basket_for_clothes_instance)
+        if can_open(basket_for_clothes_instance):
+            achieve_once open(basket_for_clothes_instance)
+            exp(clothes_skirt,basket_for_clothes_instance)
+        else:
+            exp(clothes_skirt,basket_for_clothes_instance)
+    eff:
+        unknown[clothes_skirt]=False
+        close[clothes_skirt,basket_for_clothes_instance]=True
+        close[basket_for_clothes_instance,clothes_skirt]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def has_clothes_in_hand_or_skirt(location:item):
+    # Function to check if there is a shirt or skirt that needs ironing at the location
+    symbol has_clothes=exists c: item : (is_clothes_shirt(c) or is_clothes_skirt(c)) and inside(c, location)
+    return has_clothes
+
+behavior __goal__():
+    body:
+        if exists location: item : has_clothes_in_hand_or_skirt(location):
+            # If you have already identified a location with the shirt or skirt, go to that place
+            bind location: item where:
+                has_clothes_in_hand_or_skirt(location)
+            walk_to(location)
+        else:
+            # If no preidentified location is found, check unvisited locations to find the clothes
+            foreach location: item:
+                if not visited(location):
+                    observe(location, "Check for the presence of a shirt or skirt needing ironing")
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_iron_2161_around_ironing_board_2144(iron:item):
+    goal: not unknown(iron)
+    body:
+        assert is_iron(iron)
+        bind ironing_board_instance:item where:
+            is_ironing_board(ironing_board_instance) and id[ironing_board_instance]==2144
+        achieve close_char(char,ironing_board_instance)
+        if can_open(ironing_board_instance):
+            achieve_once open(ironing_board_instance)
+            exp(iron,ironing_board_instance)
+        else:
+            exp(iron,ironing_board_instance)
+    eff:
+        unknown[iron]=False
+        close[iron,ironing_board_instance]=True
+        close[ironing_board_instance,iron]=True
+    
+
+behavior find_clothes_shirt_2158_around_basket_for_clothes_2078(clothes_shirt:item):
+    goal: not unknown(clothes_shirt)
+    body:
+        assert is_clothes_shirt(clothes_shirt)
+        bind basket_for_clothes_instance:item where:
+            is_basket_for_clothes(basket_for_clothes_instance) and id[basket_for_clothes_instance]==2078
+        achieve close_char(char,basket_for_clothes_instance)
+        if can_open(basket_for_clothes_instance):
+            achieve_once open(basket_for_clothes_instance)
+            exp(clothes_shirt,basket_for_clothes_instance)
+        else:
+            exp(clothes_shirt,basket_for_clothes_instance)
+    eff:
+        unknown[clothes_shirt]=False
+        close[clothes_shirt,basket_for_clothes_instance]=True
+        close[basket_for_clothes_instance,clothes_shirt]=True
+    
+
+behavior find_clothes_skirt_2160_around_basket_for_clothes_2078(clothes_skirt:item):
+    goal: not unknown(clothes_skirt)
+    body:
+        assert is_clothes_skirt(clothes_skirt)
+        bind basket_for_clothes_instance:item where:
+            is_basket_for_clothes(basket_for_clothes_instance) and id[basket_for_clothes_instance]==2078
+        achieve close_char(char,basket_for_clothes_instance)
+        if can_open(basket_for_clothes_instance):
+            achieve_once open(basket_for_clothes_instance)
+            exp(clothes_skirt,basket_for_clothes_instance)
+        else:
+            exp(clothes_skirt,basket_for_clothes_instance)
+    eff:
+        unknown[clothes_skirt]=False
+        close[clothes_skirt,basket_for_clothes_instance]=True
+        close[basket_for_clothes_instance,clothes_skirt]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_identified_shirt_and_skirt(shirt:item, skirt:item):
+    # Function to check if the shirt and skirt have been identified
+    return visited(shirt) and visited(skirt)
+
+behavior __goal__():
+    body:
+        bind shirt: item where:
+            is_clothes_shirt(shirt)
+        # Select the shirt from items
+
+        bind skirt: item where:
+            is_clothes_skirt(skirt)
+        # Select the skirt from items
+
+        if not is_identified_shirt_and_skirt(shirt, skirt):
+            if not visited(shirt):
+                observe(shirt, "Identify the shirt that needs ironing")
+            if not visited(skirt):
+                observe(skirt, "Identify the skirt that needs ironing")
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+ 
+def is_identified_shirt_and_skirt(shirt:item, skirt:item):
+    # Function to check if the shirt and skirt have been identified
+    return visited(shirt) and visited(skirt)
+
+behavior __goal__():
+    body:
+        bind shirt: item where:
+            is_clothes_shirt(shirt)
+        # Select the shirt from items
+
+        bind skirt: item where:
+            is_clothes_skirt(skirt)
+        # Select the skirt from items
+
+        if not is_identified_shirt_and_skirt(shirt, skirt):
+            if not visited(shirt):
+                observe(shirt, "Identify the shirt that needs ironing")
+            if not visited(skirt):
+                observe(skirt, "Identify the skirt that needs ironing")
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(basket_for_clothes_2078)exp(clothes_shirt_2158, basket_for_clothes_2078)walk_executor(clothes_shirt_2158)obs(clothes_shirt_2158, Identify the shirt that needs ironing)walk_executor(basket_for_clothes_2078)exp(clothes_skirt_2160, basket_for_clothes_2078)walk_executor(clothes_skirt_2160)obs(clothes_skirt_2160, Identify the skirt that needs ironing)
+##############################
+From agent.py
+walk_executor(basket_for_clothes_2078)
+Robot find: clothes_pants_2157, clothes_shirt_2158, clothes_socks_2159, clothes_skirt_2160, Robot is close to the clothes_pants_2157. Robot is close to the clothes_shirt_2158. Robot is close to the clothes_socks_2159. Robot is close to the clothes_skirt_2160. Robot is close to the basket_for_clothes_2078. 
+##############################
+From agent.py
+exp(clothes_shirt_2158, basket_for_clothes_2078)
+Find clothes_shirt_2158. 
+##############################
+From agent.py-> find a plan in act()
+obs(clothes_shirt_2158, Identify the shirt that needs ironing)obs(clothes_skirt_2160, Identify the skirt that needs ironing)
+##############################
+From agent.py
+obs(clothes_shirt_2158, Identify the shirt that needs ironing)
+Get this information:  clothes_shirt_2158 is inside dining_room_41. clothes_shirt_2158 is inside basket_for_clothes_2078. clothes_shirt_2158 is close to basket_for_clothes_2078. clothes_shirt_2158 is close to character_240. clothes_shirt_2158 is DIRTY.
+##############################
+From agent.py
+obs(clothes_skirt_2160, Identify the skirt that needs ironing)
+Get this information:  clothes_skirt_2160 is inside dining_room_41. clothes_skirt_2160 is inside basket_for_clothes_2078. clothes_skirt_2160 is close to basket_for_clothes_2078. clothes_skirt_2160 is close to character_240. clothes_skirt_2160 is DIRTY.
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: Yes
+The feedback instruction: None
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_iron_2161_around_ironing_board_2144(iron:item):
+    goal: not unknown(iron)
+    body:
+        assert is_iron(iron)
+        bind ironing_board_instance:item where:
+            is_ironing_board(ironing_board_instance) and id[ironing_board_instance]==2144
+        achieve close_char(char,ironing_board_instance)
+        if can_open(ironing_board_instance):
+            achieve_once open(ironing_board_instance)
+            exp(iron,ironing_board_instance)
+        else:
+            exp(iron,ironing_board_instance)
+    eff:
+        unknown[iron]=False
+        close[iron,ironing_board_instance]=True
+        close[ironing_board_instance,iron]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior prepare_iron(shirt: item, skirt: item, iron: item, ironing_board: item):
+    body:
+        if not plugged(iron):
+            plugin(iron)  # Plug in the iron if it is not plugged
+
+        if is_off(iron) and has_switch(iron):
+            switch_on(iron)  # Turn on the iron
+
+        if not inhand(shirt):
+            grab(shirt)
+        put_on(shirt, ironing_board)  # Place the shirt on the ironing board
+
+        if not inhand(skirt):
+            grab(skirt)
+        put_on(skirt, ironing_board)  # Place the skirt on the ironing board
+
+behavior iron_items(iron: item, ironing_board: item, shirt: item, skirt: item):
+    body:
+        if on(shirt, ironing_board):
+            touch(shirt)
+        if on(skirt, ironing_board):
+            touch(skirt)
+
+behavior __goal__():
+    body:
+        bind shirt: item where:
+            is_clothes_shirt(shirt)
+        # Select the shirt
+
+        bind skirt: item where:
+            is_clothes_skirt(skirt)
+        # Select the skirt
+
+        bind iron: item where:
+            is_iron(iron)
+        # Select the iron
+
+        bind ironing_board: item where:
+            is_ironing_board(ironing_board)
+        # Select the ironing board
+
+        prepare_iron(shirt, skirt, iron, ironing_board)
+         Prepare and heat the iron
+
+        iron_items(iron, ironing_board, shirt, skirt)
+        # Iron the shirt and skirt
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_iron_2161_around_ironing_board_2144(iron:item):
+    goal: not unknown(iron)
+    body:
+        assert is_iron(iron)
+        bind ironing_board_instance:item where:
+            is_ironing_board(ironing_board_instance) and id[ironing_board_instance]==2144
+        achieve close_char(char,ironing_board_instance)
+        if can_open(ironing_board_instance):
+            achieve_once open(ironing_board_instance)
+            exp(iron,ironing_board_instance)
+        else:
+            exp(iron,ironing_board_instance)
+    eff:
+        unknown[iron]=False
+        close[iron,ironing_board_instance]=True
+        close[ironing_board_instance,iron]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior grab_and_iron(clothes:item, iron:item):
+    body:
+        if not inhand(clothes):
+            grab(clothes)
+        if is_off(iron):
+            switch_on(iron)
+        if inhand(clothes) and is_on(iron):
+            walk_to(iron)
+            touch(iron) # simulate ironing
+
+behavior __goal__():
+    body:
+        bind shirt: item where:
+            is_clothes_shirt(shirt) and id[shirt] == 2158
+        # Select the shirt that needs ironing
+
+        bind skirt: item where:
+            is_clothes_skirt(skirt) and id[skirt] == 2160
+        # Select the skirt that needs ironing
+
+        bind iron: item where:
+            is_iron(iron)
+        # Select an iron
+
+        grab_and_iron(shirt, iron)
+        # Iron the shirt
+
+        grab_and_iron(skirt, iron)
+        # Iron the skirt
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+behavior grab_and_iron(clothes:item, iron:item):
+    body:
+        if not inhand(clothes):
+            grab(clothes)
+        if is_off(iron):
+            switch_on(iron)
+        if inhand(clothes) and is_on(iron):
+            walk_to(iron)
+            touch(iron) # simulate ironing
+
+behavior __goal__():
+    body:
+        bind shirt: item where:
+            is_clothes_shirt(shirt) and id[shirt] == 2158
+        # Select the shirt that needs ironing
+
+        bind skirt: item where:
+            is_clothes_skirt(skirt) and id[skirt] == 2160
+        # Select the skirt that needs ironing
+
+        bind iron: item where:
+            is_iron(iron)
+        # Select an iron
+
+        grab_and_iron(shirt, iron)
+        # Iron the shirt
+
+        grab_and_iron(skirt, iron)
+        # Iron the skirt
+
+##############################
+From agent.py-> find a plan in act()
+grab_executor(clothes_shirt_2158)grab_executor(clothes_skirt_2160)
+##############################
+From agent.py
+grab_executor(clothes_shirt_2158)
+Robot find: Robot is close to the clothes_pants_2157. Robot is close to the clothes_shirt_2158. Robot is close to the clothes_socks_2159. Robot is close to the clothes_skirt_2160. Robot is close to the basket_for_clothes_2078. Grabbing clothes_shirt_2158 by right hand. 
+##############################
+From agent.py
+grab_executor(clothes_skirt_2160)
+Robot find: Robot is close to the clothes_pants_2157. Robot is close to the clothes_shirt_2158. Robot is close to the clothes_socks_2159. Robot is close to the clothes_skirt_2160. Robot is close to the basket_for_clothes_2078. Grabbing clothes_skirt_2160 by left hand. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: No
+The feedback instruction: You need to switch on the iron, walk to it, and then simulate ironing the shirt and the skirt by touching the iron.
+##############################
+From agent.py
+Human Instruction: You need to switch on the iron, walk to it, and then simulate ironing the shirt and the skirt by touching the iron.
+
+The actions you have taken:
+Action 1: Walk to basket_for_clothes_2078.
+Action 2: look for clothes_shirt_2158 around basket_for_clothes_2078.
+Action 3: Observe around clothes_shirt_2158 with the question of Identify the shirt that needs ironing.
+Action 4: Observe around clothes_skirt_2160 with the question of Identify the skirt that needs ironing.
+Action 5: Grab clothes_shirt_2158.
+Action 6: Grab clothes_skirt_2160.
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_iron_2161_around_ironing_board_2144(iron:item):
+    goal: not unknown(iron)
+    body:
+        assert is_iron(iron)
+        bind ironing_board_instance:item where:
+            is_ironing_board(ironing_board_instance) and id[ironing_board_instance]==2144
+        achieve close_char(char,ironing_board_instance)
+        if can_open(ironing_board_instance):
+            achieve_once open(ironing_board_instance)
+            exp(iron,ironing_board_instance)
+        else:
+            exp(iron,ironing_board_instance)
+    eff:
+        unknown[iron]=False
+        close[iron,ironing_board_instance]=True
+        close[ironing_board_instance,iron]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+
+def is_iron_ready_to_use(iron: item):
+    # Check if the iron is plugged in and off
+    return plugged(iron) and is_off(iron)
+
+behavior prepare_clothes_for_ironing(clothes: item, ironing_board: item):
+    body:
+        if not on(clothes, ironing_board):
+            put_on(clothes, ironing_board)
+
+behavior iron_clothes(iron: item, clothes: item):
+    body:
+        if is_off(iron):
+            switch_on(iron) # Turn on the iron
+        if is_on(iron):
+            touch(iron) # Simulate ironing by touching
+
+behavior __goal__():
+    body:
+        bind ironing_board: item where:
+            is_ironing_board(ironing_board)
+        # Select the ironing board
+
+        bind shirt: item where:
+            is_clothes_shirt(shirt)
+        # Select the shirt
+
+        bind skirt: item where:
+            is_clothes_skirt(skirt)
+        # Select the skirt
+
+        bind iron: item where:
+            is_iron(iron)
+        # Select the iron
+
+        if not is_iron_ready_to_use(iron):
+            plugin(iron)
+
+        prepare_clothes_for_ironing(shirt, ironing_board)
+        prepare_clothes_for_ironing(skirt, ironing_board)
+
+        iron_clothes(iron, shirt)
+        iron_clothes(iron, skirt)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+
+def is_iron_ready_to_use(iron: item):
+    # Check if the iron is plugged in and off
+    return plugged(iron) and is_off(iron)
+
+behavior prepare_clothes_for_ironing(clothes: item, ironing_board: item):
+    body:
+        if not on(clothes, ironing_board):
+            put_on(clothes, ironing_board)
+
+behavior iron_clothes(iron: item, clothes: item):
+    body:
+        if is_off(iron):
+            switch_on(iron) # Turn on the iron
+        if is_on(iron):
+            touch(iron) # Simulate ironing by touching
+
+behavior __goal__():
+    body:
+        bind ironing_board: item where:
+            is_ironing_board(ironing_board)
+        # Select the ironing board
+
+        bind shirt: item where:
+            is_clothes_shirt(shirt)
+        # Select the shirt
+
+        bind skirt: item where:
+            is_clothes_skirt(skirt)
+        # Select the skirt
+
+        bind iron: item where:
+            is_iron(iron)
+        # Select the iron
+
+        if not is_iron_ready_to_use(iron):
+            plugin(iron)
+
+        prepare_clothes_for_ironing(shirt, ironing_board)
+        prepare_clothes_for_ironing(skirt, ironing_board)
+
+        iron_clothes(iron, shirt)
+        iron_clothes(iron, skirt)
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(ironing_board_2144)exp(iron_2161, ironing_board_2144)walk_executor(kitchen_counter_119)put_executor(clothes_shirt_2158, kitchen_counter_119)walk_executor(iron_2161)plugin_executor(iron_2161)walk_executor(clothes_shirt_2158)grab_executor(clothes_shirt_2158)walk_executor(ironing_board_2144)put_executor(clothes_shirt_2158, ironing_board_2144)put_executor(clothes_skirt_2160, ironing_board_2144)
+##############################
+From agent.py
+walk_executor(ironing_board_2144)
+Robot find: Robot is close to the clothes_shirt_2158. Robot is close to the clothes_skirt_2160. Robot is close to the ironing_board_2144. 
+##############################
+From agent.py
+exp(iron_2161, ironing_board_2144)
+Fail to find iron_2161 around ironing_board_2144. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(cutting_board_2123)exp(iron_2161, cutting_board_2123)walk_executor(kitchen_counter_119)put_executor(clothes_shirt_2158, kitchen_counter_119)walk_executor(iron_2161)plugin_executor(iron_2161)walk_executor(clothes_shirt_2158)grab_executor(clothes_shirt_2158)walk_executor(ironing_board_2144)put_executor(clothes_shirt_2158, ironing_board_2144)put_executor(clothes_skirt_2160, ironing_board_2144)
+##############################
+From agent.py
+walk_executor(cutting_board_2123)
+Robot find: fork_2150, bowl_2142, food_salt_2041, pot_78, pot_2138, bowl_2140, bowl_2141, fork_2151, plate_2152, Robot is close to the clothes_shirt_2158. Robot is close to the clothes_skirt_2160. Robot is close to the cutting_board_2123. Robot is close to the kitchen_counter_119. 
+##############################
+From agent.py
+exp(iron_2161, cutting_board_2123)
+Fail to find iron_2161 around cutting_board_2123. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(door_62)exp(iron_2161, door_62)walk_executor(kitchen_counter_119)put_executor(clothes_shirt_2158, kitchen_counter_119)walk_executor(iron_2161)plugin_executor(iron_2161)walk_executor(clothes_shirt_2158)grab_executor(clothes_shirt_2158)walk_executor(ironing_board_2144)put_executor(clothes_shirt_2158, ironing_board_2144)put_executor(clothes_skirt_2160, ironing_board_2144)
+##############################
+From agent.py
+walk_executor(door_62)
+Robot find: phone_71, drawing_111, Robot is close to the clothes_shirt_2158. Robot is close to the clothes_skirt_2160. Robot is close to the door_62. 
+##############################
+From agent.py
+exp(iron_2161, door_62)
+Fail to find iron_2161 around door_62. 
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_iron_2161_around_faucet_121(iron:item):
+    goal: not unknown(iron)
+    body:
+        assert is_iron(iron)
+        bind faucet_instance:item where:
+            is_faucet(faucet_instance) and id[faucet_instance]==121
+        achieve close_char(char,faucet_instance)
+        if can_open(faucet_instance):
+            achieve_once open(faucet_instance)
+            exp(iron,faucet_instance)
+        else:
+            exp(iron,faucet_instance)
+    eff:
+        unknown[iron]=False
+        close[iron,faucet_instance]=True
+        close[faucet_instance,iron]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior locate_and_smooth_item_for_ironing(item: item, iron: item):
+    body:
+        if not close_char(char, iron):
+            walk_to(iron)
+        if is_off(iron):
+            switch_on(iron)
+        if not close_char(char, item):
+            walk_to(item)
+        touch(iron)
+
+behavior __goal__():
+    body:
+        bind shirt: item where:
+            is_clothes_shirt(shirt) and id[shirt] == 2158
+        # Select the shirt that was previously identified
+
+        bind skirt: item where:
+            is_clothes_skirt(skirt) and id[skirt] == 2160
+        # Select the skirt that was previously identified
+
+        bind iron: item where:
+            is_iron(iron)
+        # Locate the iron at its last known location
+
+        # First locate and smooth the shirt using the iron
+        locate_and_smooth_item_for_ironing(shirt, iron)
+
+        # Then locate and smooth the skirt using the iron
+        locate_and_smooth_item_for_ironing(skirt, iron)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+behavior locate_and_smooth_item_for_ironing(item: item, iron: item):
+    body:
+        if not close_char(char, iron):
+            walk_to(iron)
+        if is_off(iron):
+            switch_on(iron)
+        if not close_char(char, item):
+            walk_to(item)
+        touch(iron)
+
+behavior __goal__():
+    body:
+        bind shirt: item where:
+            is_clothes_shirt(shirt) and id[shirt] == 2158
+        # Select the shirt that was previously identified
+
+        bind skirt: item where:
+            is_clothes_skirt(skirt) and id[skirt] == 2160
+        # Select the skirt that was previously identified
+
+        bind iron: item where:
+            is_iron(iron)
+        # Locate the iron at its last known location
+
+        # First locate and smooth the shirt using the iron
+        locate_and_smooth_item_for_ironing(shirt, iron)
+
+        # Then locate and smooth the skirt using the iron
+        locate_and_smooth_item_for_ironing(skirt, iron)
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(faucet_121)exp(iron_2161, faucet_121)walk_executor(iron_2161)walk_executor(clothes_shirt_2158)walk_executor(iron_2161)touch_executor(iron_2161)walk_executor(clothes_skirt_2160)walk_executor(iron_2161)touch_executor(iron_2161)
+##############################
+From agent.py
+walk_executor(faucet_121)
+Robot find: Robot is close to the clothes_shirt_2158. Robot is close to the clothes_skirt_2160. Robot is close to the faucet_121. Robot is close to the kitchen_counter_119. 
+##############################
+From agent.py
+exp(iron_2161, faucet_121)
+Fail to find iron_2161 around faucet_121. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(kitchen_counter_122)exp(iron_2161, kitchen_counter_122)walk_executor(iron_2161)walk_executor(clothes_shirt_2158)walk_executor(iron_2161)touch_executor(iron_2161)walk_executor(clothes_skirt_2160)walk_executor(iron_2161)touch_executor(iron_2161)
+##############################
+From agent.py
+walk_executor(kitchen_counter_122)
+Robot find: spectacles_2153, fryingpan_2154, Robot is close to the clothes_shirt_2158. Robot is close to the clothes_skirt_2160. Robot is close to the kitchen_counter_122. 
+##############################
+From agent.py
+exp(iron_2161, kitchen_counter_122)
+Fail to find iron_2161 around kitchen_counter_122. 
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_iron_2161_around_washing_machine_2079(iron:item):
+    goal: not unknown(iron)
+    body:
+        assert is_iron(iron)
+        bind washing_machine_instance:item where:
+            is_washing_machine(washing_machine_instance) and id[washing_machine_instance]==2079
+        achieve close_char(char,washing_machine_instance)
+        if can_open(washing_machine_instance):
+            achieve_once open(washing_machine_instance)
+            exp(iron,washing_machine_instance)
+        else:
+            exp(iron,washing_machine_instance)
+    eff:
+        unknown[iron]=False
+        close[iron,washing_machine_instance]=True
+        close[washing_machine_instance,iron]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior search_for_iron():
+    # Function to search multiple locations for the iron
+    body:
+        foreach location: item:
+            if is_ironing_board(location) or is_cutting_board(location) or is_doorjamb(location) or is_faucet(location) or is_kitchen_counter(location):
+                if not visited(location):
+                    observe(location, "Look for iron_2161 around")
+
+behavior prepare_for_ironing(shirt:item, skirt:item, ironing_board:item):
+    # Function to move to ironing board and iron clothes
+    body:
+        walk_to(ironing_board)
+        put_on(shirt, ironing_board)
+        put_on(skirt, ironing_board)
+
+behavior iron_clothes(iron:item, shirt:item, skirt:item):
+    # Function to simulate ironing clothes
+    body:
+        if close_char(iron, shirt):
+            touch(iron)
+        if close_char(iron, skirt):
+            touch(iron)
+
+behavior __goal__():
+    body:
+        bind shirt: item where:
+            is_clothes_shirt(shirt) and id[shirt] == 2158
+        bind skirt: item where:
+            is_clothes_skirt(skirt) and id[skirt] == 2160
+
+        bind ironing_board: item where:
+            is_ironing_board(ironing_board) and id[ironing_board] == 2144
+        
+        prepare_for_ironing(shirt, skirt, ironing_board)
+
+        if exists iron: item : is_iron(iron) and not on(iron, ironing_board):
+            bind iron: item where:
+                is_iron(iron)
+            iron_clothes(iron, shirt, skirt)
+
+        else:
+            search_for_iron()
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_iron_2161_around_bathroom_cabinet_17(iron:item):
+    goal: not unknown(iron)
+    body:
+        assert is_iron(iron)
+        bind bathroom_cabinet_instance:item where:
+            is_bathroom_cabinet(bathroom_cabinet_instance) and id[bathroom_cabinet_instance]==17
+        achieve close_char(char,bathroom_cabinet_instance)
+        if can_open(bathroom_cabinet_instance):
+            achieve_once open(bathroom_cabinet_instance)
+            exp(iron,bathroom_cabinet_instance)
+        else:
+            exp(iron,bathroom_cabinet_instance)
+    eff:
+        unknown[iron]=False
+        close[iron,bathroom_cabinet_instance]=True
+        close[bathroom_cabinet_instance,iron]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior switch_on_iron(iron:item):
+    body:
+        if is_off(iron):
+            switch_on(iron)
+
+behavior simulate_ironing(clothes:item, iron:item):
+    body:
+        if is_clothes(clothes):
+            touch(iron)
+
+behavior __goal__():
+    body:
+        bind iron: item where:
+            is_iron(iron)
+        
+        walk_to(iron)
+        switch_on_iron(iron)
+
+        bind shirt: item where:
+            is_clothes_shirt(shirt) and id[shirt] == 2158
+
+        bind skirt: item where:
+            is_clothes_skirt(skirt) and id[skirt] == 2160
+
+        simulate_ironing(shirt, iron)
+        simulate_ironing(skirt, iron)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_iron_2161_around_washing_machine_2079(iron:item):
+    goal: not unknown(iron)
+    body:
+        assert is_iron(iron)
+        bind washing_machine_instance:item where:
+            is_washing_machine(washing_machine_instance) and id[washing_machine_instance]==2079
+        achieve close_char(char,washing_machine_instance)
+        if can_open(washing_machine_instance):
+            achieve_once open(washing_machine_instance)
+            exp(iron,washing_machine_instance)
+        else:
+            exp(iron,washing_machine_instance)
+    eff:
+        unknown[iron]=False
+        close[iron,washing_machine_instance]=True
+        close[washing_machine_instance,iron]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior locate_and_iron_clothes(shirt: item, skirt: item, iron: item):
+    body:
+        walk_to(iron)
+        # Move close to the iron to begin the ironing process
+        
+        if is_off(iron) and has_switch(iron):
+            switch_on(iron)
+            # Turn on the iron if its off and has a switch
+            
+        if not inhand(shirt):
+            grab(shirt)
+        touch(iron)
+        # Simulate ironing the shirt by touching it with the iron
+
+        if not inhand(skirt):
+            grab(skirt)
+        touch(iron)
+        # Simulate ironing the skirt by touching it with the iron
+
+behavior __goal__():
+    body:
+        bind shirt: item where:
+            is_clothes_shirt(shirt) and id[shirt] == 2158
+        # Select the shirt with ID 2158
+
+        bind skirt: item where:
+            is_clothes_skirt(skirt) and id[skirt] == 2160
+        # Select the skirt with ID 2160
+
+        bind ironing_board: item where:
+            is_ironing_board(ironing_board) and id[ironing_board] == 2144
+        # Select the ironing board with ID 2144
+
+        bind iron: item where:
+            is_iron(iron) and id[iron] == 2161
+        # Select the iron with ID 2161
+
+        locate_and_iron_clothes(shirt, skirt, iron)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_iron_2161_around_washing_machine_2079(iron:item):
+    goal: not unknown(iron)
+    body:
+        assert is_iron(iron)
+        bind washing_machine_instance:item where:
+            is_washing_machine(washing_machine_instance) and id[washing_machine_instance]==2079
+        achieve close_char(char,washing_machine_instance)
+        if can_open(washing_machine_instance):
+            achieve_once open(washing_machine_instance)
+            exp(iron,washing_machine_instance)
+        else:
+            exp(iron,washing_machine_instance)
+    eff:
+        unknown[iron]=False
+        close[iron,washing_machine_instance]=True
+        close[washing_machine_instance,iron]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior locate_and_iron_clothes(iron: item, clothes: item):
+    body:
+        walk_to(iron)
+        if not is_on(iron):
+            switch_on(iron)
+        touch(clothes)
+
+behavior __goal__():
+    body:
+        bind iron: item where:
+            is_iron(iron)
+        # Select the iron
+        
+        bind shirt: item where:
+            is_clothes_shirt(shirt)
+        # Select the shirt
+        
+        bind skirt: item where:
+            is_clothes_skirt(skirt)
+        # Select the skirt
+        
+        locate_and_iron_clothes(iron, shirt)
+        # Iron the shirt
+
+        locate_and_iron_clothes(iron, skirt)
+        # Iron the skirt
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_iron_2161_around_bathroom_counter_18(iron:item):
+    goal: not unknown(iron)
+    body:
+        assert is_iron(iron)
+        bind bathroom_counter_instance:item where:
+            is_bathroom_counter(bathroom_counter_instance) and id[bathroom_counter_instance]==18
+        achieve close_char(char,bathroom_counter_instance)
+        if can_open(bathroom_counter_instance):
+            achieve_once open(bathroom_counter_instance)
+            exp(iron,bathroom_counter_instance)
+        else:
+            exp(iron,bathroom_counter_instance)
+    eff:
+        unknown[iron]=False
+        close[iron,bathroom_counter_instance]=True
+        close[bathroom_counter_instance,iron]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior find_and_prepare_iron(iron:item):
+    body:
+        walk_to(iron)
+        # Move to the iron
+
+        if is_off(iron):
+            switch_on(iron)
+        # Turn on the iron if it is off
+
+behavior simulate_ironing_clothes(shirt:item, skirt:item, iron:item):
+    body:
+        if close_char(char, iron):
+            if not clean(shirt):
+                touch(iron)
+            if not clean(skirt):
+                touch(iron)
+
+behavior __goal__():
+    body:
+        bind iron: item where:
+            is_iron(iron)
+        # Select the iron
+
+        bind shirt: item where:
+            is_clothes_shirt(shirt) and id[shirt] == 2158
+        # Select clothes_shirt_2158
+
+        bind skirt: item where:
+            is_clothes_skirt(skirt) and id[skirt] == 2160
+        # Select clothes_skirt_2160
+        
+        find_and_prepare_iron(iron)
+        simulate_ironing_clothes(shirt, skirt, iron)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+behavior find_and_prepare_iron(iron:item):
+    body:
+        walk_to(iron)
+        # Move to the iron
+
+        if is_off(iron):
+            switch_on(iron)
+        # Turn on the iron if it is off
+
+behavior simulate_ironing_clothes(shirt:item, skirt:item, iron:item):
+    body:
+        if close_char(char, iron):
+            if not clean(shirt):
+                touch(iron)
+            if not clean(skirt):
+                touch(iron)
+
+behavior __goal__():
+    body:
+        bind iron: item where:
+            is_iron(iron)
+        # Select the iron
+
+        bind shirt: item where:
+            is_clothes_shirt(shirt) and id[shirt] == 2158
+        # Select clothes_shirt_2158
+
+        bind skirt: item where:
+            is_clothes_skirt(skirt) and id[skirt] == 2160
+        # Select clothes_skirt_2160
+        
+        find_and_prepare_iron(iron)
+        simulate_ironing_clothes(shirt, skirt, iron)
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(bathroom_counter_18)exp(iron_2161, bathroom_counter_18)walk_executor(iron_2161)touch_executor(iron_2161)touch_executor(iron_2161)
+##############################
+From agent.py
+walk_executor(bathroom_counter_18)
+Robot find: mat_32, phone_2029, drawing_33, Robot is close to the clothes_shirt_2158. Robot is close to the clothes_skirt_2160. Robot is close to the bathroom_counter_18. 
+##############################
+From agent.py -> query_LLM_human
+Record from func query_LLM_human in agent.py
+Question: Can you help me to find iron_2161 ?
+Answer: The target item, iron_2161, is located inside dining_room_41. To find the iron_2161, look for a bowl labeled bowl_2142, as the iron_2161 is on top of it. Start by locating bowl_2142 and you will find iron_2161 directly on it.
+Re-decompose: None
+
+##############################
+From agent.py
+Human Instruction: You need to switch on the iron, walk to it, and then simulate ironing the shirt and the skirt by touching the iron.
+The target item, iron_2161, is located inside dining_room_41. To find the iron_2161, look for a bowl labeled bowl_2142, as the iron_2161 is on top of it. Start by locating bowl_2142 and you will find iron_2161 directly on it.
+
+The actions you have taken:
+Action 1: Walk to basket_for_clothes_2078.
+Action 2: look for clothes_shirt_2158 around basket_for_clothes_2078.
+Action 3: Observe around clothes_shirt_2158 with the question of Identify the shirt that needs ironing.
+Action 4: Observe around clothes_skirt_2160 with the question of Identify the skirt that needs ironing.
+Action 5: Grab clothes_shirt_2158.
+Action 6: Grab clothes_skirt_2160.
+Action 7: Walk to ironing_board_2144.
+Action 8: look for iron_2161 around ironing_board_2144.
+Action 9: Walk to cutting_board_2123.
+Action 10: look for iron_2161 around cutting_board_2123.
+Action 11: Walk to door_62.
+Action 12: look for iron_2161 around door_62.
+Action 13: Walk to faucet_121.
+Action 14: look for iron_2161 around faucet_121.
+Action 15: Walk to kitchen_counter_122.
+Action 16: look for iron_2161 around kitchen_counter_122.
+Action 17: Walk to bathroom_counter_18.
+
+##############################
+From agent.py
+exp(iron_2161, bathroom_counter_18)
+Fail to find iron_2161 around bathroom_counter_18. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(bowl_2142)exp(iron_2161, bowl_2142)walk_executor(iron_2161)touch_executor(iron_2161)touch_executor(iron_2161)
+##############################
+From agent.py
+walk_executor(bowl_2142)
+Robot find: iron_2161, Robot is close to the clothes_shirt_2158. Robot is close to the clothes_skirt_2160. Robot is close to the bowl_2142. Robot is close to the kitchen_counter_119. 
+##############################
+From agent.py
+exp(iron_2161, bowl_2142)
+Find iron_2161. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(iron_2161)walk_executor(kitchen_counter_119)put_executor(clothes_shirt_2158, kitchen_counter_119)walk_executor(iron_2161)plugin_executor(iron_2161)switchon_executor(iron_2161)touch_executor(iron_2161)touch_executor(iron_2161)
+##############################
+From agent.py
+walk_executor(iron_2161)
+Robot find: Robot is close to the clothes_shirt_2158. Robot is close to the clothes_skirt_2160. Robot is close to the bowl_2142. Robot is close to the iron_2161. 
+##############################
+From agent.py
+walk_executor(kitchen_counter_119)
+Robot find: Robot is close to the clothes_shirt_2158. Robot is close to the clothes_skirt_2160. Robot is close to the kitchen_counter_119. 
+##############################
+From agent.py
+put_executor(clothes_shirt_2158, kitchen_counter_119)
+Robot find: Robot is close to the clothes_shirt_2158. Robot is close to the clothes_skirt_2160. Robot is close to the kitchen_counter_119. kitchen_counter_119 is close clothes_shirt_2158. clothes_shirt_2158 is close kitchen_counter_119. clothes_shirt_2158 is on kitchen_counter_119. clothes_shirt_2158 released by right hand. 
+##############################
+From agent.py
+walk_executor(iron_2161)
+Robot find: Robot is close to the clothes_skirt_2160. Robot is close to the iron_2161. Robot is close to the bowl_2142. 
+##############################
+From agent.py
+plugin_executor(iron_2161)
+Robot find: Robot is close to the clothes_skirt_2160. Robot is close to the iron_2161. Robot is close to the bowl_2142. iron_2161 is plugged in. 
+##############################
+From agent.py
+switchon_executor(iron_2161)
+Robot find: Robot is close to the clothes_skirt_2160. Robot is close to the iron_2161. Robot is close to the bowl_2142. iron_2161 is turned on. 
+##############################
+From agent.py
+touch_executor(iron_2161)
+Robot find: Robot is close to the clothes_skirt_2160. Robot is close to the iron_2161. Robot is close to the bowl_2142. 
+##############################
+From agent.py
+touch_executor(iron_2161)
+Robot find: Robot is close to the clothes_skirt_2160. Robot is close to the iron_2161. Robot is close to the bowl_2142. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: Yes
+The feedback instruction: None
+##############################
+Task Summary:
+Task Goal:
+Iron the shirt and the skirt.
+Action History:
+['walk_executor(basket_for_clothes_2078)', 'grab_executor(clothes_shirt_2158)', 'grab_executor(clothes_skirt_2160)', 'walk_executor(ironing_board_2144)', 'walk_executor(cutting_board_2123)', 'walk_executor(door_62)', 'walk_executor(faucet_121)', 'walk_executor(kitchen_counter_122)', 'walk_executor(bathroom_counter_18)', 'walk_executor(bowl_2142)', 'walk_executor(iron_2161)', 'walk_executor(kitchen_counter_119)', 'put_executor(clothes_shirt_2158, kitchen_counter_119)', 'walk_executor(iron_2161)', 'plugin_executor(iron_2161)', 'switchon_executor(iron_2161)', 'touch_executor(iron_2161)', 'touch_executor(iron_2161)']
+Time info:
+Time consume: 247 seconds
+Exp_helper query times: 1
+Guidance query times: 0
+library scale: 126
+goal generate times: 11
+goal correct times: 0
+action_num: 18
+
+Task complete rate:
+Keystate: k1 - Requires: 8 steps
+Keystate: k2 - Requires: 6 steps
+Action Completion Rate: 0.0
+Scene_id: 1
+##############################

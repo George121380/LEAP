@@ -1,0 +1,525 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Hand wash the underwear with soap in the sink in the bathroom.', '2. Put the underwear in the washing machine and add detergent for a thorough clean.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_clothes_underwear_2121_around_basket_for_clothes_2078(clothes_underwear:item):
+    goal: not unknown(clothes_underwear)
+    body:
+        assert is_clothes_underwear(clothes_underwear)
+        bind basket_for_clothes_instance:item where:
+            is_basket_for_clothes(basket_for_clothes_instance) and id[basket_for_clothes_instance]==2078
+        achieve close_char(char,basket_for_clothes_instance)
+        if can_open(basket_for_clothes_instance):
+            achieve_once open(basket_for_clothes_instance)
+            exp(clothes_underwear,basket_for_clothes_instance)
+        else:
+            exp(clothes_underwear,basket_for_clothes_instance)
+    eff:
+        unknown[clothes_underwear]=False
+        close[clothes_underwear,basket_for_clothes_instance]=True
+        close[basket_for_clothes_instance,clothes_underwear]=True
+    
+
+behavior find_soap_2126_around_bathroom_counter_18(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind bathroom_counter_instance:item where:
+            is_bathroom_counter(bathroom_counter_instance) and id[bathroom_counter_instance]==18
+        achieve close_char(char,bathroom_counter_instance)
+        if can_open(bathroom_counter_instance):
+            achieve_once open(bathroom_counter_instance)
+            exp(soap,bathroom_counter_instance)
+        else:
+            exp(soap,bathroom_counter_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,bathroom_counter_instance]=True
+        close[bathroom_counter_instance,soap]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+
+behavior hand_wash_underwear(underwear:item, soap:item, sink:item):
+    body:
+        achieve_once inhand(soap) # Temporarily hold the soap
+        achieve_once inside(underwear, sink) # Place the underwear in the sink
+        wash(underwear) # Wash the underwear by hand
+
+behavior __goal__():
+    body:
+        bind underwear: item where:
+            is_clothes_underwear(underwear)
+        # Select the underwear
+
+        bind soap: item where:
+            is_soap(soap)
+        # Select the soap
+
+        bind sink: item where:
+            is_sink(sink) and inside(sink, bathroom)
+        # Select the sink in the bathroom
+
+        hand_wash_underwear(underwear, soap, sink)
+        # Hand wash the underwear in the sink with soap
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "behavior_definition":
+
+Unknown variable: bathroom; available variables: [Variable<sink: item>].
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_clothes_underwear_2121_around_basket_for_clothes_2078(clothes_underwear:item):
+    goal: not unknown(clothes_underwear)
+    body:
+        assert is_clothes_underwear(clothes_underwear)
+        bind basket_for_clothes_instance:item where:
+            is_basket_for_clothes(basket_for_clothes_instance) and id[basket_for_clothes_instance]==2078
+        achieve close_char(char,basket_for_clothes_instance)
+        if can_open(basket_for_clothes_instance):
+            achieve_once open(basket_for_clothes_instance)
+            exp(clothes_underwear,basket_for_clothes_instance)
+        else:
+            exp(clothes_underwear,basket_for_clothes_instance)
+    eff:
+        unknown[clothes_underwear]=False
+        close[clothes_underwear,basket_for_clothes_instance]=True
+        close[basket_for_clothes_instance,clothes_underwear]=True
+    
+
+behavior find_soap_2010_around_bathroom_counter_18(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind bathroom_counter_instance:item where:
+            is_bathroom_counter(bathroom_counter_instance) and id[bathroom_counter_instance]==18
+        achieve close_char(char,bathroom_counter_instance)
+        if can_open(bathroom_counter_instance):
+            achieve_once open(bathroom_counter_instance)
+            exp(soap,bathroom_counter_instance)
+        else:
+            exp(soap,bathroom_counter_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,bathroom_counter_instance]=True
+        close[bathroom_counter_instance,soap]=True
+    
+
+#goal_representation
+ 
+behavior hand_wash_underwear(underwear:item, soap:item, sink:item):
+    body:
+        achieve_once inhand(soap) # Temporarily hold the soap
+        achieve_once inside(underwear, sink) # Place the underwear in the sink
+        wash(underwear) # Wash the underwear by hand
+
+behavior __goal__():
+    body:
+        bind bathroom: item where:
+            is_bathroom(bathroom)
+        # Select the bathroom
+
+        bind sink: item where:
+            is_sink(sink) and inside(sink, bathroom)
+        # Select the sink in the bathroom
+
+        bind underwear: item where:
+            is_clothes_underwear(underwear)
+        # Select the underwear
+
+        bind soap: item where:
+            is_soap(soap)
+        # Select the soap
+
+        hand_wash_underwear(underwear, soap, sink)
+        # Hand wash the underwear in the sink with soap
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+ 
+behavior hand_wash_underwear(underwear:item, soap:item, sink:item):
+    body:
+        achieve_once inhand(soap) # Temporarily hold the soap
+        achieve_once inside(underwear, sink) # Place the underwear in the sink
+        wash(underwear) # Wash the underwear by hand
+
+behavior __goal__():
+    body:
+        bind bathroom: item where:
+            is_bathroom(bathroom)
+        # Select the bathroom
+
+        bind sink: item where:
+            is_sink(sink) and inside(sink, bathroom)
+        # Select the sink in the bathroom
+
+        bind underwear: item where:
+            is_clothes_underwear(underwear)
+        # Select the underwear
+
+        bind soap: item where:
+            is_soap(soap)
+        # Select the soap
+
+        hand_wash_underwear(underwear, soap, sink)
+        # Hand wash the underwear in the sink with soap
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(bathroom_counter_18)exp(soap_2125, bathroom_counter_18)walk_executor(soap_2125)grab_executor(soap_2125)walk_executor(basket_for_clothes_2078)exp(clothes_underwear_2121, basket_for_clothes_2078)walk_executor(clothes_underwear_2121)grab_executor(clothes_underwear_2121)walk_executor(sink_19)putin_executor(clothes_underwear_2121, sink_19)walk_executor(clothes_underwear_2121)grab_executor(clothes_underwear_2121)walk_executor(kitchen_counter_119)put_executor(soap_2125, kitchen_counter_119)switchon_executor(faucet_121)wash_executor(clothes_underwear_2121)switchoff_executor(faucet_121)
+##############################
+From agent.py
+walk_executor(bathroom_counter_18)
+Robot find: mat_32, phone_2029, drawing_33, Robot is close to the bathroom_counter_18. 
+##############################
+From agent.py
+exp(soap_2125, bathroom_counter_18)
+Fail to find soap_2125 around bathroom_counter_18. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(bathroom_cabinet_17)open_executor(bathroom_cabinet_17)exp(soap_2125, bathroom_cabinet_17)walk_executor(soap_2125)grab_executor(soap_2125)walk_executor(basket_for_clothes_2078)exp(clothes_underwear_2121, basket_for_clothes_2078)walk_executor(clothes_underwear_2121)grab_executor(clothes_underwear_2121)walk_executor(sink_19)putin_executor(clothes_underwear_2121, sink_19)walk_executor(clothes_underwear_2121)grab_executor(clothes_underwear_2121)walk_executor(kitchen_counter_119)put_executor(soap_2125, kitchen_counter_119)switchon_executor(faucet_121)wash_executor(clothes_underwear_2121)switchoff_executor(faucet_121)
+##############################
+From agent.py
+walk_executor(bathroom_cabinet_17)
+Robot find: Robot is close to the bathroom_cabinet_17. 
+##############################
+From agent.py
+open_executor(bathroom_cabinet_17)
+Robot find: tooth_paste_2059, Robot is close to the bathroom_cabinet_17. Robot is close to the tooth_paste_2059. bathroom_cabinet_17 is opened. 
+##############################
+From agent.py
+exp(soap_2125, bathroom_cabinet_17)
+Fail to find soap_2125 around bathroom_cabinet_17. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(sink_19)exp(soap_2125, sink_19)walk_executor(soap_2125)grab_executor(soap_2125)walk_executor(basket_for_clothes_2078)exp(clothes_underwear_2121, basket_for_clothes_2078)walk_executor(clothes_underwear_2121)grab_executor(clothes_underwear_2121)walk_executor(sink_19)putin_executor(clothes_underwear_2121, sink_19)walk_executor(clothes_underwear_2121)grab_executor(clothes_underwear_2121)walk_executor(kitchen_counter_119)put_executor(soap_2125, kitchen_counter_119)switchon_executor(faucet_121)wash_executor(clothes_underwear_2121)switchoff_executor(faucet_121)
+##############################
+From agent.py
+walk_executor(sink_19)
+Robot find: after_shave_2063, soap_2125, detergent_2155, cleaning_solution_2143, Robot is close to the bathroom_counter_18. Robot is close to the sink_19. 
+##############################
+From agent.py
+exp(soap_2125, sink_19)
+Find soap_2125. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(soap_2125)grab_executor(soap_2125)walk_executor(basket_for_clothes_2078)exp(clothes_underwear_2121, basket_for_clothes_2078)walk_executor(clothes_underwear_2121)grab_executor(clothes_underwear_2121)walk_executor(sink_19)putin_executor(clothes_underwear_2121, sink_19)walk_executor(clothes_underwear_2121)grab_executor(clothes_underwear_2121)walk_executor(kitchen_counter_119)put_executor(soap_2125, kitchen_counter_119)switchon_executor(faucet_121)wash_executor(clothes_underwear_2121)switchoff_executor(faucet_121)
+##############################
+From agent.py
+walk_executor(soap_2125)
+Robot find: Robot is close to the sink_19. Robot is close to the soap_2125. 
+##############################
+From agent.py
+grab_executor(soap_2125)
+Robot find: Robot is close to the sink_19. Robot is close to the soap_2125. Grabbing soap_2125 by right hand. 
+##############################
+From agent.py
+walk_executor(basket_for_clothes_2078)
+Robot find: clothes_pants_2157, clothes_shirt_2158, clothes_socks_2159, clothes_skirt_2160, Robot is close to the soap_2125. Robot is close to the clothes_pants_2157. Robot is close to the clothes_shirt_2158. Robot is close to the clothes_socks_2159. Robot is close to the clothes_skirt_2160. Robot is close to the basket_for_clothes_2078. 
+##############################
+From agent.py
+exp(clothes_underwear_2121, basket_for_clothes_2078)
+Fail to find clothes_underwear_2121 around basket_for_clothes_2078. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(home_office_241)exp(clothes_underwear_2121, home_office_241)walk_executor(clothes_underwear_2121)grab_executor(clothes_underwear_2121)walk_executor(sink_19)putin_executor(clothes_underwear_2121, sink_19)walk_executor(clothes_underwear_2121)grab_executor(clothes_underwear_2121)walk_executor(faucet_20)switchon_executor(faucet_20)wash_executor(clothes_underwear_2121)switchoff_executor(faucet_20)
+##############################
+From agent.py
+walk_executor(home_office_241)
+Robot find: Robot is close to the soap_2125. 
+##############################
+From agent.py
+exp(clothes_underwear_2121, home_office_241)
+Fail to find clothes_underwear_2121 around home_office_241. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(home_office_241)exp(clothes_underwear_2121, home_office_241)walk_executor(clothes_underwear_2121)grab_executor(clothes_underwear_2121)walk_executor(sink_19)putin_executor(clothes_underwear_2121, sink_19)walk_executor(clothes_underwear_2121)grab_executor(clothes_underwear_2121)walk_executor(faucet_20)switchon_executor(faucet_20)wash_executor(clothes_underwear_2121)switchoff_executor(faucet_20)
+##############################
+From agent.py
+walk_executor(home_office_241)
+Robot find: Robot is close to the soap_2125. 
+##############################
+From agent.py
+exp(clothes_underwear_2121, home_office_241)
+Fail to find clothes_underwear_2121 around home_office_241. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(home_office_241)exp(clothes_underwear_2121, home_office_241)walk_executor(clothes_underwear_2121)grab_executor(clothes_underwear_2121)walk_executor(sink_19)putin_executor(clothes_underwear_2121, sink_19)walk_executor(clothes_underwear_2121)grab_executor(clothes_underwear_2121)walk_executor(faucet_20)switchon_executor(faucet_20)wash_executor(clothes_underwear_2121)switchoff_executor(faucet_20)
+##############################
+From agent.py
+walk_executor(home_office_241)
+Robot find: Robot is close to the soap_2125. 
+##############################
+From agent.py -> query_LLM_human
+Record from func query_LLM_human in agent.py
+Question: Can you help me to find clothes_underwear_2121 ?
+Answer: Go to bedroom_162. Look for bed_197, and you will find clothes_underwear_2121 on top of that bed.
+Re-decompose: None
+
+##############################
+From agent.py
+Human Instruction: Go to bedroom_162. Look for bed_197, and you will find clothes_underwear_2121 on top of that bed.
+
+The actions you have taken:
+Action 1: Walk to bathroom_counter_18.
+Action 2: look for soap_2125 around bathroom_counter_18.
+Action 3: Walk to bathroom_cabinet_17.
+Action 4: Open bathroom_cabinet_17.
+Action 5: look for soap_2125 around bathroom_cabinet_17.
+Action 6: Walk to sink_19.
+Action 7: look for soap_2125 around sink_19.
+Action 8: Walk to soap_2125.
+Action 9: Grab soap_2125.
+Action 10: Walk to basket_for_clothes_2078.
+Action 11: look for clothes_underwear_2121 around basket_for_clothes_2078.
+Action 12: Walk to home_office_241.
+Action 13: look for clothes_underwear_2121 around home_office_241.
+Action 14: Walk to home_office_241.
+Action 15: look for clothes_underwear_2121 around home_office_241.
+Action 16: Walk to home_office_241.
+
+##############################
+From agent.py
+exp(clothes_underwear_2121, home_office_241)
+Fail to find clothes_underwear_2121 around home_office_241. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(bed_197)exp(clothes_underwear_2121, bed_197)walk_executor(clothes_underwear_2121)grab_executor(clothes_underwear_2121)walk_executor(sink_19)putin_executor(clothes_underwear_2121, sink_19)walk_executor(clothes_underwear_2121)grab_executor(clothes_underwear_2121)walk_executor(faucet_20)switchon_executor(faucet_20)wash_executor(clothes_underwear_2121)switchoff_executor(faucet_20)
+##############################
+From agent.py
+walk_executor(bed_197)
+Robot find: pillow_208, clothes_scarf_2120, clothes_underwear_2121, drawing_201, clothes_dress_2116, pillow_207, Robot is close to the soap_2125. Robot is close to the bed_197. 
+##############################
+From agent.py
+exp(clothes_underwear_2121, bed_197)
+Find clothes_underwear_2121. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(clothes_underwear_2121)grab_executor(clothes_underwear_2121)walk_executor(sink_19)putin_executor(clothes_underwear_2121, sink_19)walk_executor(clothes_underwear_2121)grab_executor(clothes_underwear_2121)walk_executor(faucet_20)switchon_executor(faucet_20)wash_executor(clothes_underwear_2121)switchoff_executor(faucet_20)
+##############################
+From agent.py
+walk_executor(clothes_underwear_2121)
+Robot find: Robot is close to the soap_2125. Robot is close to the bed_197. Robot is close to the clothes_underwear_2121. 
+##############################
+From agent.py
+grab_executor(clothes_underwear_2121)
+Robot find: Robot is close to the soap_2125. Robot is close to the bed_197. Robot is close to the clothes_underwear_2121. Grabbing clothes_underwear_2121 by left hand. 
+##############################
+From agent.py
+walk_executor(sink_19)
+Robot find: Robot is close to the soap_2125. Robot is close to the clothes_underwear_2121. Robot is close to the bathroom_counter_18. Robot is close to the sink_19. 
+##############################
+From agent.py
+putin_executor(clothes_underwear_2121, sink_19)
+Robot find: Robot is close to the soap_2125. Robot is close to the clothes_underwear_2121. Robot is close to the bathroom_counter_18. Robot is close to the sink_19. clothes_underwear_2121 is inside sink_19. clothes_underwear_2121 is close sink_19. sink_19 is close clothes_underwear_2121. clothes_underwear_2121 released by left hand. 
+##############################
+From agent.py
+walk_executor(clothes_underwear_2121)
+Robot find: Robot is close to the soap_2125. Robot is close to the clothes_underwear_2121. Robot is close to the sink_19. 
+##############################
+From agent.py
+grab_executor(clothes_underwear_2121)
+Robot find: Robot is close to the soap_2125. Robot is close to the clothes_underwear_2121. Robot is close to the sink_19. Grabbing clothes_underwear_2121 by left hand. 
+##############################
+From agent.py
+walk_executor(faucet_20)
+Robot find: Robot is close to the soap_2125. Robot is close to the clothes_underwear_2121. Robot is close to the bathroom_counter_18. Robot is close to the faucet_20. 
+##############################
+From agent.py
+switchon_executor(faucet_20)
+Robot find: Robot is close to the soap_2125. Robot is close to the clothes_underwear_2121. Robot is close to the bathroom_counter_18. Robot is close to the faucet_20. faucet_20 is turned on. 
+##############################
+From agent.py
+wash_executor(clothes_underwear_2121)
+Robot find: Robot is close to the soap_2125. Robot is close to the clothes_underwear_2121. Robot is close to the bathroom_counter_18. Robot is close to the faucet_20. clothes_underwear_2121 is cleaned. 
+##############################
+From agent.py
+switchoff_executor(faucet_20)
+Robot find: Robot is close to the soap_2125. Robot is close to the clothes_underwear_2121. Robot is close to the bathroom_counter_18. Robot is close to the faucet_20. faucet_20 is turned off. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: Yes
+The feedback instruction: None
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_detergent_2011_around_cupboard_117(detergent:item):
+    goal: not unknown(detergent)
+    body:
+        assert is_detergent(detergent)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==117
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(detergent,cupboard_instance)
+        else:
+            exp(detergent,cupboard_instance)
+    eff:
+        unknown[detergent]=False
+        close[detergent,cupboard_instance]=True
+        close[cupboard_instance,detergent]=True
+    
+
+behavior find_soap_2126_around_shower_16(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind shower_instance:item where:
+            is_shower(shower_instance) and id[shower_instance]==16
+        achieve close_char(char,shower_instance)
+        if can_open(shower_instance):
+            achieve_once open(shower_instance)
+            exp(soap,shower_instance)
+        else:
+            exp(soap,shower_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,shower_instance]=True
+        close[shower_instance,soap]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior add_underwear_to_washing_machine(underwear:item, washing_machine:item):
+    body:
+        achieve_once inside(underwear, washing_machine)
+        # Place the underwear inside the washing machine
+        
+behavior add_detergent_to_washing_machine(detergent:item, washing_machine:item):
+    body:
+        achieve_once inside(detergent, washing_machine)
+        # Add detergent into the washing machine
+
+behavior __goal__():
+    body:
+        bind washing_machine: item where:
+            is_washing_machine(washing_machine)
+        # Select the washing machine
+
+        bind clothes_underwear: item where:
+            is_clothes_underwear(clothes_underwear)
+        # Select the underwear item
+        
+        bind detergent: item where:
+            is_detergent(detergent)
+        # Select the detergent
+
+        add_underwear_to_washing_machine(clothes_underwear, washing_machine)
+        add_detergent_to_washing_machine(detergent, washing_machine)
+
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+behavior add_underwear_to_washing_machine(underwear:item, washing_machine:item):
+    body:
+        achieve_once inside(underwear, washing_machine)
+        # Place the underwear inside the washing machine
+        
+behavior add_detergent_to_washing_machine(detergent:item, washing_machine:item):
+    body:
+        achieve_once inside(detergent, washing_machine)
+        # Add detergent into the washing machine
+
+behavior __goal__():
+    body:
+        bind washing_machine: item where:
+            is_washing_machine(washing_machine)
+        # Select the washing machine
+
+        bind clothes_underwear: item where:
+            is_clothes_underwear(clothes_underwear)
+        # Select the underwear item
+        
+        bind detergent: item where:
+            is_detergent(detergent)
+        # Select the detergent
+
+        add_underwear_to_washing_machine(clothes_underwear, washing_machine)
+        add_detergent_to_washing_machine(detergent, washing_machine)
+
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(kitchen_counter_119)put_executor(soap_2125, kitchen_counter_119)walk_executor(washing_machine_2079)open_executor(washing_machine_2079)putin_executor(clothes_underwear_2121, washing_machine_2079)walk_executor(detergent_2155)grab_executor(detergent_2155)walk_executor(washing_machine_2079)putin_executor(detergent_2155, washing_machine_2079)
+##############################
+From agent.py
+walk_executor(kitchen_counter_119)
+Robot find: fork_2150, bowl_2142, food_salt_2041, pot_78, pot_2138, bowl_2140, bowl_2141, fork_2151, plate_2152, Robot is close to the soap_2125. Robot is close to the clothes_underwear_2121. Robot is close to the kitchen_counter_119. 
+##############################
+From agent.py
+put_executor(soap_2125, kitchen_counter_119)
+Robot find: Robot is close to the soap_2125. Robot is close to the clothes_underwear_2121. Robot is close to the kitchen_counter_119. soap_2125 is on kitchen_counter_119. kitchen_counter_119 is close soap_2125. soap_2125 is close kitchen_counter_119. soap_2125 released by right hand. 
+##############################
+From agent.py
+walk_executor(washing_machine_2079)
+Robot find: Robot is close to the clothes_underwear_2121. Robot is close to the washing_machine_2079. 
+##############################
+From agent.py
+open_executor(washing_machine_2079)
+Robot find: Robot is close to the clothes_underwear_2121. Robot is close to the washing_machine_2079. washing_machine_2079 is opened. 
+##############################
+From agent.py
+putin_executor(clothes_underwear_2121, washing_machine_2079)
+Robot find: Robot is close to the clothes_underwear_2121. Robot is close to the washing_machine_2079. clothes_underwear_2121 is inside washing_machine_2079. clothes_underwear_2121 is close washing_machine_2079. washing_machine_2079 is close clothes_underwear_2121. clothes_underwear_2121 released by left hand. 
+##############################
+From agent.py
+walk_executor(detergent_2155)
+Robot find: Robot is close to the sink_19. Robot is close to the detergent_2155. 
+##############################
+From agent.py
+grab_executor(detergent_2155)
+Robot find: Robot is close to the sink_19. Robot is close to the detergent_2155. Grabbing detergent_2155 by right hand. 
+##############################
+From agent.py
+walk_executor(washing_machine_2079)
+Robot find: Robot is close to the detergent_2155. Robot is close to the clothes_underwear_2121. Robot is close to the washing_machine_2079. 
+##############################
+From agent.py
+putin_executor(detergent_2155, washing_machine_2079)
+Robot find: Robot is close to the detergent_2155. Robot is close to the clothes_underwear_2121. Robot is close to the washing_machine_2079. detergent_2155 is inside washing_machine_2079. detergent_2155 is close washing_machine_2079. washing_machine_2079 is close detergent_2155. detergent_2155 released by right hand. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: Yes
+The feedback instruction: None
+##############################
+Task Summary:
+Task Goal:
+First, hand wash the underwear with soap in the sink in the bathroom, then put it in the washing machine, add some detergent for a thorough clean.
+Action History:
+['walk_executor(bathroom_counter_18)', 'walk_executor(bathroom_cabinet_17)', 'open_executor(bathroom_cabinet_17)', 'walk_executor(sink_19)', 'walk_executor(soap_2125)', 'grab_executor(soap_2125)', 'walk_executor(basket_for_clothes_2078)', 'walk_executor(home_office_241)', 'walk_executor(home_office_241)', 'walk_executor(home_office_241)', 'walk_executor(bed_197)', 'walk_executor(clothes_underwear_2121)', 'grab_executor(clothes_underwear_2121)', 'walk_executor(sink_19)', 'putin_executor(clothes_underwear_2121, sink_19)', 'walk_executor(clothes_underwear_2121)', 'grab_executor(clothes_underwear_2121)', 'walk_executor(faucet_20)', 'switchon_executor(faucet_20)', 'wash_executor(clothes_underwear_2121)', 'switchoff_executor(faucet_20)', 'walk_executor(kitchen_counter_119)', 'put_executor(soap_2125, kitchen_counter_119)', 'walk_executor(washing_machine_2079)', 'open_executor(washing_machine_2079)', 'putin_executor(clothes_underwear_2121, washing_machine_2079)', 'walk_executor(detergent_2155)', 'grab_executor(detergent_2155)', 'walk_executor(washing_machine_2079)', 'putin_executor(detergent_2155, washing_machine_2079)']
+Time info:
+Time consume: 150 seconds
+Exp_helper query times: 1
+Guidance query times: 0
+library scale: 23
+goal generate times: 2
+goal correct times: 1
+action_num: 30
+
+Task complete rate:
+Keystate: k1 - Requires: 6 steps
+Keystate: k2 - Requires: 3 steps
+Action Completion Rate: 1.0
+Scene_id: 1
+##############################

@@ -14,6 +14,7 @@ import tqdm
 import random
 import time
 import argparse
+import os
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Agent evaluation")
@@ -294,10 +295,3 @@ def add_feature_to_lines(input_file, output_file):
             modified_line = line.replace("-", "_")
             outfile.write(f"feature {modified_line}")
             
-
-                
-if __name__ == "__main__":
-  
-    input_file='categories.txt'
-    output_file='categories.txt'
-    add_feature_to_lines(input_file, output_file)

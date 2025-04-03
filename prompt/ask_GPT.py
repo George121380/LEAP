@@ -51,7 +51,7 @@ def ask_GPT(system,content):
                     stream=False
                 )
             elif LLM_MODEL == "thirdparty": # Taobao
-                client = OpenAI(api_key=Thirdparty_key, base_url="https://api.feidaapi.com/v1")
+                client = OpenAI(api_key="sk-1vOgDSeq4VRhApdJPLH1RNffLdSGGCQ1rPPrOSuymakibJwC", base_url="https://api.nuwaapi.com/v1")
                 completion = client.chat.completions.create(
                     model="gpt-4o",
                     messages=[
@@ -63,11 +63,11 @@ def ask_GPT(system,content):
             else:
                 raise ValueError("Invalid LLM_MODEL")
             
-            with open("query_log.txt", "a") as log_file:
-                log_file.write(f"System: {system}\nContent: {content}\n\n")
-                log_file.write(f"Response:\n{completion.choices[0].message.content}\n\n")
-                log_file.write("Tokens: " + str(count_tokens_tiktoken(completion.choices[0].message.content)+count_tokens_tiktoken(system)+count_tokens_tiktoken(content)) + "\n")
-                log_file.write("#"*80 + "\n\n")
+            # with open("query_log.txt", "a") as log_file:
+            #     log_file.write(f"System: {system}\nContent: {content}\n\n")
+            #     log_file.write(f"Response:\n{completion.choices[0].message.content}\n\n")
+            #     log_file.write("Tokens: " + str(count_tokens_tiktoken(completion.choices[0].message.content)+count_tokens_tiktoken(system)+count_tokens_tiktoken(content)) + "\n")
+            #     log_file.write("#"*80 + "\n\n")
             print(f"Response time: {time.time() - start_time:.2f} seconds")
             return completion.choices[0].message.content
             
@@ -81,5 +81,5 @@ def ask_GPT(system,content):
 
 if __name__ == "__main__":
     system = "You are my friend"
-    content = "How are you doing today?"
+    content = "Who made you?"
     print(ask_GPT(system, content))

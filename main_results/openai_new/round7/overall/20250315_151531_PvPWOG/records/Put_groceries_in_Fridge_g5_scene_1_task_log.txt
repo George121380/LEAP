@@ -1,0 +1,1433 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Find a table in the dining room and place the milk and egg on it.', '2. Throw all the items in the fridge into the trashcan.', '3. Put the milk and egg back into the fridge.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_milk_2115_around_fridge_126(milk:item):
+    goal: not unknown(milk)
+    body:
+        assert is_milk(milk)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==126
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(milk,fridge_instance)
+        else:
+            exp(milk,fridge_instance)
+    eff:
+        unknown[milk]=False
+        close[milk,fridge_instance]=True
+        close[fridge_instance,milk]=True
+    
+
+behavior find_food_egg_2092_around_fridge_126(food_egg:item):
+    goal: not unknown(food_egg)
+    body:
+        assert is_food_egg(food_egg)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==126
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(food_egg,fridge_instance)
+        else:
+            exp(food_egg,fridge_instance)
+    eff:
+        unknown[food_egg]=False
+        close[food_egg,fridge_instance]=True
+        close[fridge_instance,food_egg]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_dining_table(table: item):
+    # Function to check if a table is in the dining room
+    symbol in_dining_room=exists room: item : (is_dining_room(room) and inside(table, room))
+    return in_dining_room
+
+behavior find_table_and_place_items(milk: item, egg: item):
+    body:
+        bind table: item where:
+            is_table(table) and is_dining_table(table)
+        # Select a table in the dining room
+        
+        if not inhand(milk):
+            grab(milk) # Grab the milk if its not already in hand
+        
+        if not inhand(egg) and has_a_free_hand(char):
+            grab(egg) # Grab the egg if its not already in hand and theres a free hand
+        
+        walk_to(table)
+        put_on(milk, table) # Put the milk on the table
+        empty_a_hand()
+        put_on(egg, table) # Put the egg on the table
+
+behavior __goal__():
+    body:
+        bind milk: item where:
+            is_milk(milk)
+        # Select the milk item
+        
+        bind egg: item where:
+            is_food_egg(egg)
+        # Select the egg item
+        
+        find_table_and_place_items(milk, egg)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_milk_2115_around_fridge_126(milk:item):
+    goal: not unknown(milk)
+    body:
+        assert is_milk(milk)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==126
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(milk,fridge_instance)
+        else:
+            exp(milk,fridge_instance)
+    eff:
+        unknown[milk]=False
+        close[milk,fridge_instance]=True
+        close[fridge_instance,milk]=True
+    
+
+behavior find_food_egg_2092_around_cupboard_117(food_egg:item):
+    goal: not unknown(food_egg)
+    body:
+        assert is_food_egg(food_egg)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==117
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(food_egg,cupboard_instance)
+        else:
+            exp(food_egg,cupboard_instance)
+    eff:
+        unknown[food_egg]=False
+        close[food_egg,cupboard_instance]=True
+        close[cupboard_instance,food_egg]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def find_dining_room_table():
+    # Function to find a table in the dining room
+    symbol found_dining_table=exists table: item : (is_table(table) and exists room: item : (is_dining_room(room) and inside(table, room)))
+    return found_dining_table
+
+def has_milk_egg():
+    # Check if milk and egg are in hand
+    return (exists o: item : (is_milk(o) and inhand(o))) and (exists o: item : (is_food_egg(o) and inhand(o)))
+
+behavior place_items_on_table(milk:item, egg:item, table:item):
+    body:
+        if not on(milk, table):
+            put_on(milk, table)
+        if not on(egg, table):
+            put_on(egg, table)
+
+behavior __goal__():
+    body:
+        if find_dining_room_table() and has_milk_egg():
+            bind table: item where:
+                is_table(table) and exists room: item : (is_dining_room(room) and inside(table, room))
+            bind milk: item where:
+                is_milk(milk) and inhand(milk)
+            bind egg: item where:
+                is_food_egg(egg) and inhand(egg)
+            place_items_on_table(milk, egg, table)
+        else:
+            foreach table: item:
+                if is_table(table) and not visited(table):
+                    observe(table, "Check if this is a table in the dining room")
+
+            foreach o: item:
+                if (is_milk(o) or is_food_egg(o)) and not inhand(o):
+                    observe(o, "Check if this is milk or an egg and not in my hand")
+
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_milk_2115_around_fridge_126(milk:item):
+    goal: not unknown(milk)
+    body:
+        assert is_milk(milk)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==126
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(milk,fridge_instance)
+        else:
+            exp(milk,fridge_instance)
+    eff:
+        unknown[milk]=False
+        close[milk,fridge_instance]=True
+        close[fridge_instance,milk]=True
+    
+
+behavior find_food_egg_2092_around_cupboard_117(food_egg:item):
+    goal: not unknown(food_egg)
+    body:
+        assert is_food_egg(food_egg)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==117
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(food_egg,cupboard_instance)
+        else:
+            exp(food_egg,cupboard_instance)
+    eff:
+        unknown[food_egg]=False
+        close[food_egg,cupboard_instance]=True
+        close[cupboard_instance,food_egg]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def place_items_on_table(table:item, milk:item, egg:item):
+    body:
+        if not on(milk, table):
+            put_on(milk, table)
+        if not on(egg, table):
+            put_on(egg, table)
+
+behavior __goal__():
+    body:
+        bind table: item where:
+            is_table(table) and inside_char(char, table)
+        # Select a table in the dining room
+
+        bind milk: item where:
+            is_milk(milk)
+        # Select the milk item
+
+        bind egg: item where:
+            is_food_egg(egg)
+        # Select the egg item
+
+        place_items_on_table(table, milk, egg)
+
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_milk_2115_around_fridge_126(milk:item):
+    goal: not unknown(milk)
+    body:
+        assert is_milk(milk)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==126
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(milk,fridge_instance)
+        else:
+            exp(milk,fridge_instance)
+    eff:
+        unknown[milk]=False
+        close[milk,fridge_instance]=True
+        close[fridge_instance,milk]=True
+    
+
+behavior find_food_egg_2092_around_kitchen_counter_119(food_egg:item):
+    goal: not unknown(food_egg)
+    body:
+        assert is_food_egg(food_egg)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==119
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_egg,kitchen_counter_instance)
+        else:
+            exp(food_egg,kitchen_counter_instance)
+    eff:
+        unknown[food_egg]=False
+        close[food_egg,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_egg]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior find_dining_table_and_place_items(milk:item, egg:item):
+    body:
+        if exists table: item : is_table(table) and inside(table, dining_room):
+            # Check if there is a table in the dining room
+            bind table: item where:
+                is_table(table) and inside(table, dining_room)
+            # Select a table in the dining room
+            walk_to(table)
+            put_on(milk, table)
+            put_on(egg, table)
+        else:
+            # If no dining room table is found, initiate exploration to locate one
+            observe(dining_room, "Check for tables in the dining room")
+
+behavior __goal__():
+    body:
+        bind milk: item where:
+            is_milk(milk)
+        bind egg: item where:
+            is_food_egg(egg)
+        bind dining_room: item where:
+            is_dining_room(dining_room)
+        find_dining_table_and_place_items(milk, egg)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_milk_2115_around_fridge_126(milk:item):
+    goal: not unknown(milk)
+    body:
+        assert is_milk(milk)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==126
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(milk,fridge_instance)
+        else:
+            exp(milk,fridge_instance)
+    eff:
+        unknown[milk]=False
+        close[milk,fridge_instance]=True
+        close[fridge_instance,milk]=True
+    
+
+behavior find_food_egg_2092_around_kitchen_counter_119(food_egg:item):
+    goal: not unknown(food_egg)
+    body:
+        assert is_food_egg(food_egg)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==119
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_egg,kitchen_counter_instance)
+        else:
+            exp(food_egg,kitchen_counter_instance)
+    eff:
+        unknown[food_egg]=False
+        close[food_egg,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_egg]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior find_table_and_place_items(milk: item, egg: item):
+    body:
+        bind dining_room: item where:
+            is_dining_room(dining_room)
+        # Find the dining room
+        
+        if exists table: item : (is_table(table) and inside(table, dining_room)) :
+            # Select a table in the dining room
+            bind table: item where:
+                is_table(table) and inside(table, dining_room)
+            if not (on(milk, table) and on(egg, table)):
+                if not inhand(milk):
+                    grab(milk)
+                if not inhand(egg):
+                    grab(egg)
+                walk_to(table)
+                put_on(milk, table)
+                empty_a_hand() # Free up a hand after placing milk
+                put_on(egg, table)
+
+behavior __goal__():
+    body:
+        bind milk: item where:
+            is_milk(milk)
+        bind egg: item where:
+            is_food_egg(egg)
+        find_table_and_place_items(milk, egg)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_milk_2115_around_fridge_126(milk:item):
+    goal: not unknown(milk)
+    body:
+        assert is_milk(milk)
+        bind fridge_instance:item where:
+            is_fridge(fridge_instance) and id[fridge_instance]==126
+        achieve close_char(char,fridge_instance)
+        if can_open(fridge_instance):
+            achieve_once open(fridge_instance)
+            exp(milk,fridge_instance)
+        else:
+            exp(milk,fridge_instance)
+    eff:
+        unknown[milk]=False
+        close[milk,fridge_instance]=True
+        close[fridge_instance,milk]=True
+    
+
+behavior find_food_egg_2092_around_kitchen_counter_119(food_egg:item):
+    goal: not unknown(food_egg)
+    body:
+        assert is_food_egg(food_egg)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==119
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_egg,kitchen_counter_instance)
+        else:
+            exp(food_egg,kitchen_counter_instance)
+    eff:
+        unknown[food_egg]=False
+        close[food_egg,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_egg]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior find_table_and_place_items(milk:item, egg:item, table:item):
+    body:
+        if not on(milk, table) or not on(egg, table):
+            if not close_char(char, table):
+                walk_to(table)
+            if is_table(table):
+                if not on(milk, table):
+                    put_on(milk, table)
+                if not on(egg, table):
+                    put_on(egg, table)
+
+behavior __goal__():
+    body:
+        bind dining_room: item where:
+            is_dining_room(dining_room)
+        bind milk: item where:
+            is_milk(milk)
+        bind egg: item where:
+            is_food_egg(egg)
+        foreach table: item:
+            if is_table(table) and not visited(table):
+                observe(table, "Check if the table can hold items")
+                find_table_and_place_items(milk, egg, table)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+ 
+behavior find_table_and_place_items(milk:item, egg:item, table:item):
+    body:
+        if not on(milk, table) or not on(egg, table):
+            if not close_char(char, table):
+                walk_to(table)
+            if is_table(table):
+                if not on(milk, table):
+                    put_on(milk, table)
+                if not on(egg, table):
+                    put_on(egg, table)
+
+behavior __goal__():
+    body:
+        bind dining_room: item where:
+            is_dining_room(dining_room)
+        bind milk: item where:
+            is_milk(milk)
+        bind egg: item where:
+            is_food_egg(egg)
+        foreach table: item:
+            if is_table(table) and not visited(table):
+                observe(table, "Check if the table can hold items")
+                find_table_and_place_items(milk, egg, table)
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(table_114)obs(table_114, Check if the table can hold items)walk_executor(fridge_126)switchoff_executor(fridge_126)open_executor(fridge_126)exp(milk_2115, fridge_126)walk_executor(milk_2115)grab_executor(milk_2115)walk_executor(table_114)put_executor(milk_2115, table_114)walk_executor(kitchen_counter_119)exp(food_egg_2092, kitchen_counter_119)walk_executor(food_egg_2092)grab_executor(food_egg_2092)walk_executor(table_114)put_executor(food_egg_2092, table_114)walk_executor(table_199)obs(table_199, Check if the table can hold items)walk_executor(milk_2115)grab_executor(milk_2115)walk_executor(table_199)put_executor(milk_2115, table_199)walk_executor(food_egg_2092)grab_executor(food_egg_2092)walk_executor(table_199)put_executor(food_egg_2092, table_199)walk_executor(table_270)obs(table_270, Check if the table can hold items)walk_executor(milk_2115)grab_executor(milk_2115)walk_executor(table_270)put_executor(milk_2115, table_270)walk_executor(food_egg_2092)grab_executor(food_egg_2092)walk_executor(table_270)put_executor(food_egg_2092, table_270)
+##############################
+From agent.py
+walk_executor(table_114)
+Robot find: mat_102, cup_2049, pillow_103, pillow_104, pillow_105, pillow_106, lighter_2004, lighter_2039, box_2038, clothes_hat_2117, milk_2115, cup_2134, check_2058, drawing_110, drawing_111, clothes_gloves_2118, cup_2132, food_bread_2084, dry_pasta_2114, knife_2122, cup_2133, table_cloth_2005, food_food_2021, Robot is close to the table_114. Robot is close to the mat_102. 
+##############################
+From agent.py
+obs(table_114, Check if the table can hold items)
+Get this information:  cup_2049 is on table_114. box_2038 is on table_114. clothes_hat_2117 is on table_114. table_114 is inside dining_room_41. milk_2115 is on table_114. cup_2134 is on table_114. table_114 is facing drawing_110. table_114 is facing drawing_111. check_2058 is on table_114. clothes_gloves_2118 is on table_114. table_114 is close to cup_2049. table_114 is close to check_2058. table_114 is close to food_bread_2084. table_114 is close to floor_44. table_114 is close to floor_47. table_114 is close to floor_48. table_114 is close to floor_50. table_114 is close to dry_pasta_2114. table_114 is close to milk_2115. table_114 is close to clothes_hat_2117. table_114 is close to clothes_gloves_2118. table_114 is close to knife_2122. table_114 is close to cup_2132. table_114 is close to cup_2133. table_114 is close to cup_2134. table_114 is close to table_cloth_2005. table_114 is close to food_food_2021. table_114 is close to mat_102. table_114 is close to pillow_103. table_114 is close to pillow_104. table_114 is close to pillow_105. table_114 is close to pillow_106. table_114 is close to bench_113. table_114 is close to bench_115. table_114 is close to box_2038. table_114 is close to character_240. cup_2132 is on table_114. table_114 is on mat_102. table_114 is on floor_47. food_food_2021 is on table_114. knife_2122 is on table_114. cup_2133 is on table_114. table_cloth_2005 is on table_114. food_bread_2084 is on table_114. dry_pasta_2114 is on table_114. table_114 is DIRTY.
+##############################
+From agent.py
+walk_executor(fridge_126)
+Robot find: food_food_1000, Robot is close to the fridge_126. 
+##############################
+From agent.py
+switchoff_executor(fridge_126)
+Robot find: Robot is close to the fridge_126. fridge_126 is turned off. 
+##############################
+From agent.py
+open_executor(fridge_126)
+Robot find: food_onion_2048, food_food_2046, food_food_2073, food_steak_2080, food_apple_2081, food_bacon_2082, food_banana_2083, food_cake_2085, food_carrot_2086, food_cereal_2087, food_cheese_2088, food_chicken_2089, food_dessert_2090, food_donut_2091, food_egg_2092, food_fish_2093, food_food_2094, food_fruit_2095, food_hamburger_2096, food_ice_cream_2097, food_jam_2098, food_lemon_2100, food_noodles_2101, food_oatmeal_2102, food_orange_2103, food_onion_2104, food_peanut_butter_2105, food_pizza_2106, food_potato_2107, food_rice_2108, food_salt_2109, food_snack_2110, food_sugar_2111, food_turkey_2112, food_vegetable_2113, food_food_2001, sauce_2148, Robot is close to the food_onion_2048. Robot is close to the food_food_2046. Robot is close to the food_food_2073. Robot is close to the food_steak_2080. Robot is close to the food_apple_2081. Robot is close to the food_bacon_2082. Robot is close to the food_banana_2083. Robot is close to the food_cake_2085. Robot is close to the food_carrot_2086. Robot is close to the food_cereal_2087. Robot is close to the food_cheese_2088. Robot is close to the food_chicken_2089. Robot is close to the food_dessert_2090. Robot is close to the food_donut_2091. Robot is close to the food_egg_2092. Robot is close to the food_fish_2093. Robot is close to the food_food_2094. Robot is close to the food_fruit_2095. Robot is close to the food_hamburger_2096. Robot is close to the food_ice_cream_2097. Robot is close to the food_jam_2098. Robot is close to the food_lemon_2100. Robot is close to the food_noodles_2101. Robot is close to the food_oatmeal_2102. Robot is close to the food_orange_2103. Robot is close to the food_onion_2104. Robot is close to the food_peanut_butter_2105. Robot is close to the food_pizza_2106. Robot is close to the food_potato_2107. Robot is close to the food_rice_2108. Robot is close to the food_salt_2109. Robot is close to the food_snack_2110. Robot is close to the food_sugar_2111. Robot is close to the food_turkey_2112. Robot is close to the food_vegetable_2113. Robot is close to the food_food_2001. Robot is close to the sauce_2148. Robot is close to the fridge_126. fridge_126 is opened. 
+##############################
+From agent.py
+exp(milk_2115, fridge_126)
+Find milk_2115. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(table_199)obs(table_199, Check if the table can hold items)walk_executor(milk_2115)grab_executor(milk_2115)walk_executor(table_199)put_executor(milk_2115, table_199)walk_executor(food_egg_2092)grab_executor(food_egg_2092)walk_executor(table_199)put_executor(food_egg_2092, table_199)walk_executor(table_270)obs(table_270, Check if the table can hold items)walk_executor(milk_2115)grab_executor(milk_2115)walk_executor(table_270)put_executor(milk_2115, table_270)walk_executor(food_egg_2092)grab_executor(food_egg_2092)walk_executor(table_270)put_executor(food_egg_2092, table_270)
+##############################
+From agent.py
+walk_executor(table_199)
+Robot find: wooden_spoon_2000, mat_203, tea_bag_2023, drawing_201, drawing_202, Robot is close to the table_199. 
+##############################
+From agent.py
+obs(table_199, Check if the table can hold items)
+Get this information:  wooden_spoon_2000 is on table_199. table_199 is inside bedroom_162. tea_bag_2023 is on table_199. table_199 is close to couch_198. table_199 is close to floor_167. table_199 is close to floor_168. table_199 is close to tea_bag_2023. table_199 is close to mat_203. table_199 is close to floor_172. table_199 is close to floor_171. table_199 is close to wooden_spoon_2000. table_199 is close to wall_177. table_199 is close to character_240. table_199 is facing drawing_201. table_199 is facing drawing_202. table_199 is facing computer_209. table_199 is DIRTY.
+##############################
+From agent.py
+walk_executor(milk_2115)
+Robot find: Robot is close to the table_114. Robot is close to the milk_2115. 
+##############################
+From agent.py
+grab_executor(milk_2115)
+Robot find: Robot is close to the table_114. Robot is close to the milk_2115. Grabbing milk_2115 by right hand. 
+##############################
+From agent.py
+walk_executor(table_199)
+Robot find: Robot is close to the milk_2115. Robot is close to the table_199. 
+##############################
+From agent.py
+put_executor(milk_2115, table_199)
+Robot find: Robot is close to the milk_2115. Robot is close to the table_199. milk_2115 is close table_199. milk_2115 is on table_199. table_199 is close milk_2115. milk_2115 released by right hand. 
+##############################
+From agent.py
+walk_executor(food_egg_2092)
+Robot find: Robot is close to the food_egg_2092. Robot is close to the fridge_126. 
+##############################
+From agent.py
+grab_executor(food_egg_2092)
+Robot find: Robot is close to the food_egg_2092. Robot is close to the fridge_126. Grabbing food_egg_2092 by right hand. 
+##############################
+From agent.py
+walk_executor(table_199)
+Robot find: Robot is close to the food_egg_2092. Robot is close to the table_199. 
+##############################
+From agent.py
+put_executor(food_egg_2092, table_199)
+Robot find: Robot is close to the food_egg_2092. Robot is close to the table_199. food_egg_2092 is close table_199. table_199 is close food_egg_2092. food_egg_2092 is on table_199. food_egg_2092 released by right hand. 
+##############################
+From agent.py
+walk_executor(table_270)
+Robot find: shoes_2033, shampoo_2019, pillow_286, pencil_2014, phone_2017, pillow_287, drawing_288, brush_2002, Robot is close to the couch_269. Robot is close to the table_270. 
+##############################
+From agent.py
+obs(table_270, Check if the table can hold items)
+Get this information:  shampoo_2019 is on table_270. pencil_2014 is on table_270. orchid_285 is on table_270. table_270 is inside home_office_241. table_270 is inside couch_269. table_270 is close to shampoo_2019. table_270 is close to floor_264. table_270 is close to floor_265. table_270 is close to floor_266. table_270 is close to floor_267. table_270 is close to couch_269. table_270 is close to wall_248. table_270 is close to pillow_286. table_270 is close to orchid_285. table_270 is close to pencil_2014. table_270 is close to pillow_287. table_270 is close to character_240. table_270 is facing drawing_288. table_270 is facing television_281. table_270 is facing computer_276. table_270 is CLEAN.
+##############################
+From agent.py
+walk_executor(milk_2115)
+Robot find: Robot is close to the milk_2115. Robot is close to the table_199. 
+##############################
+From agent.py
+grab_executor(milk_2115)
+Robot find: Robot is close to the milk_2115. Robot is close to the table_199. Grabbing milk_2115 by right hand. 
+##############################
+From agent.py
+walk_executor(table_270)
+Robot find: Robot is close to the milk_2115. Robot is close to the couch_269. Robot is close to the table_270. 
+##############################
+From agent.py
+put_executor(milk_2115, table_270)
+Robot find: Robot is close to the milk_2115. Robot is close to the couch_269. Robot is close to the table_270. milk_2115 is close table_270. milk_2115 is on table_270. table_270 is close milk_2115. milk_2115 released by right hand. 
+##############################
+From agent.py
+walk_executor(food_egg_2092)
+Robot find: Robot is close to the food_egg_2092. Robot is close to the table_199. 
+##############################
+From agent.py
+grab_executor(food_egg_2092)
+Robot find: Robot is close to the food_egg_2092. Robot is close to the table_199. Grabbing food_egg_2092 by right hand. 
+##############################
+From agent.py
+walk_executor(table_270)
+Robot find: Robot is close to the food_egg_2092. Robot is close to the couch_269. Robot is close to the table_270. 
+##############################
+From agent.py
+put_executor(food_egg_2092, table_270)
+Robot find: Robot is close to the food_egg_2092. Robot is close to the couch_269. Robot is close to the table_270. food_egg_2092 is close table_270. table_270 is close food_egg_2092. food_egg_2092 is on table_270. food_egg_2092 released by right hand. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: No
+The feedback instruction: You need to find a table in the dining room and place both the milk and egg on it. Currently, the milk and egg have been placed on table_270, which is in the home office, not the dining room. Ensure they are relocated to a table within the dining room as required by the sub-task.
+##############################
+From agent.py
+Human Instruction: You need to find a table in the dining room and place both the milk and egg on it. Currently, the milk and egg have been placed on table_270, which is in the home office, not the dining room. Ensure they are relocated to a table within the dining room as required by the sub-task.
+
+The actions you have taken:
+Action 1: Walk to table_114.
+Action 2: Observe around table_114 with the question of Check if the table can hold items.
+Action 3: Walk to fridge_126.
+Action 4: Switch off fridge_126.
+Action 5: Open fridge_126.
+Action 6: look for milk_2115 around fridge_126.
+Action 7: Walk to table_199.
+Action 8: Observe around table_199 with the question of Check if the table can hold items.
+Action 9: Walk to milk_2115.
+Action 10: Grab milk_2115.
+Action 11: Walk to table_199.
+Action 12: Put milk_2115 on table_199.
+Action 13: Walk to food_egg_2092.
+Action 14: Grab food_egg_2092.
+Action 15: Walk to table_199.
+Action 16: Put food_egg_2092 on table_199.
+Action 17: Walk to table_270.
+Action 18: Observe around table_270 with the question of Check if the table can hold items.
+Action 19: Walk to milk_2115.
+Action 20: Grab milk_2115.
+Action 21: Walk to table_270.
+Action 22: Put milk_2115 on table_270.
+Action 23: Walk to food_egg_2092.
+Action 24: Grab food_egg_2092.
+Action 25: Walk to table_270.
+Action 26: Put food_egg_2092 on table_270.
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_tray_128_around_dishwasher_129(tray:item):
+    goal: not unknown(tray)
+    body:
+        assert is_tray(tray)
+        bind dishwasher_instance:item where:
+            is_dishwasher(dishwasher_instance) and id[dishwasher_instance]==129
+        achieve close_char(char,dishwasher_instance)
+        if can_open(dishwasher_instance):
+            achieve_once open(dishwasher_instance)
+            exp(tray,dishwasher_instance)
+        else:
+            exp(tray,dishwasher_instance)
+    eff:
+        unknown[tray]=False
+        close[tray,dishwasher_instance]=True
+        close[dishwasher_instance,tray]=True
+    
+
+behavior find_plate_2152_around_cupboard_117(plate:item):
+    goal: not unknown(plate)
+    body:
+        assert is_plate(plate)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==117
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(plate,cupboard_instance)
+        else:
+            exp(plate,cupboard_instance)
+    eff:
+        unknown[plate]=False
+        close[plate,cupboard_instance]=True
+        close[cupboard_instance,plate]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def find_dining_room(table:item):
+    # Function to check if a table is in the dining room
+    symbol in_dining_room=exists room: item : (is_dining_room(room) and inside(table, room))
+    return in_dining_room
+
+behavior place_items_on_table(milk:item, food_egg:item, table:item):
+    body:
+        if not on(milk, table):
+            put_on(milk, table) # Place the milk on the table
+        if not on(food_egg, table):
+            put_on(food_egg, table) # Place the egg on the table
+
+behavior __goal__():
+    body:
+        bind table: item where:
+            is_table(table) and find_dining_room(table)
+        # Select a table in the dining room
+
+        bind milk: item where:
+            is_milk(milk)
+        # Select the milk
+
+        bind food_egg: item where:
+            is_food_egg(food_egg)
+        # Select the egg
+
+        walk_to(table) 
+        # Walk to the selected table in the dining room
+        
+        place_items_on_table(milk, food_egg, table)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+def find_dining_room(table:item):
+    # Function to check if a table is in the dining room
+    symbol in_dining_room=exists room: item : (is_dining_room(room) and inside(table, room))
+    return in_dining_room
+
+behavior place_items_on_table(milk:item, food_egg:item, table:item):
+    body:
+        if not on(milk, table):
+            put_on(milk, table) # Place the milk on the table
+        if not on(food_egg, table):
+            put_on(food_egg, table) # Place the egg on the table
+
+behavior __goal__():
+    body:
+        bind table: item where:
+            is_table(table) and find_dining_room(table)
+        # Select a table in the dining room
+
+        bind milk: item where:
+            is_milk(milk)
+        # Select the milk
+
+        bind food_egg: item where:
+            is_food_egg(food_egg)
+        # Select the egg
+
+        walk_to(table) 
+        # Walk to the selected table in the dining room
+        
+        place_items_on_table(milk, food_egg, table)
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(table_114)walk_executor(milk_2115)grab_executor(milk_2115)walk_executor(table_114)put_executor(milk_2115, table_114)walk_executor(food_egg_2092)grab_executor(food_egg_2092)walk_executor(table_114)put_executor(food_egg_2092, table_114)
+##############################
+From agent.py
+walk_executor(table_114)
+Robot find: Robot is close to the table_114. Robot is close to the mat_102. 
+##############################
+From agent.py
+walk_executor(milk_2115)
+Robot find: Robot is close to the milk_2115. Robot is close to the table_270. 
+##############################
+From agent.py
+grab_executor(milk_2115)
+Robot find: Robot is close to the milk_2115. Robot is close to the table_270. Grabbing milk_2115 by right hand. 
+##############################
+From agent.py
+walk_executor(table_114)
+Robot find: Robot is close to the milk_2115. Robot is close to the table_114. Robot is close to the mat_102. 
+##############################
+From agent.py
+put_executor(milk_2115, table_114)
+Robot find: Robot is close to the milk_2115. Robot is close to the table_114. Robot is close to the mat_102. milk_2115 is close table_114. milk_2115 is on table_114. milk_2115 released by right hand. 
+##############################
+From agent.py
+walk_executor(food_egg_2092)
+Robot find: Robot is close to the food_egg_2092. Robot is close to the table_270. 
+##############################
+From agent.py
+grab_executor(food_egg_2092)
+Robot find: Robot is close to the food_egg_2092. Robot is close to the table_270. Grabbing food_egg_2092 by right hand. 
+##############################
+From agent.py
+walk_executor(table_114)
+Robot find: Robot is close to the food_egg_2092. Robot is close to the table_114. Robot is close to the mat_102. 
+##############################
+From agent.py
+put_executor(food_egg_2092, table_114)
+Robot find: Robot is close to the food_egg_2092. Robot is close to the table_114. Robot is close to the mat_102. table_114 is close food_egg_2092. food_egg_2092 is close table_114. food_egg_2092 is on table_114. food_egg_2092 released by right hand. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: Yes
+The feedback instruction: None
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_carrot_2086_around_bathroom_cabinet_17(food_carrot:item):
+    goal: not unknown(food_carrot)
+    body:
+        assert is_food_carrot(food_carrot)
+        bind bathroom_cabinet_instance:item where:
+            is_bathroom_cabinet(bathroom_cabinet_instance) and id[bathroom_cabinet_instance]==17
+        achieve close_char(char,bathroom_cabinet_instance)
+        if can_open(bathroom_cabinet_instance):
+            achieve_once open(bathroom_cabinet_instance)
+            exp(food_carrot,bathroom_cabinet_instance)
+        else:
+            exp(food_carrot,bathroom_cabinet_instance)
+    eff:
+        unknown[food_carrot]=False
+        close[food_carrot,bathroom_cabinet_instance]=True
+        close[bathroom_cabinet_instance,food_carrot]=True
+    
+
+behavior find_food_kiwi_2054_around_trashcan_99(food_kiwi:item):
+    goal: not unknown(food_kiwi)
+    body:
+        assert is_food_kiwi(food_kiwi)
+        bind trashcan_instance:item where:
+            is_trashcan(trashcan_instance) and id[trashcan_instance]==99
+        achieve close_char(char,trashcan_instance)
+        if can_open(trashcan_instance):
+            achieve_once open(trashcan_instance)
+            exp(food_kiwi,trashcan_instance)
+        else:
+            exp(food_kiwi,trashcan_instance)
+    eff:
+        unknown[food_kiwi]=False
+        close[food_kiwi,trashcan_instance]=True
+        close[trashcan_instance,food_kiwi]=True
+    
+
+behavior find_food_orange_2061_around_trashcan_99(food_orange:item):
+    goal: not unknown(food_orange)
+    body:
+        assert is_food_orange(food_orange)
+        bind trashcan_instance:item where:
+            is_trashcan(trashcan_instance) and id[trashcan_instance]==99
+        achieve close_char(char,trashcan_instance)
+        if can_open(trashcan_instance):
+            achieve_once open(trashcan_instance)
+            exp(food_orange,trashcan_instance)
+        else:
+            exp(food_orange,trashcan_instance)
+    eff:
+        unknown[food_orange]=False
+        close[food_orange,trashcan_instance]=True
+        close[trashcan_instance,food_orange]=True
+    
+
+behavior find_food_onion_2048_around_kitchen_counter_119(food_onion:item):
+    goal: not unknown(food_onion)
+    body:
+        assert is_food_onion(food_onion)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==119
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_onion,kitchen_counter_instance)
+        else:
+            exp(food_onion,kitchen_counter_instance)
+    eff:
+        unknown[food_onion]=False
+        close[food_onion,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_onion]=True
+    
+
+behavior find_food_cheese_2088_around_kitchen_counter_119(food_cheese:item):
+    goal: not unknown(food_cheese)
+    body:
+        assert is_food_cheese(food_cheese)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==119
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_cheese,kitchen_counter_instance)
+        else:
+            exp(food_cheese,kitchen_counter_instance)
+    eff:
+        unknown[food_cheese]=False
+        close[food_cheese,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_cheese]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def empty_fridge(fridge:item, trashcan:item):
+    body:
+        foreach item: item:
+            if inside(item, fridge) and grabbable(item):
+                grab(item)
+                put_inside(item, trashcan)
+                empty_a_hand()
+
+behavior __goal__():
+    body:
+        bind fridge: item where:
+            is_fridge(fridge) and id[fridge]==126
+        bind trashcan: item where:
+            is_trashcan(trashcan)
+        empty_fridge(fridge, trashcan)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_food_carrot_2086_around_trashcan_99(food_carrot:item):
+    goal: not unknown(food_carrot)
+    body:
+        assert is_food_carrot(food_carrot)
+        bind trashcan_instance:item where:
+            is_trashcan(trashcan_instance) and id[trashcan_instance]==99
+        achieve close_char(char,trashcan_instance)
+        if can_open(trashcan_instance):
+            achieve_once open(trashcan_instance)
+            exp(food_carrot,trashcan_instance)
+        else:
+            exp(food_carrot,trashcan_instance)
+    eff:
+        unknown[food_carrot]=False
+        close[food_carrot,trashcan_instance]=True
+        close[trashcan_instance,food_carrot]=True
+    
+
+behavior find_food_food_2073_around_kitchen_counter_119(food_food:item):
+    goal: not unknown(food_food)
+    body:
+        assert is_food_food(food_food)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==119
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_food,kitchen_counter_instance)
+        else:
+            exp(food_food,kitchen_counter_instance)
+    eff:
+        unknown[food_food]=False
+        close[food_food,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_food]=True
+    
+
+behavior find_cd_2145_around_bookshelf_124(cd:item):
+    goal: not unknown(cd)
+    body:
+        assert is_cd(cd)
+        bind bookshelf_instance:item where:
+            is_bookshelf(bookshelf_instance) and id[bookshelf_instance]==124
+        achieve close_char(char,bookshelf_instance)
+        if can_open(bookshelf_instance):
+            achieve_once open(bookshelf_instance)
+            exp(cd,bookshelf_instance)
+        else:
+            exp(cd,bookshelf_instance)
+    eff:
+        unknown[cd]=False
+        close[cd,bookshelf_instance]=True
+        close[bookshelf_instance,cd]=True
+    
+
+behavior find_food_kiwi_2054_around_trashcan_99(food_kiwi:item):
+    goal: not unknown(food_kiwi)
+    body:
+        assert is_food_kiwi(food_kiwi)
+        bind trashcan_instance:item where:
+            is_trashcan(trashcan_instance) and id[trashcan_instance]==99
+        achieve close_char(char,trashcan_instance)
+        if can_open(trashcan_instance):
+            achieve_once open(trashcan_instance)
+            exp(food_kiwi,trashcan_instance)
+        else:
+            exp(food_kiwi,trashcan_instance)
+    eff:
+        unknown[food_kiwi]=False
+        close[food_kiwi,trashcan_instance]=True
+        close[trashcan_instance,food_kiwi]=True
+    
+
+behavior find_food_orange_2103_around_kitchen_counter_119(food_orange:item):
+    goal: not unknown(food_orange)
+    body:
+        assert is_food_orange(food_orange)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==119
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(food_orange,kitchen_counter_instance)
+        else:
+            exp(food_orange,kitchen_counter_instance)
+    eff:
+        unknown[food_orange]=False
+        close[food_orange,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,food_orange]=True
+    
+
+behavior find_food_onion_2048_around_trashcan_99(food_onion:item):
+    goal: not unknown(food_onion)
+    body:
+        assert is_food_onion(food_onion)
+        bind trashcan_instance:item where:
+            is_trashcan(trashcan_instance) and id[trashcan_instance]==99
+        achieve close_char(char,trashcan_instance)
+        if can_open(trashcan_instance):
+            achieve_once open(trashcan_instance)
+            exp(food_onion,trashcan_instance)
+        else:
+            exp(food_onion,trashcan_instance)
+    eff:
+        unknown[food_onion]=False
+        close[food_onion,trashcan_instance]=True
+        close[trashcan_instance,food_onion]=True
+    
+
+behavior find_food_cheese_2088_around_trashcan_99(food_cheese:item):
+    goal: not unknown(food_cheese)
+    body:
+        assert is_food_cheese(food_cheese)
+        bind trashcan_instance:item where:
+            is_trashcan(trashcan_instance) and id[trashcan_instance]==99
+        achieve close_char(char,trashcan_instance)
+        if can_open(trashcan_instance):
+            achieve_once open(trashcan_instance)
+            exp(food_cheese,trashcan_instance)
+        else:
+            exp(food_cheese,trashcan_instance)
+    eff:
+        unknown[food_cheese]=False
+        close[food_cheese,trashcan_instance]=True
+        close[trashcan_instance,food_cheese]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior throw_away_items_from_fridge(fridge:item, trashcan:item):
+    body:
+        foreach item: item:
+            if inside(item, fridge) and is_food_food(item):
+                put_inside(item, trashcan)
+
+behavior __goal__():
+    body:
+        bind fridge: item where:
+            is_fridge(fridge)
+        # Select a fridge
+        bind trashcan: item where:
+            is_trashcan(trashcan)
+        # Select a trash can
+        throw_away_items_from_fridge(fridge, trashcan)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+behavior throw_away_items_from_fridge(fridge:item, trashcan:item):
+    body:
+        foreach item: item:
+            if inside(item, fridge) and is_food_food(item):
+                put_inside(item, trashcan)
+
+behavior __goal__():
+    body:
+        bind fridge: item where:
+            is_fridge(fridge)
+        # Select a fridge
+        bind trashcan: item where:
+            is_trashcan(trashcan)
+        # Select a trash can
+        throw_away_items_from_fridge(fridge, trashcan)
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(food_food_2094)grab_executor(food_food_2094)walk_executor(trashcan_99)putin_executor(food_food_2094, trashcan_99)walk_executor(food_food_2001)grab_executor(food_food_2001)walk_executor(trashcan_99)putin_executor(food_food_2001, trashcan_99)walk_executor(food_food_2046)grab_executor(food_food_2046)walk_executor(trashcan_99)putin_executor(food_food_2046, trashcan_99)walk_executor(food_food_2073)grab_executor(food_food_2073)walk_executor(trashcan_99)putin_executor(food_food_2073, trashcan_99)
+##############################
+From agent.py
+walk_executor(food_food_2094)
+Robot find: Robot is close to the food_food_2094. Robot is close to the fridge_126. 
+##############################
+From agent.py
+grab_executor(food_food_2094)
+Robot find: Robot is close to the food_food_2094. Robot is close to the fridge_126. Grabbing food_food_2094 by right hand. 
+##############################
+From agent.py
+walk_executor(trashcan_99)
+Robot find: food_orange_2061, food_onion_2009, glue_2045, vacuum_cleaner_2139, Robot is close to the food_food_2094. Robot is close to the trashcan_99. Robot is close to the food_orange_2061. Robot is close to the food_onion_2009. Robot is close to the glue_2045. 
+##############################
+From agent.py
+putin_executor(food_food_2094, trashcan_99)
+Robot find: Robot is close to the food_food_2094. Robot is close to the trashcan_99. Robot is close to the food_orange_2061. Robot is close to the food_onion_2009. Robot is close to the glue_2045. food_food_2094 is inside trashcan_99. food_food_2094 is close trashcan_99. trashcan_99 is close food_food_2094. food_food_2094 released by right hand. 
+##############################
+From agent.py
+walk_executor(food_food_2001)
+Robot find: Robot is close to the food_food_2001. Robot is close to the fridge_126. 
+##############################
+From agent.py
+grab_executor(food_food_2001)
+Robot find: Robot is close to the food_food_2001. Robot is close to the fridge_126. Grabbing food_food_2001 by right hand. 
+##############################
+From agent.py
+walk_executor(trashcan_99)
+Robot find: Robot is close to the food_food_2001. Robot is close to the trashcan_99. Robot is close to the food_orange_2061. Robot is close to the food_food_2094. Robot is close to the food_onion_2009. Robot is close to the glue_2045. 
+##############################
+From agent.py
+putin_executor(food_food_2001, trashcan_99)
+Robot find: Robot is close to the food_food_2001. Robot is close to the trashcan_99. Robot is close to the food_orange_2061. Robot is close to the food_food_2094. Robot is close to the food_onion_2009. Robot is close to the glue_2045. food_food_2001 is close trashcan_99. food_food_2001 is inside trashcan_99. trashcan_99 is close food_food_2001. food_food_2001 released by right hand. 
+##############################
+From agent.py
+walk_executor(food_food_2046)
+Robot find: Robot is close to the food_food_2046. Robot is close to the fridge_126. 
+##############################
+From agent.py
+grab_executor(food_food_2046)
+Robot find: Robot is close to the food_food_2046. Robot is close to the fridge_126. Grabbing food_food_2046 by right hand. 
+##############################
+From agent.py
+walk_executor(trashcan_99)
+Robot find: Robot is close to the food_food_2046. Robot is close to the trashcan_99. Robot is close to the food_orange_2061. Robot is close to the food_food_2094. Robot is close to the food_food_2001. Robot is close to the food_onion_2009. Robot is close to the glue_2045. 
+##############################
+From agent.py
+putin_executor(food_food_2046, trashcan_99)
+Robot find: Robot is close to the food_food_2046. Robot is close to the trashcan_99. Robot is close to the food_orange_2061. Robot is close to the food_food_2094. Robot is close to the food_food_2001. Robot is close to the food_onion_2009. Robot is close to the glue_2045. food_food_2046 is inside trashcan_99. food_food_2046 is close trashcan_99. trashcan_99 is close food_food_2046. food_food_2046 released by right hand. 
+##############################
+From agent.py
+walk_executor(food_food_2073)
+Robot find: Robot is close to the food_food_2073. Robot is close to the fridge_126. 
+##############################
+From agent.py
+grab_executor(food_food_2073)
+Robot find: Robot is close to the food_food_2073. Robot is close to the fridge_126. Grabbing food_food_2073 by right hand. 
+##############################
+From agent.py
+walk_executor(trashcan_99)
+Robot find: Robot is close to the food_food_2073. Robot is close to the trashcan_99. Robot is close to the food_orange_2061. Robot is close to the food_food_2094. Robot is close to the food_food_2001. Robot is close to the food_onion_2009. Robot is close to the glue_2045. Robot is close to the food_food_2046. 
+##############################
+From agent.py
+putin_executor(food_food_2073, trashcan_99)
+Robot find: Robot is close to the food_food_2073. Robot is close to the trashcan_99. Robot is close to the food_orange_2061. Robot is close to the food_food_2094. Robot is close to the food_food_2001. Robot is close to the food_onion_2009. Robot is close to the glue_2045. Robot is close to the food_food_2046. food_food_2073 is inside trashcan_99. food_food_2073 is close trashcan_99. trashcan_99 is close food_food_2073. food_food_2073 released by right hand. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: Yes
+The feedback instruction: None
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def relocate_to_dining_room(milk:item, egg:item):
+    body:
+        bind dining_table: item where:
+            is_table(dining_table) and inside(dining_table, dining_room)
+        if not on(milk, dining_table):
+            grab(milk)
+            walk_to(dining_table)
+            put_on(milk, dining_table)
+            empty_a_hand()
+        if not on(egg, dining_table):
+            grab(egg)
+            walk_to(dining_table)
+            put_on(egg, dining_table)
+            empty_a_hand()
+
+behavior put_back_in_fridge(milk:item, egg:item, fridge:item):
+    body:
+        if not inside(milk, fridge):
+            grab(milk)
+            walk_to(fridge)
+            opens(fridge)
+            put_inside(milk, fridge)
+            empty_a_hand()
+        if not inside(egg, fridge):
+            grab(egg)
+            walk_to(fridge)
+            put_inside(egg, fridge)
+            empty_a_hand()
+        closes(fridge)
+
+behavior __goal__():
+    body:
+        bind milk: item where:
+            is_milk(milk) and id[milk]==2115
+        bind egg: item where:
+            is_food_egg(egg) and id[egg]==2092
+        bind dining_room: item where:
+            is_dining_room(dining_room)
+        bind fridge: item where:
+            is_fridge(fridge) and id[fridge]==126
+        relocate_to_dining_room(milk, egg)
+        put_back_in_fridge(milk, egg, fridge)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_measuring_cup_2012_around_kitchen_counter_119(measuring_cup:item):
+    goal: not unknown(measuring_cup)
+    body:
+        assert is_measuring_cup(measuring_cup)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==119
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(measuring_cup,kitchen_counter_instance)
+        else:
+            exp(measuring_cup,kitchen_counter_instance)
+    eff:
+        unknown[measuring_cup]=False
+        close[measuring_cup,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,measuring_cup]=True
+    
+
+behavior find_clothes_jacket_2119_around_dresser_274(clothes_jacket:item):
+    goal: not unknown(clothes_jacket)
+    body:
+        assert is_clothes_jacket(clothes_jacket)
+        bind dresser_instance:item where:
+            is_dresser(dresser_instance) and id[dresser_instance]==274
+        achieve close_char(char,dresser_instance)
+        if can_open(dresser_instance):
+            achieve_once open(dresser_instance)
+            exp(clothes_jacket,dresser_instance)
+        else:
+            exp(clothes_jacket,dresser_instance)
+    eff:
+        unknown[clothes_jacket]=False
+        close[clothes_jacket,dresser_instance]=True
+        close[dresser_instance,clothes_jacket]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior place_item_in_fridge(item:item, fridge:item):
+    body:
+        if not inside(item, fridge):
+            put_inside(item, fridge)
+
+behavior close_the_fridge(fridge:item):
+    body:
+        if open(fridge):
+            closes(fridge)
+
+behavior __goal__():
+    body:
+        bind milk: item where:
+            is_milk(milk) and inhand(milk)
+        bind egg: item where:
+            is_food_egg(egg) and inhand(egg)
+        bind fridge: item where:
+            is_fridge(fridge)
+        # Place milk and egg back into the fridge
+        place_item_in_fridge(milk, fridge)
+        place_item_in_fridge(egg, fridge)
+        # Ensure the fridge door is closed
+        close_the_fridge(fridge)
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_measuring_cup_2012_around_kitchen_counter_119(measuring_cup:item):
+    goal: not unknown(measuring_cup)
+    body:
+        assert is_measuring_cup(measuring_cup)
+        bind kitchen_counter_instance:item where:
+            is_kitchen_counter(kitchen_counter_instance) and id[kitchen_counter_instance]==119
+        achieve close_char(char,kitchen_counter_instance)
+        if can_open(kitchen_counter_instance):
+            achieve_once open(kitchen_counter_instance)
+            exp(measuring_cup,kitchen_counter_instance)
+        else:
+            exp(measuring_cup,kitchen_counter_instance)
+    eff:
+        unknown[measuring_cup]=False
+        close[measuring_cup,kitchen_counter_instance]=True
+        close[kitchen_counter_instance,measuring_cup]=True
+    
+
+behavior find_food_carrot_2015_around_cupboard_118(food_carrot:item):
+    goal: not unknown(food_carrot)
+    body:
+        assert is_food_carrot(food_carrot)
+        bind cupboard_instance:item where:
+            is_cupboard(cupboard_instance) and id[cupboard_instance]==118
+        achieve close_char(char,cupboard_instance)
+        if can_open(cupboard_instance):
+            achieve_once open(cupboard_instance)
+            exp(food_carrot,cupboard_instance)
+        else:
+            exp(food_carrot,cupboard_instance)
+    eff:
+        unknown[food_carrot]=False
+        close[food_carrot,cupboard_instance]=True
+        close[cupboard_instance,food_carrot]=True
+    
+
+behavior find_food_food_2073_around_curtain_204(food_food:item):
+    goal: not unknown(food_food)
+    body:
+        assert is_food_food(food_food)
+        bind curtain_instance:item where:
+            is_curtain(curtain_instance) and id[curtain_instance]==204
+        achieve close_char(char,curtain_instance)
+        if can_open(curtain_instance):
+            achieve_once open(curtain_instance)
+            exp(food_food,curtain_instance)
+        else:
+            exp(food_food,curtain_instance)
+    eff:
+        unknown[food_food]=False
+        close[food_food,curtain_instance]=True
+        close[curtain_instance,food_food]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior put_items_in_fridge(milk: item, egg: item, fridge: item):
+    body:
+        if not inside(milk, fridge):
+            put_inside(milk, fridge)
+        if not inside(egg, fridge):
+            put_inside(egg, fridge)
+
+behavior __goal__():
+    body:
+        bind milk: item where:
+            is_milk(milk)
+        bind egg: item where:
+            is_food_egg(egg)
+        bind fridge: item where:
+            is_fridge(fridge)
+            
+        put_items_in_fridge(milk, egg, fridge)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+behavior put_items_in_fridge(milk: item, egg: item, fridge: item):
+    body:
+        if not inside(milk, fridge):
+            put_inside(milk, fridge)
+        if not inside(egg, fridge):
+            put_inside(egg, fridge)
+
+behavior __goal__():
+    body:
+        bind milk: item where:
+            is_milk(milk)
+        bind egg: item where:
+            is_food_egg(egg)
+        bind fridge: item where:
+            is_fridge(fridge)
+            
+        put_items_in_fridge(milk, egg, fridge)
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(milk_2115)grab_executor(milk_2115)walk_executor(fridge_126)putin_executor(milk_2115, fridge_126)walk_executor(food_egg_2092)grab_executor(food_egg_2092)walk_executor(fridge_126)putin_executor(food_egg_2092, fridge_126)
+##############################
+From agent.py
+walk_executor(milk_2115)
+Robot find: Robot is close to the table_114. Robot is close to the milk_2115. 
+##############################
+From agent.py
+grab_executor(milk_2115)
+Robot find: Robot is close to the table_114. Robot is close to the milk_2115. Grabbing milk_2115 by right hand. 
+##############################
+From agent.py
+walk_executor(fridge_126)
+Robot find: Robot is close to the milk_2115. Robot is close to the food_onion_2048. Robot is close to the food_steak_2080. Robot is close to the food_apple_2081. Robot is close to the food_bacon_2082. Robot is close to the food_banana_2083. Robot is close to the food_cake_2085. Robot is close to the food_carrot_2086. Robot is close to the food_cereal_2087. Robot is close to the food_cheese_2088. Robot is close to the food_chicken_2089. Robot is close to the food_dessert_2090. Robot is close to the food_donut_2091. Robot is close to the food_fish_2093. Robot is close to the food_fruit_2095. Robot is close to the food_hamburger_2096. Robot is close to the food_ice_cream_2097. Robot is close to the food_jam_2098. Robot is close to the food_lemon_2100. Robot is close to the food_noodles_2101. Robot is close to the food_oatmeal_2102. Robot is close to the food_orange_2103. Robot is close to the food_onion_2104. Robot is close to the food_peanut_butter_2105. Robot is close to the food_pizza_2106. Robot is close to the food_potato_2107. Robot is close to the food_rice_2108. Robot is close to the food_salt_2109. Robot is close to the food_snack_2110. Robot is close to the food_sugar_2111. Robot is close to the food_turkey_2112. Robot is close to the food_vegetable_2113. Robot is close to the sauce_2148. Robot is close to the fridge_126. 
+##############################
+From agent.py
+putin_executor(milk_2115, fridge_126)
+Robot find: Robot is close to the milk_2115. Robot is close to the food_onion_2048. Robot is close to the food_steak_2080. Robot is close to the food_apple_2081. Robot is close to the food_bacon_2082. Robot is close to the food_banana_2083. Robot is close to the food_cake_2085. Robot is close to the food_carrot_2086. Robot is close to the food_cereal_2087. Robot is close to the food_cheese_2088. Robot is close to the food_chicken_2089. Robot is close to the food_dessert_2090. Robot is close to the food_donut_2091. Robot is close to the food_fish_2093. Robot is close to the food_fruit_2095. Robot is close to the food_hamburger_2096. Robot is close to the food_ice_cream_2097. Robot is close to the food_jam_2098. Robot is close to the food_lemon_2100. Robot is close to the food_noodles_2101. Robot is close to the food_oatmeal_2102. Robot is close to the food_orange_2103. Robot is close to the food_onion_2104. Robot is close to the food_peanut_butter_2105. Robot is close to the food_pizza_2106. Robot is close to the food_potato_2107. Robot is close to the food_rice_2108. Robot is close to the food_salt_2109. Robot is close to the food_snack_2110. Robot is close to the food_sugar_2111. Robot is close to the food_turkey_2112. Robot is close to the food_vegetable_2113. Robot is close to the sauce_2148. Robot is close to the fridge_126. milk_2115 is close fridge_126. fridge_126 is close milk_2115. milk_2115 is inside fridge_126. milk_2115 released by right hand. 
+##############################
+From agent.py
+walk_executor(food_egg_2092)
+Robot find: Robot is close to the table_114. Robot is close to the food_egg_2092. 
+##############################
+From agent.py
+grab_executor(food_egg_2092)
+Robot find: Robot is close to the table_114. Robot is close to the food_egg_2092. Grabbing food_egg_2092 by right hand. 
+##############################
+From agent.py
+walk_executor(fridge_126)
+Robot find: Robot is close to the food_egg_2092. Robot is close to the food_onion_2048. Robot is close to the food_steak_2080. Robot is close to the food_apple_2081. Robot is close to the food_bacon_2082. Robot is close to the food_banana_2083. Robot is close to the food_cake_2085. Robot is close to the food_carrot_2086. Robot is close to the food_cereal_2087. Robot is close to the food_cheese_2088. Robot is close to the food_chicken_2089. Robot is close to the food_dessert_2090. Robot is close to the food_donut_2091. Robot is close to the food_fish_2093. Robot is close to the food_fruit_2095. Robot is close to the food_hamburger_2096. Robot is close to the food_ice_cream_2097. Robot is close to the food_jam_2098. Robot is close to the food_lemon_2100. Robot is close to the food_noodles_2101. Robot is close to the food_oatmeal_2102. Robot is close to the food_orange_2103. Robot is close to the food_onion_2104. Robot is close to the food_peanut_butter_2105. Robot is close to the food_pizza_2106. Robot is close to the food_potato_2107. Robot is close to the food_rice_2108. Robot is close to the food_salt_2109. Robot is close to the food_snack_2110. Robot is close to the food_sugar_2111. Robot is close to the food_turkey_2112. Robot is close to the food_vegetable_2113. Robot is close to the milk_2115. Robot is close to the sauce_2148. Robot is close to the fridge_126. 
+##############################
+From agent.py
+putin_executor(food_egg_2092, fridge_126)
+Robot find: Robot is close to the food_egg_2092. Robot is close to the food_onion_2048. Robot is close to the food_steak_2080. Robot is close to the food_apple_2081. Robot is close to the food_bacon_2082. Robot is close to the food_banana_2083. Robot is close to the food_cake_2085. Robot is close to the food_carrot_2086. Robot is close to the food_cereal_2087. Robot is close to the food_cheese_2088. Robot is close to the food_chicken_2089. Robot is close to the food_dessert_2090. Robot is close to the food_donut_2091. Robot is close to the food_fish_2093. Robot is close to the food_fruit_2095. Robot is close to the food_hamburger_2096. Robot is close to the food_ice_cream_2097. Robot is close to the food_jam_2098. Robot is close to the food_lemon_2100. Robot is close to the food_noodles_2101. Robot is close to the food_oatmeal_2102. Robot is close to the food_orange_2103. Robot is close to the food_onion_2104. Robot is close to the food_peanut_butter_2105. Robot is close to the food_pizza_2106. Robot is close to the food_potato_2107. Robot is close to the food_rice_2108. Robot is close to the food_salt_2109. Robot is close to the food_snack_2110. Robot is close to the food_sugar_2111. Robot is close to the food_turkey_2112. Robot is close to the food_vegetable_2113. Robot is close to the milk_2115. Robot is close to the sauce_2148. Robot is close to the fridge_126. food_egg_2092 is inside fridge_126. food_egg_2092 is close fridge_126. food_egg_2092 released by right hand. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: Yes
+The feedback instruction: None
+##############################
+Task Summary:
+Task Goal:
+Put milk and egg on one of the table in dining room. Throw all the items in the fridge to the trashcan. Then put milk and eggs back in the fridge.
+Action History:
+['walk_executor(table_114)', 'walk_executor(fridge_126)', 'switchoff_executor(fridge_126)', 'open_executor(fridge_126)', 'walk_executor(table_199)', 'walk_executor(milk_2115)', 'grab_executor(milk_2115)', 'walk_executor(table_199)', 'put_executor(milk_2115, table_199)', 'walk_executor(food_egg_2092)', 'grab_executor(food_egg_2092)', 'walk_executor(table_199)', 'put_executor(food_egg_2092, table_199)', 'walk_executor(table_270)', 'walk_executor(milk_2115)', 'grab_executor(milk_2115)', 'walk_executor(table_270)', 'put_executor(milk_2115, table_270)', 'walk_executor(food_egg_2092)', 'grab_executor(food_egg_2092)', 'walk_executor(table_270)', 'put_executor(food_egg_2092, table_270)', 'walk_executor(table_114)', 'walk_executor(milk_2115)', 'grab_executor(milk_2115)', 'walk_executor(table_114)', 'put_executor(milk_2115, table_114)', 'walk_executor(food_egg_2092)', 'grab_executor(food_egg_2092)', 'walk_executor(table_114)', 'put_executor(food_egg_2092, table_114)', 'walk_executor(food_food_2094)', 'grab_executor(food_food_2094)', 'walk_executor(trashcan_99)', 'putin_executor(food_food_2094, trashcan_99)', 'walk_executor(food_food_2001)', 'grab_executor(food_food_2001)', 'walk_executor(trashcan_99)', 'putin_executor(food_food_2001, trashcan_99)', 'walk_executor(food_food_2046)', 'grab_executor(food_food_2046)', 'walk_executor(trashcan_99)', 'putin_executor(food_food_2046, trashcan_99)', 'walk_executor(food_food_2073)', 'grab_executor(food_food_2073)', 'walk_executor(trashcan_99)', 'putin_executor(food_food_2073, trashcan_99)', 'walk_executor(milk_2115)', 'grab_executor(milk_2115)', 'walk_executor(fridge_126)', 'putin_executor(milk_2115, fridge_126)', 'walk_executor(food_egg_2092)', 'grab_executor(food_egg_2092)', 'walk_executor(fridge_126)', 'putin_executor(food_egg_2092, fridge_126)']
+Time info:
+Time consume: 330 seconds
+Exp_helper query times: 0
+Guidance query times: 0
+library scale: 5
+goal generate times: 12
+goal correct times: 0
+action_num: 55
+
+Task complete rate:
+Keystate: k1 - Requires: 0 steps
+Keystate: k2 - Requires: 135 steps
+Keystate: k3 - Requires: 0 steps
+Action Completion Rate: No actions required
+Scene_id: 1
+##############################

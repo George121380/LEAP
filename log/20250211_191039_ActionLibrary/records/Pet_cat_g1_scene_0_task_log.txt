@@ -1,0 +1,317 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Locate the cat.', '2. Touch the cat.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_cat_2055_around_coffee_table_2068(cat:item):
+    goal: not unknown(cat)
+    body:
+        assert is_cat(cat)
+        bind coffee_table_instance:item where:
+            is_coffee_table(coffee_table_instance) and id[coffee_table_instance]==2068
+        achieve close_char(char,coffee_table_instance)
+        if can_open(coffee_table_instance):
+            achieve_once open(coffee_table_instance)
+            exp(cat,coffee_table_instance)
+        else:
+            exp(cat,coffee_table_instance)
+    eff:
+        unknown[cat]=False
+        close[cat,coffee_table_instance]=True
+        close[coffee_table_instance,cat]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def has_visited_cat(cat:item):
+    # Function to check if the cat has been visited
+    symbol visited_cat = visited(cat)
+    return visited_cat
+
+behavior __goal__():
+    body:
+        if exists cat: item : (is_cat(cat) and has_visited_cat(cat)):
+            # If the cat is found and has been visited, get close to the cat
+            bind cat: item where:
+                is_cat(cat) and has_visited_cat(cat)
+            achieve close_char(char, cat)
+        else:
+            # Check all possible locations to find the cat
+            foreach location: item:
+                if not visited(location):
+                    observe(location, "Check if the cat is there")
+
+#goal_representation_end
+
+##############################
+Error is:
+'NoneType' object is not iterable
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_cat_2055_around_coffee_table_2068(cat:item):
+    goal: not unknown(cat)
+    body:
+        assert is_cat(cat)
+        bind coffee_table_instance:item where:
+            is_coffee_table(coffee_table_instance) and id[coffee_table_instance]==2068
+        achieve close_char(char,coffee_table_instance)
+        if can_open(coffee_table_instance):
+            achieve_once open(coffee_table_instance)
+            exp(cat,coffee_table_instance)
+        else:
+            exp(cat,coffee_table_instance)
+    eff:
+        unknown[cat]=False
+        close[cat,coffee_table_instance]=True
+        close[coffee_table_instance,cat]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_cat_located(cat: item):
+    # Function to check if the cat has been located
+    symbol cat_found = exists m: item : (is_cat(m))
+    return cat_found
+
+behavior locate_cat():
+    body:
+        # Check all items categorized as is_cat
+        foreach m: item:
+            if is_cat(m) and not visited(m):
+                # Only nonvisited cat
+                observe(m, "Locate the cat gently")
+
+behavior __goal__():
+    body:
+        if is_cat_located(cat):
+            # If we have already found the cat, move closer
+            bind cat: item where:
+                is_cat(cat)
+            achieve close_char(char, cat)
+
+        else:
+            # Locate the cat
+            locate_cat()
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "behavior_definition":
+
+Unknown variable: cat; available variables: [].
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_cat_2055_around_coffee_table_2068(cat:item):
+    goal: not unknown(cat)
+    body:
+        assert is_cat(cat)
+        bind coffee_table_instance:item where:
+            is_coffee_table(coffee_table_instance) and id[coffee_table_instance]==2068
+        achieve close_char(char,coffee_table_instance)
+        if can_open(coffee_table_instance):
+            achieve_once open(coffee_table_instance)
+            exp(cat,coffee_table_instance)
+        else:
+            exp(cat,coffee_table_instance)
+    eff:
+        unknown[cat]=False
+        close[cat,coffee_table_instance]=True
+        close[coffee_table_instance,cat]=True
+    
+
+#goal_representation
+ 
+def is_cat_located(cat: item):
+    # Function to check if the cat has been located
+    symbol cat_found = exists m: item : (is_cat(m))
+    return cat_found
+
+behavior locate_cat():
+    body:
+        # Check all items categorized as is_cat
+        foreach m: item:
+            if is_cat(m) and not visited(m):
+                # Only nonvisited cat
+                observe(m, "Locate the cat gently")
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        if is_cat_located(cat):
+            # If we have already found the cat, move closer
+            achieve close_char(char, cat)
+        else:
+            # Locate the cat
+            locate_cat()
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+ 
+def is_cat_located(cat: item):
+    # Function to check if the cat has been located
+    symbol cat_found = exists m: item : (is_cat(m))
+    return cat_found
+
+behavior locate_cat():
+    body:
+        # Check all items categorized as is_cat
+        foreach m: item:
+            if is_cat(m) and not visited(m):
+                # Only nonvisited cat
+                observe(m, "Locate the cat gently")
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        if is_cat_located(cat):
+            # If we have already found the cat, move closer
+            achieve close_char(char, cat)
+        else:
+            # Locate the cat
+            locate_cat()
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(coffee_table_2068)exp(cat_2055, coffee_table_2068)walk_executor(cat_2055)
+##############################
+From agent.py
+walk_executor(coffee_table_2068)
+Robot find: Robot is close to the coffee_table_2068. 
+##############################
+From agent.py
+exp(cat_2055, coffee_table_2068)
+Fail to find cat_2055 around coffee_table_2068. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(bench_227)exp(cat_2055, bench_227)walk_executor(cat_2055)
+##############################
+From agent.py
+walk_executor(bench_227)
+Robot find: mat_236, mat_237, drawing_238, drawing_239, drawing_240, drawing_241, drawing_242, drawing_243, wall_clock_249, Robot is close to the bench_227. 
+##############################
+From agent.py
+exp(cat_2055, bench_227)
+Fail to find cat_2055 around bench_227. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(couch_352)exp(cat_2055, couch_352)walk_executor(cat_2055)
+##############################
+From agent.py
+walk_executor(couch_352)
+Robot find: mat_401, remote_control_2052, clothes_jacket_2047, pillow_405, cat_2055, drawing_400, pillow_406, hairbrush_2002, vacuum_cleaner_2070, Robot is close to the couch_352. Robot is close to the mat_401. 
+##############################
+From agent.py
+exp(cat_2055, couch_352)
+Find cat_2055. 
+##############################
+From agent.py-> find a plan in act()
+walk_executor(cat_2055)
+##############################
+From agent.py
+walk_executor(cat_2055)
+Robot find: Robot is close to the couch_352. Robot is close to the cat_2055. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: Yes
+The feedback instruction: None
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_spectacles_2082_around_table_355(spectacles:item):
+    goal: not unknown(spectacles)
+    body:
+        assert is_spectacles(spectacles)
+        bind table_instance:item where:
+            is_table(table_instance) and id[table_instance]==355
+        achieve close_char(char,table_instance)
+        if can_open(table_instance):
+            achieve_once open(table_instance)
+            exp(spectacles,table_instance)
+        else:
+            exp(spectacles,table_instance)
+    eff:
+        unknown[spectacles]=False
+        close[spectacles,table_instance]=True
+        close[table_instance,spectacles]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+
+behavior touch_cat(cat:item):
+    body:
+        achieve_once close_char(char, cat)
+        touch(cat)
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        touch_cat(cat)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+
+behavior touch_cat(cat:item):
+    body:
+        achieve_once close_char(char, cat)
+        touch(cat)
+
+behavior __goal__():
+    body:
+        bind cat: item where:
+            is_cat(cat)
+        touch_cat(cat)
+
+##############################
+From agent.py-> find a plan in act()
+touch_executor(cat_2055)
+##############################
+From agent.py
+touch_executor(cat_2055)
+Robot find: Robot is close to the couch_352. Robot is close to the cat_2055. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: Yes
+The feedback instruction: None
+##############################
+Task Summary:
+Task Goal:
+Find my cat and touch it
+Action History:
+['walk_executor(coffee_table_2068)', 'walk_executor(bench_227)', 'walk_executor(couch_352)', 'walk_executor(cat_2055)', 'touch_executor(cat_2055)']
+Time info:
+Time consume: 85 seconds
+Exp_helper query times: 0
+Guidance query times: 0
+library scale: 9
+goal generate times: 3
+goal correct times: 1
+action_num: 5
+
+Task complete rate:
+1
+Scene_id: 0
+##############################

@@ -1,0 +1,908 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Find your cat.', '2. Gently wash the cat with water and pet-safe shampoo.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_cat_2055_around_bed_105(cat:item):
+    goal: not unknown(cat)
+    body:
+        assert is_cat(cat)
+        bind bed_instance:item where:
+            is_bed(bed_instance) and id[bed_instance]==105
+        achieve close_char(char,bed_instance)
+        if can_open(bed_instance):
+            achieve_once open(bed_instance)
+            exp(cat,bed_instance)
+        else:
+            exp(cat,bed_instance)
+    eff:
+        unknown[cat]=False
+        close[cat,bed_instance]=True
+        close[bed_instance,cat]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+
+def is_cat_found():
+    # Check if a cat has been found in the environment according to known information
+    symbol cat_found = exists cat: item : (is_cat(cat))
+    return cat_found
+
+behavior __goal__():
+    body:
+        if is_cat_found():
+            # If the cat is already found in known information, approach the cat
+            bind cat: item where:
+                is_cat(cat)
+            achieve close_char(char, cat)
+
+        else:
+            # If the cat is not found in known information, explore to find the cat
+            foreach cat: item:
+                if is_cat(cat) and not visited(cat):
+                    observe(cat, "Check if there is a cat")
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+
+def is_cat_found():
+    # Check if a cat has been found in the environment according to known information
+    symbol cat_found = exists cat: item : (is_cat(cat))
+    return cat_found
+
+behavior __goal__():
+    body:
+        if is_cat_found():
+            # If the cat is already found in known information, approach the cat
+            bind cat: item where:
+                is_cat(cat)
+            achieve close_char(char, cat)
+
+        else:
+            # If the cat is not found in known information, explore to find the cat
+            foreach cat: item:
+                if is_cat(cat) and not visited(cat):
+                    observe(cat, "Check if there is a cat")
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(bed_105)exp(cat_2055, bed_105)walk_executor(cat_2055)
+##############################
+From agent.py
+walk_executor(bed_105)
+Robot find: mat_173, drawing_176, pillow_183, clothes_underwear_2049, clothes_dress_2044, pillow_182, chair_106, clothes_scarf_2048, Robot is close to the bed_105. Robot is close to the mat_173. 
+##############################
+From agent.py
+exp(cat_2055, bed_105)
+Fail to find cat_2055 around bed_105. 
+##############################
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Find your cat.', '2. Wash the cat gently.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_cat_2055_around_nightstand_102(cat:item):
+    goal: not unknown(cat)
+    body:
+        assert is_cat(cat)
+        bind nightstand_instance:item where:
+            is_nightstand(nightstand_instance) and id[nightstand_instance]==102
+        achieve close_char(char,nightstand_instance)
+        if can_open(nightstand_instance):
+            achieve_once open(nightstand_instance)
+            exp(cat,nightstand_instance)
+        else:
+            exp(cat,nightstand_instance)
+    eff:
+        unknown[cat]=False
+        close[cat,nightstand_instance]=True
+        close[nightstand_instance,cat]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_cat_near_bed(cat:item, bed:item):
+    # Check if the cat is near the specified bed
+    symbol cat_near_bed=exists cat: item : (is_cat(cat) and close(cat, bed))
+    return cat_near_bed
+
+def is_cat_in_bedroom(cat:item):
+    # Check if the cat is inside the bedroom
+    symbol cat_in_bedroom=exists bedroom: item : (is_bedroom(bedroom) and inside(cat, bedroom))
+    return cat_in_bedroom
+
+behavior __goal__():
+    body:
+        bind bed: item where:
+            is_bed(bed) and id[bed] == 105
+        # Bind the bed with ID 105 for the search
+        
+        if exists cat: item : (is_cat(cat) and is_cat_near_bed(cat, bed)):
+            # If the cat is near the specified bed, move closer to it
+            bind cat: item where:
+                is_cat(cat) and close(cat, bed)
+            achieve close_char(char, cat) 
+            # Move the character closer to the cat near the bed
+
+        elif exists cat: item : (is_cat(cat) and is_cat_in_bedroom(cat)):
+            # If the cat is inside the bedroom, move closer to the cat in the bedroom
+            bind cat: item where:
+                is_cat(cat) and is_cat_in_bedroom(cat)
+            achieve close_char(char, cat) 
+            # Move the character closer to the cat inside the bedroom
+
+        else:
+            # Use the observation to locate the cat if not found by bed or bedroom information
+            foreach cat: item:
+                if is_cat(cat) and not visited(cat):
+                    observe(cat,"Check if the cat is near any bed or inside the bedroom")
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Unexpected token Token('EXISTS', 'exists') at line 5743, column 14.
+Expected one of: 
+	* SLASH
+	* __ANON_0
+	* __ANON_2
+	* __ANON_1
+	* PLUS
+	* EQUAL
+	* CIRCUMFLEX
+	* RSHIFT
+	* VBAR
+	* NOT_EQ
+	* MINUS
+	* _NEWLINE
+	* OR
+	* __ANON_7
+	* SEMICOLON
+	* AMPERSAND
+	* __ANON_6
+	* __ANON_4
+	* __ANON_5
+	* PERCENT
+	* FLOORDIV
+	* MORETHAN
+	* __ANON_8
+	* LESSTHAN
+	* GREATER_EQ
+	* __ANON_3
+	* LSHIFT
+	* IF
+	* COMMA
+	* AND
+	* AT
+	* STAR
+	* DOUBLE_EQUAL
+	* LESS_EQ
+
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_cat_2055_around_nightstand_102(cat:item):
+    goal: not unknown(cat)
+    body:
+        assert is_cat(cat)
+        bind nightstand_instance:item where:
+            is_nightstand(nightstand_instance) and id[nightstand_instance]==102
+        achieve close_char(char,nightstand_instance)
+        if can_open(nightstand_instance):
+            achieve_once open(nightstand_instance)
+            exp(cat,nightstand_instance)
+        else:
+            exp(cat,nightstand_instance)
+    eff:
+        unknown[cat]=False
+        close[cat,nightstand_instance]=True
+        close[nightstand_instance,cat]=True
+    
+
+#goal_representation
+ 
+def is_cat_near_bed(cat:item, bed:item):
+    # Check if the cat is near the specified bed
+    symbol cat_near_bed=exists cat: item : (is_cat(cat) and close(cat, bed))
+    return cat_near_bed
+
+def is_cat_in_bedroom(cat:item):
+    # Check if the cat is inside the bedroom
+    symbol cat_in_bedroom=exists bedroom: item : (is_bedroom(bedroom) and inside(cat, bedroom))
+    return cat_in_bedroom
+
+behavior __goal__():
+    body:
+        bind bed: item where:
+            is_bed(bed) and id[bed] == 105
+
+        if exists cat: item : (is_cat(cat) and is_cat_near_bed(cat, bed)):
+            # If the cat is near the specified bed, move closer to it
+            bind cat: item where:
+                is_cat(cat) and close(cat, bed)
+            achieve close_char(char, cat) 
+
+        elif exists cat: item : (is_cat(cat) and is_cat_in_bedroom(cat)):
+            # If the cat is inside the bedroom, move closer to the cat in the bedroom
+            bind cat: item where:
+                is_cat(cat) and is_cat_in_bedroom(cat)
+            achieve close_char(char, cat) 
+
+        else:
+            # Use the observation to locate the cat if not found by bed or bedroom information
+            foreach cat: item:
+                if is_cat(cat) and not visited(cat):
+                    observe(cat,"Check if the cat is near any bed or inside the bedroom")
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Unexpected token Token('EXISTS', 'exists') at line 5741, column 14.
+Expected one of: 
+	* SLASH
+	* __ANON_0
+	* __ANON_2
+	* __ANON_1
+	* PLUS
+	* EQUAL
+	* CIRCUMFLEX
+	* RSHIFT
+	* VBAR
+	* NOT_EQ
+	* MINUS
+	* _NEWLINE
+	* OR
+	* __ANON_7
+	* SEMICOLON
+	* AMPERSAND
+	* __ANON_6
+	* __ANON_4
+	* __ANON_5
+	* PERCENT
+	* FLOORDIV
+	* MORETHAN
+	* __ANON_8
+	* LESSTHAN
+	* GREATER_EQ
+	* __ANON_3
+	* LSHIFT
+	* IF
+	* COMMA
+	* AND
+	* AT
+	* STAR
+	* DOUBLE_EQUAL
+	* LESS_EQ
+
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_cat_2055_around_nightstand_102(cat:item):
+    goal: not unknown(cat)
+    body:
+        assert is_cat(cat)
+        bind nightstand_instance:item where:
+            is_nightstand(nightstand_instance) and id[nightstand_instance]==102
+        achieve close_char(char,nightstand_instance)
+        if can_open(nightstand_instance):
+            achieve_once open(nightstand_instance)
+            exp(cat,nightstand_instance)
+        else:
+            exp(cat,nightstand_instance)
+    eff:
+        unknown[cat]=False
+        close[cat,nightstand_instance]=True
+        close[nightstand_instance,cat]=True
+    
+
+#goal_representation
+ 
+def is_cat_near_bed(cat:item, bed:item):
+    # Check if the cat is near the specified bed
+    symbol cat_near_bed=exists c: item : (is_cat(c) and close(c, bed) and c==cat)
+    return cat_near_bed
+
+def is_cat_in_bedroom(cat:item):
+    # Check if the cat is inside the bedroom
+    symbol cat_in_bedroom=exists bedroom: item : (is_bedroom(bedroom) and inside(cat, bedroom))
+    return cat_in_bedroom
+
+behavior __goal__():
+    body:
+        bind bed: item where:
+            is_bed(bed) and id[bed] == 105
+
+        if exists cat: item : (is_cat(cat) and is_cat_near_bed(cat, bed)):
+            # If the cat is near the specified bed, move closer to it
+            bind cat: item where:
+                is_cat(cat) and close(cat, bed)
+            achieve close_char(char, cat) 
+
+        elif exists cat: item : (is_cat(cat) and is_cat_in_bedroom(cat)):
+            # If the cat is inside the bedroom, move closer to the cat in the bedroom
+            bind cat: item where:
+                is_cat(cat) and is_cat_in_bedroom(cat)
+            achieve close_char(char, cat) 
+
+        else:
+            # Use the observation to locate the cat if not found by bed or bedroom information
+            foreach cat: item:
+                if is_cat(cat) and not visited(cat):
+                    observe(cat, "Check if the cat is near any bed or inside the bedroom")
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_cat_2055_around_nightstand_102(cat:item):
+    goal: not unknown(cat)
+    body:
+        assert is_cat(cat)
+        bind nightstand_instance:item where:
+            is_nightstand(nightstand_instance) and id[nightstand_instance]==102
+        achieve close_char(char,nightstand_instance)
+        if can_open(nightstand_instance):
+            achieve_once open(nightstand_instance)
+            exp(cat,nightstand_instance)
+        else:
+            exp(cat,nightstand_instance)
+    eff:
+        unknown[cat]=False
+        close[cat,nightstand_instance]=True
+        close[nightstand_instance,cat]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_cat_nearby(bed:item):
+    # Function to check if the cat is near a specified bed
+    symbol nearby_cat= exists o: item : (is_cat(o) and close(o, bed))
+    return nearby_cat
+
+behavior __goal__():
+    body:
+        if exists bed: item : (is_bed(bed) and is_cat_nearby(bed)):
+            # Check if there is a bed with the cat nearby based on the available information
+            bind bed: item where:
+                is_bed(bed) and is_cat_nearby(bed)
+            # Select the bed with the cat nearby
+            achieve close_char(char, bed)
+            # Move the character closer to the bed with the cat
+
+        else:
+            # If no bed with the cat is found, initiate exploration to locate one
+            foreach bed: item:
+                if is_bed(bed) and not visited(bed):
+                    # Check all unvisited beds
+                    observe(bed,"Check if the cat is nearby the bed")
+                    # Observe whether each bed has the cat nearby
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+ 
+def is_cat_nearby(bed:item):
+    # Function to check if the cat is near a specified bed
+    symbol nearby_cat= exists o: item : (is_cat(o) and close(o, bed))
+    return nearby_cat
+
+behavior __goal__():
+    body:
+        if exists bed: item : (is_bed(bed) and is_cat_nearby(bed)):
+            # Check if there is a bed with the cat nearby based on the available information
+            bind bed: item where:
+                is_bed(bed) and is_cat_nearby(bed)
+            # Select the bed with the cat nearby
+            achieve close_char(char, bed)
+            # Move the character closer to the bed with the cat
+
+        else:
+            # If no bed with the cat is found, initiate exploration to locate one
+            foreach bed: item:
+                if is_bed(bed) and not visited(bed):
+                    # Check all unvisited beds
+                    observe(bed,"Check if the cat is nearby the bed")
+                    # Observe whether each bed has the cat nearby
+
+##############################
+From agent.py-> find a plan in act()
+obs(bed_105, Check if the cat is nearby the bed)
+##############################
+From agent.py
+obs(bed_105, Check if the cat is nearby the bed)
+Get this information:  bed_105 is facing drawing_176. pillow_183 is on bed_105. clothes_underwear_2049 is on bed_105. clothes_dress_2044 is on bed_105. bed_105 is close to clothes_scarf_2048. bed_105 is close to clothes_underwear_2049. bed_105 is close to mat_173. bed_105 is close to curtain_179. bed_105 is close to curtain_180. bed_105 is close to curtain_181. bed_105 is close to pillow_182. bed_105 is close to pillow_183. bed_105 is close to floor_68. bed_105 is close to floor_69. bed_105 is close to floor_70. bed_105 is close to floor_71. bed_105 is close to floor_73. bed_105 is close to wall_80. bed_105 is close to wall_81. bed_105 is close to wall_82. bed_105 is close to window_86. bed_105 is close to tablelamp_97. bed_105 is close to tablelamp_98. bed_105 is close to nightstand_100. bed_105 is close to nightstand_102. bed_105 is close to clothes_dress_2044. bed_105 is close to character_65. bed_105 is on mat_173. bed_105 is on floor_70. bed_105 is inside bedroom_67. pillow_182 is on bed_105. clothes_scarf_2048 is on bed_105. bed_105 is CLEAN.
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: No
+The feedback instruction: You need to continue looking for your cat as it was not found around bed_105. Consider exploring other areas or beds.
+##############################
+From agent.py
+Human Instruction: You need to continue looking for your cat as it was not found around bed_105. Consider exploring other areas or beds.
+
+The actions you have taken:
+Action 1: Walk to bed_105.
+Action 2: look for cat_2055 around bed_105.
+Action 3: Observe around bed_105 with the question of Check if the cat is nearby the bed.
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_cat_2055_around_bookshelf_101(cat:item):
+    goal: not unknown(cat)
+    body:
+        assert is_cat(cat)
+        bind bookshelf_instance:item where:
+            is_bookshelf(bookshelf_instance) and id[bookshelf_instance]==101
+        achieve close_char(char,bookshelf_instance)
+        if can_open(bookshelf_instance):
+            achieve_once open(bookshelf_instance)
+            exp(cat,bookshelf_instance)
+        else:
+            exp(cat,bookshelf_instance)
+    eff:
+        unknown[cat]=False
+        close[cat,bookshelf_instance]=True
+        close[bookshelf_instance,cat]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+
+def check_nearby_for_cat(area: item):
+    # Function to observe if the cat is near a specified area
+    observe(area, "Check if the cat is nearby the specified area")
+
+behavior find_cat():
+    body:
+        # Check any known areas for the cat first
+        if exists area: item : (is_bed(area) and not visited(area)):
+            # If there are unvisited beds, check around them
+            foreach area: item:
+                if is_bed(area) and not visited(area):
+                    check_nearby_for_cat(area)
+        
+behavior __goal__():
+    body:
+        bind area: item where:
+            is_bed(area) and not visited(area)
+        find_cat()
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "function_definition":
+
+Behavior body statements are not allowed in the current mode: SymbolicExecutionMode.DERIVED
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_cat_2055_around_cpuscreen_416(cat:item):
+    goal: not unknown(cat)
+    body:
+        assert is_cat(cat)
+        bind cpuscreen_instance:item where:
+            is_cpuscreen(cpuscreen_instance) and id[cpuscreen_instance]==416
+        achieve close_char(char,cpuscreen_instance)
+        if can_open(cpuscreen_instance):
+            achieve_once open(cpuscreen_instance)
+            exp(cat,cpuscreen_instance)
+        else:
+            exp(cat,cpuscreen_instance)
+    eff:
+        unknown[cat]=False
+        close[cat,cpuscreen_instance]=True
+        close[cpuscreen_instance,cat]=True
+    
+
+#goal_representation
+ 
+def check_nearby_for_cat(area: item):
+    # Function to observe if the cat is near a specified area
+    observe(area, "Check if the cat is nearby the specified area")
+
+behavior find_cat():
+    body:
+        # Check any known areas for the cat first
+        foreach area: item:
+            if is_bed(area) and not visited(area):
+                # If there are unvisited beds, check around them
+                check_nearby_for_cat(area)
+
+behavior __goal__():
+    body:
+        find_cat()
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Error trying to process rule "function_definition":
+
+Behavior body statements are not allowed in the current mode: SymbolicExecutionMode.DERIVED
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_cat_2055_around_nightstand_100(cat:item):
+    goal: not unknown(cat)
+    body:
+        assert is_cat(cat)
+        bind nightstand_instance:item where:
+            is_nightstand(nightstand_instance) and id[nightstand_instance]==100
+        achieve close_char(char,nightstand_instance)
+        if can_open(nightstand_instance):
+            achieve_once open(nightstand_instance)
+            exp(cat,nightstand_instance)
+        else:
+            exp(cat,nightstand_instance)
+    eff:
+        unknown[cat]=False
+        close[cat,nightstand_instance]=True
+        close[nightstand_instance,cat]=True
+    
+
+#goal_representation
+ 
+def check_nearby_for_cat(area: item):
+    # Function to observe if the cat is near a specified area
+    observe(area, "Check if the cat is nearby the specified area")
+
+behavior find_cat():
+    body:
+        # Check any known areas for the cat first
+        foreach area: item:
+            if is_bed(area) and not visited(area):
+                # If there are unvisited beds, check around them
+                check_nearby_for_cat(area)
+
+behavior __goal__():
+    body:
+        find_cat()
+
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_cat_2055_around_couch_352(cat:item):
+    goal: not unknown(cat)
+    body:
+        assert is_cat(cat)
+        bind couch_instance:item where:
+            is_couch(couch_instance) and id[couch_instance]==352
+        achieve close_char(char,couch_instance)
+        if can_open(couch_instance):
+            achieve_once open(couch_instance)
+            exp(cat,couch_instance)
+        else:
+            exp(cat,couch_instance)
+    eff:
+        unknown[cat]=False
+        close[cat,couch_instance]=True
+        close[couch_instance,cat]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+
+symbol cat_found=exists c: item : (is_cat(c) and close_char(char, c))
+
+behavior __goal__():
+    body:
+        if cat_found:
+            # If the cat is already found based on prior knowledge, no need to search further
+            bind cat: item where:
+                is_cat(cat) and close_char(char, cat)
+            achieve close_char(char, cat)
+        else:
+            # Check all beds in the scene that have not been visited
+            foreach bed: item:
+                if is_bed(bed) and not visited(bed):
+                    observe(bed, "Look for the cat around the bed")
+
+#goal_representation_end
+
+##############################
+Inner TransformationError Debug
+Unexpected token Token('SYMBOL', 'symbol') at line 5721, column 1.
+Expected one of: 
+	* TYPEDEF
+	* FEATURE
+	* INCLUDE
+	* GOAL
+	* OBJECTS
+	* _NEWLINE
+	* INIT
+	* _PRAGMA_KEYWORD
+	* UNDIRECTED_GENERATOR
+	* GENERATOR
+	* IMPORT
+	* DEF
+	* $END
+	* BEHAVIOR
+	* DOMAIN
+	* CONTROLLER
+Previous tokens: [Token('_NEWLINE', '\n    \n\n#exp_behavior_end\n\n#goal_representation\n\n')]
+
+##############################
+Goal representation after debugging in planning.py
+#exp_behavior
+
+behavior find_cat_2055_around_couch_352(cat:item):
+    goal: not unknown(cat)
+    body:
+        assert is_cat(cat)
+        bind couch_instance:item where:
+            is_couch(couch_instance) and id[couch_instance]==352
+        achieve close_char(char,couch_instance)
+        if can_open(couch_instance):
+            achieve_once open(couch_instance)
+            exp(cat,couch_instance)
+        else:
+            exp(cat,couch_instance)
+    eff:
+        unknown[cat]=False
+        close[cat,couch_instance]=True
+        close[couch_instance,cat]=True
+    
+
+#goal_representation
+behavior __goal__():
+    body:
+        if exists cat: item : (is_cat(cat) and close_char(char, cat)):
+            # If the cat is already found based on prior knowledge, no need to search further
+            bind cat: item where:
+                is_cat(cat) and close_char(char, cat)
+            achieve close_char(char, cat)
+        else:
+            # Check all beds in the scene that have not been visited
+            foreach bed: item:
+                if is_bed(bed) and not visited(bed):
+                    observe(bed, "Look for the cat around the bed")
+#goal_representation_end
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_cat_2055_around_nightstand_102(cat:item):
+    goal: not unknown(cat)
+    body:
+        assert is_cat(cat)
+        bind nightstand_instance:item where:
+            is_nightstand(nightstand_instance) and id[nightstand_instance]==102
+        achieve close_char(char,nightstand_instance)
+        if can_open(nightstand_instance):
+            achieve_once open(nightstand_instance)
+            exp(cat,nightstand_instance)
+        else:
+            exp(cat,nightstand_instance)
+    eff:
+        unknown[cat]=False
+        close[cat,nightstand_instance]=True
+        close[nightstand_instance,cat]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_cat_near_bed(bed:item):
+    # Function to check if the cat is near the specified bed
+    symbol cat_near=exists c: item : (is_cat(c) and close(c, bed))
+    return cat_near
+
+behavior __goal__():
+    body:
+        if exists bed: item : (is_bed(bed) and is_cat_near_bed(bed)):
+            # If we have already found the cat near a bed, we can directly approach it
+            bind bed: item where:
+                is_bed(bed) and is_cat_near_bed(bed)
+            achieve close_char(char, bed)
+
+        else:
+            # Check all beds in the scene that have not been visited
+            foreach bed: item:
+                if is_bed(bed) and not visited(bed):
+                    observe(bed,"Check if the cat is nearby the bed")
+
+#goal_representation_end
+
+##############################
+VH_pipeline: Fail to generate a valid plan
+##############################
+From agent.py
+Reset goals: The sub-goals are: 
+['1. Find your cat.', '2. Gently wash the cat using pet-safe shampoo and water.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_cat_2055_around_desk_357(cat:item):
+    goal: not unknown(cat)
+    body:
+        assert is_cat(cat)
+        bind desk_instance:item where:
+            is_desk(desk_instance) and id[desk_instance]==357
+        achieve close_char(char,desk_instance)
+        if can_open(desk_instance):
+            achieve_once open(desk_instance)
+            exp(cat,desk_instance)
+        else:
+            exp(cat,desk_instance)
+    eff:
+        unknown[cat]=False
+        close[cat,desk_instance]=True
+        close[desk_instance,cat]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+
+def is_cat_nearby(bed: item):
+    # Function to check if the cat is close to a specified bed
+    symbol cat_is_nearby = exists o: item : (is_cat(o) and close(o, bed))
+    return cat_is_nearby
+
+behavior __goal__():
+    body:
+        if exists bed: item : (is_bed(bed) and not visited(bed)):
+            foreach bed: item:
+                if is_bed(bed) and not visited(bed):
+                    # Check if each unvisited bed has the cat nearby
+                    observe(bed, "Check if the cat is nearby the bed")
+        else:
+            # If all beds have been checked, explore other areas
+            foreach o: item:
+                if not visited(o):
+                    # Check objects or areas not yet visited for the presence of the cat
+                    observe(o, "Look for the cat")
+
+#goal_representation_end
+
+##############################
+Error is:
+'NoneType' object is not iterable
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_cat_2055_around_couch_352(cat:item):
+    goal: not unknown(cat)
+    body:
+        assert is_cat(cat)
+        bind couch_instance:item where:
+            is_couch(couch_instance) and id[couch_instance]==352
+        achieve close_char(char,couch_instance)
+        if can_open(couch_instance):
+            achieve_once open(couch_instance)
+            exp(cat,couch_instance)
+        else:
+            exp(cat,couch_instance)
+    eff:
+        unknown[cat]=False
+        close[cat,couch_instance]=True
+        close[couch_instance,cat]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior look_for_cat(cat: item):
+    body:
+        observe(cat, "Check if the cat is nearby")
+
+behavior __goal__():
+    body:
+        foreach bed: item:
+            if is_bed(bed) and not visited(bed):
+                observe(bed,"Check is there any cat around the bed")
+        foreach area: item:
+            if not visited(area):
+                observe(area,"Check is there any cat in the area")
+
+#goal_representation_end
+
+##############################
+Error is:
+'NoneType' object is not iterable
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_cat_2055_around_nightstand_102(cat:item):
+    goal: not unknown(cat)
+    body:
+        assert is_cat(cat)
+        bind nightstand_instance:item where:
+            is_nightstand(nightstand_instance) and id[nightstand_instance]==102
+        achieve close_char(char,nightstand_instance)
+        if can_open(nightstand_instance):
+            achieve_once open(nightstand_instance)
+            exp(cat,nightstand_instance)
+        else:
+            exp(cat,nightstand_instance)
+    eff:
+        unknown[cat]=False
+        close[cat,nightstand_instance]=True
+        close[nightstand_instance,cat]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior find_cat(cat:item):
+    body:
+        foreach bed: item:
+            if is_bed(bed) and not visited(bed):
+                observe(bed, "Explore nearby areas for cat presence")
+
+behavior __goal__():
+    body:
+        bind cat_2055: item where:
+            is_cat(cat_2055)
+        find_cat(cat_2055)
+
+#goal_representation_end
+
+##############################
+VH_pipeline: Fail to generate a valid plan
+##############################
+From agent.py->reset_goal
+Fail to generate the goal representation
+##############################
+Task Summary:
+Task Goal:
+Wash my cat.
+Action History:
+['walk_executor(bed_105)']
+Time info:
+Time consume: 125 seconds
+Exp_helper query times: 0
+Guidance query times: 0
+library scale: 5
+goal generate times: 9
+goal correct times: 0
+action_num: 1
+
+Task complete rate:
+Keystate: k1 - Requires: 6 steps
+Action Completion Rate: 0.0
+Scene_id: 0
+##############################

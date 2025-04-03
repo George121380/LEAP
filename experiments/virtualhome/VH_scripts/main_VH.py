@@ -22,11 +22,11 @@ from dataset import parse_file_to_json
 from tqdm import tqdm
 import shutil
 from configs import OursWG, OursWOG, LLMWG, LLMWOG, LLMPlusPWG, LLMPlusPWOG, CAPWG, CAPWOG, WOLibrary, ActionLibrary, WORefinement, WOSplit, PvP, load_scene, set_agent
+DATASET_FOLDER_PATH = 'cdl_dataset/dataset'
 
 sys.setrecursionlimit(1000000)
 
 
-DATASET_FOLDER_PATH = 'cdl_dataset/dataset'
 running_mode='test' # Set default running mode to test
 
 def print_task_info(task_data, scene_id):
@@ -64,6 +64,15 @@ def run(config,epoch_logger,epoch_path,task_path,classes,init_scene_graph):
 
     task_data=parse_file_to_json(task_path)
     print_task_info(task_data, config.scene_id)
+
+    # # # ----------------- Print Task Info -----------------
+    # if config.scene_id==0:
+    #     with open('task_info_record.txt','a') as f:
+    #         f.write(task_path+'\n')
+    #         # f.write(task_data['Goal']+'\n')
+    #         f.write('\n')
+    # return
+    # # # ----------------- Print Task Info -----------------
 
     evaluator=Evaluator(config, task_path, task_logger, epoch_path)
 

@@ -1,0 +1,340 @@
+From agent.py
+Reset goals: The sub-goals are: 
+['Clean the bathroom sink directly.']
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_soap_2053_around_sink_42(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind sink_instance:item where:
+            is_sink(sink_instance) and id[sink_instance]==42
+        achieve close_char(char,sink_instance)
+        if can_open(sink_instance):
+            achieve_once open(sink_instance)
+            exp(soap,sink_instance)
+        else:
+            exp(soap,sink_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,sink_instance]=True
+        close[sink_instance,soap]=True
+    
+
+behavior find_cleaning_solution_2073_around_bathroom_cabinet_40(cleaning_solution:item):
+    goal: not unknown(cleaning_solution)
+    body:
+        assert is_cleaning_solution(cleaning_solution)
+        bind bathroom_cabinet_instance:item where:
+            is_bathroom_cabinet(bathroom_cabinet_instance) and id[bathroom_cabinet_instance]==40
+        achieve close_char(char,bathroom_cabinet_instance)
+        if can_open(bathroom_cabinet_instance):
+            achieve_once open(bathroom_cabinet_instance)
+            exp(cleaning_solution,bathroom_cabinet_instance)
+        else:
+            exp(cleaning_solution,bathroom_cabinet_instance)
+    eff:
+        unknown[cleaning_solution]=False
+        close[cleaning_solution,bathroom_cabinet_instance]=True
+        close[bathroom_cabinet_instance,cleaning_solution]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior wipe_sink_directly(sink:item):
+    body:
+        if dirty(sink):
+            wipe(sink) # Wipe the sink if its dirty
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink)
+        # Select the bathroom sink
+
+        wipe_sink_directly(sink)
+        # Clean the bathroom sink by wiping it
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_goal
+ 
+behavior wipe_sink_directly(sink:item):
+    body:
+        if dirty(sink):
+            wipe(sink) # Wipe the sink if its dirty
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink)
+        # Select the bathroom sink
+
+        wipe_sink_directly(sink)
+        # Clean the bathroom sink by wiping it
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(sink_42)wipe_executor(sink_42)
+##############################
+From agent.py
+walk_executor(sink_42)
+Robot find: detergent_2084, cleaning_solution_2073, towel_rack_31, soap_2053, towel_rack_32, towel_rack_34, Robot is close to the bathroom_counter_41. Robot is close to the sink_42. 
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_towel_2057_around_towel_rack_32(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==32
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(towel,towel_rack_instance)
+        else:
+            exp(towel,towel_rack_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,towel_rack_instance]=True
+        close[towel_rack_instance,towel]=True
+    
+
+behavior find_soap_2054_around_sink_231(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind sink_instance:item where:
+            is_sink(sink_instance) and id[sink_instance]==231
+        achieve close_char(char,sink_instance)
+        if can_open(sink_instance):
+            achieve_once open(sink_instance)
+            exp(soap,sink_instance)
+        else:
+            exp(soap,sink_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,sink_instance]=True
+        close[sink_instance,soap]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+def is_sink_to_clean(sink: item):
+    # Check if the sink is identified and needs cleaning
+    return visited(sink) and dirty(sink)
+
+behavior walk_to_dirty_sink():
+    body:
+        if exists sink: item : is_sink(sink) and dirty(sink):
+            # Approach the sink if it is known to be dirty
+            bind sink: item where:
+                is_sink(sink) and dirty(sink)
+            walk_to(sink)
+        else:
+            # Explore to locate a potential sink that might be dirty
+            foreach sink: item:
+                if is_sink(sink) and not visited(sink):
+                    observe(sink, "Determine if this sink is dirty and needs cleaning")
+
+behavior clean_sink(sink:item):
+    body:
+        if is_sink_to_clean(sink):
+            if not clean(sink):
+                scrub(sink)
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink)
+        # Select a sink to evaluate for cleaning
+
+        walk_to_dirty_sink()
+                
+        clean_sink(sink)
+        # Clean the sink if required
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+def is_sink_to_clean(sink: item):
+    # Check if the sink is identified and needs cleaning
+    return visited(sink) and dirty(sink)
+
+behavior walk_to_dirty_sink():
+    body:
+        if exists sink: item : is_sink(sink) and dirty(sink):
+            # Approach the sink if it is known to be dirty
+            bind sink: item where:
+                is_sink(sink) and dirty(sink)
+            walk_to(sink)
+        else:
+            # Explore to locate a potential sink that might be dirty
+            foreach sink: item:
+                if is_sink(sink) and not visited(sink):
+                    observe(sink, "Determine if this sink is dirty and needs cleaning")
+
+behavior clean_sink(sink:item):
+    body:
+        if is_sink_to_clean(sink):
+            if not clean(sink):
+                scrub(sink)
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink)
+        # Select a sink to evaluate for cleaning
+
+        walk_to_dirty_sink()
+                
+        clean_sink(sink)
+        # Clean the sink if required
+
+##############################
+From agent.py-> find a plan in act()
+walk_executor(sink_42)
+##############################
+From agent.py
+walk_executor(sink_42)
+Robot find: Robot is close to the bathroom_counter_41. Robot is close to the sink_42. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: No
+The feedback instruction: The robot needs to perform actions associated with cleaning the sink, such as scrubbing it. Currently, the robot has only approached the sink but has not executed any cleaning actions.
+##############################
+From agent.py
+Human Instruction: The robot needs to perform actions associated with cleaning the sink, such as scrubbing it. Currently, the robot has only approached the sink but has not executed any cleaning actions.
+
+Trial and Error: You can not wipe sink_42
+The actions you have taken:
+Action 1: Walk to sink_42.
+Action 2: Walk to sink_42.
+
+##############################
+Goal representation from planning.py
+
+#exp_behavior
+
+behavior find_towel_2059_around_towel_rack_32(towel:item):
+    goal: not unknown(towel)
+    body:
+        assert is_towel(towel)
+        bind towel_rack_instance:item where:
+            is_towel_rack(towel_rack_instance) and id[towel_rack_instance]==32
+        achieve close_char(char,towel_rack_instance)
+        if can_open(towel_rack_instance):
+            achieve_once open(towel_rack_instance)
+            exp(towel,towel_rack_instance)
+        else:
+            exp(towel,towel_rack_instance)
+    eff:
+        unknown[towel]=False
+        close[towel,towel_rack_instance]=True
+        close[towel_rack_instance,towel]=True
+    
+
+behavior find_soap_2053_around_bathroom_cabinet_40(soap:item):
+    goal: not unknown(soap)
+    body:
+        assert is_soap(soap)
+        bind bathroom_cabinet_instance:item where:
+            is_bathroom_cabinet(bathroom_cabinet_instance) and id[bathroom_cabinet_instance]==40
+        achieve close_char(char,bathroom_cabinet_instance)
+        if can_open(bathroom_cabinet_instance):
+            achieve_once open(bathroom_cabinet_instance)
+            exp(soap,bathroom_cabinet_instance)
+        else:
+            exp(soap,bathroom_cabinet_instance)
+    eff:
+        unknown[soap]=False
+        close[soap,bathroom_cabinet_instance]=True
+        close[bathroom_cabinet_instance,soap]=True
+    
+
+#exp_behavior_end
+
+#goal_representation
+ 
+behavior clean_bathroom_sink_directly(sink: item):
+    body:
+        if close_char(char, sink):
+            if dirty(sink):
+                scrub(sink)
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and id[sink] == 42
+        # Select sink_42
+        
+        if not close_char(char, sink):
+            walk_to(sink)
+        
+        clean_bathroom_sink_directly(sink)
+
+#goal_representation_end
+
+##############################
+From agent.py->reset_sub_goal
+ 
+behavior clean_bathroom_sink_directly(sink: item):
+    body:
+        if close_char(char, sink):
+            if dirty(sink):
+                scrub(sink)
+
+behavior __goal__():
+    body:
+        bind sink: item where:
+            is_sink(sink) and id[sink] == 42
+        # Select sink_42
+        
+        if not close_char(char, sink):
+            walk_to(sink)
+        
+        clean_bathroom_sink_directly(sink)
+
+##############################
+From agent.py-> find a plan in act()
+scrub_executor(sink_42)
+##############################
+From agent.py
+scrub_executor(sink_42)
+Robot find: Robot is close to the bathroom_counter_41. Robot is close to the sink_42. sink_42 is cleaned. 
+##############################
+From agent.py -> evaluate_current_subgoal()
+The evaluation result for current subgoal: Yes
+The feedback instruction: None
+##############################
+Task Summary:
+Task Goal:
+Clean the bathroom sink directly.
+Action History:
+['walk_executor(sink_42)', 'wipe_executor(sink_42) (Failed)', 'walk_executor(sink_42)', 'scrub_executor(sink_42)']
+Time info:
+Time consume: 50 seconds
+Exp_helper query times: 0
+Guidance query times: 0
+library scale: 120
+goal generate times: 3
+goal correct times: 0
+action_num: 4
+
+Task complete rate:
+1
+Scene_id: 0
+##############################
