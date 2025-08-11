@@ -44,7 +44,9 @@ from tqdm import tqdm
 import shutil
 from configs import OursWG, OursWOG, LLMWG, LLMWOG, LLMPlusPWG, LLMPlusPWOG, CAPWG, CAPWOG, WOLibrary, ActionLibrary, WORefinement, WOSplit, PvP, load_scene, set_agent
 # Absolute dataset path, robust to CWD
-DATASET_FOLDER_PATH = os.path.join(PARENT_DIR, 'VirtualHome-HG', 'dataset')
+from paths import ensure_dataset_scripts_on_path, dataset_tasks_dir
+ensure_dataset_scripts_on_path()
+DATASET_FOLDER_PATH = dataset_tasks_dir()
 
 # Restore original argv for our own argparse handling below
 sys.argv = _ORIG_ARGV

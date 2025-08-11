@@ -246,9 +246,9 @@ def load_scene(scene_id, epoch_path):
     Load a predefined scene based on its ID.
     """
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    PARENT_DIR = os.path.normpath(os.path.join(BASE_DIR, '..'))
-    # Load scenes from the dataset package
-    scene_path=os.path.join(PARENT_DIR, 'VirtualHome-HG', 'scenes', f'Scene_{scene_id}.json')
+    # Load scenes from the dataset package via centralized helper
+    from paths import dataset_scenes_dir
+    scene_path=os.path.join(dataset_scenes_dir(), f'Scene_{scene_id}.json')
     with open(scene_path) as f:
         scene=json.load(f)
     init_scene_graph = EnvironmentGraph(scene)

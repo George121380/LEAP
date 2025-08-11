@@ -22,7 +22,8 @@ from tqdm import tqdm
 import shutil
 from configs import OursWG, OursWOG, LLMWG, LLMWOG, LLMPlusPWG, LLMPlusPWOG, CAPWG, CAPWOG, WOLibrary, ActionLibrary, WORefinement, WOSplit, PvP, load_scene, set_agent
 from main_VH import run
-DATASET_FOLDER_PATH = 'VirtualHome-HG/cooking'
+from paths import cooking_tasks_dir
+DATASET_FOLDER_PATH = cooking_tasks_dir()
 
 sys.setrecursionlimit(1000000)
 

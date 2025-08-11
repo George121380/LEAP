@@ -139,8 +139,9 @@ class Evaluator(BaseAgent):
 
 
     def load_scene(self)->None:
-        # Load scenes from VirtualHome-HG
-        scene_path=os.path.join(os.path.dirname(BASE_DIR), 'VirtualHome-HG', 'scenes', f'Scene_{self.config.scene_id}.json')
+        # Load scenes from VirtualHome-HG via centralized helper
+        from paths import dataset_scenes_dir
+        scene_path=os.path.join(dataset_scenes_dir(), f'Scene_{self.config.scene_id}.json')
 
         with open(scene_path) as f:
             scene=json.load(f)
