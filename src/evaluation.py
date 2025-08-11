@@ -10,7 +10,8 @@ import os
 # Robust path setup using absolute paths
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 EVOLVING_GRAPH_DIR = os.path.normpath(os.path.join(BASE_DIR, 'simulator'))
-CDL_SCRIPTS_DIR = os.path.normpath(os.path.join(BASE_DIR, '../cdl_dataset/scripts'))
+# Use dataset scripts under VirtualHome-HG
+CDL_SCRIPTS_DIR = os.path.normpath(os.path.join(BASE_DIR, '../VirtualHome-HG/scripts'))
 for p in (EVOLVING_GRAPH_DIR, CDL_SCRIPTS_DIR):
     if p not in sys.path:
         sys.path.append(p)
@@ -138,8 +139,8 @@ class Evaluator(BaseAgent):
 
 
     def load_scene(self)->None:
-        # scene_path='cdl_dataset/Scene.json'
-        scene_path=f'cdl_dataset/scenes/Scene_{self.config.scene_id}.json'
+        # Load scenes from VirtualHome-HG
+        scene_path=os.path.join(os.path.dirname(BASE_DIR), 'VirtualHome-HG', 'scenes', f'Scene_{self.config.scene_id}.json')
 
         with open(scene_path) as f:
             scene=json.load(f)
@@ -502,5 +503,6 @@ class Evaluator(BaseAgent):
         
     
 if __name__=='__main__':
-    task_path='/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/cdl_dataset/dataset/Cook_some_food/g4.txt'
+    # Example: run evaluator on a sample task
+    task_path=os.path.join(os.path.dirname(BASE_DIR), 'VirtualHome-HG', 'dataset', 'Cook_some_food', 'g4.txt')
     evaluator=Evaluator(task_path)

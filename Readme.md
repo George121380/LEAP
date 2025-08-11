@@ -26,7 +26,7 @@ This project provides a systematic evaluation pipeline for assessing LLM-based a
 │   ├── metrics_new.py                    # Evaluation metrics
 │   ├── prompts/                          # LLM prompts and templates
 │   └── utils/                            # Utility functions and models
-├── cdl_dataset/                          # Task dataset
+├── VirtualHome-HG/                       # Task dataset (migrated from cdl_dataset)
 │   ├── dataset/                          # Household task definitions
 │   ├── cooking/                          # Cooking-specific tasks
 │   ├── scenes/                           # Virtual scene configurations
@@ -64,12 +64,12 @@ pip install -r requirements.txt
 
 1. **Run a single task evaluation**:
 ```bash
-python run_evaluation.py --config OursWG --mode single --scene 0
+conda run -n eagent python src/main_VH.py --config OursWG --mode single --scene 0 --task_path VirtualHome-HG/dataset/Put_groceries_in_Fridge/g1.txt
 ```
 
 2. **Run comprehensive evaluation**:
 ```bash
-python run_evaluation.py --config OursWG --mode all
+conda run -n eagent python src/main_VH.py --config OursWG --mode all --run_mode test
 ```
 
 3. **Continue from checkpoint**:

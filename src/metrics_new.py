@@ -18,7 +18,7 @@ import numpy as np
 from scipy import stats
 
 # Extend sys.path if needed
-sys.path.append('../cdl_dataset/scripts')
+sys.path.append('../VirtualHome-HG/scripts')
 
 # External modules (assumed to be provided)
 from logic_parser import parse_logic_from_file_path
@@ -791,11 +791,19 @@ if __name__ == '__main__':
             # For overall methods, keep the full task path including scene information
             if exp_name in ['OursWG', 'PvP', 'Action_library']:
                 # Keep the full task path with scene information
-                task_path = task['task'].replace('cdl_dataset/dataset/','')+'_scene_'+str(task['Scene_id'])
+                task_path = (
+                    task['task']
+                    .replace('cdl_dataset/dataset/','')
+                    .replace('VirtualHome-HG/dataset/','')
+                )+'_scene_'+str(task['Scene_id'])
                 success_dict_without_inner_list[task_path] = task['suc_rate']
             else:
                 # For other methods, keep the original behavior
-                success_dict_without_inner_list[task['task'].replace('cdl_dataset/dataset/','')] = task['suc_rate']
+                success_dict_without_inner_list[(
+                    task['task']
+                    .replace('cdl_dataset/dataset/','')
+                    .replace('VirtualHome-HG/dataset/','')
+                )] = task['suc_rate']
 
         compare_data[exp_name] = success_dict_without_inner_list
         print_compare_data[exp_name] = success_dict_without_inner_list

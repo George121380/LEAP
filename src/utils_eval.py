@@ -494,16 +494,18 @@ def evaluation_task_loader(dataset_folder_path):
 
 def get_difficulty_dict():
     # used in metric and main_VH
-    diff_0 = json.load(open('cdl_dataset/scenes/diff_0.json'))
-    diff_1 = json.load(open('cdl_dataset/scenes/diff_1.json'))
-    diff_2 = json.load(open('cdl_dataset/scenes/diff_2.json'))
+    dataset_dir = os.path.join(os.path.dirname(BASE_DIR), 'VirtualHome-HG', 'scenes')
+    diff_0 = json.load(open(os.path.join(dataset_dir, 'diff_0.json')))
+    diff_1 = json.load(open(os.path.join(dataset_dir, 'diff_1.json')))
+    diff_2 = json.load(open(os.path.join(dataset_dir, 'diff_2.json')))
     difficulty_dict = {'scene_0': diff_0, 'scene_1': diff_1, 'scene_2': diff_2}
     return difficulty_dict
 
 def get_cooking_difficulty_dict():
     # used in metric and main_VH
-    diff_0 = json.load(open('cdl_dataset/scenes/cooking_diff_0.json'))
-    diff_1 = json.load(open('cdl_dataset/scenes/cooking_diff_1.json'))
-    diff_2 = json.load(open('cdl_dataset/scenes/cooking_diff_2.json'))
+    dataset_dir = os.path.join(os.path.dirname(BASE_DIR), 'VirtualHome-HG', 'scenes')
+    diff_0 = json.load(open(os.path.join(dataset_dir, 'cooking_diff_0.json')))
+    diff_1 = json.load(open(os.path.join(dataset_dir, 'cooking_diff_1.json')))
+    diff_2 = json.load(open(os.path.join(dataset_dir, 'cooking_diff_2.json')))
     difficulty_dict = {'scene_0': diff_0, 'scene_1': diff_1, 'scene_2': diff_2}
     return difficulty_dict

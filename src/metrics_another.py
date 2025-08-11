@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 from collections import defaultdict
 
 # Extend sys.path if needed
-sys.path.append('../cdl_dataset/scripts')
+sys.path.append('../VirtualHome-HG/scripts')
 from action_sequence_parser import parse_action_sequence_from_file_path
 
 # External modules (assumed to be provided)

@@ -18,7 +18,8 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 # Robust path setup using absolute paths for simulator and CDL scripts
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 SIMULATOR_DIR = os.path.normpath(os.path.join(BASE_DIR, 'simulator'))
-CDL_SCRIPTS_DIR = os.path.normpath(os.path.join(BASE_DIR, '../cdl_dataset/scripts'))
+# Use dataset scripts under VirtualHome-HG
+CDL_SCRIPTS_DIR = os.path.normpath(os.path.join(BASE_DIR, '../VirtualHome-HG/scripts'))
 for p in (SIMULATOR_DIR, CDL_SCRIPTS_DIR):
     if p not in sys.path:
         sys.path.append(p)

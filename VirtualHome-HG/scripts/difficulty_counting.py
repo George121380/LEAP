@@ -4,8 +4,8 @@ import re
 import json
 
 import sys
-sys.path.append('cdl_dataset/scripts')
-sys.path.append('experiments/virtualhome/VH_scripts')
+sys.path.append('VirtualHome-HG/scripts')
+sys.path.append('src')
 sys.path.append('')
 from datetime import datetime
 from experiments.virtualhome.VH_scripts.agent import VHAgent
@@ -24,7 +24,7 @@ from dataset import parse_file_to_json
 from logic_parser import parse_logic_from_file_path
 import yaml 
 init_path="src/domain/init_scene_PO.cdl"
-dataset_folder_path='cdl_dataset/dataset'
+dataset_folder_path='VirtualHome-HG/dataset'
 # dataset_folder_path='cdl_dataset/cooking'
 
 from types import SimpleNamespace
@@ -54,7 +54,7 @@ config = LLMWG()
 result_dict = {}
 
 def load_scene(scene_id):
-    scene_path=f'cdl_dataset/scenes/Scene_{scene_id}.json'
+    scene_path=f'VirtualHome-HG/scenes/Scene_{scene_id}.json'
     with open(scene_path) as f:
         scene=json.load(f)
     init_scene_graph = EnvironmentGraph(scene)
@@ -163,7 +163,7 @@ def counting(args, task_path=None):
 if __name__ == '__main__':
     # Interactive input for scene selection
     print("\nAvailable scenes:")
-    scenes = [f for f in os.listdir('cdl_dataset/scenes') if f.startswith('Scene_')]
+    scenes = [f for f in os.listdir('VirtualHome-HG/scenes') if f.startswith('Scene_')]
     for i, scene in enumerate(scenes):
         print(f"{i+1}. {scene}")
     

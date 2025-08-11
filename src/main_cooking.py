@@ -4,7 +4,7 @@
 
 import sys
 import json
-sys.path.append('../cdl_dataset/scripts')
+sys.path.append('../VirtualHome-HG/scripts')
 sys.path.append('')
 from datetime import datetime
 from utils_eval import CrowControllerApplier, load_config, namespace_to_dict
@@ -22,7 +22,7 @@ from tqdm import tqdm
 import shutil
 from configs import OursWG, OursWOG, LLMWG, LLMWOG, LLMPlusPWG, LLMPlusPWOG, CAPWG, CAPWOG, WOLibrary, ActionLibrary, WORefinement, WOSplit, PvP, load_scene, set_agent
 from main_VH import run
-DATASET_FOLDER_PATH = 'cdl_dataset/cooking'
+DATASET_FOLDER_PATH = 'VirtualHome-HG/cooking'
 
 sys.setrecursionlimit(1000000)
 

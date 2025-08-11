@@ -10,13 +10,15 @@ from environment import EnvironmentState, EnvironmentGraph
 
 
 def set_size(size_dict):
-    graph_dict = json.load(open('/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/cdl_dataset/assert/draft.json', "r"))
+    """Update node sizes in the draft scene graph used for simulation setup."""
+    draft_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'VirtualHome-HG', 'assert', 'draft.json')
+    graph_dict = json.load(open(draft_path, "r"))
     for node in graph_dict['nodes']:
         if node['id'] in size_dict:
             assert node['class_name']==size_dict[node['id']]['name']
             node['size']=size_dict[node['id']]['size']
 
-    with open('/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/cdl_dataset/assert/draft.json', 'w') as f:
+    with open(draft_path, 'w') as f:
         json.dump(graph_dict, f)
 
 def scene_0_add_items_round1():
@@ -125,7 +127,7 @@ def scene_0_add_items_round1():
     
     state=EnvironmentState(init_scene_graph,name_equivalence)
     prepare_1.apply_changes(state)
-    state.save_graph('/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/cdl_dataset/assert/draft.json')
+    state.save_graph(draft_path)
 
 def scene_0_add_items_round2():
     change=[
@@ -137,7 +139,7 @@ def scene_0_add_items_round2():
         AddObject('toilet_paper', [Destination.close(37)], [State.CLEAN]),
     ]
 
-    graph_dict = json.load(open('/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/cdl_dataset/assert/draft.json', "r"))
+    graph_dict = json.load(open(draft_path, "r"))
     init_scene_state = graph_dict
     init_scene_graph = EnvironmentGraph(init_scene_state)
     properties_data = utils.load_properties_data()
@@ -147,7 +149,7 @@ def scene_0_add_items_round2():
 
     prepare_2 = StatePrepare(properties_data, change)
     prepare_2.apply_changes(state)
-    state.save_graph('/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/cdl_dataset/assert/draft.json')
+    state.save_graph(draft_path)
 
 def scene_0_set_size():
     size_dict={
@@ -287,7 +289,7 @@ def scene_1_add_items_round2():
         ChangeState('book', [State.CLOSED]),
     ]
 
-    graph_dict = json.load(open('/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/cdl_dataset/assert/draft.json', "r"))
+    graph_dict = json.load(open(draft_path, "r"))
     init_scene_state = graph_dict
     init_scene_graph = EnvironmentGraph(init_scene_state)
     properties_data = utils.load_properties_data()
@@ -297,7 +299,7 @@ def scene_1_add_items_round2():
 
     prepare_2 = StatePrepare(properties_data, change)
     prepare_2.apply_changes(state)
-    state.save_graph('/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/cdl_dataset/assert/draft.json')
+    state.save_graph(draft_path)
 
 
 def scene_1_set_size():

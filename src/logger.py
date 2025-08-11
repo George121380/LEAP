@@ -88,7 +88,12 @@ def get_last_task_path_from_logger(logger_handler):
         return None
 
     last_row = rows[-1]
-    task_path = last_row[0].replace('cdl_dataset/dataset/', '')
+    # Normalize old dataset prefix to relative path for downstream analysis
+    task_path = (
+        last_row[0]
+        .replace('cdl_dataset/dataset/', '')
+        .replace('VirtualHome-HG/dataset/', '')
+    )
     scene_num = int(last_row[-1].replace('Scene_id: ', ''))
     return task_path, scene_num
 

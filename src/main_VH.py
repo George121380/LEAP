@@ -23,7 +23,8 @@ sys.argv = [sys.argv[0]]
 # Robust path setup using absolute paths
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PARENT_DIR = os.path.normpath(os.path.join(BASE_DIR, '..'))
-CDL_SCRIPTS_DIR = os.path.normpath(os.path.join(PARENT_DIR, 'cdl_dataset/scripts'))
+# Add dataset scripts (VirtualHome-HG/scripts) to import path
+CDL_SCRIPTS_DIR = os.path.normpath(os.path.join(PARENT_DIR, 'VirtualHome-HG/scripts'))
 for p in (PARENT_DIR, CDL_SCRIPTS_DIR):
     if p not in sys.path:
         sys.path.append(p)
@@ -43,7 +44,7 @@ from tqdm import tqdm
 import shutil
 from configs import OursWG, OursWOG, LLMWG, LLMWOG, LLMPlusPWG, LLMPlusPWOG, CAPWG, CAPWOG, WOLibrary, ActionLibrary, WORefinement, WOSplit, PvP, load_scene, set_agent
 # Absolute dataset path, robust to CWD
-DATASET_FOLDER_PATH = os.path.join(PARENT_DIR, 'cdl_dataset', 'dataset')
+DATASET_FOLDER_PATH = os.path.join(PARENT_DIR, 'VirtualHome-HG', 'dataset')
 
 # Restore original argv for our own argparse handling below
 sys.argv = _ORIG_ARGV

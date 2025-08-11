@@ -17,7 +17,7 @@ from collections import defaultdict
 from metrics import calculation
 
 # Extend sys.path if needed
-sys.path.append('../cdl_dataset/scripts')
+sys.path.append('../VirtualHome-HG/scripts')
 
 # External modules (assumed to be provided)
 from logic_parser import parse_logic_from_file_path

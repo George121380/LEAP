@@ -247,7 +247,8 @@ def load_scene(scene_id, epoch_path):
     """
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     PARENT_DIR = os.path.normpath(os.path.join(BASE_DIR, '..'))
-    scene_path=os.path.join(PARENT_DIR, f'cdl_dataset/scenes/Scene_{scene_id}.json')
+    # Load scenes from the dataset package
+    scene_path=os.path.join(PARENT_DIR, 'VirtualHome-HG', 'scenes', f'Scene_{scene_id}.json')
     with open(scene_path) as f:
         scene=json.load(f)
     init_scene_graph = EnvironmentGraph(scene)

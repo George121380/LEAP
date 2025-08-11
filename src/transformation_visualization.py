@@ -5,7 +5,7 @@
 
 import sys
 import json
-sys.path.append('../cdl_dataset/scripts')
+sys.path.append('../VirtualHome-HG/scripts')
 sys.path.append('')
 from datetime import datetime
 from utils_eval import CrowControllerApplier, load_config, evaluation_task_loader, namespace_to_dict
@@ -22,7 +22,7 @@ from dataset import parse_file_to_json
 from tqdm import tqdm
 import shutil
 from configs import OursWG, OursWOG, LLMWG, LLMWOG, LLMPlusPWG, LLMPlusPWOG, CAPWG, CAPWOG, WOLibrary, ActionLibrary, WORefinement, WOSplit, PvP, load_scene, set_agent
-DATASET_FOLDER_PATH = 'cdl_dataset/dataset'
+DATASET_FOLDER_PATH = 'VirtualHome-HG/dataset'
 
 sys.setrecursionlimit(1000000)
 
@@ -133,7 +133,7 @@ def evaluate_single(config):
     start_time = time.time()
     config.scene_id = 0
     # random choose a task
-    task_path='cdl_dataset/dataset/Drink/g4.txt'
+    task_path='VirtualHome-HG/dataset/Drink/g4.txt'
     # check existance of the task path
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     epoch_path = f'log/{timestamp}_{config.logger_name}'
