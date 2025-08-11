@@ -23,7 +23,7 @@ import os
 from dataset import parse_file_to_json
 from logic_parser import parse_logic_from_file_path
 import yaml 
-init_path="experiments/virtualhome/CDLs/init_scene_PO.cdl"
+init_path="src/domain/init_scene_PO.cdl"
 dataset_folder_path='cdl_dataset/dataset'
 # dataset_folder_path='cdl_dataset/cooking'
 

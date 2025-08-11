@@ -147,9 +147,3 @@ def parse_action_sequence_from_file_path(file_path,scene_id):
     expr = parser.parse()
     sequences = generate_sequences(expr)
     return sequences
-
-
-if __name__ == "__main__":
-    task_path = '/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/cdl_dataset/dataset/Clean_the_bathroom/g2.txt'
-    sequences = parse_action_sequence_from_file_path(task_path)
-    print(sequences)
