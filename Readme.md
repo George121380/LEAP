@@ -1,231 +1,334 @@
-# VirtualHome Embodied Agent Evaluation
+# LEAP: Learning Enhanced Agent Planning
 
-This project provides a comprehensive framework for evaluating LLM-based embodied agents in virtual home environments. The framework supports various agent configurations including planning-based and policy-based approaches, with integrated behavior libraries and human guidance systems.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-## Features
+A comprehensive framework for evaluating LLM-based embodied agents in virtual home environments. The framework supports various agent configurations including planning-based and policy-based approaches, with integrated behavior libraries and human guidance systems.
 
-- **Multiple Agent Types**: Support for planning-based and policy-based agents
-- **Behavior Library**: Reusable behavior patterns for common tasks
-- **Human Guidance**: LLM-based and manual guidance systems
-- **Task Evaluation**: Comprehensive evaluation across different scenarios
-- **Cooking Tasks**: Specialized evaluation for cooking-related activities
-- **Multi-scene Support**: Evaluation across different virtual environments
+## 🌟 Features
 
-## Project Structure
+- **🤖 Multiple Agent Types**: Support for planning-based, policy-based, and pure LLM agents
+- **📚 Behavior Library**: Reusable behavior patterns with RAG-based retrieval
+- **🧭 Human Guidance**: LLM-based and manual guidance systems
+- **🏠 VirtualHome Integration**: Comprehensive evaluation across different household scenarios
+- **📊 Detailed Evaluation**: Task completion, efficiency, and generalization metrics
+- **🔧 Easy Setup**: Automated installation with one-click setup script
 
-```
-src/
-├── agent.py              # Main agent implementation
-├── agent_base.py         # Base agent class
-├── agent_LLM.py         # LLM-based agent implementation
-├── configs.py           # Configuration classes for different experiments
-├── env.py              # VirtualHome environment wrapper
-├── main_VH.py          # Main evaluation script
-├── main_cooking.py     # Cooking tasks evaluation
-├── paths.py            # Path utilities
-├── library.py          # Behavior library implementation
-├── planning.py         # Planning pipeline
-├── evaluation.py       # Task evaluation logic
-├── human.py            # Human guidance interface
-├── logger.py           # Logging utilities
-├── domain/             # Domain knowledge files
-├── prompts/            # LLM prompts and API interface
-├── simulator/          # VirtualHome simulator (external)
-└── utils/              # Utility functions and models
+## 🚀 Quick Start
 
-VirtualHome-HG/         # VirtualHome dataset and scenes
-├── dataset/           # Task definitions
-├── cooking/           # Cooking-specific tasks
-└── scenes/           # Environment scenes
-```
-
-## Installation
-
-### Quick Setup (Recommended)
-
-Use the automated setup script for easy installation:
+### Automated Installation (Recommended)
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/George121380/LEAP.git
 cd LEAP
-chmod +x setup.sh
 ./setup.sh
-```
-
-The setup script will:
-- Create a conda environment with all dependencies
-- Install third-party libraries (Jacinle and Concepts)  
-- Set up environment variables automatically
-- Create API keys configuration template
-
-### Manual Setup
-
-If you prefer manual installation:
-
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd LEAP
-   ```
-
-2. **Create conda environment**
-   ```bash
-   conda env create -f environment.yml
-   conda activate leap-agent
-   ```
-   
-   Or using pip:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. **Install third-party dependencies**
-   
-   The project requires two external libraries. You can install them manually:
-   ```bash
-   # Create directory for third-party libraries
-   mkdir -p ~/leap_third_party
-   cd ~/leap_third_party
-   
-   # Install Jacinle
-   git clone https://github.com/vacancy/Jacinle --recursive
-   export PATH=~/leap_third_party/Jacinle/bin:$PATH
-   export PYTHONPATH=~/leap_third_party/Jacinle:$PYTHONPATH
-   
-   # Install Concepts  
-   git clone https://github.com/vacancy/Concepts --recursive
-   export PATH=~/leap_third_party/Concepts/bin:$PATH
-   export PYTHONPATH=~/leap_third_party/Concepts:$PYTHONPATH
-   ```
-
-4. **Set up API keys**
-   
-   Create a configuration file for API keys:
-   ```bash
-   mkdir -p config
-   cp config/api_keys.json.example config/api_keys.json
-   ```
-   
-   Edit `config/api_keys.json` with your actual API keys:
-   ```json
-   {
-     "OpenAI_API_Key": "your-openai-api-key-here",
-     "Deepseek_API_Key": "your-deepseek-api-key-here"
-   }
-   ```
-   
-   Alternatively, set environment variables:
-   ```bash
-   export OPENAI_API_KEY="your-openai-api-key"
-   export DEEPSEEK_API_KEY="your-deepseek-api-key"
-   ```
-
-### Environment Activation
-
-After installation, activate the environment:
-```bash
 conda activate leap-agent
 ```
 
-The environment will automatically load the required paths and variables for third-party libraries.
+### Verification
 
-## Usage
+```bash
+python verify_installation.py
+```
 
-### Basic Evaluation
+### Run Your First Evaluation
 
-Run the main evaluation script:
+```bash
+cd src
+python main_VH.py --config OursWG --mode single --scene 0 --task_path ../VirtualHome-HG/dataset/Cook_some_food/g1.txt
+```
+
+## 📋 Requirements
+
+- **Python**: 3.9+
+- **OS**: Linux, macOS, Windows
+- **Memory**: 8GB+ RAM (16GB+ recommended)
+- **Storage**: 5GB+ available space
+- **API Keys**: OpenAI and/or DeepSeek (for LLM-based components)
+
+## 🛠 Installation Options
+
+### Option 1: Conda Environment (Recommended)
+
+```bash
+git clone https://github.com/George121380/LEAP.git
+cd LEAP
+conda env create -f environment.yml
+conda activate leap-agent
+```
+
+### Option 2: pip Installation
+
+```bash
+git clone https://github.com/George121380/LEAP.git
+cd LEAP
+pip install -r requirements.txt
+# Manual setup of third-party libraries required (see below)
+```
+
+### Third-Party Dependencies
+
+The project requires two external libraries:
+
+```bash
+# Create directory for third-party libraries
+mkdir -p ~/leap_third_party
+cd ~/leap_third_party
+
+# Install Jacinle (Python toolkit for researchers)
+git clone https://github.com/vacancy/Jacinle --recursive
+
+# Install Concepts (Concept learning framework)
+git clone https://github.com/vacancy/Concepts --recursive
+
+# Set environment variables
+export PATH="~/leap_third_party/Jacinle/bin:$PATH"
+export PYTHONPATH="~/leap_third_party/Jacinle:$PYTHONPATH"
+export PATH="~/leap_third_party/Concepts/bin:$PATH"
+export PYTHONPATH="~/leap_third_party/Concepts:$PYTHONPATH"
+```
+
+> **Note**: The automated setup script handles these dependencies automatically.
+
+## ⚙️ Configuration
+
+### API Keys Setup
+
+1. Copy the example configuration:
+   ```bash
+   cp config/api_keys.json.example config/api_keys.json
+   ```
+
+2. Edit `config/api_keys.json` with your actual API keys:
+   ```json
+   {
+     "OpenAI_API_Key": "sk-your-actual-openai-key",
+     "Deepseek_API_Key": "your-actual-deepseek-key"
+   }
+   ```
+
+### Agent Configurations
+
+| Configuration | Description |
+|---------------|-------------|
+| **OursWG** | Full system with guidance (recommended) |
+| **OursWOG** | Full system without guidance |
+| **LLMWG** | LLM baseline with guidance |
+| **LLMWOG** | LLM baseline without guidance |
+| **LLMPlusPWG** | LLM with planning, with guidance |
+| **CAPWG** | CAP baseline with guidance |
+
+### Ablation Study Configurations
+
+| Configuration | Purpose |
+|---------------|---------|
+| **WOLibrary** | Without behavior library |
+| **ActionLibrary** | Action-based vs behavior-based library |
+| **WORefinement** | Without goal refinement |
+| **WOSplit** | Without task decomposition |
+| **PvP** | Policy vs Planning comparison |
+
+## 📖 Usage
+
+### Interactive Mode
 
 ```bash
 cd src
 python main_VH.py
 ```
 
-You'll be prompted to:
-1. Select a configuration (agent type)
-2. Choose evaluation mode (single task or all tasks)
-3. Specify scenes and other parameters
+Follow the prompts to:
+1. Select agent configuration
+2. Choose evaluation mode (single task or batch)
+3. Specify scenes and parameters
 
 ### Command Line Interface
 
-For automated runs, use command line arguments:
-
 ```bash
-# Evaluate single task
-python main_VH.py --config OursWG --mode single --scene 0 --task_path ../VirtualHome-HG/dataset/Cook_some_food/g1.txt
+# Single task evaluation
+python main_VH.py --config OursWG --mode single --scene 0 \
+  --task_path ../VirtualHome-HG/dataset/Cook_some_food/g1.txt
 
-# Evaluate all tasks
+# Batch evaluation
 python main_VH.py --config OursWG --mode all --run_mode test --scene all
-```
 
-### Cooking Tasks
-
-For cooking-specific evaluation:
-
-```bash
+# Cooking-specific tasks
 python main_cooking.py
 ```
 
-## Configuration Options
+### Available Command Line Options
 
-The framework supports several agent configurations:
+```
+--config CONFIG         Agent configuration (e.g., OursWG, LLMWG)
+--mode {single,all}     Evaluation mode
+--scene SCENE           Scene ID or 'all' for all scenes
+--task_path TASK_PATH   Path to specific task file (single mode)
+--run_mode {debug,test} Running mode for batch evaluation
+--checkpoint PATH       Resume from checkpoint
+--verbo                 Verbose output
+```
 
-### Baseline Configurations
-- **OursWG**: Full system with guidance
-- **OursWOG**: Full system without guidance  
-- **LLMWG**: LLM baseline with guidance
-- **LLMWOG**: LLM baseline without guidance
-- **LLMPlusPWG**: LLM with planning, with guidance
-- **LLMPlusPWOG**: LLM with planning, without guidance
-- **CAPWG**: CAP baseline with guidance
-- **CAPWOG**: CAP baseline without guidance
+## 🏗 Project Structure
 
-### Ablation Studies
-- **WOLibrary**: Without behavior library
-- **ActionLibrary**: Using action-based library instead of behavior-based
-- **WORefinement**: Without goal refinement
-- **WOSplit**: Without task decomposition
-- **PvP**: Policy vs Planning comparison
+```
+LEAP/
+├── 📁 src/                     # Source code
+│   ├── 🤖 agent/               # Agent implementations
+│   │   ├── base.py             # Base agent class
+│   │   ├── leap.py             # LEAP agent (main)
+│   │   └── llm_based.py        # LLM-only agent
+│   ├── 📊 evaluation.py        # Task evaluation logic
+│   ├── 🏠 env.py               # VirtualHome environment wrapper
+│   ├── 🧠 planning.py          # Planning pipeline
+│   ├── 📚 library.py           # Behavior library
+│   ├── 👤 human.py             # Human guidance interface
+│   ├── ⚙️ configs.py           # Configuration classes
+│   ├── 📁 prompts/             # LLM prompts and templates
+│   ├── 📁 simulator/           # VirtualHome simulator components
+│   └── 📁 utils/               # Utility functions and models
+├── 📁 VirtualHome-HG/          # Dataset and scenes
+│   ├── 📁 dataset/             # Task definitions
+│   └── 📁 scenes/              # Environment scenes
+├── 📁 config/                  # Configuration files
+├── 🐍 environment.yml          # Conda environment
+├── 📦 requirements.txt         # Python dependencies
+├── 🔧 setup.sh                 # Automated setup script
+└── ✅ verify_installation.py   # Installation verification
+```
 
-## Key Components
+## 🧪 Key Components
 
-### Agent Types
-- **Planning Agent**: Uses formal planning with goal representations
-- **Policy Agent**: Direct action selection based on current state
-- **LLM Agent**: Pure language model-based decision making
+### Agent Architecture
+
+- **🧠 Planning Agent**: Uses formal planning with CDL goal representations
+- **🎯 Policy Agent**: Direct action selection based on current state  
+- **💭 LLM Agent**: Pure language model-based decision making
 
 ### Behavior Library
-The system maintains a library of successful behaviors that can be reused across tasks:
-- Behavior-based storage (formal representations)
-- Action-based storage (action sequences)
-- RAG-based retrieval for relevant behaviors
+
+The system maintains a library of successful behaviors:
+- **Behavior-based storage**: Formal CDL representations
+- **Action-based storage**: Sequential action patterns
+- **RAG retrieval**: Semantic similarity-based behavior matching
 
 ### Human Guidance
-- **LLM Guidance**: Automated guidance using language models
-- **Manual Guidance**: Interactive human input
-- **No Guidance**: Pure autonomous operation
 
-## Evaluation
+- **🤖 LLM Guidance**: Automated assistance using language models
+- **👤 Manual Guidance**: Interactive human input during execution
+- **🔄 Loop Feedback**: Iterative refinement based on execution results
 
-The framework evaluates agents on:
-- Task completion rate
-- Action efficiency
-- Library usage effectiveness
-- Human guidance dependency
-- Cross-scene generalization
+## 📊 Evaluation Metrics
 
-Results are logged in CSV format with detailed metrics for analysis.
+The framework provides comprehensive evaluation across multiple dimensions:
 
-## Contributing
+- **Task Completion Rate**: Percentage of successfully completed tasks
+- **Action Efficiency**: Number of actions required vs optimal
+- **Library Usage**: Effectiveness of behavior reuse
+- **Guidance Dependency**: Reliance on human assistance
+- **Cross-scene Generalization**: Performance across different environments
+- **Error Analysis**: Detailed failure mode categorization
 
-1. Follow the existing code style and structure
-2. Add appropriate docstrings and comments
-3. Test your changes across different configurations
-4. Update documentation as needed
+Results are automatically logged in CSV format for analysis.
 
-## License
+## 🔧 Development
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+### Code Style
 
-## Acknowledgments
+This project follows Python best practices:
+- **Black** for code formatting
+- **Type hints** for better code clarity
+- **Docstrings** for all public functions
+- **pytest** for testing
 
-This project builds upon the VirtualHome simulator and incorporates various planning and learning techniques for embodied AI research.
+### Running Tests
+
+```bash
+# Install development dependencies
+pip install -r requirements.txt
+
+# Run tests
+pytest tests/
+
+# Run linting
+black src/
+flake8 src/
+```
+
+### Contributing
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature-name`
+3. Make your changes with proper documentation
+4. Add tests for new functionality
+5. Ensure all tests pass and code is formatted
+6. Submit a pull request
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+**Installation Problems:**
+```bash
+# Check Python version
+python --version  # Should be 3.9+
+
+# Verify conda environment
+conda list | grep -E "(torch|transformers|faiss)"
+
+# Run installation verification
+python verify_installation.py
+```
+
+**Runtime Errors:**
+```bash
+# Check API keys
+cat config/api_keys.json
+
+# Verify third-party libraries
+echo $PYTHONPATH | grep -E "(Jacinle|Concepts)"
+
+# Enable verbose logging
+python main_VH.py --verbo
+```
+
+**Performance Issues:**
+- Ensure sufficient RAM (8GB+ recommended)
+- Use CPU-only versions if GPU memory is limited
+- Reduce batch sizes in configuration files
+
+### Getting Help
+
+1. Check the [Issues](https://github.com/George121380/LEAP/issues) page
+2. Review the troubleshooting section above
+3. Ensure your system meets all requirements
+4. Verify installation with `verify_installation.py`
+
+## 📚 Citation
+
+If you use this work in your research, please cite:
+
+```bibtex
+@inproceedings{leap2024,
+  title={LEAP: Learning Enhanced Agent Planning for Embodied AI},
+  author={Your Name and Collaborators},
+  booktitle={Proceedings of ICLR 2024},
+  year={2024}
+}
+```
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- **VirtualHome**: Built upon the VirtualHome simulator for household environments
+- **Jacinle & Concepts**: Utilizes frameworks by Jiayuan Mao for reasoning and planning
+- **Community**: Thanks to all contributors and researchers in embodied AI
+
+---
+
+**⭐ Star this repository if you find it helpful!**
+
+For questions and discussions, please open an issue or reach out to the maintainers.
