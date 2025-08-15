@@ -6,6 +6,25 @@
 
 A comprehensive framework for evaluating LLM-based embodied agents in virtual home environments. The framework supports various agent configurations including planning-based and policy-based approaches, with integrated behavior libraries and human guidance systems.
 
+## 🏗 System Architecture
+
+### LEAP Framework Overview
+![LEAP System Architecture](assets/leap_system_overview.png)
+
+The LEAP framework consists of four main components:
+- **(a) System Input**: Task instructions and environmental observations from VirtualHome
+- **(b) Preprocessing**: Task decomposition and abstract state representation  
+- **(c) CDL Generation**: Formal planning with CROW planner and behavior library integration
+- **(d) Execution and Self-evaluation**: Plan execution with human guidance and iterative refinement
+
+### Learning and Guidance Mechanisms
+![Learning and Guidance](assets/leap_learning_guidance.png)
+
+The system incorporates three key learning mechanisms:
+- **(a) Trial-and-error in environment**: Learning from interaction and execution failures
+- **(b) Building a CDL library**: Continual learning through successful behavior memorization
+- **(c) Human-provided guidance**: Expert knowledge integration for complex scenarios
+
 ## 🌟 Features
 
 - **🤖 Multiple Agent Types**: Support for planning-based, policy-based, and pure LLM agents
@@ -230,79 +249,6 @@ The framework provides comprehensive evaluation across multiple dimensions:
 - **Error Analysis**: Detailed failure mode categorization
 
 Results are automatically logged in CSV format for analysis.
-
-## 🔧 Development
-
-### Code Style
-
-This project follows Python best practices:
-- **Black** for code formatting
-- **Type hints** for better code clarity
-- **Docstrings** for all public functions
-- **pytest** for testing
-
-### Running Tests
-
-```bash
-# Install development dependencies
-pip install -r requirements.txt
-
-# Run tests
-pytest tests/
-
-# Run linting
-black src/
-flake8 src/
-```
-
-### Contributing
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature-name`
-3. Make your changes with proper documentation
-4. Add tests for new functionality
-5. Ensure all tests pass and code is formatted
-6. Submit a pull request
-
-## 🐛 Troubleshooting
-
-### Common Issues
-
-**Installation Problems:**
-```bash
-# Check Python version
-python --version  # Should be 3.9+
-
-# Verify conda environment
-conda list | grep -E "(torch|transformers|faiss)"
-
-# Run installation verification
-python verify_installation.py
-```
-
-**Runtime Errors:**
-```bash
-# Check API keys
-cat config/api_keys.json
-
-# Verify third-party libraries
-echo $PYTHONPATH | grep -E "(Jacinle|Concepts)"
-
-# Enable verbose logging
-python main_VH.py --verbo
-```
-
-**Performance Issues:**
-- Ensure sufficient RAM (8GB+ recommended)
-- Use CPU-only versions if GPU memory is limited
-- Reduce batch sizes in configuration files
-
-### Getting Help
-
-1. Check the [Issues](https://github.com/George121380/LEAP/issues) page
-2. Review the troubleshooting section above
-3. Ensure your system meets all requirements
-4. Verify installation with `verify_installation.py`
 
 ## 📚 Citation
 
