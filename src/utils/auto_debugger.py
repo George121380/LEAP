@@ -3,7 +3,13 @@ import sys
 sys.path.append('..')
 from prompts.planning_auto_debug_prompt import planning_get_uniform_debug_prompt, get_unknown_variable_related_examples
 from prompts.policy_auto_debug_prompt import policy_not_found_prompt,policy_unknown_prompt,policy_other_prompt
-from concepts.dm.crow.parsers.cdl_parser import TransformationError
+# Try to import TransformationError, create fallback if not available
+try:
+    from concepts.dm.crow.parsers.cdl_parser import TransformationError
+except ImportError:
+    # Fallback: define TransformationError if not available in the current Concepts version
+    class TransformationError(Exception):
+        pass
 from Interpretation import ask_GPT
 def auto_debug(error_info,original_content,goal_int,long_horizon_goal,current_sub_goal,prev_sub_goal_list,additional_information,cat_list,goal_start_line_num,behavior_from_library,agent_type):
     print('=' * 80)

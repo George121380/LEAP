@@ -41,22 +41,68 @@ VirtualHome-HG/         # VirtualHome dataset and scenes
 
 ## Installation
 
+### Quick Setup (Recommended)
+
+Use the automated setup script for easy installation:
+
+```bash
+git clone <repository-url>
+cd LEAP
+chmod +x setup.sh
+./setup.sh
+```
+
+The setup script will:
+- Create a conda environment with all dependencies
+- Install third-party libraries (Jacinle and Concepts)  
+- Set up environment variables automatically
+- Create API keys configuration template
+
+### Manual Setup
+
+If you prefer manual installation:
+
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd 06-virtual-home
+   cd LEAP
    ```
 
-2. **Install dependencies**
+2. **Create conda environment**
+   ```bash
+   conda env create -f environment.yml
+   conda activate leap-agent
+   ```
+   
+   Or using pip:
    ```bash
    pip install -r requirements.txt
    ```
 
-3. **Set up API keys**
+3. **Install third-party dependencies**
+   
+   The project requires two external libraries. You can install them manually:
+   ```bash
+   # Create directory for third-party libraries
+   mkdir -p ~/leap_third_party
+   cd ~/leap_third_party
+   
+   # Install Jacinle
+   git clone https://github.com/vacancy/Jacinle --recursive
+   export PATH=~/leap_third_party/Jacinle/bin:$PATH
+   export PYTHONPATH=~/leap_third_party/Jacinle:$PYTHONPATH
+   
+   # Install Concepts  
+   git clone https://github.com/vacancy/Concepts --recursive
+   export PATH=~/leap_third_party/Concepts/bin:$PATH
+   export PYTHONPATH=~/leap_third_party/Concepts:$PYTHONPATH
+   ```
+
+4. **Set up API keys**
    
    Create a configuration file for API keys:
    ```bash
-   mkdir config
+   mkdir -p config
    cp config/api_keys.json.example config/api_keys.json
    ```
    
@@ -73,6 +119,15 @@ VirtualHome-HG/         # VirtualHome dataset and scenes
    export OPENAI_API_KEY="your-openai-api-key"
    export DEEPSEEK_API_KEY="your-deepseek-api-key"
    ```
+
+### Environment Activation
+
+After installation, activate the environment:
+```bash
+conda activate leap-agent
+```
+
+The environment will automatically load the required paths and variables for third-party libraries.
 
 ## Usage
 

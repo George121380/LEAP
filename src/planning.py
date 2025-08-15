@@ -31,8 +31,20 @@ from eval_utils import *
 from Interpretation import goal_interpretation,exploration_VH, refinement_loop_feedback
 from solver import goal_solver
 from auto_debugger import auto_debug
-from concepts.dm.crow.parsers.cdl_parser import TransformationError
-from concepts.dm.crow.executors.crow_executor import ResampleError
+# Try to import TransformationError, create fallback if not available
+try:
+    from concepts.dm.crow.parsers.cdl_parser import TransformationError
+except ImportError:
+    # Fallback: define TransformationError if not available in the current Concepts version
+    class TransformationError(Exception):
+        pass
+# Try to import ResampleError, create fallback if not available
+try:
+    from concepts.dm.crow.executors.crow_executor import ResampleError
+except ImportError:
+    # Fallback: define ResampleError if not available in the current Concepts version
+    class ResampleError(Exception):
+        pass
 
 def remove_special_characters(input_string):
     allowed_characters = {',', ':', '(', ')', '_', '#', ' ', '\n','!=','=','[',']'}
