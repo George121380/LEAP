@@ -16,16 +16,13 @@
 ![Learning and Guidance](assets/leap_learning_guidance.png)
 
 
-## 🌟 Features
+## 🔑 Key Contributions
 
-- **🧠 CDL-Based Knowledge Representation**: Unified framework using Crow Definition Language that integrates imperative programming with declarative planning
-- **📚 Lifelong Learning Library**: Accumulates and refines behavioral repertoire through successful task executions
-- **🔄 Continual Behavior Learning**: Abstracts reusable behavior rules from environmental interactions and human guidance
-- **🤖 LLM-Powered Translation**: Converts diverse natural language instructions into structured CDL programs
-- **🧭 Adaptive Human Guidance**: Reduces dependence on human input over time while leveraging guidance when needed
-- **🏠 VirtualHome-HG Benchmark**: 210 diverse tasks across 3 household scenes with human guidance annotations
-- **🔍 Retrieval-Augmented Generation**: Uses semantic similarity to retrieve relevant behavior patterns from the library
-- **⚡ Self-Evaluation & Refinement**: Automatic error correction and plan refinement mechanisms
+1. **🧠 LLM-to-CDL Translation**: Novel algorithm that translates diverse natural language instructions into structured CDL behavior representations with task decomposition and error correction mechanisms
+
+2. **📚 Continual Behavior Learning**: Mechanism for abstracting and storing reusable behavior rules that enables lifelong learning and knowledge accumulation in embodied agents
+
+3. **🏠 VirtualHome-HG Benchmark**: Comprehensive evaluation dataset with 210 challenging long-horizon tasks across 3 household environments, featuring systematic human-in-the-loop evaluation
 
 ## 🚀 Quick Start
 
@@ -246,13 +243,6 @@ The system maintains a library of successful behaviors:
 - **👤 Manual Guidance**: Interactive human input during execution
 - **🔄 Loop Feedback**: Iterative refinement based on execution results
 
-## 🔑 Key Contributions
-
-1. **🧠 LLM-to-CDL Translation**: Novel algorithm that translates diverse natural language instructions into structured CDL behavior representations with task decomposition and error correction mechanisms
-
-2. **📚 Continual Behavior Learning**: Mechanism for abstracting and storing reusable behavior rules that enables lifelong learning and knowledge accumulation in embodied agents
-
-3. **🏠 VirtualHome-HG Benchmark**: Comprehensive evaluation dataset with 210 challenging long-horizon tasks across 3 household environments, featuring systematic human-in-the-loop evaluation
 
 ## 📈 Experimental Results
 
