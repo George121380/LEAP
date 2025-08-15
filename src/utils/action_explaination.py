@@ -1,14 +1,14 @@
 import re
 
 def controller_to_natural_language(controller_call):
-    # 使用正则表达式解析控制器名称和参数
+    # Use regular expression to parse controller name and parameters
     match = re.match(r'(\w+)\(([^)]+)\)', controller_call)
     
     if match:
         controller = match.group(1)
         params = [param.strip() for param in match.group(2).split(',')]
         
-        # 根据参数数量生成合适的句子
+        # Generate appropriate sentence based on parameter count
         if len(params) == 1:
             x = params[0]
             if controller == 'walk_executor':
