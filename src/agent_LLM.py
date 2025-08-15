@@ -16,7 +16,7 @@ import os
 import random
 import numpy as np
 import re
-from utils_eval import get_nodes_information,construct_cdl
+from utils.utils import get_nodes_information,construct_cdl
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 from agent_base import BaseAgent

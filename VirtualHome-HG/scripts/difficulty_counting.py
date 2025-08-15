@@ -11,7 +11,7 @@ from datetime import datetime
 from experiments.virtualhome.VH_scripts.agent import VHAgent
 from experiments.virtualhome.VH_scripts.agent_LLM import LLM_Agent
 
-from utils_eval import get_nodes_information,construct_cdl,load_config
+from utils.utils import get_nodes_information,construct_cdl,load_config
 from env import VH_Env
 from environment import EnvironmentState, EnvironmentGraph
 import random

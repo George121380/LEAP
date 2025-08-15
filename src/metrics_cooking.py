@@ -28,7 +28,7 @@ sys.path.append('../cdl_dataset/scripts')
 
 # External modules (assumed to be provided)
 from logic_parser import parse_logic_from_file_path
-from utils_eval import get_cooking_difficulty_dict
+from utils.utils import get_cooking_difficulty_dict
 
 
 # ------------------------------------------------------------------------------

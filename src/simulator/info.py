@@ -4,7 +4,7 @@ import json
 from preparation import AddMissingScriptObjects, AddRandomObjects, ChangeObjectStates, \
     StatePrepare, AddObject, ChangeState, Destination
 from execution import Relation, State
-from utils_eval import get_from_dataset
+from utils.utils import get_from_dataset
 import utils as utils
 from environment import EnvironmentState, EnvironmentGraph
 

@@ -29,7 +29,7 @@ from action_sequence_parser import parse_action_sequence_from_file_path
 
 # External modules (assumed to be provided)
 from logic_parser import parse_logic_from_file_path
-from utils_eval import get_difficulty_dict
+from utils.utils import get_difficulty_dict
 
 
 # ------------------------------------------------------------------------------

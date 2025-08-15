@@ -78,14 +78,4 @@ def plan(problem, planning=True):
     # input('Press Enter to continue...')
     return table
 
-if __name__ == '__main__':
-    goal='/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/main_results/openai_new/round4/20250206_042201_OursWOG_continue/internal_executable.cdl'
-    print('Planning:')
-    goal_solver(goal, planning=True)
-    print('-' * 60)
-    print('Policy:')
-    goal_solver(goal, planning=False)
-
-
-
     

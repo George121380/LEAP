@@ -29,7 +29,7 @@ for p in (EVOLVING_GRAPH_DIR, CDL_SCRIPTS_DIR):
         sys.path.append(p)
 
 from agent import VHAgent
-from utils_eval import get_nodes_information,construct_cdl
+from utils.utils import get_nodes_information,construct_cdl
 from env import VH_Env
 from environment import EnvironmentState, EnvironmentGraph
 import random

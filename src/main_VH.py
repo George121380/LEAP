@@ -20,7 +20,7 @@ import builtins
 _ORIG_ARGV = sys.argv[:]
 sys.argv = [sys.argv[0]]
 from datetime import datetime
-from utils_eval import CrowControllerApplier, load_config, evaluation_task_loader, namespace_to_dict
+from utils.utils import CrowControllerApplier, load_config, evaluation_task_loader, namespace_to_dict
 from env import VH_Env
 import random
 import time
@@ -253,7 +253,7 @@ def evaluate_all_cross_scene(config, run_mode: str = None, scenes_arg = None): #
 
         if running_mode == 'test':
             # use a uniform order in test mode
-            with open('src/shuffled_task_scene_pairs.json', 'r') as file:
+            with open('shuffled_task_scene_pairs.json', 'r') as file:
                 task_scene_pairs = json.load(file)
         else:
             # you can diy the task_scene_pairs

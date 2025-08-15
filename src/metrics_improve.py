@@ -29,7 +29,7 @@ sys.path.append('../VirtualHome-HG/scripts')
 
 # External modules (assumed to be provided)
 from logic_parser import parse_logic_from_file_path
-from utils_eval import get_difficulty_dict
+from utils.utils import get_difficulty_dict
 
 
 # ------------------------------------------------------------------------------

@@ -8,7 +8,7 @@ with different difficulty levels (easy, middle, hard).
 import sys
 import json
 from datetime import datetime
-from utils_eval import CrowControllerApplier, load_config, namespace_to_dict
+from utils.utils import CrowControllerApplier, load_config, namespace_to_dict
 from env import VH_Env
 import random
 import time

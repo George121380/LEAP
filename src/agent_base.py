@@ -13,7 +13,7 @@ All specialized agents (VHAgent, LLM_Agent) inherit from this base class.
 import numpy as np
 import re
 import os
-from utils_eval import check_unexplorable
+from utils.utils import check_unexplorable
 
 class BaseAgent:
     def __init__(self, config, filepath, task_logger, epoch_path=None, agent_base_type="behavior",evaluation=False):

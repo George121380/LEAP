@@ -3,7 +3,7 @@ from prompts.ask_GPT import ask_GPT
 from prompts.planning_goal_interpretation_prompt import get_planning_goal_inter_prompt
 from prompts.policy_goal_interpretation_prompt import get_policy_goal_inter_prompt
 
-from prompts.exploration_prompt import get_exp_behavior
+from prompts.exploration import get_exp_behavior
 from prompts.sub_goal_split_finer_prompt import sub_goal_prompt
 from prompts.sub_goal_evaluate_prompt import sub_goal_evaluate_prompt
 from prompts.obs_query_prompt import obs_query_prompt

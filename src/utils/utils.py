@@ -19,8 +19,10 @@ import sys
 
 # Ensure imports work regardless of current working directory by using absolute paths
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# Go up one level to src, then to simulator
+SRC_DIR = os.path.dirname(BASE_DIR)
 EVOLVING_GRAPH_DIR = os.path.normpath(os.path.join(
-    BASE_DIR,
+    SRC_DIR,
     'simulator'
 ))
 if EVOLVING_GRAPH_DIR not in sys.path:
@@ -231,8 +233,8 @@ def relationship_translation(graph,edge):
         relation = "Unknown relation"
 
 def get_nodes_information(graph,PO=True):
-    # Prefer local copy under src/domain
-    class_equiv_path = os.path.join(BASE_DIR, 'domain', 'class_name_equivalence.json')
+    # Prefer local copy under src/domain (go up one level from utils to src)
+    class_equiv_path = os.path.join(SRC_DIR, 'domain', 'class_name_equivalence.json')
     with open(class_equiv_path, "r") as file:
         equal_dict=json.load(file)
     nodes=graph.get_nodes()

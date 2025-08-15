@@ -21,8 +21,15 @@ SIM_DIR = os.path.join(BASE_DIR, 'simulator')
 if SIM_DIR not in sys.path:
     sys.path.append(SIM_DIR)
 from execution import ScriptExecutor
-from utils import load_name_equivalence
-from utils_eval import transform_action,check_unexplorable
+
+# Import from simulator/utils.py directly
+import importlib.util
+spec = importlib.util.spec_from_file_location("simulator_utils", os.path.join(SIM_DIR, "utils.py"))
+simulator_utils = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(simulator_utils)
+load_name_equivalence = simulator_utils.load_name_equivalence
+
+from utils.utils import transform_action, check_unexplorable  # This is src/utils/utils.py
 from scripts import *
 import time
 # from logger import logger
