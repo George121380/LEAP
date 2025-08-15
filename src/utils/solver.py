@@ -16,7 +16,9 @@ import time
 parser = jacinle.JacArgumentParser()
 # Default to the proper VirtualHome domain file; allow override via env VH_DOMAIN_CDL
 import os as _os
-_default_domain = _os.environ.get('VH_DOMAIN_CDL', 'src/domain/virtualhome_partial.cdl')
+# Get the correct path to domain directory
+_base_dir = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))  # Go up two levels from utils to src
+_default_domain = _os.environ.get('VH_DOMAIN_CDL', _os.path.join(_base_dir, 'domain', 'virtualhome_partial.cdl'))
 parser.add_argument('--domain', default=_default_domain)
 parser.add_argument('--verbose', action='store_true')
 args = parser.parse_args(args=[])  # avoid clobbering by outer argparse

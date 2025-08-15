@@ -110,7 +110,7 @@ def ask_GPT(system: str, content: str, model: str = DEFAULT_MODEL) -> Optional[s
                 raise ValueError(f"Unsupported model: {model}")
             
             response_time = time.time() - start_time
-            print(f"LLM response time: {response_time:.2f}s")
+            # print(f"LLM response time: {response_time:.2f}s")
             
             return completion.choices[0].message.content
             

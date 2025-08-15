@@ -25,7 +25,7 @@ except ImportError:
     print("Warning: Could not import environment modules. Make sure VirtualHome simulator is properly set up.")
 from utils.utils import get_nodes_information,construct_cdl, CrowControllerApplier, load_config, evaluation_task_loader, namespace_to_dict
 from agent import VHAgent
-from agent_LLM import LLM_Agent
+from agent import LLM_Agent
 from human import Human
 
 

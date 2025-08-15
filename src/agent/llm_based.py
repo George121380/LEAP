@@ -11,18 +11,20 @@ Used for baseline comparisons against planning-based agents.
 """
 
 import sys
-sys.path.append('prompt')
 import os
+# Add parent directory to path for imports
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append('prompts')
 import random
 import numpy as np
 import re
 from utils.utils import get_nodes_information,construct_cdl
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
-from agent import BaseAgent
+from .base import BaseAgent
 
-from ask_GPT import ask_GPT
-from baselines.baseline_LLM import LLM_Agent_Prompt
+from prompts.ask_GPT import ask_GPT
+from prompts.baselines.baseline_LLM import LLM_Agent_Prompt
 
 class Argument:
     def __init__(self, name):

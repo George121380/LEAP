@@ -10,15 +10,17 @@ import os
 import concepts.dm.crow as crow
 import numpy as np
 import re
+import sys
+import os
+# Add parent directory to path for imports
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from library import behavior_library_simple
 from planning import VH_pipeline
-from Interpretation import exploration_VH,sub_goal_generater,obs_query,sub_goal_evaluate
-sys.path.append('utils')
-from action_explaination import controller_to_natural_language
+from utils.Interpretation import exploration_VH,sub_goal_generater,obs_query,sub_goal_evaluate
+from utils.action_explaination import controller_to_natural_language
 import pdb
-import os
 import time
-from agent import BaseAgent
+from .base import BaseAgent
 
 class VHAgent(BaseAgent):
     def __init__(self, config, filepath, task_logger, PO=True, epoch_path=None):

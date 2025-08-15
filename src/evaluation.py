@@ -38,7 +38,7 @@ import time
 from dataset import parse_file_to_json
 from logic_parser import parse_logic_from_file_path
 from action_sequence_parser import parse_action_sequence_from_file_path
-from agent_base import BaseAgent
+from agent import BaseAgent
 
 random.seed(time.time())
 
@@ -117,7 +117,7 @@ class Evaluator(BaseAgent):
         # For evaluator, default to the evaluator domain which includes extra features like `used`
         self.basic_domain_knowledge_file_path = os.environ.get(
             'VH_DOMAIN_CDL',
-            'src/domain/virtualhome_evaluator.cdl'
+            os.path.join(BASE_DIR, 'domain', 'virtualhome_evaluator.cdl')
         )
         self.domain = crow.load_domain_file(self.basic_domain_knowledge_file_path)
         self.init_scene_graph=None
