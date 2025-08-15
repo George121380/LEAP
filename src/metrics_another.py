@@ -727,9 +727,9 @@ if __name__ == '__main__':
 
     print_compare_table(compare_data)
 
-    # goal_generate_times.sort()  # 排序
+    # goal_generate_times.sort()  # Sort the data
     # n = len(goal_generate_times)
-    # remove_count = int(n * 0.3)  # 计算去掉20%的元素数量
+    # remove_count = int(n * 0.3)  # Calculate number of elements to remove (30%)
 
     # remaining_nums = goal_generate_times[:-remove_count]
     # total_sum = sum(remaining_nums)
