@@ -7,13 +7,22 @@ import json
 from dataclasses import dataclass
 import sys
 
-# Ensure evolving_graph is importable regardless of CWD
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-EVOLVING_GRAPH_DIR = os.path.normpath(os.path.join(BASE_DIR, 'simulator'))
-if EVOLVING_GRAPH_DIR not in sys.path:
-    sys.path.append(EVOLVING_GRAPH_DIR)
+# Add simulator to path for environment imports
+import sys
+from pathlib import Path
 
-from environment import EnvironmentState, EnvironmentGraph
+# Use pathlib for cleaner path handling
+BASE_DIR = Path(__file__).parent
+SIMULATOR_DIR = BASE_DIR / 'simulator'
+
+if str(SIMULATOR_DIR) not in sys.path:
+    sys.path.append(str(SIMULATOR_DIR))
+
+try:
+    from environment import EnvironmentState, EnvironmentGraph
+except ImportError:
+    # Fallback for development/testing
+    print("Warning: Could not import environment modules. Make sure VirtualHome simulator is properly set up.")
 from utils_eval import get_nodes_information,construct_cdl, CrowControllerApplier, load_config, evaluation_task_loader, namespace_to_dict
 from agent import VHAgent
 from agent_LLM import LLM_Agent
@@ -241,16 +250,25 @@ class PvP:
 
 
 
-def load_scene(scene_id, epoch_path):
+def load_scene(scene_id: int, epoch_path: str) -> tuple:
     """
     Load a predefined scene based on its ID.
+    
+    Args:
+        scene_id: ID of the scene to load (0, 1, or 2)
+        epoch_path: Path to the epoch directory for saving CDL files
+    
+    Returns:
+        tuple: (classes, init_scene_graph)
     """
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    # Load scenes from the dataset package via centralized helper
     from paths import dataset_scenes_dir
-    scene_path=os.path.join(dataset_scenes_dir(), f'Scene_{scene_id}.json')
+    scene_path = Path(dataset_scenes_dir()) / f'Scene_{scene_id}.json'
+    
+    if not scene_path.exists():
+        raise FileNotFoundError(f"Scene file not found: {scene_path}")
+    
     with open(scene_path) as f:
-        scene=json.load(f)
+        scene = json.load(f)
     init_scene_graph = EnvironmentGraph(scene)
 
     # Generate CDL for NPO
@@ -292,18 +310,14 @@ def set_agent(config, init_scene_graph, task_data, classes, task_logger, epoch_p
 
     if config.exp_name in ['LLM']:
 
+        # Adjust difficulty based on task complexity
         long_task_list = [
             "/dataset/Put_groceries_in_Fridge/g3.txt",
             "/dataset/Put_groceries_in_Fridge/g5.txt"
-            ]
+        ]
         key_folder = "cdl_dataset"
         task_path = task_data['task_path'].split(key_folder)[1]
-        if task_path in long_task_list:
-            # difficulty = 150
-            difficulty = 150
-        else:
-            difficulty = 50
-            # difficulty = 5
+        difficulty = 150 if task_path in long_task_list else 50
 
 
         agent = LLM_Agent(
@@ -320,36 +334,3 @@ def set_agent(config, init_scene_graph, task_data, classes, task_logger, epoch_p
     return agent
 
 
-# def test_human_guidance():
-        ######## Test Human Guidance ########
-    # log_path = f'log/epoch_{timestamp}/test_all_human_guidance.json'
-    
-    # # Ensure the file exists and has valid JSON
-    # if os.path.exists(log_path):
-    #     with open(log_path, 'r') as f:
-    #         try:
-    #             existing_data = json.load(f)
-    #         except json.JSONDecodeError:
-    #             existing_data = []
-    # else:
-    #     existing_data = []
-    
-    # Human_Guidance=[]
-    # Human_Guidance.append({'task_name':log_name,'goal':task_data['Goal'],'guidance':task_data['Guidance']})
-    # for sub_goal in agent.sub_goal_list:
-    #     question=re.sub(r'^\d+[\.\:]?\s*', '', sub_goal.lower())
-    #     question="Can you tell me how to "+question
-    #     print("#"*80)
-    #     print(question)
-    #     print("#"*80)
-    #     answer=agent.query_LLM_human(question)
-    #     # Human_Guidance.append(answer)
-    #     question_pair={'question':question,'answer':answer}
-    #     Human_Guidance.append(question_pair)
-
-    # existing_data.append(Human_Guidance)
-    
-    # # Save the updated data
-    # with open(log_path, 'w') as f:
-    #     json.dump(existing_data, f, indent=4)
-    ######## Test Human Guidance ########

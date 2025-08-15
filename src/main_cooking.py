@@ -1,11 +1,12 @@
-# ----------------------------------------------
-# Cooking Tasks
-# ----------------------------------------------
+"""
+Cooking Tasks Evaluation Module
+
+This module provides functionality to evaluate agents on cooking-specific tasks
+with different difficulty levels (easy, middle, hard).
+"""
 
 import sys
 import json
-sys.path.append('../VirtualHome-HG/scripts')
-sys.path.append('')
 from datetime import datetime
 from utils_eval import CrowControllerApplier, load_config, namespace_to_dict
 from env import VH_Env
@@ -20,20 +21,41 @@ import os
 from dataset import parse_file_to_json
 from tqdm import tqdm
 import shutil
-from configs import OursWG, OursWOG, LLMWG, LLMWOG, LLMPlusPWG, LLMPlusPWOG, CAPWG, CAPWOG, WOLibrary, ActionLibrary, WORefinement, WOSplit, PvP, load_scene, set_agent
+from configs import (
+    OursWG, OursWOG, LLMWG, LLMWOG, LLMPlusPWG, LLMPlusPWOG, 
+    CAPWG, CAPWOG, WOLibrary, ActionLibrary, WORefinement, WOSplit, PvP, 
+    load_scene, set_agent
+)
 from main_VH import run
 from paths import cooking_tasks_dir
 DATASET_FOLDER_PATH = cooking_tasks_dir()
 
 sys.setrecursionlimit(1000000)
 
-def cooking_task_loader(folder_path, difficulty):
+def cooking_task_loader(folder_path: str, difficulty: str) -> list:
+    """
+    Load cooking task files from a specific difficulty level.
+    
+    Args:
+        folder_path: Path to the cooking tasks directory
+        difficulty: Difficulty level ("easy", "middle", "hard")
+    
+    Returns:
+        list: List of task file paths
+    """
     all_files = []
     subdir_path = os.path.join(folder_path, difficulty)
-    files = [f for f in os.listdir(subdir_path) if os.path.isfile(os.path.join(subdir_path, f))]
+    
+    if not os.path.exists(subdir_path):
+        raise FileNotFoundError(f"Difficulty directory not found: {subdir_path}")
+    
+    files = [f for f in os.listdir(subdir_path) 
+             if os.path.isfile(os.path.join(subdir_path, f))]
+    
     for file in files:
-        if not 'bug' in file:
-            all_files.append(os.path.join(subdir_path,file))
+        if 'bug' not in file:  # Skip files containing 'bug'
+            all_files.append(os.path.join(subdir_path, file))
+    
     return all_files
 
 
@@ -92,8 +114,7 @@ def evaluate_all_cross_scene(config): # main function
         task_path=task_scene_pair[0]
         Debug=run(config,epoch_logger,epoch_path,task_path,classes,init_scene_graph)
         
-        # if Debug==False:
-        #     raise Exception('Error in evaluation')
+
         
     end_time = datetime.now().strftime('%Y%m%d_%H%M%S')
     epoch_logger.info('Evaluation Finished',end_time,'','','','')

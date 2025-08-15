@@ -19,15 +19,6 @@ import builtins
 # Workaround: some imported libraries parse CLI args on import. Hide our args temporarily.
 _ORIG_ARGV = sys.argv[:]
 sys.argv = [sys.argv[0]]
-
-# Robust path setup using absolute paths
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-PARENT_DIR = os.path.normpath(os.path.join(BASE_DIR, '..'))
-# Add dataset scripts (VirtualHome-HG/scripts) to import path
-CDL_SCRIPTS_DIR = os.path.normpath(os.path.join(PARENT_DIR, 'VirtualHome-HG/scripts'))
-for p in (PARENT_DIR, CDL_SCRIPTS_DIR):
-    if p not in sys.path:
-        sys.path.append(p)
 from datetime import datetime
 from utils_eval import CrowControllerApplier, load_config, evaluation_task_loader, namespace_to_dict
 from env import VH_Env
@@ -42,7 +33,11 @@ import os
 from dataset import parse_file_to_json
 from tqdm import tqdm
 import shutil
-from configs import OursWG, OursWOG, LLMWG, LLMWOG, LLMPlusPWG, LLMPlusPWOG, CAPWG, CAPWOG, WOLibrary, ActionLibrary, WORefinement, WOSplit, PvP, load_scene, set_agent
+from configs import (
+    OursWG, OursWOG, LLMWG, LLMWOG, LLMPlusPWG, LLMPlusPWOG, 
+    CAPWG, CAPWOG, WOLibrary, ActionLibrary, WORefinement, WOSplit, PvP, 
+    load_scene, set_agent
+)
 # Absolute dataset path, robust to CWD
 from paths import ensure_dataset_scripts_on_path, dataset_tasks_dir
 ensure_dataset_scripts_on_path()
@@ -127,21 +122,13 @@ def run(config,epoch_logger,epoch_path,task_path,classes,init_scene_graph):
     task_data=parse_file_to_json(task_path)
     print_task_info(task_data, config.scene_id)
 
-    # # # ----------------- Print Task Info -----------------
-    # if config.scene_id==0:
-    #     with open('task_info_record.txt','a') as f:
-    #         f.write(task_path+'\n')
-    #         # f.write(task_data['Goal']+'\n')
-    #         f.write('\n')
-    # return
-    # # # ----------------- Print Task Info -----------------
+
 
     evaluator=Evaluator(config, task_path, task_logger, epoch_path)
 
     agent = set_agent(config, init_scene_graph, task_data, classes, task_logger, epoch_path)
 
-    # agent.ask_for_human_task_guidance()
-    # return True
+
     env=VH_Env(init_scene_graph)
 
 
@@ -308,8 +295,7 @@ def evaluate_all_cross_scene(config, run_mode: str = None, scenes_arg = None): #
         task_path=os.path.join(DATASET_FOLDER_PATH,task_scene_pair[0])
         Debug=run(config,epoch_logger,epoch_path,task_path,classes,init_scene_graph)
         
-        # if Debug==False:
-        #     raise Exception('Error in evaluation')
+
         
     end_time = datetime.now().strftime('%Y%m%d_%H%M%S')
     epoch_logger.info('Evaluation Finished',end_time,'','','','')
@@ -439,6 +425,3 @@ if __name__ == '__main__':
         evaluate_all_cross_scene(config, run_mode=args.run_mode, scenes_arg=args.scene)
 
 
-        #cdl_dataset/dataset/Wash_windows/g1.txt
-        
-        #/Users/liupeiqi/workshop/Research/Instruction_Representation/lpq/Concepts/projects/crow/examples/06-virtual-home/cdl_dataset/dataset/Put_groceries_in_Fridge/g1.txt

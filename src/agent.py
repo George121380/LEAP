@@ -1,13 +1,12 @@
+"""
+VirtualHome Agent Implementation
+
+This module contains the main agent implementation for the VirtualHome environment,
+supporting both planning and policy-based approaches with library integration.
+"""
+
 import sys
 import os
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-PARENT_DIR = os.path.normpath(os.path.join(BASE_DIR, '..'))
-UTILS_DIR = os.path.join(BASE_DIR, 'utils')
-# Dataset scripts live under VirtualHome-HG/scripts
-CDL_SCRIPTS_DIR = os.path.normpath(os.path.join(PARENT_DIR, 'VirtualHome-HG/scripts'))
-for p in (PARENT_DIR, UTILS_DIR, CDL_SCRIPTS_DIR):
-    if p not in sys.path:
-        sys.path.append(p)
 import concepts.dm.crow as crow
 import numpy as np
 import re
