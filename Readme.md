@@ -273,19 +273,6 @@ LEAP demonstrates significant improvements over baseline methods:
 - **🔄 Continual Learning**: Performance continuously improves over time, with 12% improvement on medium tasks and 17% on hard tasks through prior experience
 - **⚡ Efficiency**: Refinement mechanism reduces CDL generation time by ~10% while improving performance
 
-## 📊 Evaluation Metrics
-
-The framework provides comprehensive evaluation across multiple dimensions:
-
-- **Task Completion Rate**: Percentage of successfully completed tasks
-- **Action Efficiency**: Number of actions required vs optimal
-- **Library Usage**: Effectiveness of behavior reuse
-- **Guidance Dependency**: Reliance on human assistance
-- **Cross-scene Generalization**: Performance across different environments
-- **Error Analysis**: Detailed failure mode categorization
-
-Results are automatically logged in CSV format for analysis.
-
 ## 📚 Citation
 
 If you use this work in your research, please cite:
@@ -316,8 +303,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - **VirtualHome**: [Original VirtualHome Environment](https://github.com/xavierpuigf/virtualhome)
 - **Crow Planner**: [CDL and Crow Planning Framework](https://github.com/concepts-ai/Concepts)
-- **Embodied AI**: This work contributes to the broader field of embodied AI and continual learning
-
 ---
 
 **⭐ Star this repository if you find it helpful!**
