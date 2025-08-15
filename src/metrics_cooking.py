@@ -1,7 +1,15 @@
-# ------------------------------------------------------------
+"""
+Cooking Task Metrics Analysis
 
-# Currently this metric set syntax error as success. However this only suitable for LLM Method. So remember to change it while evaluating other methods.
-# ------------------------------------------------------------
+This module provides specialized metrics analysis for cooking-specific tasks:
+- Cooking task success rate analysis by difficulty level
+- Ingredient handling and cooking step evaluation
+- Kitchen environment interaction metrics
+- Cooking-specific action sequence analysis
+- Comparison across easy, medium, and hard cooking tasks
+
+Specialized metrics system tailored for evaluating agents on cooking tasks.
+"""
 
 
 

@@ -1,3 +1,16 @@
+"""
+Human Guidance Interface
+
+This module provides the Human class for agent-human interaction:
+- LLM-based guidance generation for task assistance
+- Question-answering interface for exploration help
+- Scene understanding and object location assistance
+- Task decomposition and planning guidance
+- Integration with various prompt templates for different guidance types
+
+Enables agents to request help when stuck or uncertain about task execution.
+"""
+
 import numpy as np
 import re
 import sys

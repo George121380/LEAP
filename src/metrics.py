@@ -1,7 +1,16 @@
-# ------------------------------------------------------------
+"""
+Performance Metrics Analysis and Visualization
 
-# Currently this metric set syntax error as success. However this only suitable for LLM Method. So remember to change it while evaluating other methods.
-# ------------------------------------------------------------
+This module provides comprehensive metrics analysis for agent evaluation:
+- Success rate calculation and statistical analysis
+- Action efficiency and completion time metrics
+- Library usage and guidance dependency analysis
+- Cross-experiment comparison and visualization
+- CSV log parsing and data aggregation
+- Plot generation for performance trends and comparisons
+
+Note: Currently treats syntax errors as success for LLM methods - adjust for other agent types.
+"""
 
 
 

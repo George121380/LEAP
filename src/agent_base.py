@@ -1,3 +1,15 @@
+"""
+Base Agent Class for VirtualHome Environment
+
+This module provides the foundational BaseAgent class that handles:
+- Scene state management (objects, properties, relations, exploration)
+- CDL file parsing and generation for planning systems
+- Basic action observation and state updates
+- Character state tracking and environment interaction
+
+All specialized agents (VHAgent, LLM_Agent) inherit from this base class.
+"""
+
 import numpy as np
 import re
 import os

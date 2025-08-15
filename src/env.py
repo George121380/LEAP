@@ -1,3 +1,16 @@
+"""
+VirtualHome Environment Wrapper
+
+This module provides the VH_Env class that interfaces with the VirtualHome simulator:
+- Executes agent actions in the virtual environment
+- Manages scene graph updates and object visibility
+- Handles exploration and observation actions
+- Tracks action history and environment state changes
+- Provides feedback on action success/failure to agents
+
+Acts as the bridge between agents and the VirtualHome simulator.
+"""
+
 import sys
 import os
 

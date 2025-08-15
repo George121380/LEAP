@@ -1,3 +1,15 @@
+"""
+LLM-Based Agent Implementation
+
+This module implements an agent that uses Large Language Models for decision making:
+- Pure LLM-based action selection without formal planning
+- Semantic similarity matching for object selection
+- Direct natural language to action sequence generation
+- Difficulty-based execution limits and error handling
+
+Used for baseline comparisons against planning-based agents.
+"""
+
 import sys
 sys.path.append('prompt')
 import os

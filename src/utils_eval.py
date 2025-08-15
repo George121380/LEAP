@@ -1,3 +1,17 @@
+"""
+Evaluation Utilities and CDL Processing
+
+This module provides core utilities for agent evaluation and CDL file processing:
+- CDL file construction and parsing for planning systems
+- Scene graph information extraction and formatting
+- Action transformation between different representations
+- Dataset loading and task file parsing
+- Configuration management and namespace utilities
+- Object categorization and property handling
+
+Essential utilities used throughout the evaluation pipeline and agent systems.
+"""
+
 import os
 import json
 import re

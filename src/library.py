@@ -1,14 +1,14 @@
 """
-This is a simplified version of library
+Behavior Library Management System
 
-Lift: Directly lift all the behaviors and functions without any operations
+This module implements a simplified behavior library for storing and retrieving successful task solutions:
+- Stores successful behavior patterns (CDL representations or action sequences)
+- Supports both behavior-based and action-based recording methods
+- Provides retrieval mechanisms (whole library or RAG-based similarity search)
+- Enables knowledge transfer across similar tasks and scenarios
+- Manages library persistence and visualization
 
-Download: Copy directly
-
-	# History K:
-	When the sub-task is: abcdefg
-	A successful representation:
-
+Core component for learning and reusing successful behaviors across tasks.
 """
 
 import json

@@ -1,3 +1,16 @@
+"""
+Planning Pipeline for Goal Interpretation and Execution
+
+This module implements the VH_pipeline for converting natural language goals into executable plans:
+- Goal interpretation from natural language to formal CDL representations
+- Integration with behavior libraries for reusable patterns
+- Exploration behavior generation for unknown objects
+- Automatic debugging and refinement of goal representations
+- Support for both planning and policy-based agent types
+
+Central component that bridges high-level goals with low-level executable actions.
+"""
+
 import json
 import os.path as osp
 import sys

@@ -1,3 +1,16 @@
+"""
+Logging System for Experiment Tracking
+
+This module provides specialized logging functionality for agent evaluation:
+- CSV-based logging for structured experiment data
+- Task-level and epoch-level logging with different formats
+- Automatic log file management and directory creation
+- Progress tracking and result aggregation
+- Support for resuming experiments from checkpoints
+
+Essential for tracking agent performance across multiple tasks and experiments.
+"""
+
 import logging
 import os
 import csv

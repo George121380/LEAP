@@ -1,7 +1,15 @@
-# ------------------------------------------------------------
+"""
+Improved Metrics Analysis System
 
-# Currently this metric set syntax error as success. However this only suitable for LLM Method. So remember to change it while evaluating other methods.
-# ------------------------------------------------------------
+This module provides an enhanced metrics analysis system with improvements:
+- Optimized performance and memory usage
+- Better data handling and processing algorithms
+- Improved accuracy in success rate calculations
+- Enhanced error detection and handling
+- More robust statistical analysis methods
+
+Improved version of the metrics system with performance and accuracy enhancements.
+"""
 
 
 

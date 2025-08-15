@@ -1,4 +1,16 @@
-# from env_kitchen import Agent,KitchenEnvironment
+"""
+Task Evaluation System
+
+This module implements the Evaluator class for assessing agent performance:
+- Parses task goals and success conditions from CDL files
+- Evaluates task completion using formal logic and state checking
+- Handles keystate evaluation for intermediate progress tracking
+- Provides completion rates and success metrics
+- Supports both final evaluation and step-by-step progress assessment
+
+Critical component for measuring agent effectiveness in completing household tasks.
+"""
+
 import sys
 import json
 import numpy as np

@@ -1,7 +1,15 @@
-# ----------------------------------------------
-# Main 
-# ----------------------------------------------
+"""
+Transformation and Visualization Tools
 
+This module provides utilities for visualizing and analyzing agent transformations:
+- Scene state transformation visualization
+- Action sequence analysis and plotting
+- Goal representation transformation tracking
+- Performance metrics visualization
+- Debugging output formatting and display
+
+Helpful for understanding agent behavior and debugging complex task executions.
+"""
 
 import sys
 import json
