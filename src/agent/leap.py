@@ -57,7 +57,7 @@ class VHAgent(BaseAgent):
         self.library_pool = []
         
         # Domain CDL path: allow override via env var VH_DOMAIN_CDL
-        BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+        BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # Go up to src/
         self.basic_domain_knowledge_file_path = os.environ.get(
             'VH_DOMAIN_CDL',
             os.path.join(BASE_DIR, 'domain', 'virtualhome_partial.cdl')

@@ -315,8 +315,13 @@ def set_agent(config, init_scene_graph, task_data, classes, task_logger, epoch_p
             "/dataset/Put_groceries_in_Fridge/g3.txt",
             "/dataset/Put_groceries_in_Fridge/g5.txt"
         ]
-        key_folder = "cdl_dataset"
-        task_path = task_data['task_path'].split(key_folder)[1]
+        key_folder = "dataset"
+        task_path_parts = task_data['task_path'].split(key_folder)
+        if len(task_path_parts) > 1:
+            task_path = task_path_parts[1]
+        else:
+            # Fallback: use the full path if split fails
+            task_path = task_data['task_path']
         difficulty = 150 if task_path in long_task_list else 50
 
 
