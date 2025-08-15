@@ -7,32 +7,14 @@
 
 **LEAP** is a framework for continual behavior learning in embodied agents through interaction with the environment and guidance from humans. LEAP addresses the challenge of representing flexible knowledge about tasks and environments — ranging from constraints and subgoal sequences to action plans and high-level goals — in a unified framework using the Crow Definition Language (CDL).
 
-## 📖 Abstract
-
-We present LEAP (Lifelong Experience Abstraction and Planning), a framework for continual behavior learning in embodied agents through interaction with the environment and guidance from humans. LEAP addresses the challenge of representing flexible knowledge about tasks and environments — ranging from constraints and subgoal sequences to action plans and high-level goals — in a unified framework.
-
-At its core, LEAP builds on the **Crow Definition Language (CDL)**, a behavior rule language that integrates imperative programming with declarative planning by allowing agents to express both executable subroutines and subgoal hierarchies. Leveraging large language models (LLMs), LEAP translates diverse human instructions into CDL programs, generates planning-compatible code, and abstracts reusable behavior rules from successful executions to support future generalization.
-
-**Key Innovation**: LEAP maintains a library of CDL programs, enabling the agent to accumulate and refine its behavioral repertoire over time, reducing dependence on human guidance while improving task performance through continual learning.
-
 ## 🏗 System Architecture
 
 ### LEAP Framework Overview
 ![LEAP System Architecture](assets/leap_system_overview.png)
 
-The LEAP framework consists of four main components:
-- **(a) System Input**: Task instructions and environmental observations from VirtualHome
-- **(b) Preprocessing**: Task decomposition and abstract state representation  
-- **(c) CDL Generation**: Formal planning with CROW planner and behavior library integration
-- **(d) Execution and Self-evaluation**: Plan execution with human guidance and iterative refinement
-
 ### Learning and Guidance Mechanisms
 ![Learning and Guidance](assets/leap_learning_guidance.png)
 
-The system incorporates three key learning mechanisms:
-- **(a) Trial-and-error in environment**: Learning from interaction and execution failures
-- **(b) Building a CDL library**: Continual learning through successful behavior memorization
-- **(c) Human-provided guidance**: Expert knowledge integration for complex scenarios
 
 ## 🌟 Features
 
