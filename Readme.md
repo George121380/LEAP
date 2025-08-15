@@ -1,10 +1,19 @@
-# LEAP: Learning Enhanced Agent Planning
+# LEAP: Lifelong Experience Abstraction and Planning
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![ICML 2025](https://img.shields.io/badge/ICML%202025-Workshop-red)](https://icml.cc/)
 
-A comprehensive framework for evaluating LLM-based embodied agents in virtual home environments. The framework supports various agent configurations including planning-based and policy-based approaches, with integrated behavior libraries and human guidance systems.
+**LEAP** is a framework for continual behavior learning in embodied agents through interaction with the environment and guidance from humans. LEAP addresses the challenge of representing flexible knowledge about tasks and environments — ranging from constraints and subgoal sequences to action plans and high-level goals — in a unified framework using the Crow Definition Language (CDL).
+
+## 📖 Abstract
+
+We present LEAP (Lifelong Experience Abstraction and Planning), a framework for continual behavior learning in embodied agents through interaction with the environment and guidance from humans. LEAP addresses the challenge of representing flexible knowledge about tasks and environments — ranging from constraints and subgoal sequences to action plans and high-level goals — in a unified framework.
+
+At its core, LEAP builds on the **Crow Definition Language (CDL)**, a behavior rule language that integrates imperative programming with declarative planning by allowing agents to express both executable subroutines and subgoal hierarchies. Leveraging large language models (LLMs), LEAP translates diverse human instructions into CDL programs, generates planning-compatible code, and abstracts reusable behavior rules from successful executions to support future generalization.
+
+**Key Innovation**: LEAP maintains a library of CDL programs, enabling the agent to accumulate and refine its behavioral repertoire over time, reducing dependence on human guidance while improving task performance through continual learning.
 
 ## 🏗 System Architecture
 
@@ -27,12 +36,14 @@ The system incorporates three key learning mechanisms:
 
 ## 🌟 Features
 
-- **🤖 Multiple Agent Types**: Support for planning-based, policy-based, and pure LLM agents
-- **📚 Behavior Library**: Reusable behavior patterns with RAG-based retrieval
-- **🧭 Human Guidance**: LLM-based and manual guidance systems
-- **🏠 VirtualHome Integration**: Comprehensive evaluation across different household scenarios
-- **📊 Detailed Evaluation**: Task completion, efficiency, and generalization metrics
-- **🔧 Easy Setup**: Automated installation with one-click setup script
+- **🧠 CDL-Based Knowledge Representation**: Unified framework using Crow Definition Language that integrates imperative programming with declarative planning
+- **📚 Lifelong Learning Library**: Accumulates and refines behavioral repertoire through successful task executions
+- **🔄 Continual Behavior Learning**: Abstracts reusable behavior rules from environmental interactions and human guidance
+- **🤖 LLM-Powered Translation**: Converts diverse natural language instructions into structured CDL programs
+- **🧭 Adaptive Human Guidance**: Reduces dependence on human input over time while leveraging guidance when needed
+- **🏠 VirtualHome-HG Benchmark**: 210 diverse tasks across 3 household scenes with human guidance annotations
+- **🔍 Retrieval-Augmented Generation**: Uses semantic similarity to retrieve relevant behavior patterns from the library
+- **⚡ Self-Evaluation & Refinement**: Automatic error correction and plan refinement mechanisms
 
 ## 🚀 Quick Start
 
@@ -57,14 +68,6 @@ python verify_installation.py
 cd src
 python main_VH.py --config OursWG --mode single --scene 0 --task_path ../VirtualHome-HG/dataset/Cook_some_food/g1.txt
 ```
-
-## 📋 Requirements
-
-- **Python**: 3.9+
-- **OS**: Linux, macOS, Windows
-- **Memory**: 8GB+ RAM (16GB+ recommended)
-- **Storage**: 5GB+ available space
-- **API Keys**: OpenAI and/or DeepSeek (for LLM-based components)
 
 ## 🛠 Installation Options
 
@@ -95,10 +98,10 @@ The project requires two external libraries:
 mkdir -p ~/leap_third_party
 cd ~/leap_third_party
 
-# Install Jacinle (Python toolkit for researchers)
+# Install Jacinle
 git clone https://github.com/vacancy/Jacinle --recursive
 
-# Install Concepts (Concept learning framework)
+# Install Concepts
 git clone https://github.com/vacancy/Concepts --recursive
 
 # Set environment variables
@@ -107,8 +110,6 @@ export PYTHONPATH="~/leap_third_party/Jacinle:$PYTHONPATH"
 export PATH="~/leap_third_party/Concepts/bin:$PATH"
 export PYTHONPATH="~/leap_third_party/Concepts:$PYTHONPATH"
 ```
-
-> **Note**: The automated setup script handles these dependencies automatically.
 
 ## ⚙️ Configuration
 
@@ -147,6 +148,32 @@ export PYTHONPATH="~/leap_third_party/Concepts:$PYTHONPATH"
 | **WORefinement** | Without goal refinement |
 | **WOSplit** | Without task decomposition |
 | **PvP** | Policy vs Planning comparison |
+
+## 🏠 VirtualHome-HG Benchmark
+
+LEAP introduces **VirtualHome-HG (Human Guidance)**, a new benchmark built on the VirtualHome simulator featuring:
+
+### 📊 Dataset Statistics
+- **210 diverse tasks** across 3 different household scenes
+- **93 cooking tasks**, 33 cleaning tasks, 27 laundry tasks, 57 rearrangement tasks
+- **376 distinct items** spanning 157 categories per scene on average
+- **Task complexity**: From single-action tasks to complex 159-action sequences
+
+### 🎯 Task Categories
+- **Simple Set (78 tasks)**: Single-stage tasks requiring <15 actions
+- **Multi-stage Set (30 tasks)**: Complex tasks requiring 30-150 actions
+- **Ambiguous Set (57 tasks)**: Tasks with highly ambiguous descriptions requiring human guidance
+- **Constraint Set (30 tasks)**: Tasks with implicit size and spatial constraints
+
+### 📏 Evaluation Metrics
+- **Task Completion Rate**: Based on goal state achievement using oracle planning
+- **Key Action Execution Rate**: Measures execution of manually annotated critical actions
+- **Combined Score**: Weighted combination (2/3 action rate + 1/3 goal rate)
+
+### 🤖 Human Guidance System
+- **LLM-based Human Agent**: Provides natural, human-like guidance based on annotated instructions
+- **Adaptive Querying**: Agents can request help after multiple failed attempts
+- **Realistic Communication**: Mimics parent-child teaching interactions without robotic terminology
 
 ## 📖 Usage
 
@@ -237,6 +264,33 @@ The system maintains a library of successful behaviors:
 - **👤 Manual Guidance**: Interactive human input during execution
 - **🔄 Loop Feedback**: Iterative refinement based on execution results
 
+## 🔑 Key Contributions
+
+1. **🧠 LLM-to-CDL Translation**: Novel algorithm that translates diverse natural language instructions into structured CDL behavior representations with task decomposition and error correction mechanisms
+
+2. **📚 Continual Behavior Learning**: Mechanism for abstracting and storing reusable behavior rules that enables lifelong learning and knowledge accumulation in embodied agents
+
+3. **🏠 VirtualHome-HG Benchmark**: Comprehensive evaluation dataset with 210 challenging long-horizon tasks across 3 household environments, featuring systematic human-in-the-loop evaluation
+
+## 📈 Experimental Results
+
+LEAP demonstrates significant improvements over baseline methods:
+
+### Performance Comparison (Overall Success Rate)
+| Method | Without Guidance | With Guidance |
+|--------|------------------|---------------|
+| LLM Policy | 59.1% | 59.3% |
+| LLM+P | 67.8% | 70.1% |
+| Code as Policy | 61.7% | 69.9% |
+| Voyager | 70.1% | 76.4% |
+| **LEAP (Ours)** | **75.6%** | **80.1%** |
+
+### Key Findings
+- **🎯 Best Human Guidance Utilization**: LEAP achieves the highest improvement (14.3%) on ambiguous tasks when receiving human guidance
+- **📚 Library Learning Benefits**: CDL library storage significantly outperforms action sequence storage across all task categories
+- **🔄 Continual Learning**: Performance continuously improves over time, with 12% improvement on medium tasks and 17% on hard tasks through prior experience
+- **⚡ Efficiency**: Refinement mechanism reduces CDL generation time by ~10% while improving performance
+
 ## 📊 Evaluation Metrics
 
 The framework provides comprehensive evaluation across multiple dimensions:
@@ -255,11 +309,12 @@ Results are automatically logged in CSV format for analysis.
 If you use this work in your research, please cite:
 
 ```bibtex
-@inproceedings{leap2024,
-  title={LEAP: Learning Enhanced Agent Planning for Embodied AI},
-  author={Your Name and Collaborators},
-  booktitle={Proceedings of ICLR 2024},
-  year={2024}
+@inproceedings{liu2025leap,
+  title={Lifelong Experience Abstraction and Planning},
+  author={Peiqi Liu and Joshua B. Tenenbaum and Leslie Pack Kaelbling and Jiayuan Mao},
+  booktitle={ICML 2025 Workshop on Programmatic Representations for Agent Learning},
+  year={2025},
+  institution={Massachusetts Institute of Technology and EECS, Peking University}
 }
 ```
 
@@ -269,9 +324,17 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- **VirtualHome**: Built upon the VirtualHome simulator for household environments
+- **VirtualHome**: Built upon the VirtualHome simulator (Puig et al., 2018) for realistic household environments
+- **Crow Definition Language (CDL)**: Leverages CDL (Mao et al., 2024) as the core behavior rule language
+- **MIT & PKU**: Research conducted at Massachusetts Institute of Technology and Peking University
+- **ICML 2025**: Accepted at ICML 2025 Workshop on Programmatic Representations for Agent Learning
 - **Jacinle & Concepts**: Utilizes frameworks by Jiayuan Mao for reasoning and planning
-- **Community**: Thanks to all contributors and researchers in embodied AI
+
+## 🔗 Related Work
+
+- **VirtualHome**: [Original VirtualHome Environment](https://github.com/xavierpuigf/virtualhome)
+- **Crow Planner**: [CDL and Crow Planning Framework](https://github.com/concepts-ai/Concepts)
+- **Embodied AI**: This work contributes to the broader field of embodied AI and continual learning
 
 ---
 
