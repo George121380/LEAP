@@ -7,7 +7,7 @@
 
 **LEAP** is a framework for continual behavior learning in embodied agents through interaction with the environment and guidance from humans. LEAP addresses the challenge of representing flexible knowledge about tasks and environments — ranging from constraints and subgoal sequences to action plans and high-level goals — in a unified framework using the Crow Definition Language (CDL).
 
-## 🏗 System Architecture
+## 🏗 Overview
 
 ### LEAP Framework Overview
 ![LEAP System Architecture](assets/leap_system_overview.png)
@@ -24,31 +24,8 @@
 
 3. **🏠 VirtualHome-HG Benchmark**: Comprehensive evaluation dataset with 210 challenging long-horizon tasks across 3 household environments, featuring systematic human-in-the-loop evaluation
 
-## 🚀 Quick Start
 
-### Automated Installation (Recommended)
-
-```bash
-git clone https://github.com/George121380/LEAP.git
-cd LEAP
-./setup.sh
-conda activate leap-agent
-```
-
-### Verification
-
-```bash
-python verify_installation.py
-```
-
-### Run Your First Evaluation
-
-```bash
-cd src
-python main_VH.py --config OursWG --mode single --scene 0 --task_path ../VirtualHome-HG/dataset/Cook_some_food/g1.txt
-```
-
-## 🛠 Installation Options
+## 🛠 Installation
 
 ### Option 1: Conda Environment (Recommended)
 
@@ -88,6 +65,12 @@ export PATH="~/leap_third_party/Jacinle/bin:$PATH"
 export PYTHONPATH="~/leap_third_party/Jacinle:$PYTHONPATH"
 export PATH="~/leap_third_party/Concepts/bin:$PATH"
 export PYTHONPATH="~/leap_third_party/Concepts:$PYTHONPATH"
+```
+
+### Verification
+
+```bash
+python verify_installation.py
 ```
 
 ## ⚙️ Configuration
