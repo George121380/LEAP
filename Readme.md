@@ -36,6 +36,7 @@ cd LEAP
 conda create -n leap-agent python==3.9 -y
 conda activate leap-agent
 pip install -r requirements.txt
+conda install faiss-cpu -c conda-forge -y
 # Manual setup of third-party libraries required (see below)
 ```
 
@@ -185,20 +186,11 @@ LEAP/
 │   │   └── Scene_2.json        # Bedroom scene
 │   └── 📁 scripts/             # Dataset processing scripts
 ├── 📁 config/                  # Configuration files
-│   ├── api_keys.json.example   # API keys template
 │   └── api_keys.json           # Your API keys (gitignored)
-├── 📁 assets/                  # Documentation assets
-│   ├── leap_system_overview.png
-│   └── leap_learning_guidance.png
-├── 📁 leap_third_party/        # Third-party dependencies
-│   ├── Jacinle/                # Jacinle framework
-│   └── Concepts/               # Concepts framework
-├── 🐍 environment.yml          # Conda environment
-├── 📦 requirements.txt         # Python dependencies
-├── 🔧 setup.sh                 # Automated setup script
-├── ✅ verify_installation.py   # Installation verification
-├── 📄 LICENSE                  # MIT License
-└── 📖 README.md                # This file
+└── 📁 leap_third_party/        # Third-party dependencies
+    ├── Jacinle/                # Jacinle framework
+    └── Concepts/               # Concepts framework
+
 ```
 
 ## 🏠 VirtualHome-HG Benchmark
