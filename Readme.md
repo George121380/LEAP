@@ -25,22 +25,16 @@
 3. **🏠 VirtualHome-HG Benchmark**: Comprehensive evaluation dataset with 210 challenging long-horizon tasks across 3 household environments, featuring systematic human-in-the-loop evaluation
 
 
-## 🛠 Installation
+## 🛠 Setup
 
-### Option 1: Conda Environment (Recommended)
+
+### Pip Installation
 
 ```bash
 git clone https://github.com/George121380/LEAP.git
 cd LEAP
-conda env create -f environment.yml
+conda create -n leap-agent python==3.9 -y
 conda activate leap-agent
-```
-
-### Option 2: pip Installation
-
-```bash
-git clone https://github.com/George121380/LEAP.git
-cd LEAP
 pip install -r requirements.txt
 # Manual setup of third-party libraries required (see below)
 ```
@@ -51,8 +45,8 @@ The project requires two external libraries:
 
 ```bash
 # Create directory for third-party libraries
-mkdir -p ~/leap_third_party
-cd ~/leap_third_party
+mkdir -p ./leap_third_party
+cd ./leap_third_party
 
 # Install Jacinle
 git clone https://github.com/vacancy/Jacinle --recursive
@@ -61,19 +55,18 @@ git clone https://github.com/vacancy/Jacinle --recursive
 git clone https://github.com/vacancy/Concepts --recursive
 
 # Set environment variables
-export PATH="~/leap_third_party/Jacinle/bin:$PATH"
-export PYTHONPATH="~/leap_third_party/Jacinle:$PYTHONPATH"
-export PATH="~/leap_third_party/Concepts/bin:$PATH"
-export PYTHONPATH="~/leap_third_party/Concepts:$PYTHONPATH"
+export PATH="./leap_third_party/Jacinle/bin:$PATH"
+export PYTHONPATH="./leap_third_party/Jacinle:$PYTHONPATH"
+export PATH="./leap_third_party/Concepts/bin:$PATH"
+export PYTHONPATH="./leap_third_party/Concepts:$PYTHONPATH"
 ```
 
 ### Verification
 
 ```bash
+cd ..
 python verify_installation.py
 ```
-
-## ⚙️ Configuration
 
 ### API Keys Setup
 
@@ -86,56 +79,8 @@ python verify_installation.py
    ```json
    {
      "OpenAI_API_Key": "sk-your-actual-openai-key",
-     "Deepseek_API_Key": "your-actual-deepseek-key"
    }
    ```
-
-### Agent Configurations
-
-| Configuration | Description |
-|---------------|-------------|
-| **OursWG** | Full system with guidance (recommended) |
-| **OursWOG** | Full system without guidance |
-| **LLMWG** | LLM baseline with guidance |
-| **LLMWOG** | LLM baseline without guidance |
-| **LLMPlusPWG** | LLM with planning, with guidance |
-| **CAPWG** | CAP baseline with guidance |
-
-### Ablation Study Configurations
-
-| Configuration | Purpose |
-|---------------|---------|
-| **WOLibrary** | Without behavior library |
-| **ActionLibrary** | Action-based vs behavior-based library |
-| **WORefinement** | Without goal refinement |
-| **WOSplit** | Without task decomposition |
-| **PvP** | Policy vs Planning comparison |
-
-## 🏠 VirtualHome-HG Benchmark
-
-LEAP introduces **VirtualHome-HG (Human Guidance)**, a new benchmark built on the VirtualHome simulator featuring:
-
-### 📊 Dataset Statistics
-- **210 diverse tasks** across 3 different household scenes
-- **93 cooking tasks**, 33 cleaning tasks, 27 laundry tasks, 57 rearrangement tasks
-- **376 distinct items** spanning 157 categories per scene on average
-- **Task complexity**: From single-action tasks to complex 159-action sequences
-
-### 🎯 Task Categories
-- **Simple Set (78 tasks)**: Single-stage tasks requiring <15 actions
-- **Multi-stage Set (30 tasks)**: Complex tasks requiring 30-150 actions
-- **Ambiguous Set (57 tasks)**: Tasks with highly ambiguous descriptions requiring human guidance
-- **Constraint Set (30 tasks)**: Tasks with implicit size and spatial constraints
-
-### 📏 Evaluation Metrics
-- **Task Completion Rate**: Based on goal state achievement using oracle planning
-- **Key Action Execution Rate**: Measures execution of manually annotated critical actions
-- **Combined Score**: Weighted combination (2/3 action rate + 1/3 goal rate)
-
-### 🤖 Human Guidance System
-- **LLM-based Human Agent**: Provides natural, human-like guidance based on annotated instructions
-- **Adaptive Querying**: Agents can request help after multiple failed attempts
-- **Realistic Communication**: Mimics parent-child teaching interactions without robotic terminology
 
 ## 📖 Usage
 
@@ -151,6 +96,27 @@ Follow the prompts to:
 2. Choose evaluation mode (single task or batch)
 3. Specify scenes and parameters
 
+### Baselines Experiment
+
+| Configuration | Description |
+|---------------|-------------|
+| **OursWG** | Full system with guidance (recommended) |
+| **OursWOG** | Full system without guidance |
+| **LLMWG** | LLM baseline with guidance |
+| **LLMWOG** | LLM baseline without guidance |
+| **LLMPlusPWG** | LLM with planning, with guidance |
+| **CAPWG** | CAP baseline with guidance |
+
+### Ablation Study
+
+| Configuration | Purpose |
+|---------------|---------|
+| **WOLibrary** | Without behavior library |
+| **ActionLibrary** | Action-based vs behavior-based library |
+| **WORefinement** | Without goal refinement |
+| **WOSplit** | Without task decomposition |
+| **PvP** | Policy vs Planning comparison |
+
 ### Command Line Interface
 
 ```bash
@@ -160,9 +126,6 @@ python main_VH.py --config OursWG --mode single --scene 0 \
 
 # Batch evaluation
 python main_VH.py --config OursWG --mode all --run_mode test --scene all
-
-# Cooking-specific tasks
-python main_cooking.py
 ```
 
 ### Available Command Line Options
@@ -183,6 +146,7 @@ python main_cooking.py
 LEAP/
 ├── 📁 src/                     # Source code
 │   ├── 🤖 agent/               # Agent implementations
+│   │   ├── __init__.py
 │   │   ├── base.py             # Base agent class
 │   │   ├── leap.py             # LEAP agent (main)
 │   │   └── llm_based.py        # LLM-only agent
@@ -192,39 +156,80 @@ LEAP/
 │   ├── 📚 library.py           # Behavior library
 │   ├── 👤 human.py             # Human guidance interface
 │   ├── ⚙️ configs.py           # Configuration classes
+│   ├── 📁 domain/              # CDL domain definitions
+│   │   ├── init_scene.cdl      # Scene initialization
+│   │   └── virtualhome_*.cdl   # VirtualHome-specific rules
 │   ├── 📁 prompts/             # LLM prompts and templates
+│   │   ├── baselines/          # Baseline method prompts
+│   │   └── QA/                 # Question-answering prompts
 │   ├── 📁 simulator/           # VirtualHome simulator components
-│   └── 📁 utils/               # Utility functions and models
+│   │   ├── environment.py      # Environment interface
+│   │   ├── execution.py        # Action execution
+│   │   └── logic_score.py      # Logic-based scoring
+│   ├── 📁 utils/               # Utility functions and models
+│   │   ├── __init__.py
+│   │   ├── auto_debugger.py    # Automatic debugging
+│   │   ├── models/             # Pre-trained models
+│   │   └── solver.py           # Problem solving utilities
+│   ├── 🎯 main_VH.py           # Main entry point
+│   └── 📊 metrics*.py          # Evaluation metrics
 ├── 📁 VirtualHome-HG/          # Dataset and scenes
-│   ├── 📁 dataset/             # Task definitions
-│   └── 📁 scenes/              # Environment scenes
+│   ├── 📁 dataset/             # Task definitions (210 tasks)
+│   │   ├── Cook_some_food/     # Cooking tasks
+│   │   ├── Clean_the_bathroom/ # Cleaning tasks
+│   │   ├── Wash_clothes/       # Laundry tasks
+│   │   └── ...                 # Other task categories
+│   ├── 📁 scenes/              # Environment scenes
+│   │   ├── Scene_0.json        # Kitchen scene
+│   │   ├── Scene_1.json        # Living room scene
+│   │   └── Scene_2.json        # Bedroom scene
+│   └── 📁 scripts/             # Dataset processing scripts
 ├── 📁 config/                  # Configuration files
+│   ├── api_keys.json.example   # API keys template
+│   └── api_keys.json           # Your API keys (gitignored)
+├── 📁 assets/                  # Documentation assets
+│   ├── leap_system_overview.png
+│   └── leap_learning_guidance.png
+├── 📁 leap_third_party/        # Third-party dependencies
+│   ├── Jacinle/                # Jacinle framework
+│   └── Concepts/               # Concepts framework
 ├── 🐍 environment.yml          # Conda environment
 ├── 📦 requirements.txt         # Python dependencies
 ├── 🔧 setup.sh                 # Automated setup script
-└── ✅ verify_installation.py   # Installation verification
+├── ✅ verify_installation.py   # Installation verification
+├── 📄 LICENSE                  # MIT License
+└── 📖 README.md                # This file
 ```
 
-## 🧪 Key Components
+## 🏠 VirtualHome-HG Benchmark
 
-### Agent Architecture
+LEAP introduces **VirtualHome-HG (Human Guidance)**, a new benchmark built on the VirtualHome simulator featuring:
 
-- **🧠 Planning Agent**: Uses formal planning with CDL goal representations
-- **🎯 Policy Agent**: Direct action selection based on current state  
-- **💭 LLM Agent**: Pure language model-based decision making
+### 📊 Dataset Statistics
 
-### Behavior Library
+- **210 diverse tasks** across 3 different household scenes
+- **93 cooking tasks**, 33 cleaning tasks, 27 laundry tasks, 57 rearrangement tasks
+- **376 distinct items** spanning 157 categories per scene on average
+- **Task complexity**: From single-action tasks to complex 159-action sequences
 
-The system maintains a library of successful behaviors:
-- **Behavior-based storage**: Formal CDL representations
-- **Action-based storage**: Sequential action patterns
-- **RAG retrieval**: Semantic similarity-based behavior matching
+### 🎯 Task Categories
 
-### Human Guidance
+- **Simple Set (78 tasks)**: Single-stage tasks requiring <15 actions
+- **Multi-stage Set (30 tasks)**: Complex tasks requiring 30-150 actions
+- **Ambiguous Set (57 tasks)**: Tasks with highly ambiguous descriptions requiring human guidance
+- **Constraint Set (30 tasks)**: Tasks with implicit size and spatial constraints
 
-- **🤖 LLM Guidance**: Automated assistance using language models
-- **👤 Manual Guidance**: Interactive human input during execution
-- **🔄 Loop Feedback**: Iterative refinement based on execution results
+### 📏 Evaluation Metrics
+
+- **Task Completion Rate**: Based on goal state achievement using oracle planning
+- **Key Action Execution Rate**: Measures execution of manually annotated critical actions
+- **Combined Score**: Weighted combination (2/3 action rate + 1/3 goal rate)
+
+### 🤖 Human Guidance System
+
+- **LLM-based Human Agent**: Provides natural, human-like guidance based on annotated instructions
+- **Adaptive Querying**: Agents can request help after multiple failed attempts
+- **Realistic Communication**: Mimics parent-child teaching interactions without robotic terminology
 
 
 ## 📈 Experimental Results
