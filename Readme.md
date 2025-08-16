@@ -9,10 +9,10 @@
 
 ## 🏗 Overview
 
-### LEAP Framework Overview
+### LEAP Pipeline Overview
 ![LEAP System Architecture](assets/leap_system_overview.png)
 
-### Learning and Guidance Mechanisms
+### Learn through Interaction and Guidance
 ![Learning and Guidance](assets/leap_learning_guidance.png)
 
 
