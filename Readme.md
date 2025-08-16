@@ -46,8 +46,8 @@ The project requires two external libraries:
 
 ```bash
 # Create directory for third-party libraries
-mkdir -p ./leap_third_party
-cd ./leap_third_party
+mkdir -p ~/leap_third_party
+cd ~/leap_third_party
 
 # Install Jacinle
 git clone https://github.com/vacancy/Jacinle --recursive
@@ -56,10 +56,10 @@ git clone https://github.com/vacancy/Jacinle --recursive
 git clone https://github.com/vacancy/Concepts --recursive
 
 # Set environment variables
-export PATH="./leap_third_party/Jacinle/bin:$PATH"
-export PYTHONPATH="./leap_third_party/Jacinle:$PYTHONPATH"
-export PATH="./leap_third_party/Concepts/bin:$PATH"
-export PYTHONPATH="./leap_third_party/Concepts:$PYTHONPATH"
+export PATH="$HOME/leap_third_party/Jacinle/bin:$PATH"
+export PYTHONPATH="$HOME/leap_third_party/Jacinle:$PYTHONPATH"
+export PATH="$HOME/leap_third_party/Concepts/bin:$PATH"
+export PYTHONPATH="$HOME/leap_third_party/Concepts:$PYTHONPATH"
 ```
 
 ### Verification
