@@ -53,7 +53,7 @@ cd ~/leap_third_party
 git clone https://github.com/vacancy/Jacinle --recursive
 
 # Install Concepts
-git clone https://github.com/vacancy/Concepts --recursive
+git clone https://github.com/concepts-ai/Concepts.git --recursive
 
 # Set environment variables
 export PATH="$HOME/leap_third_party/Jacinle/bin:$PATH"
